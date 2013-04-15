@@ -1,0 +1,35 @@
+{
+  "name": "janus",
+  "description": "the two-faced application library-framework",
+  "version": "0.1.0",
+  "author": "Clint Tseng <clint@dontexplain.com>",
+  "homepage": "http://janusjs.org",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/clint-tseng/janus.git"
+  },
+  "bugs": {
+    "url": "https://github.com/clint-tseng/janus/issues"
+  },
+  "licenses": [{
+    "type": "WTFPL",
+    "url": "http://www.wtfpl.net/txt/copying"
+  }],
+  "main": "lib/janus",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "keywords": [ "framework", "server-side", "mvvm", "application", "508", "seo" ],
+  "dependencies": {
+    "eventemitter2": "~0.4.11"
+  },
+  "devDependencies": {
+    "coffee-script": "~1.6.2",
+    "grunt": "~0.4.1",
+    "grunt-contrib-coffee": "~0.6.6",
+    "mocha": "~1.9.0"
+  }
+}
