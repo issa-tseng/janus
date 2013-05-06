@@ -4,7 +4,7 @@
 # base util object
 util =
 
-  # warning: mutates! basic shallow copy in emulation of simplest jQuery extend case.
+  # basic shallow copy in emulation of simplest jQuery extend case. warning: mutates!
   extend: (dest, srcs...) -> (dest[k] = v for k, v of src) for src in srcs; null
 
 # use our freshly-declared extend() to populate our module exports
