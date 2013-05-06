@@ -10,6 +10,13 @@ building a webserver and webapp. It looks to [Backbone](http://backbonejs.org/)
 for guidance on what best practices are at a general level, while seeking to
 build upon its opinions.
 
+Reference
+=========
+
+This documentation (which is actually the main Janus file!), along with all
+other documentation, is available as [annotated
+source](https://rawgithub.com/clint-tseng/janus/master/docs/janus.coffee.html).
+
 Why Janus?
 ==========
 
