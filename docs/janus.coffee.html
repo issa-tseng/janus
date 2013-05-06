@@ -63,7 +63,7 @@ the excellent <a href="http://flatironjs.org/">Flatiron.js</a> framework for act
 building a webserver and webapp. It looks to <a href="http://backbonejs.org/">Backbone</a>
 for guidance on what best practices are at a general level, while seeking to
 build upon its opinions.</p>
-<h1>Why Janus?</h1>
+<h1>Reference</h1>
 
             </div>
             
@@ -75,6 +75,22 @@ build upon its opinions.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>This documentation (which is actually the main Janus file!), along with all
+other documentation, is available as <a href="https://rawgithub.com/clint-tseng/janus/master/docs/janus.coffee.html">annotated
+source</a>.</p>
+<h1>Why Janus?</h1>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
               <p>There are many very popular frameworks out there to help build the kind of
 gigantic, client-side-heavy, modern application that the web is moving towards.
@@ -108,11 +124,11 @@ maintaining a very small footprint.</p>
         </li>
         
         
-        <li id="section-4">
+        <li id="section-5">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
+                <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
               <p>Janus is, at its heart, an MVVM framework. More on this later. It has a number
 of tenets that guide its design:</p>
@@ -135,11 +151,11 @@ above.</li>
         </li>
         
         
-        <li id="section-5">
+        <li id="section-6">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
+                <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
               <p>Janus is comprised of a five major components, and a number of smaller but
 critical utilities that help organize and connect the components together.</p>
@@ -151,29 +167,15 @@ critical utilities that help organize and connect the components together.</p>
         </li>
         
         
-        <li id="section-6">
+        <li id="section-7">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+                <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
               <h2>Model</h2>
 
             </div>
-            
-        </li>
-        
-        
-        <li id="section-7">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
-              </div>
-              
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  Model: require(<span class="string">'./model/model'</span>)</pre></div></div>
             
         </li>
         
@@ -183,6 +185,20 @@ critical utilities that help organize and connect the components together.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Model: require(<span class="string">'./model/model'</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>Janus models are extremely similar to Backbone models in many ways: they store
 and event on a set of attributes. When one wants to refer to an entity concept
@@ -210,11 +226,11 @@ fork of model state without requiring multiple instances of a model.</p>
         </li>
         
         
-        <li id="section-9">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               
             </div>
@@ -224,11 +240,11 @@ fork of model state without requiring multiple instances of a model.</p>
         </li>
         
         
-        <li id="section-10">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Backbone doesn&#39;t provide much definition or guidance on what collections are
 meant to represent -- they are quite simply useful wrappers around arrays of
@@ -259,11 +275,11 @@ behavior.</p>
         </li>
         
         
-        <li id="section-11">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               
             </div>
@@ -273,11 +289,11 @@ behavior.</p>
         </li>
         
         
-        <li id="section-12">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p>Janus&#39;s opinions on views differ greatly from Backbone&#39;s. While it doesn&#39;t try
 to impose a particular templating framework upon the developer either (though
@@ -311,11 +327,11 @@ are using it.</p>
         </li>
         
         
-        <li id="section-13">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               
             </div>
@@ -325,11 +341,11 @@ are using it.</p>
         </li>
         
         
-        <li id="section-14">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>The templater is the single most opinionated part of Janus. Its use is entirely
 optional, but it also is the unifying element that brings a lot of the ideas and
@@ -366,11 +382,11 @@ state down.</li>
         </li>
         
         
-        <li id="section-15">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               
             </div>
@@ -380,11 +396,11 @@ state down.</li>
         </li>
         
         
-        <li id="section-16">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>The library is a facility that manage application components. Once a library
 instance is created, objects can be registered against it. Registration involves
@@ -402,11 +418,11 @@ This makes it very easy to build and fetch components against model objects.</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>The Janus standard library provides a number of base classes that tie the core
 components together into an MVVM framework that one can build web applications
@@ -419,29 +435,15 @@ against rather than just a basic collection of code-organization classes.</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap for-h2">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <h2>PageModel</h2>
 
             </div>
-            
-        </li>
-        
-        
-        <li id="section-19">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
-              </div>
-              
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    PageModel: require(<span class="string">'./model/page-model'</span>)</pre></div></div>
             
         </li>
         
@@ -451,6 +453,20 @@ against rather than just a basic collection of code-organization classes.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    PageModel: require(<span class="string">'./model/page-model'</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
               </div>
               <p>A <code>PageModel</code> is the concept that makes Janus an MVVM rather than MVC framework.
 It is born out of the observation that controller methods on web applications
@@ -474,11 +490,11 @@ will event on change.</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-22">&#182;</a>
               </div>
               
             </div>
@@ -488,11 +504,11 @@ will event on change.</p>
         </li>
         
         
-        <li id="section-22">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-22">&#182;</a>
+                <a class="pilcrow" href="#section-23">&#182;</a>
               </div>
               <p>The <code>PageView</code> is the view complement to the PageModel. It provides some basic
 facilities like header/footer rendering, dropping in the Janus runtime, the
@@ -504,11 +520,11 @@ model state and page initialization.</p>
         </li>
         
         
-        <li id="section-23">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-23">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               
             </div>
@@ -518,11 +534,11 @@ model state and page initialization.</p>
         </li>
         
         
-        <li id="section-24">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-24">&#182;</a>
+                <a class="pilcrow" href="#section-25">&#182;</a>
               </div>
               <p>The <code>Persister</code> is nothing more than a implementationless base class that one
 can use to guide building one&#39;s own persistence layer. It&#39;s recommended to
@@ -535,11 +551,11 @@ endpoints, and appropriate one per execution context.</p>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-25">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
               </div>
               
             </div>
@@ -549,11 +565,11 @@ endpoints, and appropriate one per execution context.</p>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-26">&#182;</a>
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p>The <code>Serializer</code> is a default implementation of serialization that takes models
 and renders their attributes as JSON. There are hooks to provide custom behavior
@@ -566,11 +582,11 @@ handles all types and nested model serialization automatically.</p>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-27">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
               
             </div>
@@ -580,11 +596,11 @@ handles all types and nested model serialization automatically.</p>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-28">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
               <p>The <code>CollectionView</code> is a DOM-rendering view that works against the base
 collection class. It handles member insertion, removal, and reorder correctly,
@@ -596,11 +612,11 @@ and should be sufficient for most basic collection cases.</p>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-29">&#182;</a>
+                <a class="pilcrow" href="#section-30">&#182;</a>
               </div>
               
             </div>
@@ -610,11 +626,11 @@ and should be sufficient for most basic collection cases.</p>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-30">&#182;</a>
+                <a class="pilcrow" href="#section-31">&#182;</a>
               </div>
               <p>The <code>CollectionEditView</code> extends the <code>CollectionView</code> with some basic controls
 for adding and removing members. It&#39;s mostly provided as an example for how to
@@ -626,11 +642,11 @@ compose view behaviors together.</p>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-31">&#182;</a>
+                <a class="pilcrow" href="#section-32">&#182;</a>
               </div>
               
             </div>
@@ -640,11 +656,11 @@ compose view behaviors together.</p>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-32">&#182;</a>
+                <a class="pilcrow" href="#section-33">&#182;</a>
               </div>
               <p>The Janus package exports itself via a simple CommonJS drop of its core
 components in an object. If you would like to support other loaders, please
@@ -656,11 +672,11 @@ submit them as a pull request and justify why they make sense for Janus.</p>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-33">&#182;</a>
+                <a class="pilcrow" href="#section-34">&#182;</a>
               </div>
               <p>Simply install with <code>npm</code>: <code>npm install janus</code></p>
 <h1>License</h1>
@@ -670,11 +686,11 @@ submit them as a pull request and justify why they make sense for Janus.</p>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-34">&#182;</a>
+                <a class="pilcrow" href="#section-35">&#182;</a>
               </div>
               <p>Janus is licensed under the <a href="http://www.wtfpl.net/about/">WTFPL</a>:</p>
 <h1>#</h1>
@@ -698,11 +714,11 @@ as the name <span class="keyword">is</span> changed.
         </li>
         
         
-        <li id="section-35">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="pilwrap for-h1">
-                <a class="pilcrow" href="#section-35">&#182;</a>
+                <a class="pilcrow" href="#section-36">&#182;</a>
               </div>
               <h1>#</h1>
 
