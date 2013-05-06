@@ -30,14 +30,15 @@ particular, it provides no native implementations or opinions on:
 * Middleware
 * URL Routing
 * Network transport
+* Session storage
 
-Instead, Janus focuses on organizing application code in a succinct, maintanable
-way that encourages composition of behavior and code, modularity, and reuse
-while providing better functionality around server-side rendering, state
-representation across reload or navigation, and live data representation. Where
-Backbone is unopinionated in the extreme to be able to fit any model, Janus is
-opinionated where it suits its mission. It prevents bloat by maintaining a very
-small footprint.
+Instead, Janus focuses on organizing application code in a succinct,
+maintainable way that encourages composition of behavior and code, modularity,
+and reuse while providing better functionality around server-side rendering,
+state representation across reload or navigation, and live data representation.
+Where Backbone is unopinionated in the extreme to be able to fit any model,
+Janus is opinionated where it suits its mission. It prevents bloat by
+maintaining a very small footprint.
 
 Philosophy
 ==========
@@ -220,7 +221,7 @@ PageModel
 
         PageModel: require('./model/page-model')
 
-A PageModel is the concept that makes Janus an MVVM rather than MVC framework.
+A `PageModel` is the concept that makes Janus an MVVM rather than MVC framework.
 It is born out of the observation that controller methods on web applications
 tend to fall into two general buckets: nonmutating endpoints that simply fetch a
 bunch of information for render, or mutating endpoints that attempt an action,
@@ -243,7 +244,7 @@ PageView
 
         PageView: require('./view/page-view')
 
-The PageView is the view complement to the PageModel. It provides some basic
+The `PageView` is the view complement to the PageModel. It provides some basic
 facilities like header/footer rendering, dropping in the Janus runtime, the
 model state and page initialization.
 
@@ -252,10 +253,38 @@ Persister
 
         Persister: require('./model/persister')
 
-The Persister is nothing more than a implementationless base class that one can
-use to guide building one's own persistence layer. It's recommended to build a
-pair of base persisters that can be extended with model-specific endpoints, and
-appropriate one per execution context.
+The `Persister` is nothing more than a implementationless base class that one
+can use to guide building one's own persistence layer. It's recommended to
+build a pair of base persisters that can be extended with model-specific
+endpoints, and appropriate one per execution context.
+
+Serializer
+----------
+
+        Serializer: require('./model/serializer')
+
+The `Serializer` is a default implementation of serialization that takes models
+and renders their attributes as JSON. There are hooks to provide custom behavior
+for particular attributes (including nested model attributes), but by default it
+handles all types and nested model serialization automatically.
+
+CollectionView
+--------------
+
+        CollectionView: require('./view/collection')
+
+The `CollectionView` is a DOM-rendering view that works against the base
+collection class. It handles member insertion, removal, and reorder correctly,
+and should be sufficient for most basic collection cases.
+
+CollectionEditView
+------------------
+
+        CollectionEditView: require('./view/collection-edit')
+
+The `CollectionEditView` extends the `CollectionView` with some basic controls
+for adding and removing members. It's mostly provided as an example for how to
+compose view behaviors together.
 
 Module
 ======
