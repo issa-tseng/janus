@@ -1,1 +1,1 @@
-src/janus.litcoffee
+src/janus.coffee.md

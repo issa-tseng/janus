@@ -10,7 +10,7 @@ module.exports = (grunt) ->
       compile:
         expand: true
         cwd: 'src/'
-        src: [ '**/*.coffee', '**/*.litcoffee' ]
+        src: [ '**/*.coffee', '**/*.coffee.md' ]
         dest: 'lib/'
         ext: '.js'
 
@@ -20,13 +20,21 @@ module.exports = (grunt) ->
         cwd: 'src/'
         src: '**/*.js'
         dest: 'lib/'
+
+    docco:
+      build:
+        cwd: 'src/'
+        src: '**/*.coffee'
+        dest: 'docs/'
   )
 
   # load plugins
   grunt.loadNpmTasks('grunt-contrib-clean')
   grunt.loadNpmTasks('grunt-contrib-coffee')
   grunt.loadNpmTasks('grunt-contrib-copy')
+  grunt.loadNpmTasks('grunt-docco')
 
   # tasks
   grunt.registerTask('default', [ 'clean:lib', 'coffee:compile', 'copy:js' ])
+  grunt.registerTask('docs', [ 'docco:build' ])
 
