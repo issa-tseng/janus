@@ -19,8 +19,18 @@
           <div id="jump_page">
             
               
+              <a class="source" href="base.html">
+                base.coffee
+              </a>
+            
+              
               <a class="source" href="janus.coffee.html">
                 janus.coffee.md
+              </a>
+            
+              
+              <a class="source" href="model.html">
+                model.coffee
               </a>
             
               
@@ -50,7 +60,7 @@
               </div>
               <p>The util class provides a collection of helpful utilities. This is to the
 absolute shock and horror of everyone opening this file.</p>
-<p>base util object</p>
+<p>Base util object.</p>
 
             </div>
             
@@ -62,10 +72,60 @@ absolute shock and horror of everyone opening this file.</p>
         <li id="section-2">
             <div class="annotation">
               
-              <div class="pilwrap ">
+              <div class="pilwrap for-h3">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p>basic shallow copy in emulation of simplest jQuery extend case. warning: mutates!</p>
+              <h3>Detection</h3>
+<p>(more are added in bulk below.)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  isArray: Array.isArray ? (obj) -&gt; toString.call(obj) <span class="keyword">is</span> <span class="string">'[object Array]'</span>
+  isNumber: (obj) -&gt; toString.call(obj) <span class="keyword">is</span> <span class="string">'[object Number]'</span> <span class="keyword">and</span> !isNaN(obj)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h3">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <h3>Number Utils</h3>
+<p>Counter for <code>uniqueId()</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  _uniqueId: <span class="number">0</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Provision a unique serial id.</p>
+<p><strong>Returns</strong> a unique integer.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  uniqueId: -&gt; util._uniqueId++</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h3">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <h3>Object Utils</h3>
+<p>Basic shallow copy in emulation of simplest jQuery extend case. warning: mutates!</p>
 
             </div>
             
@@ -74,13 +134,106 @@ absolute shock and horror of everyone opening this file.</p>
         </li>
         
         
-        <li id="section-3">
+        <li id="section-6">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-3">&#182;</a>
+                <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>use our freshly-declared extend() to populate our module exports</p>
+              <p>Helper used by <code>deepGet</code> and <code>deepSet</code> to standardize the path argument.
+Accepts <code>x, y, z</code>, <code>&#39;x.y.z&#39;</code>, and <code>[x, y, z]</code>.</p>
+<p><strong>Returns</strong> an array of string path components.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  normalizePath: (path) -&gt;
+    <span class="keyword">if</span> path.length <span class="keyword">isnt</span> <span class="number">1</span>
+      path
+    <span class="keyword">else</span>
+      <span class="keyword">if</span> util.isString(path[<span class="number">0</span>])
+        path[<span class="number">0</span>].split(<span class="string">'.'</span>)
+      <span class="keyword">else</span> <span class="keyword">if</span> util.isArray(path[<span class="number">0</span>])
+        path[<span class="number">0</span>]</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Gets a deeply nested key from a hash. Falls back to <code>null</code> if it can&#39;t find
+the key in question.</p>
+<p><strong>Returns</strong> the value in question, or else <code>null</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  deepGet: (obj, path...) -&gt;
+    path = util.normalizePath(path)
+    <span class="keyword">return</span> <span class="literal">null</span> <span class="keyword">unless</span> path?
+
+    obj = obj[path.shift()] <span class="keyword">while</span> obj? <span class="keyword">and</span> path.length &gt; <span class="number">0</span>
+    obj ? <span class="literal">null</span> <span class="comment"># Return null rather than undef here</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Sets a deeply nested key in a hash. Generates nested hashes along the way
+if it encounters undef keys.</p>
+<p><strong>Returns</strong> a function that takes:
+<em> a value and sets the requested key, or
+</em> a function, which will be called with the object the key lives on, and
+  the key.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  deepSet: (obj, path...) -&gt;
+    path = util.normalizePath(path)
+    <span class="keyword">return</span> <span class="literal">null</span> <span class="keyword">unless</span> path?
+
+    obj = obj[path.shift()] ?= {} <span class="keyword">while</span> path.length &gt; <span class="number">1</span>
+
+    (x) -&gt;
+      <span class="keyword">if</span> util.isFunction(x)
+        x()
+      <span class="keyword">else</span>
+        obj[path[<span class="number">0</span>]] = x</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Bulk add a bunch of detection functions; thanks to Underscore.js.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="keyword">for</span> type <span class="keyword">in</span> [ <span class="string">'Arguments'</span>, <span class="string">'Function'</span>, <span class="string">'String'</span>, <span class="string">'Date'</span>, <span class="string">'RegExp'</span> ]
+  <span class="keyword">do</span> (type) -&gt;
+    util[<span class="string">'is'</span> + type] = (obj) -&gt; toString.call(obj) <span class="keyword">is</span> <span class="string">"[object <span class="subst">#{type}</span>]"</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Use our freshly-declared <code>extend()</code> to populate our module exports.</p>
 
             </div>
             
