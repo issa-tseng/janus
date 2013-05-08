@@ -1,5 +1,5 @@
-# **Model**s contain primarily a versioned attribute bag, a schema for said bag,
-# and # eventing around modifications to it.
+# **Model**s contain primarily an attribute bag, a schema for said bag, and
+# eventing around modifications to it.
 
 Base = require('../core/base')
 util = require('../util/util')
@@ -12,7 +12,7 @@ class Model extends Base
   # We take in an attribute bag and optionally some options for this Model.
   # Options are for both framework and implementation use; the options the
   # framework cares about are:
-  # * `validateOnCreate`: Determines whether to validate the attributes given
+  # - `validateOnCreate`: Determines whether to validate the attributes given
   #   with the constructor. Defaults to **true**.
   constructor: (attributes = {}, @options = {}) ->
     super()
@@ -44,22 +44,30 @@ class Model extends Base
 
     if value is Null then null else value
 
-  # Set an attribute about this model. As with get, the first parameter is a
-  # dot-separated string key. The second parameter is the value to set.
+  # Set an attribute about this model. Takes two forms:
+  #
+  # 1. Two fixed parameters. As with get, the first parameter is a dot-separated
+  #    string key. The second parameter is the value to set.
+  # 2. A hash. It can be deeply nested, but submodels aren't dealt with
+  #    specially.
   #
   # Does nothing if the given value is no different from the current.
   #
   # **Returns** the value that was set.
-  set: (key, value) ->
-    oldValue = util.deepGet(this._attributes, key) 
-    return value if oldValue is value
+  set: (args...) ->
+    if args.length is 1 and util.isPlainObject(args[0])
+      util.traverse(args[0], (path, value) => this.set(path, value))
 
-    util.deepSet(this._attributes, key)(value)
+    else if args.length is 2
+      oldValue = util.deepGet(this._attributes, key) 
+      return value if oldValue is value
 
-    this.emit("change:#{key}", value, oldValue)
-    this.validate(key)
+      util.deepSet(this._attributes, key)(if value is Null then null else value)
 
-    value
+      this.emit("change:#{key}", value, oldValue)
+      this.validate(key)
+
+      value
 
   # Clear the value of some attribute. If we are a shadow copy, we'll actually
   # leave behind a sentinel so that we know not to read into our parent.
@@ -107,6 +115,12 @@ class Model extends Base
   #
   # **Returns** an instance of `Model`.
   original: -> this._parent? ? this
+
+  # Merges the current model's changed attributes into its parent's. Fails
+  # silently if it has no parent.
+  #
+  # **Returns** nothing.
+  merge: -> this._parent?.set(this._attributes); null
 
   # Performs validation of one or all attributes. Returns a `ValidationResult`
   # of either `Valid` or `Error`, the latter of which contains details about

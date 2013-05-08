@@ -8,6 +8,7 @@ util =
   # (more are added in bulk below.)
   isArray: Array.isArray ? (obj) -> toString.call(obj) is '[object Array]'
   isNumber: (obj) -> toString.call(obj) is '[object Number]' and !isNaN(obj)
+  isPlainObject: (obj) -> (typeof obj is 'object') and (obj.constructor is Object)
 
 
   #### Number Utils
@@ -53,8 +54,8 @@ util =
   # if it encounters undef keys.
   #
   # **Returns** a function that takes:
-  # * a value and sets the requested key, or
-  # * a function, which will be called with the object the key lives on, and
+  # - a value and sets the requested key, or
+  # - a function, which will be called with the object the key lives on, and
   #   the key.
   deepSet: (obj, path...) ->
     path = util.normalizePath(path)
@@ -68,6 +69,21 @@ util =
       else
         obj[path[0]] = x
 
+
+  # Traverses a hash, calling a passed-in function with the current path and
+  # value for leaves.
+  #
+  # **Returns** The original hash.
+  traverse: (obj, f, path = []) ->
+    for k, v of obj
+      subpath = path.concat([ k ])
+
+      if util.isPlainObject(v)
+        f(subpath, v)
+      else
+        traverse(v, f, subpath)
+
+    obj
 
 # Bulk add a bunch of detection functions; thanks to Underscore.js.
 for type in [ 'Arguments', 'Function', 'String', 'Date', 'RegExp' ]
