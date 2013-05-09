@@ -1,7 +1,7 @@
 # **Model**s contain primarily an attribute bag, a schema for said bag, and
 # eventing around modifications to it.
 
-Base = require('../core/base')
+Base = require('../core/base').Base
 util = require('../util/util')
 
 Null = {} # sentinel value to record a child-nulled value
@@ -14,12 +14,8 @@ class Model extends Base
   # framework cares about are:
   # - `validateOnCreate`: Determines whether to validate the attributes given
   #   with the constructor. Defaults to **true**.
-  constructor: (attributes = {}, @options = {}) ->
+  constructor: (@attributes = {}, @options = {}) ->
     super()
-
-    # Create our attribute set, and populate the default set.
-    this._attributes = {}
-    this._attributes.default = attributes
 
     # We've swallowed the provided attributes whole; do we want to validate
     # them before proceeding?
@@ -38,7 +34,7 @@ class Model extends Base
   # **Returns** the value of the given key.
   get: (key) ->
     value =
-      util.deepGet(this._attributes, key) ?
+      util.deepGet(this.attributes, key) ?
       this._parent?.get(key) ?
       null
 
@@ -59,10 +55,10 @@ class Model extends Base
       util.traverse(args[0], (path, value) => this.set(path, value))
 
     else if args.length is 2
-      oldValue = util.deepGet(this._attributes, key) 
+      oldValue = util.deepGet(this.attributes, key) 
       return value if oldValue is value
 
-      util.deepSet(this._attributes, key)(if value is Null then null else value)
+      util.deepSet(this.attributes, key)(if value is Null then null else value)
 
       this.emit("change:#{key}", value, oldValue)
       this.validate(key)
@@ -80,11 +76,13 @@ class Model extends Base
     oldValue = this.get(key)
 
     if this._parent?
-      util.deepSet(this._attributes, key)(Null)
+      util.deepSet(this.attributes, key)(Null)
     else
       this._deleteAttr(key)
 
     this.emit("change:#{key}", null, oldValue) if oldValue isnt null
+
+    oldValue
 
   # Revert a particular attribute on this model. After this, the model will
   # return whatever its parent thinks the attribute should be. If no parent
@@ -120,7 +118,7 @@ class Model extends Base
   # silently if it has no parent.
   #
   # **Returns** nothing.
-  merge: -> this._parent?.set(this._attributes); null
+  merge: -> this._parent?.set(this.attributes); null
 
   # Performs validation of one or all attributes. Returns a `ValidationResult`
   # of either `Valid` or `Error`, the latter of which contains details about
@@ -133,7 +131,7 @@ class Model extends Base
   # Helper used by `revert()` and some paths of `unset()` to actually clear out
   # a particular key.
   _deleteAttr: (key) ->
-    util.deepSet(this._attributes, key) (obj, subkey) =>
+    util.deepSet(this.attributes, key) (obj, subkey) =>
       oldValue = obj[subkey]
       delete obj[subkey]
 
