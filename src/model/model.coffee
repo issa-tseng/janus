@@ -60,7 +60,7 @@ class Model extends Base
 
       util.deepSet(this.attributes, key)(if value is Null then null else value)
 
-      this.emit("change:#{key}", value, oldValue)
+      this.emit("change:#{key}", value, oldValue, key)
       this.validate(key)
 
       value
@@ -80,7 +80,7 @@ class Model extends Base
     else
       this._deleteAttr(key)
 
-    this.emit("change:#{key}", null, oldValue) if oldValue isnt null
+    this.emit("change:#{key}", null, oldValue, key) if oldValue isnt null
 
     oldValue
 
@@ -136,7 +136,7 @@ class Model extends Base
       delete obj[subkey]
 
       newValue = this.get(key)
-      this.emit("change:#{key}", newValue, oldValue) if newValue isnt oldValue
+      this.emit("change:#{key}", newValue, oldValue, key) if newValue isnt oldValue
 
       oldValue
 
