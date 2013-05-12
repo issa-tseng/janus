@@ -35,9 +35,10 @@ particular, it provides no native implementations or opinions on:
 * Databases, backends, or ORM
 * Web server
 * Middleware
+* Session storage
 * URL Routing
 * Network transport
-* Session storage
+* Standard controls
 
 Instead, Janus focuses on organizing application code in a succinct,
 maintainable way that encourages composition of behavior and code, modularity,
@@ -58,8 +59,6 @@ of tenets that guide its design:
 * Be automatic, but not automagic.
 * Boilerplate isn't bad as long as it's small.
 * Address different execution contexts -- server- and client- side.
-* Provide behavior composition through eventing rather than inheritance or
-  mixins.
 * Encourage unit testing, and in fact make unit testing the obvious answer.
 * Look to Backbone for guidance, and diverge only where it better suits the
   above.
@@ -102,7 +101,7 @@ fork of model state without requiring multiple instances of a model.
 Collection
 ----------
 
-      Collection: require('./collection/collection')
+      Collection: require('./model/collection')
 
 Backbone doesn't provide much definition or guidance on what collections are
 meant to represent -- they are quite simply useful wrappers around arrays of
@@ -187,8 +186,8 @@ can work againts real objects rather than strings pointing at objects, and so
 that more complex structures can be built where necessary. A full set of
 bindings can be found in the reference, but the key features include:
 
-* Takes `Proxy` objects that event on state change, and re-executes the binding
-  on such occasions. Janus models provide a proxy generator per attribute.
+* Takes `Value` objects that event on state change, and re-executes the binding
+  on such occasions. Janus models provide a value generator per attribute.
 * Allows additive logic on later-rebound instances of the same binding. This
   allows for views to be composed together and overridden without entirely
   clobbering existing bindings.

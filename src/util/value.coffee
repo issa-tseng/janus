@@ -1,9 +1,9 @@
-# The **Proxy** object is a possibly poorly-name object that wraps any single
+# The **Value** object is a possibly poorly-name object that wraps any single
 # value in a wrapper that can event wher said value changes. Often it is used by
 # Model objects to wrap an attribute for binding against a View, and in fact
 # Models provide a method to do so.
 #
-# The expectation is that upon spawning a `Proxy`, one will use the proxy's
+# The expectation is that upon spawning a `Value`, one will use the value's
 # `listenTo` and `setValue` methods in conjuction to trigger updates. This may
 # seem like a strange amount of stuff for a consumer to manage, but the API
 # becomes a bit of a mess otherwise. And, Model objects do this legwork
@@ -13,16 +13,16 @@ Base = require('../core/base').Base
 util = require('../util/util')
 
 # Use Base so that we inherit its EventEmitter defaults
-class Proxy extends Base
-  # Creates a new Proxy. The following options may be supplied:
+class Value extends Base
+  # Creates a new Value. The following options may be supplied:
   #
-  # - `value`: The initial value of the Proxy.
+  # - `value`: The initial value of the Value.
   # - `transform`: A function that transforms the value before passing it on if
   #   desired.
   #
   constructor: ({ @value, @transform }) ->
 
-  # Sets the value of this Proxy and triggers the relevant events.
+  # Sets the value of this Value and triggers the relevant events.
   #
   # **Returns** the new value.
   setValue: (value) ->
@@ -38,11 +38,11 @@ class Proxy extends Base
 
     value
 
-# A ComboProxy takes multiple Proxy objects and puts their values together.
+# A ComboValue takes multiple Value objects and puts their values together.
 # It doesn't itself listen to anything but Proxies directly.
-class ComboProxy extends Proxy
+class ComboValue extends Value
 
-  # Unlike the base `Proxy`, this one simply takes the array of Proxies and a
+  # Unlike the base `Value`, this one simply takes the array of Proxies and a
   # `transform` function for combining the results of those proxies.
   constructor: (@proxies = [], @transform = (values...) -> values.join()) ->
     # Init our values array. It'll get actual values when we call `update` in
@@ -50,8 +50,8 @@ class ComboProxy extends Proxy
     values = []
 
     # Listen to all our proxies for updates.
-    for proxy, i in this.proxies
-      proxy.on 'changed', (value) =>
+    for value, i in this.proxies
+      value.on 'changed', (value) =>
         values[i] = value
         this.update()
 
@@ -66,7 +66,7 @@ class ComboProxy extends Proxy
 
 # Export.
 util.extend(module.exports,
-  Proxy: Proxy
-  ComboProxy: ComboProxy
+  Value: Value
+  ComboValue: ComboValue
 )
 
