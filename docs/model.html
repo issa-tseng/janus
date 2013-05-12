@@ -29,6 +29,16 @@
               </a>
             
               
+              <a class="source" href="library.html">
+                library.coffee
+              </a>
+            
+              
+              <a class="source" href="collection.html">
+                collection.coffee
+              </a>
+            
+              
               <a class="source" href="model.html">
                 model.coffee
               </a>
@@ -58,12 +68,12 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <p><strong>Model</strong>s contain primarily a versioned attribute bag, a schema for said bag,
-and # eventing around modifications to it.</p>
+              <p><strong>Model</strong>s contain primarily an attribute bag, a schema for said bag, and
+eventing around modifications to it.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>Base = require(<span class="string">'../core/base'</span>)
+            <div class="content"><div class='highlight'><pre>Base = require(<span class="string">'../core/base'</span>).Base
 util = require(<span class="string">'../util/util'</span>)
 
 Null = {} <span class="comment"># sentinel value to record a child-nulled value</span></pre></div></div>
@@ -95,12 +105,12 @@ Null = {} <span class="comment"># sentinel value to record a child-nulled value<
               <p>We take in an attribute bag and optionally some options for this Model.
 Options are for both framework and implementation use; the options the
 framework cares about are:
-<em> <code>validateOnCreate</code>: Determines whether to validate the attributes given
-  with the constructor. Defaults to <em>*true</em></em>.</p>
+- <code>validateOnCreate</code>: Determines whether to validate the attributes given
+  with the constructor. Defaults to <strong>true</strong>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  constructor: (attributes = {}, <span class="property">@options</span> = {}) -&gt;
+            <div class="content"><div class='highlight'><pre>  constructor: (<span class="property">@attributes</span> = {}, <span class="property">@options</span> = {}) -&gt;
     <span class="keyword">super</span>()</pre></div></div>
             
         </li>
@@ -112,22 +122,6 @@ framework cares about are:
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>Create our attribute set, and populate the default set.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    <span class="keyword">this</span>._attributes = {}
-    <span class="keyword">this</span>._attributes.<span class="reserved">default</span> = attributes</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-5">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-5">&#182;</a>
-              </div>
               <p>We&#39;ve swallowed the provided attributes whole; do we want to validate
 them before proceeding?</p>
 
@@ -138,11 +132,11 @@ them before proceeding?</p>
         </li>
         
         
-        <li id="section-6">
+        <li id="section-5">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+                <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
               <p>Override me in implementations to express expected attribute types and
 validation methods.</p>
@@ -154,11 +148,11 @@ validation methods.</p>
         </li>
         
         
-        <li id="section-7">
+        <li id="section-6">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+                <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
               <p>Get an attribute about this model. The key can be a dot-separated path into
 a nested plain model. We do not traverse into submodels that have been
@@ -170,11 +164,47 @@ inflated.</p>
             
             <div class="content"><div class='highlight'><pre>  get: (key) -&gt;
     value =
-      util.deepGet(<span class="keyword">this</span>._attributes, key) ?
+      util.deepGet(<span class="keyword">this</span>.attributes, key) ?
       <span class="keyword">this</span>._parent?.get(key) ?
       <span class="literal">null</span>
 
     <span class="keyword">if</span> value <span class="keyword">is</span> Null <span class="keyword">then</span> <span class="literal">null</span> <span class="keyword">else</span> value</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Set an attribute about this model. Takes two forms:</p>
+<ol>
+<li>Two fixed parameters. As with get, the first parameter is a dot-separated
+string key. The second parameter is the value to set.</li>
+<li>A hash. It can be deeply nested, but submodels aren&#39;t dealt with
+specially.</li>
+</ol>
+<p>Does nothing if the given value is no different from the current.</p>
+<p><strong>Returns</strong> the value that was set.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  set: (args...) -&gt;
+    <span class="keyword">if</span> args.length <span class="keyword">is</span> <span class="number">1</span> <span class="keyword">and</span> util.isPlainObject(args[<span class="number">0</span>])
+      util.traverse(args[<span class="number">0</span>], (path, value) =&gt; <span class="keyword">this</span>.set(path, value))
+
+    <span class="keyword">else</span> <span class="keyword">if</span> args.length <span class="keyword">is</span> <span class="number">2</span>
+      oldValue = util.deepGet(<span class="keyword">this</span>.attributes, key) 
+      <span class="keyword">return</span> value <span class="keyword">if</span> oldValue <span class="keyword">is</span> value
+
+      util.deepSet(<span class="keyword">this</span>.attributes, key)(<span class="keyword">if</span> value <span class="keyword">is</span> Null <span class="keyword">then</span> <span class="literal">null</span> <span class="keyword">else</span> value)
+
+      <span class="keyword">this</span>.emit(<span class="string">"change:<span class="subst">#{key}</span>"</span>, value, oldValue, key)
+      <span class="keyword">this</span>.validate(key)
+
+      value</pre></div></div>
             
         </li>
         
@@ -184,33 +214,6 @@ inflated.</p>
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-8">&#182;</a>
-              </div>
-              <p>Set an attribute about this model. As with get, the first parameter is a
-dot-separated string key. The second parameter is the value to set.</p>
-<p>Does nothing if the given value is no different from the current.</p>
-<p><strong>Returns</strong> the value that was set.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  set: (key, value) -&gt;
-    oldValue = util.deepGet(<span class="keyword">this</span>._attributes, key) 
-    <span class="keyword">return</span> value <span class="keyword">if</span> oldValue <span class="keyword">is</span> value
-
-    util.deepSet(<span class="keyword">this</span>._attributes, key)(value)
-
-    <span class="keyword">this</span>.emit(<span class="string">"change:<span class="subst">#{key}</span>"</span>, value, oldValue)
-    <span class="keyword">this</span>.validate(key)
-
-    value</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-9">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>Clear the value of some attribute. If we are a shadow copy, we&#39;ll actually
 leave behind a sentinel so that we know not to read into our parent.</p>
@@ -224,20 +227,22 @@ be issued.</p>
     oldValue = <span class="keyword">this</span>.get(key)
 
     <span class="keyword">if</span> <span class="keyword">this</span>._parent?
-      util.deepSet(<span class="keyword">this</span>._attributes, key)(Null)
+      util.deepSet(<span class="keyword">this</span>.attributes, key)(Null)
     <span class="keyword">else</span>
       <span class="keyword">this</span>._deleteAttr(key)
 
-    <span class="keyword">this</span>.emit(<span class="string">"change:<span class="subst">#{key}</span>"</span>, <span class="literal">null</span>, oldValue) <span class="keyword">if</span> oldValue <span class="keyword">isnt</span> <span class="literal">null</span></pre></div></div>
+    <span class="keyword">this</span>.emit(<span class="string">"change:<span class="subst">#{key}</span>"</span>, <span class="literal">null</span>, oldValue, key) <span class="keyword">if</span> oldValue <span class="keyword">isnt</span> <span class="literal">null</span>
+
+    oldValue</pre></div></div>
             
         </li>
         
         
-        <li id="section-10">
+        <li id="section-9">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>Revert a particular attribute on this model. After this, the model will
 return whatever its parent thinks the attribute should be. If no parent
@@ -256,11 +261,11 @@ be issued.</p>
         </li>
         
         
-        <li id="section-11">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>Shadow-copies a model. This allows a second copy of the model to function
 as its own model instance and keep a separate set of changes, but which
@@ -278,11 +283,11 @@ know about.</p>
         </li>
         
         
-        <li id="section-12">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Returns the original copy of a model. Returns itself if it&#39;s already an
 original model.</p>
@@ -291,6 +296,23 @@ original model.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  original: -&gt; <span class="keyword">this</span>._parent? ? <span class="keyword">this</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Merges the current model&#39;s changed attributes into its parent&#39;s. Fails
+silently if it has no parent.</p>
+<p><strong>Returns</strong> nothing.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  merge: -&gt; <span class="keyword">this</span>._parent?.set(<span class="keyword">this</span>.attributes); <span class="literal">null</span></pre></div></div>
             
         </li>
         
@@ -326,12 +348,12 @@ a particular key.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  _deleteAttr: (key) -&gt;
-    util.deepSet(<span class="keyword">this</span>._attributes, key) (obj, subkey) =&gt;
+    util.deepSet(<span class="keyword">this</span>.attributes, key) (obj, subkey) =&gt;
       oldValue = obj[subkey]
       <span class="keyword">delete</span> obj[subkey]
 
       newValue = <span class="keyword">this</span>.get(key)
-      <span class="keyword">this</span>.emit(<span class="string">"change:<span class="subst">#{key}</span>"</span>, newValue, oldValue) <span class="keyword">if</span> newValue <span class="keyword">isnt</span> oldValue
+      <span class="keyword">this</span>.emit(<span class="string">"change:<span class="subst">#{key}</span>"</span>, newValue, oldValue, key) <span class="keyword">if</span> newValue <span class="keyword">isnt</span> oldValue
 
       oldValue</pre></div></div>
             
