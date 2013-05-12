@@ -56,3 +56,8 @@ class View extends Base
     this._rebind()
     null
 
+# Export.
+util.extend(module.exports,
+  View: View
+)
+

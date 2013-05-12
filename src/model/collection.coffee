@@ -120,6 +120,7 @@ class Collection extends Base
 
     removed
 
-util.extend module.exports,
+util.extend(module.exports,
   Collection: Collection
+)
 
