@@ -20,11 +20,13 @@ class Library
   #   retrieved. By default, it assumes books are constructors with which a
   #   new instance should be initialized with the target object as a parameter,
   #   and returned to the user.
+  #   It is given `(obj, book, options)`, where `options` are the options given
+  #   the `get()` method.
   #
   constructor: (@options = {}) ->
     this.bookcase = {}
 
-    this.options.handler ?= (obj, book) -> new book(obj)
+    this.options.handler ?= (obj, book, options) -> new book(obj, options.constructorOpts)
 
   # Registers a book with the `Library`. It takes some fixed parameters:
   #
@@ -33,11 +35,11 @@ class Library
   # 2. `book`: The actual entity to return to the user upon match. By default,
   #    this is assumed to be a constructor (see `handler` option in the
   #    constructor), but it can be anything.
-  # 3. `context`: *Optional*: A string denoting what sort of match we're looking
-  #    for. This can be anything; recommended usages include 'client' vs
-  #    'server', 'default' vs 'edit', etc.
-  # 4. `options`: *Optional*: A hash with any of the following additional
+  # 3. `options`: *Optional*: A hash with any of the following additional
   #    options:
+  #    - `context`: A string denoting what sort of match we're looking
+  #      for. This can be anything; recommended usages include 'client' vs
+  #      'server', 'default' vs 'edit', etc.
   #    - `priority`: A positive integer denoting the priority of this
   #      registration. The higher the value, the higher the priority.
   #    - `attributes`: An additional set of descriptive attributes in hash
@@ -47,11 +49,11 @@ class Library
   #      the target object. Returning `true` will fail the match.
   #    - `acceptor`: After a basic match, the `acceptor` is called and passed in
   #      the target object. Returning anything but `true` will fail the match.
-  register: (klass, book, context = 'default', options = {}) ->
+  register: (klass, book, options = {}) ->
     bookId = Library._classId(klass)
 
     classShelf = this.bookcase[bookId] ?= {}
-    contextShelf = classShelf[context] ?= []
+    contextShelf = classShelf[options.context ? 'default'] ?= []
 
     contextShelf.push(
       book: book
@@ -63,28 +65,28 @@ class Library
     book
 
   # The big show. Given some object, returns the first match in the Library.
-  # Takes the target `obj`, and optionally the string `context` and an
-  # `attributes` hash.
+  # Takes the target `obj`, and optionally an `options` hash containing the
+  # `context` and/or an `attributes` hash to match the registration.
   #
   # **Returns** a registered book, processed by the Library's `handler`.
-  get: (obj, context = 'default', attributes = {}) ->
-    result =
-      this._get(obj, obj.constructor, context, attributes) ?
-      this._get(obj, obj.constructor, 'default', attributes)
-    this.options.handler(result) if result?
+  get: (obj, options = {}) ->
+    book =
+      this._get(obj, obj.constructor, options.context ? 'default', options) ?
+      this._get(obj, obj.constructor, 'default', options)
+    this.options.handler(obj, book, options) if book?
 
   # Internal recursion method for searching the library.
-  _get: (obj, klass, context, attributes) ->
+  _get: (obj, klass, context, options) ->
     klass = obj.constructor
     bookId = Library._classId(klass)
     contextShelf = this.bookcase[bookId]?[context]
 
     if contextShelf?
       # we have a set of possible matches. go through them.
-      return this.handler(record.book) for record in contextShelf when match(record, attributes)
+      return record.book for record in contextShelf when match(record, options.attributes)
 
     if klass.__super__?
-      this._get(obj, klass.__super__.constructor, context, attributes)
+      this._get(obj, klass.__super__.constructor, context, options)
 
   # Class-level internal tracking of object constructors.
   @classKey: "__janus_classId#{new Date().getTime()}"
