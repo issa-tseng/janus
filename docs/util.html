@@ -29,6 +29,16 @@
               </a>
             
               
+              <a class="source" href="library.html">
+                library.coffee
+              </a>
+            
+              
+              <a class="source" href="collection.html">
+                collection.coffee
+              </a>
+            
+              
               <a class="source" href="model.html">
                 model.coffee
               </a>
@@ -81,7 +91,8 @@ absolute shock and horror of everyone opening this file.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  isArray: Array.isArray ? (obj) -&gt; toString.call(obj) <span class="keyword">is</span> <span class="string">'[object Array]'</span>
-  isNumber: (obj) -&gt; toString.call(obj) <span class="keyword">is</span> <span class="string">'[object Number]'</span> <span class="keyword">and</span> !isNaN(obj)</pre></div></div>
+  isNumber: (obj) -&gt; toString.call(obj) <span class="keyword">is</span> <span class="string">'[object Number]'</span> <span class="keyword">and</span> !isNaN(obj)
+  isPlainObject: (obj) -&gt; (<span class="keyword">typeof</span> obj <span class="keyword">is</span> <span class="string">'object'</span>) <span class="keyword">and</span> (obj.constructor <span class="keyword">is</span> Object)</pre></div></div>
             
         </li>
         
@@ -189,8 +200,8 @@ the key in question.</p>
               <p>Sets a deeply nested key in a hash. Generates nested hashes along the way
 if it encounters undef keys.</p>
 <p><strong>Returns</strong> a function that takes:
-<em> a value and sets the requested key, or
-</em> a function, which will be called with the object the key lives on, and
+- a value and sets the requested key, or
+- a function, which will be called with the object the key lives on, and
   the key.</p>
 
             </div>
@@ -216,6 +227,32 @@ if it encounters undef keys.</p>
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
+              <p>Traverses a hash, calling a passed-in function with the current path and
+value for leaves.</p>
+<p><strong>Returns</strong> The original hash.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  traverse: (obj, f, path = []) -&gt;
+    <span class="keyword">for</span> k, v <span class="keyword">of</span> obj
+      subpath = path.concat([ k ])
+
+      <span class="keyword">if</span> util.isPlainObject(v)
+        f(subpath, v)
+      <span class="keyword">else</span>
+        traverse(v, f, subpath)
+
+    obj</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
               <p>Bulk add a bunch of detection functions; thanks to Underscore.js.</p>
 
             </div>
@@ -227,11 +264,11 @@ if it encounters undef keys.</p>
         </li>
         
         
-        <li id="section-10">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>Use our freshly-declared <code>extend()</code> to populate our module exports.</p>
 
