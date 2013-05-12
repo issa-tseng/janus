@@ -84,6 +84,14 @@ class Model extends Base
 
     oldValue
 
+  # Get a `Proxy` object for a particular key. This simply creates a new Proxy
+  # that points at our attribute with the optional `transform`.
+  #
+  # **Returns** a `Proxy` object against our attribute at `key`.
+  proxy: (key, transform = null) ->
+    proxy = new Proxy(this.get(value), transform)
+    proxy.listenTo(this, "change:#{key}")
+
   # Revert a particular attribute on this model. After this, the model will
   # return whatever its parent thinks the attribute should be. If no parent
   # exists, this function will fail silently. The key can be a dot-separated

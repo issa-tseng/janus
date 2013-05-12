@@ -54,6 +54,7 @@ util =
   # if it encounters undef keys.
   #
   # **Returns** a function that takes:
+  #
   # - a value and sets the requested key, or
   # - a function, which will be called with the object the key lives on, and
   #   the key.
