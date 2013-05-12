@@ -2,6 +2,7 @@
 # eventing around modifications to it.
 
 Base = require('../core/base').Base
+Value = require('../util/value').Value
 util = require('../util/util')
 
 Null = {} # sentinel value to record a child-nulled value
@@ -84,13 +85,13 @@ class Model extends Base
 
     oldValue
 
-  # Get a `Proxy` object for a particular key. This simply creates a new Proxy
+  # Get a `Value` object for a particular key. This simply creates a new Value
   # that points at our attribute with the optional `transform`.
   #
-  # **Returns** a `Proxy` object against our attribute at `key`.
-  proxy: (key, transform = null) ->
-    proxy = new Proxy(this.get(value), transform)
-    proxy.listenTo(this, "change:#{key}")
+  # **Returns** a `Value` object against our attribute at `key`.
+  value: (key, transform = null) ->
+    value = new Value(this.get(value), transform)
+    value.listenTo(this, "change:#{key}")
 
   # Revert a particular attribute on this model. After this, the model will
   # return whatever its parent thinks the attribute should be. If no parent
