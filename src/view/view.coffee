@@ -51,7 +51,7 @@ class View extends Base
   # method of this name to be used for this purpose.
   #
   # **Returns** nothing.
-  rebind: (artifact) ->
+  bind: (artifact) ->
     this._artifact = artifact
     this._rebind()
     null

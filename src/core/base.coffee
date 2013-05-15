@@ -40,6 +40,14 @@ class Base extends EventEmitter
     target?.off(event, handler) for { 0: target, 1: event, 2: handler } in this._listeners
     this.removeAllListeners()
 
+  # Quick shortcut for expressing that this object's existence depends purely on
+  # another, so it should self-destruct if the other does.
+  # Normally, the garbage collector would handle this sort of thing, but with
+  # listeners flying around it can be a little hard to reason out.
+  #
+  # **Returns** self.
+  destroyWith: (other) -> this.listenTo(other, 'destroying', => this.destroy())
+
 # Export.
 util.extend(module.exports,
   Base: Base
