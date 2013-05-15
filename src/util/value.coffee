@@ -47,10 +47,11 @@ class ComboValue extends Value
   constructor: (@proxies = [], @transform = (values...) -> values.join()) ->
     # Init our values array. It'll get actual values when we call `update` in
     # just a bit here.
-    values = []
+    this.values = []
 
     # Listen to all our proxies for updates.
-    for value, i in this.proxies
+    for value, i in this.values
+      values[i] = value.value # ugh need to rename this again.
       value.on 'changed', (value) =>
         values[i] = value
         this.update()
