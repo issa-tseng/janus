@@ -1,7 +1,7 @@
 
 util = require('../util/util')
 base = require('../core/base')
-{ Value, ComboValue } = require('../util/value')
+{ Monitor, ComboMonitor } = require('../core/monitor')
 $ ?= require('zepto-node')
 
 
@@ -29,6 +29,7 @@ class Binder
   apply: (f) -> this._attachMutator(ApplyMutator, [ f ])
 
   from: (dataObj, dataKey) -> this.text().from(dataObj, dataKey)
+  fromMonitor: (func) -> this.text().fromMonitor(func)
 
 
   end: -> this.parent
@@ -66,6 +67,9 @@ class Mutator extends Base
 
     this
 
+  fromMonitor: (monitorGenerator) ->
+    this._data.push( type: 'customMonitor', func: monitorGenerator )
+
   and: this.prototype.from
 
   andLast: ->
@@ -86,11 +90,14 @@ class Mutator extends Base
         else if type is 'primary'
           primary.value(key)
         else if type is 'parent'
-          value = new Value(this.parent.calculate())
-          this.parent.on('changed', (v) -> value.setValue(v))
-          value
+          this.parent.data(primary, data)
+          monitor = new Monitor(this.parent.calculate())
+          this.parent.on('changed', (v) -> monitor.setValue(v))
+          monitor
+        else if type is 'customMonitor'
+          func(primary, data)
 
-    this._value = new ComboValue(this._listeners, this._transform)
+    this._value = new ComboMonitor(this._listeners, this._transform)
     this._value.destroyWith(this)
     this._value.on('changed', => this.apply())
 
