@@ -9,11 +9,13 @@ $ ?= require('zepto-node')
 Binder = require('./binder')
 
 class Templater
-  constructor: (@markup) ->
-    this.dom = $(this.markup)
+  constructor: ->
     this._binder = this._binding()
 
   data: (primary, data) -> this._binder.data(primary, data)
+
+  getDom: -> this.dom ?= this._getDom()
+  _getDom: ->
 
   _binding: -> new Binder(this.dom)
 

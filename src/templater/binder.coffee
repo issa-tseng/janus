@@ -53,7 +53,7 @@ class Mutator extends Base
 
     this._data = []
     this._listeners = []
-    this._transform = this._value = null
+    this._fallback = this._transform = this._value = null
 
     this._parent?._isParent = true
 
@@ -80,11 +80,15 @@ class Mutator extends Base
     this._transform = transform
     this
 
+  fallback: (fallback) ->
+    this._fallback = fallback
+    this
+
 
   data: (primary, data) ->
     listener.destroy() for listener in this._listeners
     this._listeners =
-      for { type, obj, key } in this._data
+      for { type, obj, key, func } in this._data
         if type is 'data'
           util.deepGet(data, obj)?.value(key)
         else if type is 'primary'
@@ -103,7 +107,7 @@ class Mutator extends Base
 
     this
 
-  calculate: -> this._value?.value
+  calculate: -> this._value?.value ? this._fallback
   apply: -> this._apply(this.calculate()) unless this._isParent
 
   _apply: ->
