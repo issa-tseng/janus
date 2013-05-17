@@ -2,7 +2,7 @@
 # eventing around modifications to it.
 
 Base = require('../core/base').Base
-Value = require('../util/value').Value
+Monitor = require('../core/monitor').Monitor
 util = require('../util/util')
 
 Null = {} # sentinel value to record a child-nulled value
@@ -13,8 +13,10 @@ class Model extends Base
   # We take in an attribute bag and optionally some options for this Model.
   # Options are for both framework and implementation use; the options the
   # framework cares about are:
+  #
   # - `validateOnCreate`: Determines whether to validate the attributes given
   #   with the constructor. Defaults to **true**.
+  #
   constructor: (@attributes = {}, @options = {}) ->
     super()
 
@@ -61,7 +63,7 @@ class Model extends Base
 
       util.deepSet(this.attributes, key)(if value is Null then null else value)
 
-      this.emit("change:#{key}", value, oldValue, key)
+      this._emitChange(key, value, oldValue)
       this.validate(key)
 
       value
@@ -81,17 +83,17 @@ class Model extends Base
     else
       this._deleteAttr(key)
 
-    this.emit("change:#{key}", null, oldValue, key) if oldValue isnt null
+    this._emitChange(key, null, oldValue) unless oldValue is null
 
     oldValue
 
-  # Get a `Value` object for a particular key. This simply creates a new Value
-  # that points at our attribute with the optional `transform`.
+  # Get a `Monitor` object for a particular key. This simply creates a new
+  # Monitor that points at our attribute with the optional `transform`.
   #
-  # **Returns** a `Value` object against our attribute at `key`.
-  value: (key, transform = null) ->
-    value = new Value(this.get(value), transform)
-    value.listenTo(this, "change:#{key}")
+  # **Returns** a `Monitor` object against our attribute at `key`.
+  monitor: (key, transform = null) ->
+    monitor = new Monitor(this.get(value), transform)
+    monitor.listenTo(this, "changed:#{key}", (newValue) -> value.setValue(newValue))
 
   # Revert a particular attribute on this model. After this, the model will
   # return whatever its parent thinks the attribute should be. If no parent
@@ -145,9 +147,21 @@ class Model extends Base
       delete obj[subkey]
 
       newValue = this.get(key)
-      this.emit("change:#{key}", newValue, oldValue, key) if newValue isnt oldValue
+      this._emitChange(key, newValue, oldValue) unless newValue is oldValue
 
       oldValue
+
+  # Helper to generate change events. We emit events for both the actual changed
+  # key along with all its parent nests, which this deals with.
+  _emitChange: (key, newValue, oldValue) ->
+    parts = key.split('.')
+
+    while parts.length > 0
+      partKey = parts.join('.')
+      this.emit("changed:#{partKey}", newValue, oldValue, partKey)
+      parts.pop()
+
+    null
 
 # Export.
 util.extend(module.exports,
