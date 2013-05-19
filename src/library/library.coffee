@@ -77,7 +77,6 @@ class Library
 
   # Internal recursion method for searching the library.
   _get: (obj, klass, context, options) ->
-    klass = obj.constructor
     bookId = Library._classId(klass)
     contextShelf = this.bookcase[bookId]?[context]
 
@@ -94,7 +93,9 @@ class Library
 
   # Class-level method for tagging and reading the tag off of constructors.
   @_classId: (klass) ->
-    if klass[this.classKey]? and this.classMap[this.classKey] is klass
+    id = klass[this.classKey]
+
+    if id? and this.classMap[id] is klass
       klass[this.classKey]
     else
       id = util.uniqueId()
