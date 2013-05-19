@@ -8,13 +8,21 @@ util = require('../util/util')
 Binder = require('./binder').Binder
 
 class Templater
-  constructor: ->
-    this._binder = this._binding()
+  constructor: (@options = {}) ->
+    this._binder = new Binder(this.dom())
+    this._binding()
 
-  data: (primary, data) -> this._binder.data(primary, data)
+  data: (primary, aux) -> this._binder.data(primary, aux)
 
-  getDom: -> this.dom ?= this._getDom()
-  _getDom: ->
+  dom: -> this.__dom ?= this._dom()
+  _dom: ->
 
-  _binding: -> new Binder(this.dom)
+  markup: -> this.dom().get(0).outerHTML
+
+  _binding: -> this._binder
+
+
+util.extend(module.exports,
+  Templater: Templater
+)
 
