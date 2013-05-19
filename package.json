@@ -17,7 +17,7 @@
   }],
   "main": "lib/janus",
   "scripts": {
-    "test": "grunt test"
+    "test": "node .grunt.js test"
   },
   "engines": {
     "node": ">= 0.8.0"
