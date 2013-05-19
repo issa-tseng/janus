@@ -16,6 +16,7 @@ class View extends Base
   # predefined behavior.
   constructor: (@subject, @options = {}) ->
     super()
+    this._initialize?()
 
   # Returns the artifact this View is managing. If it has not yet created one,
   # the View will delegate to `_render()` to create one. That method has no
