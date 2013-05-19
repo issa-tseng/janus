@@ -4,9 +4,8 @@
 # fragment.
 
 util = require('../util/util')
-$ ?= require('zepto-node')
 
-Binder = require('./binder')
+Binder = require('./binder').Binder
 
 class Templater
   constructor: ->

@@ -13,6 +13,7 @@
 #   position.
 
 Base = require('../core/base').Base
+Model = require('./model')
 util = require('../util/util')
 
 # Use Base for fancy eventy things.
