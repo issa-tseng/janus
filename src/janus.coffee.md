@@ -10,6 +10,8 @@ building a webserver and webapp. It looks to [Backbone](http://backbonejs.org/)
 for guidance on what best practices are at a general level, while seeking to
 build upon its opinions.
 
+[![Build Status](https://secure.travis-ci.org/clint-tseng/janus.png)](http://travis-ci.org/clint-tseng/janus)
+
 Reference
 =========
 
@@ -133,6 +135,7 @@ View
 ----
 
       View: require('./view/view').View
+      DomView: require('./view/dom-view').DomView
 
 Janus's opinions on views differ greatly from Backbone's. While it doesn't try
 to impose a particular templating framework upon the developer either (though
