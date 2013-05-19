@@ -21,6 +21,14 @@ module.exports = (grunt) ->
         src: '**/*.js'
         dest: 'lib/'
 
+    simplemocha:
+      options:
+        ui: 'bdd'
+        reporter: 'spec'
+
+      all:
+        src: 'test/**/*.coffee'
+
     docco:
       build:
         cwd: 'src/'
@@ -33,8 +41,10 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks('grunt-contrib-coffee')
   grunt.loadNpmTasks('grunt-contrib-copy')
   grunt.loadNpmTasks('grunt-docco')
+  grunt.loadNpmTasks('grunt-simple-mocha')
 
   # tasks
   grunt.registerTask('default', [ 'clean:lib', 'coffee:compile', 'copy:js' ])
+  grunt.registerTask('test', [ 'default', 'simplemocha:all' ])
   grunt.registerTask('docs', [ 'docco:build' ])
 
