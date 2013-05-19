@@ -11,7 +11,7 @@
 # known as a bookcase, the subdivisions therein (first by class then by
 # context) are called shelves, and the actual stored objects are books.
 
-util = require('util')
+util = require('../util/util')
 
 class Library
   # Initializes a `Library`. Libraries can be initialized with some options:
