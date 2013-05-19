@@ -58,6 +58,8 @@ class Model extends Base
       util.traverse(args[0], (path, value) => this.set(path, value))
 
     else if args.length is 2
+      [ key, value ] = args
+
       oldValue = util.deepGet(this.attributes, key) 
       return value if oldValue is value
 
@@ -91,9 +93,9 @@ class Model extends Base
   # Monitor that points at our attribute with the optional `transform`.
   #
   # **Returns** a `Monitor` object against our attribute at `key`.
-  monitor: (key, transform = null) ->
-    monitor = new Monitor(this.get(value), transform)
-    monitor.listenTo(this, "changed:#{key}", (newValue) -> value.setValue(newValue))
+  monitor: (key, transform) ->
+    monitor = new Monitor( value: this.get(key), transform: transform )
+    monitor.listenTo(this, "changed:#{key}", (newValue) -> monitor.setValue(newValue))
 
   # Revert a particular attribute on this model. After this, the model will
   # return whatever its parent thinks the attribute should be. If no parent
@@ -162,6 +164,7 @@ class Model extends Base
       parts.pop()
 
     null
+
 
 # Export.
 util.extend(module.exports,
