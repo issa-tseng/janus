@@ -69,12 +69,15 @@ Core Components
 Janus is comprised of a five major components, and a number of smaller but
 critical utilities that help organize and connect the components together.
 
+    util = require('./util/util')
+
     janus =
+      util: util # life-saving util funcs
 
 Model
 -----
 
-      Model: require('./model/model')
+      Model: require('./model/model').Model
 
 Janus models are extremely similar to Backbone models in many ways: they store
 and event on a set of attributes. When one wants to refer to an entity concept
@@ -101,7 +104,7 @@ fork of model state without requiring multiple instances of a model.
 Collection
 ----------
 
-      Collection: require('./model/collection')
+      Collection: require('./model/collection').Collection
 
 Backbone doesn't provide much definition or guidance on what collections are
 meant to represent -- they are quite simply useful wrappers around arrays of
@@ -129,7 +132,7 @@ behavior.
 View
 ----
 
-      View: require('./view/view')
+      View: require('./view/view').View
 
 Janus's opinions on views differ greatly from Backbone's. While it doesn't try
 to impose a particular templating framework upon the developer either (though
@@ -164,7 +167,7 @@ are using it.
 Templater
 ---------
 
-      Templater: require('./templater/templater')
+      Templater: require('./templater/templater').Templater
 
 The templater is the single most opinionated part of Janus. Its use is entirely
 optional, but it also is the unifying element that brings a lot of the ideas and
@@ -200,7 +203,7 @@ bindings can be found in the reference, but the key features include:
 Library
 -------
 
-      Library: require('./library/library')
+      Library: require('./library/library').Library
 
 The library is a facility that manage application components. Once a library
 instance is created, objects can be registered against it. Registration involves
@@ -225,7 +228,7 @@ against rather than just a basic collection of code-organization classes.
 PageModel
 ---------
 
-        PageModel: require('./model/page-model')
+        PageModel: require('./model/page-model').PageModel
 
 A `PageModel` is the concept that makes Janus an MVVM rather than MVC framework.
 It is born out of the observation that controller methods on web applications
@@ -248,7 +251,7 @@ will event on change.
 PageView
 --------
 
-        PageView: require('./view/page-view')
+        PageView: require('./view/page-view').PageView
 
 The `PageView` is the view complement to the PageModel. It provides some basic
 facilities like header/footer rendering, dropping in the Janus runtime, the
