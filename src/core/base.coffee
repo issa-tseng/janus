@@ -16,7 +16,7 @@ class Base extends EventEmitter
     )
 
     # Keep track of who we're listening to so we can stop doing so later.
-    this._listeners = []
+    this._outwardListeners = []
 
     # Assign ourselves a globally-within-Janus unique id.
     this._id = util.uniqueId()
@@ -28,8 +28,9 @@ class Base extends EventEmitter
   #
   # **Returns** self.
   listenTo: (target, event, handler) ->
-    this._listeners.push(arguments)
+    this._outwardListeners.push(arguments)
     target.on(event, handler)
+    this
 
   # `destroy()` removes all listeners this object has on others via
   # `listenTo()`, and removes all listeners other objects have on this one.
@@ -37,7 +38,7 @@ class Base extends EventEmitter
   # **Returns** self.
   destroy: ->
     this.emit('destroying')
-    target?.off(event, handler) for { 0: target, 1: event, 2: handler } in this._listeners
+    target?.off(event, handler) for { 0: target, 1: event, 2: handler } in this._outwardListeners
     this.removeAllListeners()
 
   # Quick shortcut for expressing that this object's existence depends purely on
