@@ -20,29 +20,31 @@ class Monitor extends Base
   # - `transform`: A function that transforms the value before passing it on if
   #   desired.
   #
-  constructor: ({ value, @transform }) ->
+  constructor: ({ value, @transform } = {}) ->
+    super()
     this.setValue(value)
 
   # Sets the value of this Monitor and triggers the relevant events.
   #
   # **Returns** the new value.
   setValue: (value) ->
-    oldValue = value
-
     # Perform a transformation if we're expected to.
     value = this.transform(value) if this.transform?
 
     # if our transform returns a Monitor itself, we will attach ourselves to its
     # result.
-    this._childMonitor?.destroy()
-    this._childMonitor = value
-    value = this._childMonitor.value
-    this.listenTo(this._childMonitor, (newValue) => this.setValue(newValue))
+    if value instanceof Monitor
+      this._childMonitor?.destroy()
+      this._childMonitor = value
+      value = this._childMonitor.value
+      this.listenTo(this._childMonitor, (newValue) => this.setValue(newValue))
 
     # Update and event if the value has indeed changed.
     if value isnt oldValue
       this.value = value
       this.emit('changed', value, oldValue)
+
+    oldValue = value
 
     value
 
