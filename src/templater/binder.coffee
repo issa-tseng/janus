@@ -1,8 +1,6 @@
-
 util = require('../util/util')
-base = require('../core/base')
+Base = require('../core/base').Base
 { Monitor, ComboMonitor } = require('../core/monitor')
-$ ?= require('zepto-node')
 
 
 class Binder
