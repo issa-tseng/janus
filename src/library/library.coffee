@@ -14,6 +14,8 @@
 util = require('../util/util')
 
 class Library
+  _defaultContext: 'default'
+
   # Initializes a `Library`. Libraries can be initialized with some options:
   #
   # - `handler`: Defines what to do with a registered book when it is
@@ -49,6 +51,7 @@ class Library
   #      the target object. Returning `true` will fail the match.
   #    - `acceptor`: After a basic match, the `acceptor` is called and passed in
   #      the target object. Returning anything but `true` will fail the match.
+  #
   register: (klass, book, options = {}) ->
     bookId = Library._classId(klass)
 
@@ -71,7 +74,7 @@ class Library
   # **Returns** a registered book, processed by the Library's `handler`.
   get: (obj, options = {}) ->
     book =
-      this._get(obj, obj.constructor, options.context ? 'default', options) ?
+      this._get(obj, obj.constructor, options.context ? this._defaultContext, options) ?
       this._get(obj, obj.constructor, 'default', options)
     this.options.handler(obj, book, options) if book?
 
@@ -86,6 +89,16 @@ class Library
 
     if klass.__super__?
       this._get(obj, klass.__super__.constructor, context, options)
+
+  # Returns a new `Library` that defaults to `context` rather than `"default"`.
+  # The new Library is bound against the same bookcase this one is.
+  #
+  # **Returns** a new `Library`.
+  withContext: (context) ->
+    library = new Library()
+    library._defaultContext = context
+    library.bookcase = this.bookcase
+    library
 
   # Class-level internal tracking of object constructors.
   @classKey: "__janus_classId#{new Date().getTime()}"
