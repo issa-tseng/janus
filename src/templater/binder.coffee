@@ -22,7 +22,7 @@ class Binder
   text: -> this._attachMutator(TextMutator)
   html: -> this._attachMutator(HtmlMutator)
 
-  render: (library, context, options) -> this._attachMutator(RenderMutator, [ library, context, options ])
+  render: (library, options) -> this._attachMutator(RenderMutator, [ library, options ])
   renderWith: (klass, options) -> this._attachMutator(RenderWithMutator, [ klass, options ])
 
 
@@ -62,6 +62,7 @@ class Mutator extends Base
     this._parent?._isParent = true
 
     this._namedParams?(this.params)
+    this._initialize?()
 
   from: (path...) ->
     this._data.push((primary) => this._from(primary, path))
@@ -163,12 +164,17 @@ class HtmlMutator extends Mutator
   _apply: (html) -> this.dom.html(html)
 
 class RenderMutator extends Mutator
-  _namedParams: ([ @library, @context, @options ]) ->
+  _initialize: ->
+    options = { constructorOpts: { viewLibrary: this.library } }
+    util.extend(options, this.options)
+    this.options = options
+
+  _namedParams: ([ @library, @options ]) ->
   _apply: (model) ->
     this.dom.empty()
 
     if model?
-      this.dom.append(this.library.get(model, context: this.context, constructorOpts: this.options).artifact())
+      this.dom.append(this.library.get(model, this.options).artifact())
 
 class RenderWithMutator extends Mutator
   _namedParams: ([ @klass, @options ]) ->
