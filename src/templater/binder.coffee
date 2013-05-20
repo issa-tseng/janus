@@ -86,6 +86,7 @@ class Mutator extends Base
     this
 
   and: this.prototype.from
+  andAux: this.prototype.fromAux
 
   andLast: ->
     this._data.push =>
