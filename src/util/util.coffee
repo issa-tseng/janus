@@ -80,9 +80,9 @@ util =
       subpath = path.concat([ k ])
 
       if util.isPlainObject(v)
-        f(subpath, v)
+        util.traverse(v, f, subpath)
       else
-        traverse(v, f, subpath)
+        f(subpath, v)
 
     obj
 
