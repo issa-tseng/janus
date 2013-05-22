@@ -54,8 +54,8 @@ class ComboMonitor extends Monitor
 
   # Unlike the base `Monitor`, this one simply takes the array of Proxies and a
   # `transform` function for combining the results of those proxies.
-  constructor: (@monitors = [], transform) ->
-    super( transform: transform )
+  constructor: (@monitors = [], @comboTransform) ->
+    super()
 
     # Init our values array. It'll get actual values when we call `update` in
     # just a bit here.
@@ -78,7 +78,7 @@ class ComboMonitor extends Monitor
   # **Returns** the new value.
   update: ->
     value = this.values
-    value = this.transform(value...) if this.transform?
+    value = this.comboTransform(value...) if this.comboTransform?
     this.setValue(value)
 
 # Export.
