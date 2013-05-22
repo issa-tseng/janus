@@ -158,7 +158,7 @@ class CssMutator extends Mutator
 
 class TextMutator extends Mutator
   @identity: -> 'text'
-  _apply: (text) -> this.dom.text(text)
+  _apply: (text) -> this.dom.text(text?.toString() ? '')
 
 class HtmlMutator extends Mutator
   @identity: -> 'html'
