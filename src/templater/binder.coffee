@@ -143,8 +143,8 @@ class ClassGroupMutator extends Mutator
   _apply: (value) ->
     existingClasses = this.dom.attr('class')?.split(' ')
     if existingClasses?
-      this.dom.removeClass(className) for className in existingClasses when className.indexOf(this.classPrefix)
-    this.dom.addClass(value) if value?
+      this.dom.removeClass(className) for className in existingClasses when className.indexOf(this.classPrefix) is 0
+    this.dom.addClass("#{this.classPrefix}#{value}") if value?
 
 class AttrMutator extends Mutator
   @identity: ([ attr ]) -> attr
