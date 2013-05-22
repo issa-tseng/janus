@@ -219,6 +219,9 @@ target object and some basic description. The library can do some predefined
 work against the registered object, after which the result is returned for use.
 This makes it very easy to build and fetch components against model objects.
 
+
+      monitor: require('./core/monitor')
+
 Standard Library
 ================
 
