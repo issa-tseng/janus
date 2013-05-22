@@ -87,6 +87,7 @@ class Mutator extends Base
 
   and: this.prototype.from
   andAux: this.prototype.fromAux
+  andMonitor: this.prototype.fromMonitor
 
   andLast: ->
     this._data.push =>
@@ -109,9 +110,12 @@ class Mutator extends Base
     this._listeners = (datum(primary, aux) for datum in this._data)
 
     process = (values...) =>
-      value = if values.length is 1 then values[0] else values
-      value = this._transform(value) if this._transform?
-      value
+      if this._transform?
+        this._transform(values...)
+      else if values.length is 1
+        values[0]
+      else
+        values
 
     this._monitor = new ComboMonitor(this._listeners, process)
     this._monitor.destroyWith(this)
