@@ -65,6 +65,8 @@ util.extend(module.exports,
 
   responses:
     EndpointResponse: EndpointResponse
+
+    OkResponse: OkResponse
     InvalidRequestResponse: InvalidRequestResponse
     UnauthorizedResponse: UnauthorizedResponse
     ForbiddenResponse: ForbiddenResponse
