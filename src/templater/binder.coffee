@@ -4,13 +4,13 @@ Base = require('../core/base').Base
 
 
 class Binder
-  constructor: (@dom, @parent = null) ->
+  constructor: (@dom, @options) ->
     this._children = {}
     this._mutatorIndex = {}
     this._mutators = []
 
 
-  find: (selector) -> this._children[selector] ?= new Binder(this.dom.find(selector), this)
+  find: (selector) -> this._children[selector] ?= new Binder(this.dom.find(selector), parent: this)
 
 
   classed: (className) -> this._attachMutator(ClassMutator, [ className ])
@@ -33,7 +33,7 @@ class Binder
   fromMonitor: (func) -> this.text().fromMonitor(func)
 
 
-  end: -> this.parent
+  end: -> this.options.parent
 
   data: (primary, aux) ->
     child.data(primary, aux) for _, child of this._children
@@ -121,7 +121,7 @@ class Mutator extends Base
     this._monitor.destroyWith(this)
     this._monitor.on('changed', => this.apply())
 
-    this.apply()
+    this.apply() unless this.parentBinder.options.bindOnly is true
 
     this
 
