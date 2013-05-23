@@ -263,10 +263,10 @@ The `PageView` is the view complement to the PageModel. It provides some basic
 facilities like header/footer rendering, dropping in the Janus runtime, the
 model state and page initialization.
 
-Persister
----------
+Store
+-----
 
-        Persister: require('./model/persister')
+        Store: require('./model/store')
 
 The `Persister` is nothing more than a implementationless base class that one
 can use to guide building one's own persistence layer. It's recommended to
