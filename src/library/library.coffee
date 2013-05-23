@@ -12,8 +12,9 @@
 # context) are called shelves, and the actual stored objects are books.
 
 util = require('../util/util')
+Base = require('../core/base').Base
 
-class Library
+class Library extends Base
   _defaultContext: 'default'
 
   # Initializes a `Library`. Libraries can be initialized with some options:
@@ -76,6 +77,8 @@ class Library
     book =
       this._get(obj, obj.constructor, options.context ? this._defaultContext, options) ?
       this._get(obj, obj.constructor, 'default', options)
+
+    this.emit('got', obj, book, options)
     this.options.handler(obj, book, options) if book?
 
   # Internal recursion method for searching the library.
