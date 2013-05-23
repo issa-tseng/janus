@@ -283,6 +283,36 @@ and renders their attributes as JSON. There are hooks to provide custom behavior
 for particular attributes (including nested model attributes), but by default it
 handles all types and nested model serialization automatically.
 
+Endpoint
+--------
+
+        endpoint: require('./application/endpoint')
+
+An `Endpoint` is an opinion on higher-level application organization -- it takes
+in an environment (in which presumably contains information like request params,
+data, headers, and session) and a callback that should be called with the
+`EndpointResponse`.
+
+Handler
+-------
+
+        handler: require('./application/handler')
+
+A `Handler` wraps an Endpoint with whatever logic makes it make sense in the
+current execution context. An `HttpHandler` is provided that speaks something
+resembling Express or Union.
+
+Manifest
+--------
+
+        manifest: require('./application/manifest')
+
+The `Manifest` tracks all store requests being made by the model system over the
+lifecycle of the request. It listens to all store libraries vended by the
+`Endpoint` handler, and awaits the closure of all inflight requests. At the
+conclusion, it emits an `allComplete` event and contains a record of all objects
+fetched by store request.
+
 CollectionView
 --------------
 
