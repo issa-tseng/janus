@@ -4,7 +4,15 @@ Base = require('../core/base').Base
 
 Endpoint = require('./endpoint').Endpoint
 
-class HttpHandler extends Base
+# silliest "interface" class ever.
+class Handler extends Base
+  constructor: -> super()
+
+  handler: ->
+
+  handler: -> ->
+
+class HttpHandler extends Handler
   constructor: (@endpoint) -> super()
 
   handle: (request, response) ->
@@ -20,6 +28,7 @@ class HttpHandler extends Base
     -> self.handle(this.req, this.res)
 
 util.extend(module.exports,
+  Handler: Handler
   HttpHandler: HttpHandler
 )
 

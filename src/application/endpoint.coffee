@@ -46,11 +46,14 @@ class Endpoint extends Base
     pageView = this.pageLibrary.get(pageModel, context: env.context, constructorOpts: { viewLibrary: this.viewLibrary })
 
     # grab dom before resolving so that rendering happens as objects come in.
-    dom = pageView.artifact()
+    # TODO: not real happy about this method, or passing env thorugh, etc.
+    dom = this.initPageView(pageView, env)
     pageModel.resolve()
 
     # return dom immediately if the upstream needs/wants it
     dom
+
+  initPageView: (pageView, env) -> pageView.artifact()
 
   finish: (pageModel, pageView, manifest, respond) ->
     respond(new OkResponse(pageView.markup()))
