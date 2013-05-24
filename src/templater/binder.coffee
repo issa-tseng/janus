@@ -170,7 +170,7 @@ class HtmlMutator extends Mutator
 
 class RenderMutator extends Mutator
   _initialize: ->
-    options = { constructorOpts: { viewLibrary: this.library } }
+    options = { constructorOpts: { viewLibrary: this.library, bindOnly: this.parentBinder.options.bindOnly } }
     util.extend(options, this.options)
     this.options = options
 
