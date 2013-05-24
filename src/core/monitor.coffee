@@ -31,20 +31,26 @@ class Monitor extends Base
     # Perform a transformation if we're expected to.
     value = this.transform(value) if this.transform?
 
-    # if our transform returns a Monitor itself, we will attach ourselves to its
+    # If our transform returns a Monitor itself, we will attach ourselves to its
     # result.
     if value instanceof Monitor
       this._childMonitor?.destroy()
       this._childMonitor = value
       value = this._childMonitor.value
-      this.listenTo(this._childMonitor, (newValue) => this.setValue(newValue))
+
+      # We can't just call self#setValue, since it will try to retransform,
+      # which we've technically already done to obtain what we have here.
+      this.listenTo(this._childMonitor, (newValue) => this._doSetValue(newValue))
 
     # Update and event if the value has indeed changed.
+    this._doSetValue(value)
+
+  # process of actually storing and emitting on the value
+  _doSetValue: (value) ->
+    oldValue = this.value
     if value isnt oldValue
       this.value = value
       this.emit('changed', value, oldValue)
-
-    oldValue = value
 
     value
 
