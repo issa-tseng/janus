@@ -49,13 +49,14 @@ class View extends Base
   # model.
   #
   # No implementation is provided, but the Templater built into Janus provides a
-  # method of this name to be used for this purpose.
+  # option on instantiation that posits this behaviour.
   #
   # **Returns** nothing.
   bind: (artifact) ->
     this._artifact = artifact
-    this._rebind()
+    this._bind(artifact)
     null
+  _bind: ->
 
 # Export.
 util.extend(module.exports,

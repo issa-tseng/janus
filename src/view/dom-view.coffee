@@ -26,14 +26,15 @@ class DomView extends View
   # can also expose a `markup()` for grabbing the actual HTML.
   markup: -> (node.outerHTML for node in this.artifact().get()).join('')
 
-  _rebind: (dom) ->
-    super(dom)
-
+  _bind: (dom) ->
     this._templater = new this.templateClass(
       viewLibrary: this.options.viewLibrary
       dom: dom
       bindOnly: true
     )
+
+    this._templater.data(this.subject)
+    null
 
 
 util.extend(module.exports,
