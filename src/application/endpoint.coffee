@@ -20,29 +20,16 @@ class NotFoundResponse extends EndpointResponse
 class InternalErrorResponse extends EndpointResponse
   httpCode: 500
 
-# I really really dislike this, but I can't think of a more elegant solution at
-# the moment for cleanly handling the fact that libraries could be shared
-# across requests, and I need to distinguish which fetches are associated with
-# which requests.
-class LibraryReadProxy extends Base
-  constructor: (@library) ->
-    super()
-
-  get: (obj, options) ->
-    result = this.library.get(obj, options)
-    this.emit('got', result, result.constructor, options) if result?
-    result
-
 class Endpoint extends Base
   constructor: (@storeLibrary, @pageModelClass, @pageLibrary, @viewLibrary) ->
     super()
 
   handle: (env, respond) ->
-    storeProxy = new LibraryReadProxy(this.storeLibrary)
-    manifest = new StoreManifest(storeProxy)
+    ourStoreLibrary = this.storeLibrary.newEventBindings()
+    manifest = new StoreManifest(ourStoreLibrary)
     manifest.on('allComplete', => this.finish(pageModel, pageView, manifest, respond))
 
-    pageModel = new this.pageModelClass({ env: env }, { storeLibrary: this.storeLibrary })
+    pageModel = new this.pageModelClass({ env: env }, { storeLibrary: ourStoreLibrary })
     pageView = this.pageLibrary.get(pageModel, context: env.context, constructorOpts: { viewLibrary: this.viewLibrary })
 
     # grab dom before resolving so that rendering happens as objects come in.
