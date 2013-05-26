@@ -54,6 +54,9 @@ class Monitor extends Base
 
     value
 
+  # convenience constructor since sometimes monitors are instantiate-and-forget.
+  @combine: (monitors, transform) -> new ComboMonitor(monitors, transform)
+
 # A ComboMonitor takes multiple Monitor objects and puts their values together.
 # It doesn't itself listen to anything but Proxies directly.
 class ComboMonitor extends Monitor
