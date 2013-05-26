@@ -27,6 +27,8 @@ class Library extends Base
   #   the `get()` method.
   #
   constructor: (@options = {}) ->
+    super()
+
     this.bookcase = {}
 
     this.options.handler ?= (obj, book, options) -> new book(obj, options.constructorOpts)
@@ -78,8 +80,10 @@ class Library extends Base
       this._get(obj, obj.constructor, options.context ? this._defaultContext, options) ?
       this._get(obj, obj.constructor, 'default', options)
 
-    this.emit('got', obj, book, options)
-    this.options.handler(obj, book, options) if book?
+    result = this.options.handler(obj, book, options) if book?
+    this.emit('got', result, obj, book, options)
+
+    result
 
   # Internal recursion method for searching the library.
   _get: (obj, klass, context, options) ->
@@ -100,6 +104,17 @@ class Library extends Base
   withContext: (context) ->
     library = new Library()
     library._defaultContext = context
+    library.bookcase = this.bookcase
+    library
+
+  # Returns a new `Library` that is identical to and bound to this one in every
+  # way except that it has a separate event binding context.
+  #
+  # Secretly, this operation is a clone. However, I don't want to name it as
+  # such, since I'm still hoping for a lighter weight way of accomplishing this.
+  newEventBindings: ->
+    library = new Library()
+    library._defaultContext = this._defaultContext
     library.bookcase = this.bookcase
     library
 
