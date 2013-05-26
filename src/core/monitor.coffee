@@ -40,7 +40,7 @@ class Monitor extends Base
 
       # We can't just call self#setValue, since it will try to retransform,
       # which we've technically already done to obtain what we have here.
-      this.listenTo(this._childMonitor, (newValue) => this._doSetValue(newValue))
+      this.listenTo(this._childMonitor, 'changed', (newValue) => this._doSetValue(newValue))
 
     # Update and event if the value has indeed changed.
     this._doSetValue(value)
