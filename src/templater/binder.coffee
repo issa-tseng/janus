@@ -3,8 +3,10 @@ Base = require('../core/base').Base
 { Monitor, ComboMonitor } = require('../core/monitor')
 
 
-class Binder
+class Binder extends Base
   constructor: (@dom, @options) ->
+    super()
+
     this._children = {}
     this._mutatorIndex = {}
     this._mutators = []
@@ -46,6 +48,7 @@ class Binder
     existingMutator = (this._mutatorIndex[klass.name] ?= {})[identity]
 
     mutator = new klass(this.dom, this, param, existingMutator)
+    mutator.destroyWith(this)
     this._mutatorIndex[klass.name][identity] = mutator
     this._mutators.push(mutator)
     mutator
@@ -179,7 +182,10 @@ class RenderMutator extends Mutator
     this.dom.empty()
 
     if model?
-      this.dom.append(this.library.get(model, this.options).artifact())
+      subView = this.library.get(model, this.options)
+      subView.destroyWith(this)
+
+      this.dom.append(subView.artifact())
 
 class RenderWithMutator extends Mutator
   _namedParams: ([ @klass, @options ]) ->
