@@ -25,6 +25,12 @@ util =
   # Basic shallow copy in emulation of simplest jQuery extend case. warning: mutates!
   extend: (dest, srcs...) -> (dest[k] = v for k, v of src) for src in srcs; null
 
+  # Nonmutating version of extend; extends into a new obj that's returned.
+  extendNew: (srcs...) ->
+    obj = {}
+    util.extend(obj, srcs...)
+    obj
+
 
   # Helper used by `deepGet` and `deepSet` to standardize the path argument.
   # Accepts `x, y, z`, `'x.y.z'`, and `[x, y, z]`.

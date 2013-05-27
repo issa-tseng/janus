@@ -316,7 +316,7 @@ fetched by store request.
 CollectionView
 --------------
 
-        CollectionView: require('./view/collection')
+        CollectionView: require('./view/collection').CollectionView
 
 The `CollectionView` is a DOM-rendering view that works against the base
 collection class. It handles member insertion, removal, and reorder correctly,
