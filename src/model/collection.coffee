@@ -46,7 +46,7 @@ class Collection extends Base
 
     # Normalize the argument to an array, then dump in our items.
     elems = [ elems ] unless util.isArray(elems)
-    Array.splice.apply(this.list, [ idx, 0 ].concat(elems))
+    Array.prototype.splice.apply(this.list, [ idx, 0 ].concat(elems))
 
     for elem, subidx in elems
       # Event on ourself for each item we added
