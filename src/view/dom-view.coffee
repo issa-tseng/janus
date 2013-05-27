@@ -60,6 +60,10 @@ class DomView extends View
     view?.wireEvents() for view in this._subviews if this._subviews?
     null
 
+  destroy: ->
+    this.artifact().remove() if this._artifact?
+    super()
+
 
 util.extend(module.exports,
   DomView: DomView
