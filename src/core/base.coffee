@@ -15,6 +15,9 @@ class Base extends EventEmitter
       maxListeners: 0
     )
 
+    # set max listeners for real
+    this.setMaxListeners(0)
+
     # Keep track of who we're listening to so we can stop doing so later.
     this._outwardListeners = []
 
