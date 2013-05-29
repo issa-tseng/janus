@@ -13,11 +13,11 @@
 #   position.
 
 Base = require('../core/base').Base
-Model = require('./model')
+Model = require('./model').Model
 util = require('../util/util')
 
-# Use Base for fancy eventy things.
-class Collection extends Base
+# We derive off of Model so that we have free access to attributes.
+class Collection extends Model
 
   # Declare what type we should be accepting for inclusion in this collection.
   @memberClass: Model
@@ -36,6 +36,9 @@ class Collection extends Base
     # Init our list, and add the items to it.
     this.list = []
     this.add(list)
+
+    # Allow setup tasks without overriding+passing along constructor args.
+    this._initialize?()
 
   # Add one or more items to this collection. Optionally takes a second `index`
   # parameter indicating what position in the list all the items should be
@@ -97,7 +100,7 @@ class Collection extends Base
     oldList
 
   # Get an element from this collection by index.
-  get: (idx) -> this.list[idx]
+  at: (idx) -> this.list[idx]
 
   # Set an index of this collection to the given member.
   #
@@ -106,7 +109,7 @@ class Collection extends Base
   # the collection slipping around.
   #
   # **Returns** the replaced element, if any.
-  set: (idx, elem) ->
+  put: (idx, elem) ->
 
     # Removal of old element.
     removed = this.list[idx]
