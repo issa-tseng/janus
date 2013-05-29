@@ -92,7 +92,7 @@ class Library extends Base
 
     if contextShelf?
       # we have a set of possible matches. go through them.
-      return record.book for record in contextShelf when match(record, options.attributes)
+      return record.book for record in contextShelf when match(obj, record, options.attributes)
 
     if klass.__super__?
       this._get(obj, klass.__super__.constructor, context, options)
@@ -135,7 +135,7 @@ class Library extends Base
 
 # Internal util func for processing a potential match against its advanced
 # options.
-match = (record, attributes) ->
+match = (obj, record, attributes) ->
   return false unless record.options.rejector?(obj) isnt true
   return false if record.options.acceptor? and (record.options.acceptor(obj) isnt true)
 
