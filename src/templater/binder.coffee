@@ -71,6 +71,10 @@ class Mutator extends Base
     this._data.push((primary) => this._from(primary, path))
     this
 
+  fromSelf: ->
+    this._data.push((primary) -> new Monitor( value: primary ))
+    this
+
   fromAux: (key, path...) ->
     this._data.push((_, aux) => this._from(util.deepGet(aux, key), path))
     this
