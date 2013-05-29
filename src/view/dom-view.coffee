@@ -20,11 +20,15 @@ class DomView extends View
   # DOM via our templater and attach the binder against what we know is our
   # primary data.
   _render: ->
-    this._templater = new this.templateClass( viewLibrary: this._viewLibrary() )
+    this._templater = new this.templateClass(
+      util.extendNew({ viewLibrary: this._viewLibrary() }, this._templaterOptions()))
 
     dom = this._templater.dom()
     this._templater.data(this.subject)
     dom
+
+  # Allow for templater options to be passed in easily.
+  _templaterOptions: -> {}
 
   # When we want to bind, we really just want to create a Templater against the
   # dom we've been given and tell it not to apply on init. We then want to feed
