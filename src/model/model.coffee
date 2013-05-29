@@ -3,6 +3,7 @@
 
 Base = require('../core/base').Base
 Monitor = require('../core/monitor').Monitor
+Attribute = require('./attribute').Attribute
 util = require('../util/util')
 
 Null = {} # sentinel value to record a child-nulled value
@@ -24,8 +25,11 @@ class Model extends Base
     # them before proceeding?
     this.validate() unless this.options.validateOnCreate is false
 
+    # Allow setup tasks without overriding+passing along constructor args.
+    this._initialize?()
+
   # Override me in implementations to express expected attribute types and
-  # validation methods.
+  # validation methods. Mutate at your own risk!
   schema: {}
 
   # Get an attribute about this model. The key can be a dot-separated path into
@@ -96,6 +100,12 @@ class Model extends Base
   monitor: (key, transform) ->
     monitor = new Monitor( value: this.get(key), transform: transform )
     monitor.listenTo(this, "changed:#{key}", (newValue) -> monitor.setValue(newValue))
+
+  # Get an attribute for this model.
+  #
+  # **Returns** an `Attribute` object wrapping an attribute definition for the
+  # attribute at the given key.
+  attribute: (key) -> new Attribute(util.deepGet(this.schema, key), this, key)
 
   # Revert a particular attribute on this model. After this, the model will
   # return whatever its parent thinks the attribute should be. If no parent

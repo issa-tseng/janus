@@ -75,6 +75,10 @@ class Mutator extends Base
     this._data.push((_, aux) => this._from(util.deepGet(aux, key), path))
     this
 
+  fromAttribute: (key) ->
+    this._data.push((primary) -> new Monitor ( value: primary.attribute(key) ))
+    this
+
   _from: (obj, path) ->
     next = (idx) -> (result) ->
       if path[idx + 1]?
