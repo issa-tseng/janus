@@ -62,7 +62,7 @@ class Mutator extends Base
     this._listeners = []
     this._fallback = this._transform = this._value = null
 
-    this._parent?._isParent = true
+    this._parentMutator?._isParent = true
 
     this._namedParams?(this.params)
     this._initialize?()
