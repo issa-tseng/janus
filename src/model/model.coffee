@@ -15,25 +15,19 @@ class Model extends Base
   @attributes: {}
 
   # We take in an attribute bag and optionally some options for this Model.
-  # Options are for both framework and implementation use; the options the
-  # framework cares about are:
+  # Options are for both framework and implementation use.
   #
-  # - `validateOnCreate`: Determines whether to validate the attributes given
-  #   with the constructor. Defaults to **true**.
-  #
-  constructor: (@attributes = {}, @options = {}) ->
+  constructor: (attributes = {}, @options = {}) ->
     super()
 
-    # We've swallowed the provided attributes whole; do we want to validate
-    # them before proceeding?
-    this.validate() unless this.options.validateOnCreate is false
+    # Init attribute store so we can bind against it.
+    this.attributes = {}
 
     # Allow setup tasks without overriding+passing along constructor args.
     this._initialize?()
 
-  # Override me in implementations to express expected attribute types and
-  # validation methods. Mutate at your own risk!
-  schema: {}
+    # Drop in our attributes.
+    this.set(attributes)
 
   # Get an attribute about this model. The key can be a dot-separated path into
   # a nested plain model. We do not traverse into submodels that have been
@@ -173,7 +167,11 @@ class Model extends Base
   # Helper to generate change events. We emit events for both the actual changed
   # key along with all its parent nests, which this deals with.
   _emitChange: (key, newValue, oldValue) ->
-    parts = key.split('.')
+    parts =
+      if util.isArray(key)
+        key
+      else
+        key.split('.')
 
     while parts.length > 0
       partKey = parts.join('.')
