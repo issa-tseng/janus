@@ -53,7 +53,8 @@ util =
     path = util.normalizePath(path)
     return null unless path?
 
-    obj = obj[path.shift()] while obj? and path.length > 0
+    idx = 0
+    obj = obj[path[idx++]] while obj? and idx < path.length
     obj ? null # Return null rather than undef here
 
   # Sets a deeply nested key in a hash. Generates nested hashes along the way
@@ -68,13 +69,14 @@ util =
     path = util.normalizePath(path)
     return null unless path?
 
-    obj = obj[path.shift()] ?= {} while path.length > 1
+    idx = 0
+    obj = obj[path[idx++]] ?= {} while (idx + 1) < path.length
 
     (x) ->
       if util.isFunction(x)
         x()
       else
-        obj[path[0]] = x
+        obj[path[idx]] = x
 
 
   # Traverses a hash, calling a passed-in function with the current path and
@@ -85,7 +87,7 @@ util =
     for k, v of obj
       subpath = path.concat([ k ])
 
-      if util.isPlainObject(v)
+      if v? and util.isPlainObject(v)
         util.traverse(v, f, subpath)
       else
         f(subpath, v)
