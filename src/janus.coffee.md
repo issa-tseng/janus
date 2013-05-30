@@ -80,7 +80,7 @@ Model
 -----
 
       Model: require('./model/model').Model
-      Attribute: require('./model/attribute').Attribute
+      attribute: require('./model/attribute')
 
 Janus models are extremely similar to Backbone models in many ways: they store
 and event on a set of attributes. When one wants to refer to an entity concept
