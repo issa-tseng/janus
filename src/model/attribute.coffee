@@ -1,16 +1,38 @@
 
 util = require('../util/util')
+Model = require('../core/base')
 
-# Extraordinarily thin class just for wrapping schemas in a way that we can
-# reference easily via `Library` without polluting `Object`. If I find a reason
-# for Attributes to do anything more I will gladly expand them to be proper
-# implementations (probably based on `Model`), but so far all cases I can find,
-# the state it would encapsulate is better served living upon the `Model`
-# itself.
-class Attribute
-  constructor: (@schema, @model, @key) ->
+# This derivation theoretically means that `Attributes` can contain schemas,
+# which means they can in turn produce `Attributes`. The universe-ending
+# implications of this design quirk are left as an exercise to the implementeur.
+class Attribute extends Model
+  constructor: (@model) ->
+    this._initialize?()
+
+  set: (value) -> this.model.set(this.key, value)
+  get: -> this.model.get(this.key)
+
+  monitorValue: -> this.model.monitor(this.key)
+
+class TextAttribute extends Attribute
+
+class EnumAttribute extends Attribute
+  options: -> []
+
+class NumberAttribute extends Attribute
+
+class DateAttribute extends Attribute
+
+class ModelAttribute extends Attribute
+
 
 util.extend(module.exports,
   Attribute: Attribute
+
+  TextAttribute: TextAttribute
+  EnumAttribute: EnumAttribute
+  NumberAttribute: NumberAttribute
+  DateAttribute: DateAttribute
+  ModelAttribute: ModelAttribute
 )
 

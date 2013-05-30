@@ -11,6 +11,9 @@ Null = {} # sentinel value to record a child-nulled value
 # Use Base to get basic methods.
 class Model extends Base
 
+  # Class-level storage bucket for attribute schema definition.
+  @attributes: {}
+
   # We take in an attribute bag and optionally some options for this Model.
   # Options are for both framework and implementation use; the options the
   # framework cares about are:
@@ -103,9 +106,13 @@ class Model extends Base
 
   # Get an attribute for this model.
   #
-  # **Returns** an `Attribute` object wrapping an attribute definition for the
-  # attribute at the given key.
-  attribute: (key) -> new Attribute(util.deepGet(this.schema, key), this, key)
+  # **Returns** an `Attribute` object wrapping an attribute for the attribute
+  # at the given key.
+  attribute: (key) -> new (this.constructor.attributes[key])(this, key)
+
+  # Declare an attribute for this model.
+  @attribute: (key, attribute) ->
+    this.attributes[key] = attribute
 
   # Revert a particular attribute on this model. After this, the model will
   # return whatever its parent thinks the attribute should be. If no parent
