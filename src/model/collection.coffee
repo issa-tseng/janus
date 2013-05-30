@@ -19,9 +19,6 @@ util = require('../util/util')
 # We derive off of Model so that we have free access to attributes.
 class Collection extends Model
 
-  # Declare what type we should be accepting for inclusion in this collection.
-  @memberClass: Model
-
   # We take in a list of `Model`s and optionally some options for the
   # Collection. Options are both for framework and implementation use.
   # Framework options:
@@ -72,9 +69,8 @@ class Collection extends Model
   # **Returns** the removed member.
   remove: (which) ->
 
-    # Normalize the argument to an integer index; bail if we got something
-    # bizarre.
-    which = this.list.indexOf(which) if which instanceof this.memberClass
+    # Normalize the argument to an integer index.
+    which = this.list.indexOf(which)
     return false unless util.isNumber(which) and util >= 0
 
     # Actually remove the element.
