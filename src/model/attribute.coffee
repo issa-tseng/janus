@@ -6,7 +6,7 @@ Model = require('../core/base')
 # which means they can in turn produce `Attributes`. The universe-ending
 # implications of this design quirk are left as an exercise to the implementeur.
 class Attribute extends Model
-  constructor: (@model) ->
+  constructor: (@model, @key) ->
     this._initialize?()
 
   set: (value) -> this.model.set(this.key, value)
