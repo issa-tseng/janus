@@ -6,13 +6,12 @@ Monitor = require('../core/monitor').Monitor
 Attribute = require('./attribute').Attribute
 util = require('../util/util')
 
+Binder = require('./binder').Binder
+
 Null = {} # sentinel value to record a child-nulled value
 
 # Use Base to get basic methods.
 class Model extends Base
-
-  # Class-level storage bucket for attribute schema definition.
-  @attributes: {}
 
   # We take in an attribute bag and optionally some options for this Model.
   # Options are for both framework and implementation use.
@@ -28,6 +27,9 @@ class Model extends Base
 
     # Drop in our attributes.
     this.set(attributes)
+
+    # Set our binders against those attributes
+    this._binders = (binder.bind(this) for binder in this.constructor.binders)
 
   # Get an attribute about this model. The key can be a dot-separated path into
   # a nested plain model. We do not traverse into submodels that have been
@@ -98,15 +100,26 @@ class Model extends Base
     monitor = new Monitor( value: this.get(key), transform: transform )
     monitor.listenTo(this, "changed:#{key}", (newValue) -> monitor.setValue(newValue))
 
+  # Class-level storage bucket for attribute schema definition.
+  @attributes: {}
+
+  # Declare an attribute for this model.
+  @attribute: (key, attribute) -> this.attributes[key] = attribute
+
   # Get an attribute for this model.
   #
   # **Returns** an `Attribute` object wrapping an attribute for the attribute
   # at the given key.
   attribute: (key) -> new (this.constructor.attributes[key])(this, key)
 
-  # Declare an attribute for this model.
-  @attribute: (key, attribute) ->
-    this.attributes[key] = attribute
+  # Store our binders
+  @binders = []
+
+  # Declare a binding for this model.
+  @bind: ->
+    binder = new Binder()
+    this.binders.push(binder)
+    binder
 
   # Revert a particular attribute on this model. After this, the model will
   # return whatever its parent thinks the attribute should be. If no parent
