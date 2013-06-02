@@ -6,16 +6,10 @@ ComboMonitor = require('../core/monitor').ComboMonitor
 # TODO: Shares enough DNA with Templater Binder to be combined probably.
 class Binder extends Base
   constructor: ->
-    this._monitors = []
+    this._data = []
 
   from: (path...) ->
-    next = (idx) -> (result) ->
-      if path[idx + 1]?
-        result?.monitor(path[idx], next(idx + 1))
-      else
-        result?.monitor(path[idx])
-
-    this._monitors.push(next(0)(this._model))
+    this._data.push(path)
     this
 
   and: this.prototype.from
@@ -42,6 +36,16 @@ class Binder extends Base
   apply: ->
     return if this._applied is true
     this._applied = true
+
+    this._monitors =
+      for path in this._data
+        next = (idx) -> (result) ->
+          if path[idx + 1]?
+            result?.monitor(path[idx], next(idx + 1))
+          else
+            result?.monitor(path[idx])
+
+        next(0)(this._model)
 
     this._monitor = new ComboMonitor this._monitors, (values...) =>
       result =
