@@ -102,10 +102,9 @@ class Library extends Base
   #
   # **Returns** a new `Library`.
   withContext: (context) ->
-    library = new Library()
-    library._defaultContext = context
-    library.bookcase = this.bookcase
-    library
+    newLibrary = new Object(this)
+    newLibrary._defaultContext = context
+    newLibrary
 
   # Returns a new `Library` that is identical to and bound to this one in every
   # way except that it has a separate event binding context.
@@ -113,10 +112,9 @@ class Library extends Base
   # Secretly, this operation is a clone. However, I don't want to name it as
   # such, since I'm still hoping for a lighter weight way of accomplishing this.
   newEventBindings: ->
-    library = new Library()
-    library._defaultContext = this._defaultContext
-    library.bookcase = this.bookcase
-    library
+    newLibrary = new Object(this)
+    newLibrary._events = {}
+    newLibrary
 
   # Class-level internal tracking of object constructors.
   @classKey: "__janus_classId#{new Date().getTime()}"
