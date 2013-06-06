@@ -116,8 +116,8 @@ class Model extends Base
   @binders = []
 
   # Declare a binding for this model.
-  @bind: ->
-    binder = new Binder()
+  @bind: (key) ->
+    binder = new Binder(key)
     this.binders.push(binder)
     binder
 
