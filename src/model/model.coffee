@@ -2,7 +2,7 @@
 # eventing around modifications to it.
 
 Base = require('../core/base').Base
-Monitor = require('../core/monitor').Monitor
+Varying = require('../core/varying').Varying
 Attribute = require('./attribute').Attribute
 util = require('../util/util')
 
@@ -92,13 +92,13 @@ class Model extends Base
 
     oldValue
 
-  # Get a `Monitor` object for a particular key. This simply creates a new
-  # Monitor that points at our attribute with the optional `transform`.
+  # Get a `Varying` object for a particular key. This simply creates a new
+  # Varying that points at our attribute with the optional `transform`.
   #
-  # **Returns** a `Monitor` object against our attribute at `key`.
-  monitor: (key, transform) ->
-    monitor = new Monitor( value: this.get(key), transform: transform )
-    monitor.listenTo(this, "changed:#{key}", (newValue) -> monitor.setValue(newValue))
+  # **Returns** a `Varying` object against our attribute at `key`.
+  watch: (key, transform) ->
+    varying = new Varying( value: this.get(key), transform: transform )
+    varying.listenTo(this, "changed:#{key}", (newValue) -> varying.setValue(newValue))
 
   # Class-level storage bucket for attribute schema definition.
   @attributes: {}

@@ -221,7 +221,7 @@ work against the registered object, after which the result is returned for use.
 This makes it very easy to build and fetch components against model objects.
 
 
-      monitor: require('./core/monitor')
+      varying: require('./core/varying')
 
 Standard Library
 ================

@@ -12,7 +12,7 @@ class Attribute extends Model
   set: (value) -> this.model.set(this.key, value)
   get: -> this.model.get(this.key)
 
-  monitorValue: -> this.model.monitor(this.key)
+  watchValue: -> this.model.watch(this.key)
 
 class TextAttribute extends Attribute
 
