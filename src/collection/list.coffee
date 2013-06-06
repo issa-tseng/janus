@@ -1,4 +1,4 @@
-# **Collections** are lists of `Models`. The base `Collection` implementation
+# **Lists** are ordered lists of objects. The base `List` implementation
 # is pretty simple; one can add and remove elements to and from it.
 #
 # **Events**:
@@ -13,14 +13,14 @@
 #   position.
 
 Base = require('../core/base').Base
-Model = require('./model').Model
+Model = require('../model/model').Model
 util = require('../util/util')
 
 # We derive off of Model so that we have free access to attributes.
-class Collection extends Model
+class List extends Model
 
   # We take in a list of `Model`s and optionally some options for the
-  # Collection. Options are both for framework and implementation use.
+  # List. Options are both for framework and implementation use.
   # Framework options:
   #
   # - `ignoreDestruction`: Defaults to `false`. By default, when a member is
@@ -53,12 +53,12 @@ class Collection extends Model
       this.emit('added', elem, idx + subidx) 
 
       # Event on the item for each item we added
-      elem.emit('addedTo', this, idx + subidx)
+      elem.emit?('addedTo', this, idx + subidx)
 
       # If the item is ever destroyed, automatically remove it from our
       # collection. This behavior can be turned off with the `ignoreDestruction`
       # option.
-      this.listenTo(elem, 'destroying', => this.remove(elem))
+      this.listenTo(elem, 'destroying', => this.remove(elem)) if elem instanceof Base
 
     elems
 
@@ -78,7 +78,7 @@ class Collection extends Model
 
     # Event on self and element.
     this.emit('removed', item, which)
-    removed.emit('removedFrom', this, item, which)
+    removed.emit?('removedFrom', this, item, which)
 
     removed
 
@@ -88,7 +88,7 @@ class Collection extends Model
   removeAll: ->
     for elem, idx in this.list
       this.emit('removed', elem, idx)
-      elem.emit('removedFrom', this, idx)
+      elem.emit?('removedFrom', this, idx)
 
     oldList = this.list
     this.list = []
@@ -111,16 +111,23 @@ class Collection extends Model
     removed = this.list[idx]
     if removed?
       this.emit('removed', removed, idx) 
-      removed.emit('removedFrom', this, idx)
+      removed.emit?('removedFrom', this, idx)
 
     # Adding the new element.
     this.list[idx] = elem
     this.emit('added', elem, idx)
-    elem.emit('addedTo', this, idx)
+    elem.emit?('addedTo', this, idx)
 
     removed
 
+  putAll: (list) ->
+    oldList = this.removeAll()
+    this.add(item) for item in list
+
+    oldList
+
+
 util.extend(module.exports,
-  Collection: Collection
+  List: List
 )
 
