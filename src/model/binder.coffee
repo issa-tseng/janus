@@ -1,11 +1,12 @@
 
 util = require('../util/util')
 Base = require('../core/base')
-ComboMonitor = require('../core/monitor').ComboMonitor
+MultiVarying = require('../core/varying').MultiVarying
 
 # TODO: Shares enough DNA with Templater Binder to be combined probably.
 class Binder extends Base
-  constructor: ->
+  constructor: (key) ->
+    this._key = key
     this._data = []
 
   from: (path...) ->
@@ -37,17 +38,17 @@ class Binder extends Base
     return if this._applied is true
     this._applied = true
 
-    this._monitors =
+    this._varyings =
       for path in this._data
         next = (idx) -> (result) ->
           if path[idx + 1]?
-            result?.monitor(path[idx], next(idx + 1))
+            result?.watch(path[idx], next(idx + 1))
           else
-            result?.monitor(path[idx])
+            result?.watch(path[idx])
 
         next(0)(this._model)
 
-    this._monitor = new ComboMonitor this._monitors, (values...) =>
+    this._varying = new MultiVarying this._varyings, (values...) =>
       result =
         if util.isFunction(this._transform)
           this._transform(values...)

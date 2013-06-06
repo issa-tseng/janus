@@ -1,6 +1,6 @@
 util = require('../util/util')
 Base = require('../core/base').Base
-{ Monitor, ComboMonitor } = require('../core/monitor')
+{ Varying, MultiVarying } = require('../core/varying')
 
 
 class Binder extends Base
@@ -32,7 +32,7 @@ class Binder extends Base
 
 
   from: (dataObj, dataKey) -> this.text().from(dataObj, dataKey)
-  fromMonitor: (func) -> this.text().fromMonitor(func)
+  fromVarying: (func) -> this.text().fromVarying(func)
 
 
   end: -> this.options.parent
@@ -72,7 +72,7 @@ class Mutator extends Base
     this
 
   fromSelf: ->
-    this._data.push((primary) -> new Monitor( value: primary ))
+    this._data.push((primary) -> new Varying( value: primary ))
     this
 
   fromAux: (key, path...) ->
@@ -80,30 +80,30 @@ class Mutator extends Base
     this
 
   fromAttribute: (key) ->
-    this._data.push((primary) -> new Monitor ( value: primary.attribute(key) ))
+    this._data.push((primary) -> new Varying( value: primary.attribute(key) ))
     this
 
   _from: (obj, path) ->
     next = (idx) -> (result) ->
       if path[idx + 1]?
-        result?.monitor(path[idx], next(idx + 1))
+        result?.watch(path[idx], next(idx + 1))
       else
-        result?.monitor(path[idx])
+        result?.watch(path[idx])
 
     next(0)(obj)
 
-  fromMonitor: (monitorGenerator) ->
-    this._data.push((primary, aux) -> monitorGenerator(primary, aux))
+  fromVarying: (varyingGenerator) ->
+    this._data.push((primary, aux) -> varyingGenerator(primary, aux))
     this
 
   and: this.prototype.from
   andAux: this.prototype.fromAux
-  andMonitor: this.prototype.fromMonitor
+  andVarying: this.prototype.fromVarying
 
   andLast: ->
     this._data.push =>
       this.parentMutator.data(primary, aux)
-      this.parentMutator._monitor
+      this.parentMutator._varying
 
     this
 
@@ -128,15 +128,15 @@ class Mutator extends Base
       else
         values
 
-    this._monitor = new ComboMonitor(this._listeners, process)
-    this._monitor.destroyWith(this)
-    this._monitor.on('changed', => this.apply())
+    this._varying = new MultiVarying(this._listeners, process)
+    this._varying.destroyWith(this)
+    this._varying.on('changed', => this.apply())
 
     this.apply() unless this.parentBinder.options.bindOnly is true
 
     this
 
-  calculate: -> this._monitor?.value ? this._fallback
+  calculate: -> this._varying?.value ? this._fallback
   apply: -> this._apply(this.calculate()) unless this._isParent
 
   end: -> this.parentBinder
