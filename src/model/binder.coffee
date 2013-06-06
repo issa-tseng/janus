@@ -23,10 +23,6 @@ class Binder extends Base
     this._fallback = fallback
     this
 
-  to: (key) ->
-    this._key = key
-    this
-
   bind: (model) ->
     bound = Object.create(this)
     bound._model = model
