@@ -107,7 +107,10 @@ fork of model state without requiring multiple instances of a model.
 Collection
 ----------
 
-      Collection: require('./model/collection').Collection
+      collection:
+        List: require('./collection/list').List
+        Set: require('./collection/set').Set
+        IndefiniteList: require('./collection/indefinite-list').IndefiniteList
 
 Backbone doesn't provide much definition or guidance on what collections are
 meant to represent -- they are quite simply useful wrappers around arrays of
@@ -314,21 +317,21 @@ lifecycle of the request. It listens to all store libraries vended by the
 conclusion, it emits an `allComplete` event and contains a record of all objects
 fetched by store request.
 
-CollectionView
---------------
+ListView
+--------
 
-        CollectionView: require('./view/collection').CollectionView
+        ListView: require('./view/collection/list').ListView
 
-The `CollectionView` is a DOM-rendering view that works against the base
+The `ListView` is a DOM-rendering view that works against the base
 collection class. It handles member insertion, removal, and reorder correctly,
 and should be sufficient for most basic collection cases.
 
-CollectionEditView
+ListEditView
 ------------------
 
-        CollectionEditView: require('./view/collection-edit')
+        ListEditView: require('./view/collection/list-edit').ListEditView
 
-The `CollectionEditView` extends the `CollectionView` with some basic controls
+The `ListEditView` extends the `ListView` with some basic controls
 for adding and removing members. It's mostly provided as an example for how to
 compose view behaviors together.
 
