@@ -13,11 +13,11 @@
 #   position.
 
 Base = require('../core/base').Base
-Model = require('../model/model').Model
+OrderedIncrementalList = require('./types').OrderedIncrementalList
 util = require('../util/util')
 
 # We derive off of Model so that we have free access to attributes.
-class List extends Model
+class List extends OrderedIncrementalList
 
   # We take in a list of `Model`s and optionally some options for the
   # List. Options are both for framework and implementation use.
