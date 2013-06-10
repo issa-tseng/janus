@@ -111,6 +111,8 @@ class Mutator extends Base
     this._transform = transform
     this
 
+  flatMap: this.prototype.transform
+
   fallback: (fallback) ->
     this._fallback = fallback
     this
