@@ -18,6 +18,7 @@ OrderedIncrementalList = require('./types').OrderedIncrementalList
 Varying = require('../core/varying').Varying
 util = require('../util/util')
 
+# Some result classes to typematch against and extract result data.
 class StepResult
 class One extends StepResult
   constructor: (@elem, @step) ->
@@ -86,21 +87,20 @@ class IndefiniteList extends OrderedIncrementalList
 
     null
 
+  @One: (elem, step) -> new One(elem, step)
+  @Many: (elems, step) -> new Many(elems, step)
+  @Indefinite: new Indefinite
+  @Termination: new Termination
+
 
 util.extend(module.exports,
   IndefiniteList: IndefiniteList
 
   result:
-    One: (elem, step) -> new One(elem, step)
-    Many: (elems, step) -> new Many(elems, step)
-    Indefinite: new Indefinite
-    Termination: new Termination
-
-    classes:
-      StepResult: StepResult
-      One: One
-      Many: Many
-      Indefinite: Indefinite
-      Termination: Termination
+    StepResult: StepResult
+    One: One
+    Many: Many
+    Indefinite: Indefinite
+    Termination: Termination
 )
 
