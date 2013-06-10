@@ -12,7 +12,6 @@
 # - `removedFrom`: `(collection, idx)` this collection and the member's
 #   position.
 
-Model = require('./model').Model
 List = require('./list').List
 util = require('../util/util')
 

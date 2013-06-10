@@ -107,10 +107,7 @@ fork of model state without requiring multiple instances of a model.
 Collection
 ----------
 
-      collection:
-        List: require('./collection/list').List
-        Set: require('./collection/set').Set
-        IndefiniteList: require('./collection/indefinite-list').IndefiniteList
+      collection: require('./collection/collection')
 
 Backbone doesn't provide much definition or guidance on what collections are
 meant to represent -- they are quite simply useful wrappers around arrays of
