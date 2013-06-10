@@ -8,5 +8,7 @@ util.extend(module.exports,
   List: require('./list').List
   IndefiniteList: require('./indefinite-list').IndefiniteList
   Set: require('./set').Set
+  LazyList: require('./lazy-list').LazyList
+  CachedLazyList: require('./lazy-list').CachedLazyList
 )
 

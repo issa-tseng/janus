@@ -21,6 +21,29 @@ util =
   uniqueId: -> util._uniqueId++
 
 
+
+  #### Array Utils
+  # Exactly what you think it is.
+  foldLeft: (value) -> (arr, f) ->
+    (value = f(value, elem)) for elem in arr
+    value
+
+  # Still exactly what you think it is.
+  reduceLeft: (arr, f) -> util.foldLeft(arr[0])(arr, f)
+
+  # Also pretty obvious.
+  first: (arr) -> arr[0]
+  last: (arr) -> arr[arr.length - 1]
+
+  # Pull out an item and replace it with one or more items. Appends to the end
+  # of the list if the element is not found.
+  resplice: (arr, pull, push) ->
+    idx = arr.indexOf(pull)
+    idx = arr.length if idx < 0
+
+    arr.splice(idx, 1, push...)
+
+
   #### Object Utils
   # Basic shallow copy in emulation of simplest jQuery extend case. warning: mutates!
   extend: (dest, srcs...) -> (dest[k] = v for k, v of src) for src in srcs; null
