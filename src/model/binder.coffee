@@ -7,17 +7,32 @@ MultiVarying = require('../core/varying').MultiVarying
 class Binder extends Base
   constructor: (key) ->
     this._key = key
-    this._data = []
+    this._generators = []
 
   from: (path...) ->
-    this._data.push(path)
+    this._generators.push =>
+      next = (idx) -> (result) ->
+        if path[idx + 1]?
+          result?.watch(path[idx], next(idx + 1))
+        else
+          result?.watch(path[idx])
+
+      next(0)(this._model)
+
+    this
+
+  fromVarying: (f) ->
+    this._generators.push(=> f.call(this._model))
     this
 
   and: this.prototype.from
+  andVarying: this.prototype.from
 
   transform: (transform) ->
     this._transform = transform
     this
+
+  flatMap: this.prototype.transform
 
   fallback: (fallback) ->
     this._fallback = fallback
@@ -34,17 +49,7 @@ class Binder extends Base
     return if this._applied is true
     this._applied = true
 
-    this._varyings =
-      for path in this._data
-        next = (idx) -> (result) ->
-          if path[idx + 1]?
-            result?.watch(path[idx], next(idx + 1))
-          else
-            result?.watch(path[idx])
-
-        next(0)(this._model)
-
-    this._varying = new MultiVarying this._varyings, (values...) =>
+    this._varying = new MultiVarying (data() for data in this._generators), (values...) =>
       result =
         if util.isFunction(this._transform)
           this._transform(values...)
