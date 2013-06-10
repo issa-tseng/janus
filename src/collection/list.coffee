@@ -105,18 +105,24 @@ class List extends OrderedIncrementalList
   # the collection slipping around.
   #
   # **Returns** the replaced element, if any.
-  put: (idx, elem) ->
+  put: (idx, elems...) ->
 
-    # Removal of old element.
-    removed = this.list[idx]
-    if removed?
-      this.emit('removed', removed, idx) 
-      removed.emit?('removedFrom', this, idx)
+    # Do the actual splice. If nothing yet exists at the target, populate it
+    # with null so that splice does the right thing.
+    unless this.list[idx]?
+      this.list[idx] = null
+      delete this.list[idx]
+    removed = this.list.splice(idx, elems.length, elems)
 
-    # Adding the new element.
-    this.list[idx] = elem
-    this.emit('added', elem, idx)
-    elem.emit?('addedTo', this, idx)
+    # Event on removals
+    for elem, subidx in removed
+      this.emit('removed', elem, idx + subidx)
+      elem.emit?('removedFrom', this, idx + subidx)
+
+    # Event on additions
+    for elem, subidx in elems
+      this.emit('added', elem, idx + subidx)
+      elem.emit?('addedTo', this, idx + subidx)
 
     removed
 
