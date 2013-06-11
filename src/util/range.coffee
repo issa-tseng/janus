@@ -4,6 +4,7 @@
 # TODO: i don't like the mixed mutability.
 
 util = require('./util')
+Varying = require('../core/varying').Varying
 
 
 
