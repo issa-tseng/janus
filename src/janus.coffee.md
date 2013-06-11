@@ -235,6 +235,7 @@ against rather than just a basic collection of code-organization classes.
 PageModel
 ---------
 
+        App: require('./application/app').App
         PageModel: require('./model/page-model').PageModel
 
 A `PageModel` is the concept that makes Janus an MVVM rather than MVC framework.

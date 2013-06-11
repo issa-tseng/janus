@@ -24,7 +24,7 @@ class Binder extends Base
   text: -> this._attachMutator(TextMutator)
   html: -> this._attachMutator(HtmlMutator)
 
-  render: (library, options) -> this._attachMutator(RenderMutator, [ library, options ])
+  render: (app, options) -> this._attachMutator(RenderMutator, [ app, options ])
   renderWith: (klass, options) -> this._attachMutator(RenderWithMutator, [ klass, options ])
 
 
@@ -183,16 +183,23 @@ class HtmlMutator extends Mutator
 
 class RenderMutator extends Mutator
   _initialize: ->
-    options = { constructorOpts: { viewLibrary: this.library, bindOnly: this.parentBinder.options.bindOnly } }
-    util.extend(options, this.options)
-    this.options = options
+    this.options ?= {}
+    this.options.constructorOpts ?= {}
 
-  _namedParams: ([ @library, @options ]) ->
+    this.options = util.extendNew(
+      this.options, {
+        constructorOpts: util.extendNew({
+          bindOnly: this.parentBinder.options.bindOnly # TDOO: i hate this
+        }, this.options.constructorOpts)
+      }
+    )
+
+  _namedParams: ([ @app, @options ]) ->
   _apply: (model) ->
     this.dom.empty()
 
     if model?
-      subView = this.library.get(model, this.options)
+      subView = this.app.getView(model, this.options)
       subView.destroyWith(this)
 
       this.dom.append(subView.artifact())

@@ -33,10 +33,8 @@ class CollectionView extends DomView
 
       afterDom = elem
 
-    options = util.extendNew(this.options.libraryOptions, constructorOpts: { viewLibrary: this._viewLibrary() })
-
     for item in items
-      view = this._viewLibrary().get(item, options)
+      view = this._app().getView(item)
       this._views[item._id] = view
 
       viewDom = view.artifact()
