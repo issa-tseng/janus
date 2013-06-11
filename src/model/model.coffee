@@ -29,7 +29,7 @@ class Model extends Base
     this.set(attributes)
 
     # Set our binders against those attributes
-    this._binders = (binder.bind(this) for binder in this.constructor.binders)
+    this._binders = (binder.bind(this) for binder in this.constructor.binders())
 
   # Get an attribute about this model. The key can be a dot-separated path into
   # a nested plain model. We do not traverse into submodels that have been
@@ -101,24 +101,24 @@ class Model extends Base
     varying.listenTo(this, "changed:#{key}", (newValue) -> varying.setValue(newValue))
 
   # Class-level storage bucket for attribute schema definition.
-  @attributes: {}
+  @attributes: -> this._attributes ?= {}
 
   # Declare an attribute for this model.
-  @attribute: (key, attribute) -> this.attributes[key] = attribute
+  @attribute: (key, attribute) -> this.attributes()[key] = attribute
 
   # Get an attribute for this model.
   #
   # **Returns** an `Attribute` object wrapping an attribute for the attribute
   # at the given key.
-  attribute: (key) -> new (this.constructor.attributes[key])(this, key)
+  attribute: (key) -> new (this.constructor.attributes()[key])(this, key)
 
   # Store our binders
-  @binders = []
+  @binders: -> this._binders ?= []
 
   # Declare a binding for this model.
   @bind: (key) ->
     binder = new Binder(key)
-    this.binders.push(binder)
+    this.binders().push(binder)
     binder
 
   # Revert a particular attribute on this model. After this, the model will
