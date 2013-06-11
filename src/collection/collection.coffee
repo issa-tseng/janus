@@ -3,7 +3,7 @@
 util = require('../util/util')
 
 util.extend(module.exports,
-  OrderedIncrementalCollection: require('./types').OrderedIncrementalCollection
+  OrderedIncrementalList: require('./types').OrderedIncrementalList
 
   List: require('./list').List
   IndefiniteList: require('./indefinite-list').IndefiniteList

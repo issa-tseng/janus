@@ -1,8 +1,8 @@
-util = require('../util/util')
+util = require('../../util/util')
 
-DomView = require('./dom-view').DomView
+DomView = require('../dom-view').DomView
 
-class CollectionView extends DomView
+class ListView extends DomView
   _render: ->
     dom = this._dom = super()
 
@@ -60,6 +60,6 @@ class CollectionView extends DomView
 
 
 util.extend(module.exports,
-  CollectionView: CollectionView
+  ListView: ListView
 )
 
