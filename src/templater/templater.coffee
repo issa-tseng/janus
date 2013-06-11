@@ -20,9 +20,9 @@ class Templater
 
   data: (primary, aux) -> this._binder.data(primary, aux)
 
-  dom: -> this.__dom ?= this._dom()
+  dom: -> this._dom$ ?= this._dom()
   _dom: ->
-  _wrappedDom: -> this.__wrappedDom ?= this.dom().wrap('<div/>').parent()
+  _wrappedDom: -> this._wrappedDom$ ?= this.dom().wrap('<div/>').parent()
 
 
 util.extend(module.exports,
