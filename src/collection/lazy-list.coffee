@@ -6,6 +6,7 @@
 util = require('../util/util')
 { Coverage, Range } = require('../util/range')
 List = require('./list').List
+Model = require('../model/model').Model
 Varying = require('../core/varying')
 
 
@@ -124,8 +125,10 @@ class CachedLazyList extends LazyList
     # Prefetch the continuous external ranges we know about.
     this.range(lower, upper) for [ lower, upper ] in this._extCoverages.fills()
 
-    # Then bind the actual external ranges we have against it.
-    this._fetchRange(range) for range in this._activeRanges.list
+    # Then bind the actual external ranges we have against it. Remember to wrap
+    # inside the external-facing range.
+    for range in this._activeRanges.list
+      range.setValue(this._fetchRange(new Range(range.lower, range.upper, new List())))
 
     # Return nothing.
     null
