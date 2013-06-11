@@ -21,7 +21,7 @@ class DomView extends View
   # primary data.
   _render: ->
     this._templater = new this.templateClass(
-      util.extendNew({ viewLibrary: this._viewLibrary() }, this._templaterOptions()))
+      util.extendNew({ app: this._app() }, this._templaterOptions()))
 
     dom = this._templater.dom()
     this._templater.data(this.subject)
@@ -35,7 +35,7 @@ class DomView extends View
   # it the data we have, much like when we fully render.
   _bind: (dom) ->
     this._templater = new this.templateClass(
-      viewLibrary: this._viewLibrary()
+      app: this._app()
       dom: dom
       bindOnly: true
     )
@@ -43,8 +43,8 @@ class DomView extends View
     this._templater.data(this.subject)
     null
 
-  _viewLibrary: -> this.__viewLibrary ?= do =>
-    library = this.options.viewLibrary?.newEventBindings()
+  _app: -> this._app$ ?= do =>
+    library = this.options.app.libraries.views.newEventBindings()
     library.destroyWith(this)
 
     this._subviews = []
@@ -52,7 +52,7 @@ class DomView extends View
       view.wireEvents() if this._wired is true
       this._subviews.push(view)
 
-    library
+    this.options.app.withViewLibrary(library)
 
   # We also know enough at this implementation level to provide a default
   # implementation for event wiring: the actual wiring should still be done
