@@ -22,6 +22,7 @@ rangeUpdater = (from, to) -> ->
     to.value.put(
       Math.max(from.lower - to.lower, 0),
       from.value[Math.max(to.lower - from.lower, 0)..(from.upper - to.lower)]
+    )
 
 
 # A LazyList does not itself necessarily resemble a list; its contents are
