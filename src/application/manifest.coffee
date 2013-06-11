@@ -2,6 +2,8 @@
 util = require('../util/util')
 Base = require('../core/base').Base
 
+Request = require('../model/store').Request
+
 class Manifest extends Base
   constructor: ->
     super()
@@ -14,9 +16,12 @@ class Manifest extends Base
   requested: (request) ->
     this._requestCount += 1
 
-    request.on 'complete', (result) =>
-      this._objects.push(result)
-      this._setHook()
+    request.on 'changed', (status) =>
+      if status instanceof Request.status.Complete
+        this._objects.push(status.result) if result instanceof Request.status.Success
+
+        this._requestCount -= 1
+        this._setHook()
 
   _setHook: ->
     # prevent multiple sets per loop
