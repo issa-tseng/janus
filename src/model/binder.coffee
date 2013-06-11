@@ -10,7 +10,7 @@ class Binder extends Base
     this._generators = []
 
   from: (path...) ->
-    this._generators.push =>
+    this._generators.push ->
       next = (idx) -> (result) ->
         if path[idx + 1]?
           result?.watch(path[idx], next(idx + 1))
@@ -22,7 +22,7 @@ class Binder extends Base
     this
 
   fromVarying: (f) ->
-    this._generators.push(=> f.call(this._model))
+    this._generators.push(-> f.call(this._model))
     this
 
   and: this.prototype.from
@@ -49,7 +49,7 @@ class Binder extends Base
     return if this._applied is true
     this._applied = true
 
-    this._varying = new MultiVarying (data() for data in this._generators), (values...) =>
+    this._varying = new MultiVarying (data.call(this) for data in this._generators), (values...) =>
       result =
         if util.isFunction(this._transform)
           this._transform(values...)
