@@ -9,8 +9,8 @@ class Attribute extends Model
   constructor: (@model, @key) ->
     this._initialize?()
 
-  set: (value) -> this.model.set(this.key, value)
-  get: -> this.model.get(this.key)
+  setValue: (value) -> this.model.set(this.key, value)
+  getValue: -> this.model.get(this.key)
 
   watchValue: -> this.model.watch(this.key)
 
