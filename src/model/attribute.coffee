@@ -1,6 +1,6 @@
 
 util = require('../util/util')
-Model = require('../core/base')
+Model = require('./model').Model
 
 # This derivation theoretically means that `Attributes` can contain schemas,
 # which means they can in turn produce `Attributes`. The universe-ending

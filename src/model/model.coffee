@@ -3,7 +3,6 @@
 
 Base = require('../core/base').Base
 Varying = require('../core/varying').Varying
-Attribute = require('./attribute').Attribute
 util = require('../util/util')
 
 Binder = require('./binder').Binder
