@@ -7,6 +7,7 @@ Model = require('./model').Model
 # implications of this design quirk are left as an exercise to the implementeur.
 class Attribute extends Model
   constructor: (@model, @key) ->
+    super()
     this._initialize?()
 
   setValue: (value) -> this.model.set(this.key, value)
@@ -17,7 +18,7 @@ class Attribute extends Model
 class TextAttribute extends Attribute
 
 class EnumAttribute extends Attribute
-  options: -> []
+  values: -> []
 
 class NumberAttribute extends Attribute
 
