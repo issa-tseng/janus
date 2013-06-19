@@ -122,6 +122,9 @@ for type in [ 'Arguments', 'Function', 'String', 'Date', 'RegExp' ]
   do (type) ->
     util['is' + type] = (obj) -> toString.call(obj) is "[object #{type}]"
 
+# Thanks to Underscore again; optimize isFunction if possible.
+(util.isFunction = (obj) -> typeof obj is 'function') if typeof (/./) isnt 'function'
+
 # Use our freshly-declared `extend()` to populate our module exports.
 util.extend(module.exports, util)
 
