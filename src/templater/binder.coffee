@@ -1,6 +1,7 @@
 util = require('../util/util')
 Base = require('../core/base').Base
 { Varying, MultiVarying } = require('../core/varying')
+types = require('./types')
 
 
 class Binder extends Base
@@ -195,14 +196,35 @@ class RenderMutator extends Mutator
     )
 
   _namedParams: ([ @app, @options ]) ->
-  _apply: (model) ->
+  _apply: (result) ->
+    # do this up front so that we don't confuse our codepaths.
+    lastKlass = this._lastKlass
+    delete this._lastKlass
+
+    if !result?
+      this._clear()
+    else if result instanceof types.WithOptions
+      klass = this.app.getView(result.model, util.extendNew(result.options, { handler: (_) -> _ }))
+      return if klass is lastKlass
+
+      this._lastKlass = klass
+      this._render(new klass(result.model, this.options?.constructorOpts))
+    else if result instanceof types.WithView
+      this._render(result.view)
+    else
+      this._render(this.app.getView(result, this.options))
+
+  _render: (view) ->
+    this._clear()
+    this._lastView = view
+
     this.dom.empty()
 
-    if model?
-      subView = this.app.getView(model, this.options)
-      subView.destroyWith(this)
+    if view?
+      view.destroyWith(this)
+      this.dom.append(view.artifact())
 
-      this.dom.append(subView.artifact())
+  _clear: -> this._lastView.destroy() if this._lastView?
 
 class RenderWithMutator extends Mutator
   _namedParams: ([ @klass, @options ]) ->
