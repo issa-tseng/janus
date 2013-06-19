@@ -82,6 +82,24 @@ class List extends OrderedIncrementalList
 
     removed
 
+  # Move an item to an index in the collection. This will trigger `moved`
+  # events for only the shifted element. But, it will give the new and old
+  # indices so that ranges can be correctly dealt with if necessary.
+  move: (elem, idx) ->
+
+    # If we don't already know about the element, bail.
+    oldIdx = this.list.indexOf(elem)
+    return unless oldIdx >= 0
+
+    # Move the element, then trigger `moved` event.
+    this.list.splice(oldIdx, 1)
+    this.list.splice(idx, 0, elem)
+
+    this.emit('moved', elem, idx, oldIdx)
+    elem.emit('movedIn', this.list, idx, oldIdx)
+
+    elem
+
   # Removes all elements from a collection.
   #
   # **Returns** the removed elements.
