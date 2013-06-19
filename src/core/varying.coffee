@@ -55,7 +55,7 @@ class Varying extends Base
     result
 
   # Also expose a `map` that does the same as `transform` for the functional folks.
-  map: @transform
+  map: this.prototype.transform
 
   # process of actually storing and emitting on the value
   _doSetValue: (value) ->
