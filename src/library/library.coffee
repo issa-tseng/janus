@@ -112,7 +112,7 @@ class Library extends Base
   # Secretly, this operation is a clone. However, I don't want to name it as
   # such, since I'm still hoping for a lighter weight way of accomplishing this.
   newEventBindings: ->
-    newLibrary = new Object(this)
+    newLibrary = Object.create(this)
     newLibrary._events = {}
     newLibrary
 
