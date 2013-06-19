@@ -53,7 +53,7 @@ maintaining a very small footprint.
 Components
 ==========
 
-To be rewritten.
+To be rewritten, and to be completely reorganized.
 
     util = require('./util/util')
 
@@ -66,6 +66,7 @@ To be rewritten.
       View: require('./view/view').View
       DomView: require('./view/dom-view').DomView
       Templater: require('./templater/templater').Templater
+      templater: require('./templater/package')
       Library: require('./library/library').Library
       varying: require('./core/varying')
 

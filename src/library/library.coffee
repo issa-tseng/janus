@@ -80,7 +80,7 @@ class Library extends Base
       this._get(obj, obj.constructor, options.context ? this._defaultContext, options) ?
       this._get(obj, obj.constructor, 'default', options)
 
-    result = this.options.handler(obj, book, options) if book?
+    result = (options.handler ? this.options.handler)(obj, book, options) if book?
     this.emit('got', result, obj, book, options)
 
     result
