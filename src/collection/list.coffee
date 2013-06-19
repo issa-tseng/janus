@@ -144,11 +144,25 @@ class List extends OrderedIncrementalList
 
     removed
 
+  # Smartly resets the entire list to a new one. Does a merge of the two such
+  # that adds/removes are limited.
   putAll: (list) ->
-    oldList = this.removeAll()
-    this.add(item) for item in list
+    # first remove all existing models that should no longer exist.
+    oldList = this.list.slice()
+    (this.remove(elem) unless list.indexOf(elem) >= 0) for elem in oldList
 
-    oldList
+    # now go through each elem one at a time and add or move as necessary.
+    for elem, i in list
+      continue if this.list[i] is elem
+
+      oldIdx = this.list.indexOf(elem)
+      if oldIdx >= 0
+        this.move(elem, i)
+      else
+        this.add(elem, i)
+
+    # return the list that was set.
+    list
 
 
 util.extend(module.exports,
