@@ -41,6 +41,7 @@ class Model extends Base
     value =
       util.deepGet(this.attributes, key) ?
       this._parent?.get(key) ?
+      this.attribute(key)?.default() ?
       null
 
     if value is Null then null else value
@@ -109,7 +110,7 @@ class Model extends Base
   #
   # **Returns** an `Attribute` object wrapping an attribute for the attribute
   # at the given key.
-  attribute: (key) -> new (this.constructor.attributes()[key])(this, key)
+  attribute: (key) -> new (this.constructor.attributes()[key])?(this, key)
 
   # Store our binders
   @binders: -> this._binders ?= []
