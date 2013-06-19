@@ -9,7 +9,7 @@ Binder = require('./binder').Binder
 
 class Templater
   constructor: (@options = {}) ->
-    this.__dom = this.options.dom if this.options.dom?
+    this._dom$ = this.options.dom if this.options.dom?
 
     this._binder = new Binder(this._wrappedDom(), { bindOnly: !!this.options.bindOnly })
     this._binding()
