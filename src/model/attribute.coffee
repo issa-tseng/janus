@@ -15,6 +15,8 @@ class Attribute extends Model
 
   watchValue: -> this.model.watch(this.key)
 
+  default: ->
+
 class TextAttribute extends Attribute
 
 class EnumAttribute extends Attribute
