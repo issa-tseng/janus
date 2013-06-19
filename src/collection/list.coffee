@@ -70,15 +70,15 @@ class List extends OrderedIncrementalList
   remove: (which) ->
 
     # Normalize the argument to an integer index.
-    which = this.list.indexOf(which)
-    return false unless util.isNumber(which) and util >= 0
+    idx = this.list.indexOf(which)
+    return false unless util.isNumber(idx) and idx >= 0
 
     # Actually remove the element.
-    removed = this.list.splice(which, 1)[0]
+    removed = this.list.splice(idx, 1)[0]
 
     # Event on self and element.
-    this.emit('removed', item, which)
-    removed.emit?('removedFrom', this, item, which)
+    this.emit('removed', removed, idx)
+    removed.emit?('removedFrom', this, idx)
 
     removed
 
