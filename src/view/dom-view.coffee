@@ -6,6 +6,7 @@
 
 util = require('../util/util')
 View = require('./view').View
+List = require('../collection/list').List
 
 class DomView extends View
   # When deriving from DomView, set the templater class to determine which
@@ -47,10 +48,10 @@ class DomView extends View
     library = this.options.app.libraries.views.newEventBindings()
     library.destroyWith(this)
 
-    this._subviews = []
+    this._subviews = new List()
     this.listenTo library, 'got', (view) =>
       view.wireEvents() if this._wired is true
-      this._subviews.push(view)
+      this._subviews.add(view)
 
     this.options.app.withViewLibrary(library)
 
@@ -61,7 +62,7 @@ class DomView extends View
   #
   # TODO: unclean gc
   _wireEvents: ->
-    view?.wireEvents() for view in this._subviews if this._subviews?
+    view?.wireEvents() for view in this._subviews.list if this._subviews?
     null
 
   destroy: ->
