@@ -38,8 +38,7 @@ class StoreManifest extends Manifest
     super()
 
     this.listenTo this.library, 'got', (store) =>
-      store.on 'requesting', (request) =>
-        this.requested(request)
+      store.on('requesting', (request) => this.requested(request))
 
 
 util.extend(module.exports,

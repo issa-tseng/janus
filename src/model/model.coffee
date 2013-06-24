@@ -112,6 +112,11 @@ class Model extends Base
   # at the given key.
   attribute: (key) -> new (this.constructor.attributes()[key])?(this, key)
 
+  # Get an attribute class for this model.
+  #
+  # **Returns** an `Attribute` class object for the attribute at the given key.
+  attributeClass: (key) -> this.constructor.attributes()[key]
+
   # Store our binders
   @binders: -> this._binders ?= []
 
@@ -164,6 +169,19 @@ class Model extends Base
   # **Returns** a `ValidationResult`.
   validate: (key) ->
     # TODO: implement
+
+  # TODO: I'm not really sure if this is best here.
+  # Takes in a data hash and relies upon attribute definition to provide a sane
+  # default deserialization methodology.
+  #
+  # **Returns** a `Model` or subclass of `Model`, depending on invocation, with
+  # the data populated.
+  @deserialize: (data) ->
+    for key, attribute of this.attributes()
+      prop = util.deepGet(data, key)
+      util.deepSet(data, key)(attribute.deserialize(prop)) if prop?
+
+    new this(data)
 
   # Helper used by `revert()` and some paths of `unset()` to actually clear out
   # a particular key.
