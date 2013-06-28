@@ -34,21 +34,12 @@ class DateAttribute extends Attribute
 class ModelAttribute extends Attribute
   @modelClass: Model
 
-  @deserialize: (data) ->
-    this.modelClass.deserialize(data)
+  @deserialize: (data) -> this.modelClass.deserialize(data)
 
 class CollectionAttribute extends Attribute
   @collectionClass: Array
-  @modelClass: Object
 
-  @deserialize: (data) ->
-    models =
-      if this.modelClass.prototype instanceof Model
-        this.modelClass.deserialize(datum) for datum in data
-      else
-        data
-
-    new (this.collectionClass)(models)
+  @deserialize: (data) -> this.collectionClass.deserialize(data)
 
 
 util.extend(module.exports,
