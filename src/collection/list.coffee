@@ -14,6 +14,7 @@
 
 Base = require('../core/base').Base
 OrderedIncrementalList = require('./types').OrderedIncrementalList
+Model = require('../model/model').Model
 util = require('../util/util')
 
 # We derive off of Model so that we have free access to attributes.
@@ -163,6 +164,15 @@ class List extends OrderedIncrementalList
 
     # return the list that was set.
     list
+
+  @deserialize: (data) ->
+    items =
+      if this.modelClass? and this.modelClass.prototype instanceof Model
+        this.modelClass.deserialize(datum) for datum in data
+      else
+        data.slice()
+
+    new this(items)
 
 
 util.extend(module.exports,
