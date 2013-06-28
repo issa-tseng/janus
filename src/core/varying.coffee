@@ -45,17 +45,14 @@ class Varying extends Base
     # Update and event if the value has indeed changed.
     this._doSetValue(value)
 
-  # Return a new Varying that applies the given transformation on top of the
-  # existing result.
-  transform: (f) ->
+  # Return a new Varying that applies the given map on top of the existing
+  # result.
+  map: (f) ->
     result = new Varying( transform: f )
     result.setValue(this.value)
     this.on('changed', (value) => result.setValue(value))
 
     result
-
-  # Also expose a `map` that does the same as `transform` for the functional folks.
-  map: this.prototype.transform
 
   # process of actually storing and emitting on the value
   _doSetValue: (value) ->
