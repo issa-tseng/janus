@@ -62,23 +62,28 @@ To be rewritten, and to be completely reorganized.
 
       Model: require('./model/model').Model
       attribute: require('./model/attribute')
+      store: require('./model/store')
+      serializer: require('./model/serializer')
+
       collection: require('./collection/collection')
+
       View: require('./view/view').View
       DomView: require('./view/dom-view').DomView
       Templater: require('./templater/templater').Templater
       templater: require('./templater/package')
+
       Library: require('./library/library').Library
       varying: require('./core/varying')
 
       application:
         App: require('./application/app').App
-        PageModel: require('./model/page-model').PageModel
-        PageView: require('./view/page-view').PageView
-        store: require('./model/store')
-        serializer: require('./model/serializer')
         endpoint: require('./application/endpoint')
         handler: require('./application/handler')
         manifest: require('./application/manifest')
+
+        PageModel: require('./model/page-model').PageModel
+        PageView: require('./view/page-view').PageView
+
         ListView: require('./view/collection/list').ListView
         ListEditView: require('./view/collection/list-edit').ListEditView
 
