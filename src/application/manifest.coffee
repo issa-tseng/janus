@@ -16,9 +16,9 @@ class Manifest extends Base
   requested: (request) ->
     this._requestCount += 1
 
-    request.on 'changed', (status) =>
-      if status instanceof Request.status.Complete
-        this._objects.push(status.result) if result instanceof Request.status.Success
+    request.on 'changed', (state) =>
+      if state instanceof Request.state.type.Complete
+        this._objects.push(state.result) if state instanceof Request.state.type.Success
 
         this._requestCount -= 1
         this._setHook()
