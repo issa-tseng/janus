@@ -26,16 +26,14 @@ class Endpoint extends Base
     super()
 
   handle: (env, respond) ->
-
-    # make our own store library so we can track events on it specifically.
-    storeLibrary = this.app.libraries.stores.newEventBindings()
+    # create an app obj for this request.
+    app = this.initApp()
 
     # create a manifest to track created objects and request completion.
-    manifest = new StoreManifest(storeLibrary)
+    manifest = new StoreManifest(app.libraries.stores)
     manifest.on('allComplete', => this.finish(pageModel, pageView, manifest, respond))
 
     # make our app, our pageModel, and its pageView.
-    app = this.app.withStoreLibrary(storeLibrary)
     pageModel = new this.pageModelClass({ env: env }, { app: app })
     pageView = this.pageLibrary.get(pageModel, context: env.context, constructorOpts: { app: app })
 
@@ -46,6 +44,12 @@ class Endpoint extends Base
 
     # return dom immediately if the upstream needs/wants it
     dom
+
+  initApp: ->
+    # make our own store library so we can track events on it specifically.
+    storeLibrary = this.app.libraries.stores.newEventBindings()
+    this.app.withStoreLibrary(storeLibrary)
+
 
   initPageView: (pageView, env) -> pageView.artifact()
 
