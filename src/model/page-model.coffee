@@ -6,6 +6,8 @@ class PageModel extends Model
     # todo: what should this encapsulate?
     this._render()
 
+  _render: ->
+
 
 util.extend(module.exports,
   PageModel: PageModel
