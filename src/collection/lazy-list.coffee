@@ -7,7 +7,7 @@ util = require('../util/util')
 { Coverage, Range } = require('../util/range')
 List = require('./list').List
 Model = require('../model/model').Model
-Varying = require('../core/varying')
+Varying = require('../core/varying').Varying
 
 
 # Helper to wrap a Range with another, and destroy the inner when the outer is
@@ -36,8 +36,8 @@ class LazyList extends Model
   @bind('signature').fromVarying(-> this._signature())
 
   # We need to init some structures to track our cache by cachekey and idx.
-  constructor: ->
-    super()
+  constructor: (_, @options) ->
+    super([], @options)
 
     this._activeRanges = new List()
     this._watchSignature()
@@ -84,7 +84,7 @@ class LazyList extends Model
   # many pages it should have.
   #
   # **Returns**: A `Varying` whose contents should be an `int`.
-  length: ->
+  length: -> this.watch('length')
 
   # The internal signature generation should return a `Varying` of the
   # signature.

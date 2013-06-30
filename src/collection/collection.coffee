@@ -10,5 +10,7 @@ util.extend(module.exports,
   Set: require('./set').Set
   LazyList: require('./lazy-list').LazyList
   CachedLazyList: require('./lazy-list').CachedLazyList
+
+  Window: require('./window').Window
 )
 
