@@ -8,6 +8,7 @@ Varying = require('../core/varying').Varying
 # A set of classes to help track what the status of the request is, and provide
 # meaningful views against each.
 class RequestState
+  flatSuccess: -> this
   successOrElse: (x) -> if util.isFunction(x) then x(this) else x
 
 class PendingState extends RequestState
@@ -19,6 +20,7 @@ class CompleteState extends RequestState
 class SuccessState extends CompleteState
   constructor: (@result) ->
   map: (f) -> new SuccessState(f(this.result))
+  flatSuccess: -> this.result
   successOrElse: -> this.result
 class ErrorState extends CompleteState
   constructor: (@error) ->
@@ -87,8 +89,10 @@ class Store extends Base
     handled = this._handle()
 
     # flashing the lights to let people know a request is going down.
-    this.emit('requesting', this.request) if handled is Store.Handled
-    # WE HAVE A DEEAAAALLL!!
+    if handled is Store.Handled
+      this.emit('requesting', this.request)
+      this.request.emit('requesting', this)
+      # WE HAVE A DEEAAAALLL!!
 
     handled
 
