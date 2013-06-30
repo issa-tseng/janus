@@ -155,6 +155,12 @@ class Range extends Varying
   # if we're being called, we're definitely continuous.
   _with: (other) -> new Continuous([ this, other ])
 
+  # override `map` since we need it to be a `Range` with our data populated.
+  map: (f) ->
+    result = new Range(this.lower, this.upper, this.value)
+    this.on('changed', (value) => result.setValue(value))
+    result
+
 
 
 util.extend(module.exports,
