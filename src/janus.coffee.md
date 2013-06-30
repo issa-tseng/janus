@@ -74,6 +74,7 @@ To be rewritten, and to be completely reorganized.
 
       Library: require('./library/library').Library
       varying: require('./core/varying')
+      Chainer: require('./core/chain').Chainer
 
       application:
         App: require('./application/app').App
