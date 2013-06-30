@@ -48,8 +48,7 @@ class Varying extends Base
   # Return a new Varying that applies the given map on top of the existing
   # result.
   map: (f) ->
-    result = new Varying( transform: f )
-    result.setValue(this.value)
+    result = new Varying( value: this.value, transform: f )
     this.on('changed', (value) => result.setValue(value))
 
     result
