@@ -83,6 +83,8 @@ class Library extends Base
     if book?
       result = (options.handler ? this.options.handler)(obj, book, options)
       this.emit('got', result, obj, book, options)
+    else
+      this.emit('missed', obj, options)
 
     result ? null
 
