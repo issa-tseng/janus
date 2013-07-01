@@ -33,7 +33,7 @@ class IndefiniteList extends OrderedIncrementalList
     super()
 
     # set up our list.
-    this._list = []
+    this.list = []
 
     # run our first step.
     this._step(step, 0)
@@ -49,7 +49,7 @@ class IndefiniteList extends OrderedIncrementalList
       this._truncate(idx)
 
       if result instanceof One
-        this._list.push(result.elem)
+        this.list.push(result.elem)
 
         this.emit('added', result.elem, idx)
         result.elem.emit?('addedTo', this, idx)
@@ -57,7 +57,7 @@ class IndefiniteList extends OrderedIncrementalList
         this._step(result.step, idx + 1)
 
       else if result instanceof Many
-        this._list = this._list.concat(result.elems)
+        this.list = this.list.concat(result.elems)
 
         for elem, subidx in result.elems
           this.emit('added', elem, idx + subidx)
@@ -78,8 +78,8 @@ class IndefiniteList extends OrderedIncrementalList
       process(result)
 
   _truncate: (idx) ->
-    removed = this._list[idx..]
-    this._list = this._list.slice(0, idx)
+    removed = this.list[idx..]
+    this.list = this.list.slice(0, idx)
 
     for elem, subidx in removed
       this.emit('removed', elem, idx + subidx)
