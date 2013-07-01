@@ -34,7 +34,12 @@ class ListView extends DomView
       afterDom = elem
 
     for item in items
-      view = this._app().getView(item)
+      view =
+        if item instanceof DomView
+          # TODO: is this acceptable?
+          item
+        else
+          this._app().getView(item)
       this._views[item._id] = view
 
       viewDom = view.artifact()
