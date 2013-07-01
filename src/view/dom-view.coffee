@@ -25,7 +25,7 @@ class DomView extends View
       util.extendNew({ app: this._app() }, this._templaterOptions()))
 
     dom = this._templater.dom()
-    this._templater.data(this.subject)
+    this._setTemplaterData()
     dom
 
   # Allow for templater options to be passed in easily.
@@ -41,8 +41,16 @@ class DomView extends View
       bindOnly: true
     )
 
-    this._templater.data(this.subject)
+    this._setTemplaterData()
     null
+
+  # Define how we set our data onto our templater, so that aux data can be
+  # provided if needed.
+  _setTemplaterData: -> this._templater.data(this.subject, this._auxData())
+
+  # Or, if you really just want to provide some aux data, that's pretty easy
+  # to allow too.
+  _auxData: -> {}
 
   _app: -> this._app$ ?= do =>
     library = this.options.app.libraries.views.newEventBindings()
