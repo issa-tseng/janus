@@ -11,14 +11,14 @@ class Templater
   constructor: (@options = {}) ->
     this._dom$ = this.options.dom if this.options.dom?
 
-    this._binder = new Binder(this._wrappedDom(), { bindOnly: !!this.options.bindOnly })
+    this._binder = new Binder(this._wrappedDom())
     this._binding()
 
   _binding: -> this._binder
 
   markup: -> this._wrappedDom().get(0).innerHTML
 
-  data: (primary, aux) -> this._binder.data(primary, aux)
+  data: (primary, aux, shouldRender) -> this._binder.data(primary, aux, shouldRender)
 
   dom: -> this._dom$ ?= this._dom()
   _dom: ->
