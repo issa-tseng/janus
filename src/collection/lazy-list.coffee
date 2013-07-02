@@ -48,7 +48,7 @@ class LazyList extends Model
       for range in this._activeRanges.list
         # this is a bit of a knuckleheaded approach that will over time leak
         # stack levels. come up with something better, you knucklehead.
-        range.setValue(this._range(range._idx, range._length))
+        range.setValue(this._range(range.lower, range.upper))
 
   # We can rely on `#range` and just transform its contained result here.
   #
@@ -68,7 +68,10 @@ class LazyList extends Model
   range: (lower, upper) ->
     # Grab and store our `Varying`. wrap the one we get back so that we can
     # forcibly discard what our upstream is trying to do to it later.
-    range = wrapAndSealFate(this._range(lower, upper))
+    inner = this._range(lower, upper)
+    range = new Range(lower, upper, inner)
+    range.on('destroying', -> inner.destroy())
+
     this._activeRanges.add(range)
     range
 
