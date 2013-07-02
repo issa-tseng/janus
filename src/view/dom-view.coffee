@@ -38,15 +38,14 @@ class DomView extends View
     this._templater = new this.templateClass(
       app: this._app()
       dom: dom
-      bindOnly: true
     )
 
-    this._setTemplaterData()
+    this._setTemplaterData(false)
     null
 
   # Define how we set our data onto our templater, so that aux data can be
   # provided if needed.
-  _setTemplaterData: -> this._templater.data(this.subject, this._auxData())
+  _setTemplaterData: (shouldRender) -> this._templater.data(this.subject, this._auxData(), shouldRender)
 
   # Or, if you really just want to provide some aux data, that's pretty easy
   # to allow too.

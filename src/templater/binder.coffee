@@ -122,7 +122,7 @@ class Mutator extends Base
     this
 
 
-  data: (primary, aux) ->
+  data: (primary, aux, shouldRender) ->
     listener.destroy() for listener in this._listeners
     this._listeners = (datum(primary, aux) for datum in this._data)
 
@@ -138,12 +138,14 @@ class Mutator extends Base
     this._varying.destroyWith(this)
     this._varying.on('changed', => this.apply())
 
-    this.apply() unless this.parentBinder.options.bindOnly is true
+    this.apply(shouldRender)
+    shouldRender = true # after one cycle, we should always render what we find
 
     this
 
   calculate: -> this._varying?.value ? this._fallback
-  apply: -> this._apply(this.calculate()) unless this._isParent
+  apply: (shouldRender = true) ->
+    this._apply(this.calculate()) unless this._isParent if shouldRender is true
 
   end: -> this.parentBinder
 
@@ -186,38 +188,29 @@ class HtmlMutator extends Mutator
   _apply: (html) -> this.dom.html(html)
 
 class RenderMutator extends Mutator
-  _initialize: ->
-    this.options ?= {}
-    this.options.constructorOpts ?= {}
-
-    this.options = util.extendNew(
-      this.options, {
-        constructorOpts: util.extendNew({
-          bindOnly: this.parentBinder.options.bindOnly # TDOO: i hate this
-        }, this.options.constructorOpts)
-      }
-    )
-
   _namedParams: ([ @app, @options ]) ->
-  _apply: (result) ->
+  apply: (shouldRender = true) ->
+    this._render(this._viewFromResult(this.calculate()), shouldRender) unless this._isParent
+
+  _viewFromResult: (result) ->
     # do this up front so that we don't confuse our codepaths.
     lastKlass = this._lastKlass
     delete this._lastKlass
 
     if !result?
-      this._clear()
+      null
     else if result instanceof types.WithOptions
       klass = this.app.getView(result.model, util.extendNew(result.options, { handler: (_) -> _ }))
-      return if klass is lastKlass
+      return null if klass is lastKlass
 
       this._lastKlass = klass
-      this._render(new klass(result.model, this.options?.constructorOpts))
+      new klass(result.model, this.options?.constructorOpts)
     else if result instanceof types.WithView
-      this._render(result.view)
+      result.view
     else
-      this._render(this.app.getView(result, this.options))
+      this.app.getView(result, this.options)
 
-  _render: (view) ->
+  _render: (view, shouldRender) ->
     this._clear()
     this._lastView = view
 
@@ -225,7 +218,11 @@ class RenderMutator extends Mutator
 
     if view?
       view.destroyWith(this)
-      this.dom.append(view.artifact())
+
+      if shouldRender is true
+        this.dom.append(view.artifact())
+      else
+        view.bind(this.dom.contents())
 
   _clear: -> this._lastView.destroy() if this._lastView?
 
