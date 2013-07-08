@@ -68,7 +68,14 @@ class DomView extends View
   # to children. Templater provides this.
   #
   # TODO: unclean gc
-  _wireEvents: ->
+  wireEvents: ->
+    return if this._wired is true
+    this._wired = true
+
+    # render our artifact before doing any wiring.
+    this.artifact()
+
+    this._wireEvents()
     view?.wireEvents() for view in this._subviews.list if this._subviews?
     null
 
