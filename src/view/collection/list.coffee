@@ -34,12 +34,7 @@ class ListView extends DomView
       afterDom = elem
 
     for item in items
-      view =
-        if item instanceof DomView
-          # TODO: is this acceptable?
-          item
-        else
-          this._app().getView(item)
+      view = this._getView(item)
       this._views[item._id] = view
 
       viewDom = view.artifact()
@@ -49,6 +44,13 @@ class ListView extends DomView
       view.wireEvents() if this._wired is true
 
     null
+
+  _getView: (item) ->
+    if item instanceof DomView
+      # TODO: is this acceptable?
+      item
+    else
+      this._app().getView(item, context: this.options.itemContext)
 
   _remove: (items) ->
     items = [ items ] unless util.isArray(items)
