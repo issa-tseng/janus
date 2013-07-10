@@ -25,7 +25,7 @@ class ListView extends DomView
       else if afterDom?
         afterDom.after(elem)
       else if util.isNumber(idx)
-        afterDom = this._dom.children(":nth-child(#{idx + 1})")
+        afterDom = this._dom.children(":nth-child(#{idx})")
         afterDom.after(elem)
       else
         afterDom = this._dom.children(':last-child')
