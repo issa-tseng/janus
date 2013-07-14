@@ -11,7 +11,7 @@ class Templater
   constructor: (@options = {}) ->
     this._dom$ = this.options.dom if this.options.dom?
 
-    this._binder = new Binder(this._wrappedDom())
+    this._binder = new Binder(this._wrappedDom(), { app: this.options.app })
     this._binding()
 
   _binding: -> this._binder
