@@ -1,6 +1,7 @@
 
 util = require('../util/util')
 Model = require('./model').Model
+List = require('../collection/list').List
 
 # This derivation theoretically means that `Attributes` can contain schemas,
 # which means they can in turn produce `Attributes`. The universe-ending
@@ -25,7 +26,7 @@ class Attribute extends Model
 class TextAttribute extends Attribute
 
 class EnumAttribute extends Attribute
-  values: -> []
+  values: -> new List([])
 
 class NumberAttribute extends Attribute
 
