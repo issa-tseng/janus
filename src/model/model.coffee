@@ -38,12 +38,27 @@ class Model extends Base
   #
   # **Returns** the value of the given key.
   get: (key) ->
+    # get self or shadow first.
     value =
       util.deepGet(this.attributes, key) ?
-      this._parent?.get(key) ?
-      this.attribute(key)?.default() ?
-      null
+      this._parent?.get(key)
 
+    # if that fails, check the attribute
+    unless value?
+      attribute = this.attribute(key)
+      value =
+        if attribute?
+          if attribute.writeDefault is true
+            # first, check forceDefault, and set-on-write if present.
+            this.set(key, attribute.default())
+          else
+            # failing that, call default in general.
+            attribute.default()
+
+    # drop undef to null
+    value ?= null
+
+    # collapse shadow-nulled sentinels to null.
     if value is Null then null else value
 
   # Set an attribute about this model. Takes two forms:

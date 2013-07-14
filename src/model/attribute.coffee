@@ -16,6 +16,7 @@ class Attribute extends Model
   watchValue: -> this.model.watch(this.key)
 
   default: ->
+  writeDefault: false # set to true to write-on-get the default stated above.
 
   # Model tries to be clever about its children; here we assume by default we
   # *are* a child.
