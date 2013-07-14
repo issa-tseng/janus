@@ -26,13 +26,11 @@ class Binder extends Base
     this
 
   and: this.prototype.from
-  andVarying: this.prototype.from
+  andVarying: this.prototype.fromVarying
 
-  transform: (transform) ->
+  flatMap: (transform) ->
     this._transform = transform
     this
-
-  flatMap: this.prototype.transform
 
   fallback: (fallback) ->
     this._fallback = fallback
