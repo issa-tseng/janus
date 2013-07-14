@@ -255,10 +255,15 @@ class Model extends Base
       else
         key.split('.')
 
-    while parts.length > 0
-      partKey = parts.join('.')
-      this.emit("changed:#{partKey}", newValue, oldValue, partKey)
+    emit = (name, partKey) => this.emit("#{name}:#{partKey}", newValue, oldValue, partKey)
+
+    emit('changed', parts.join('.'))
+
+    while parts.length > 1
       parts.pop()
+      emit('subKeyChanged', parts.join('.'))
+
+    this.emit('anyChanged') # TODO: why doesn't simply leaving off the namespace work?
 
     null
 
