@@ -47,11 +47,17 @@ class ListView extends DomView
     null
 
   _getView: (item) ->
-    if item instanceof DomView
-      # TODO: is this acceptable?
-      item
-    else
-      this._app().getView(item, context: this.options.itemContext)
+    view =
+      if item instanceof DomView
+        # TODO: is this acceptable?
+        item
+      else if this.options.itemView?
+        new (this.options.itemView)(item, app: this.options.app)
+      else
+        this._app().getView(item, context: this.options.itemContext)
+
+    view.wireEvents() if this._wired is true
+    view
 
   _remove: (items) ->
     items = [ items ] unless util.isArray(items)
