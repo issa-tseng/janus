@@ -57,6 +57,11 @@ class Varying extends Base
 
     result
 
+  # Print value to console as it changes for quick debugging.
+  debug: (name = '') ->
+    this.on('changed', (value) -> console.log("Varying #{name} changed:"); console.log(value))
+    this
+
   # process of actually storing and emitting on the value
   _doSetValue: (value, force = false) ->
     oldValue = this.value
