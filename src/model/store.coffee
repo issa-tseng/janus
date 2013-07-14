@@ -17,6 +17,8 @@ class ProgressState extends PendingState
   map: (f) -> new ProgressState(f(this.progress))
 
 class CompleteState extends RequestState
+  constructor: (@result) ->
+  map: (f) -> new CompleteState(f(this.error))
 class SuccessState extends CompleteState
   constructor: (@result) ->
   map: (f) -> new SuccessState(f(this.result))
