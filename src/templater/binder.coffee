@@ -2,6 +2,7 @@ util = require('../util/util')
 Base = require('../core/base').Base
 { Varying, MultiVarying } = require('../core/varying')
 types = require('./types')
+reference = require('../model/reference')
 
 
 class Binder extends Base
@@ -88,8 +89,14 @@ class Mutator extends Base
     this
 
   _from: (obj, path) ->
-    next = (idx) -> (result) ->
-      if path[idx + 1]?
+    next = (idx) => (result) =>
+      if result instanceof reference.RequestReference
+        result.value.resolve(this.parentBinder.options.app) if result.value instanceof reference.RequestResolver
+        if path[idx]?
+          result.map(next(idx))
+        else
+          result
+      else if path[idx + 1]?
         result?.watch(path[idx], next(idx + 1))
       else
         result?.watch(path[idx])
