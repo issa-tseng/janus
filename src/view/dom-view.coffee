@@ -11,7 +11,18 @@ List = require('../collection/list').List
 class DomView extends View
   # When deriving from DomView, set the templater class to determine which
   # templater to use.
+  # TODO: make class var
   templateClass: null
+
+  constructor: (@subject, @options = {}) ->
+    super(@subject, @options)
+
+    this.on 'appended', =>
+      if this.artifact().closest('body').length > 0
+        this.emit('appendedToDocument')
+        if this._subviews?
+          subview.emit('appended') for subview in this._subviews.list
+      null
 
   # Since we're opinionated enough here to explicitly be dealing with DOM, we
   # can also expose a `markup()` for grabbing the actual HTML.

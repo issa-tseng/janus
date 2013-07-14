@@ -40,6 +40,7 @@ class ListView extends DomView
       viewDom = view.artifact()
       wrappedViewDom = this._wrapChild(viewDom)
       insert(viewDom)
+      view.emit('appended')
 
       view.wireEvents() if this._wired is true
 
