@@ -25,6 +25,8 @@ class Attribute extends Model
 
 class TextAttribute extends Attribute
 
+class ObjectAttribute extends Attribute
+
 class EnumAttribute extends Attribute
   values: -> new List([])
 
@@ -49,6 +51,7 @@ util.extend(module.exports,
   Attribute: Attribute
 
   TextAttribute: TextAttribute
+  ObjectAttribute: ObjectAttribute
   EnumAttribute: EnumAttribute
   NumberAttribute: NumberAttribute
   DateAttribute: DateAttribute
