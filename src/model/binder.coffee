@@ -50,7 +50,7 @@ class Binder extends Base
     this._varying = new MultiVarying (data.call(this) for data in this._generators), (values...) =>
       result =
         if util.isFunction(this._transform)
-          this._transform(values...)
+          this._transform.apply(this._model, values)
         else
           if values.length is 1
             values[0]
