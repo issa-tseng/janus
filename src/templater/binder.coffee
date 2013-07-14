@@ -231,6 +231,7 @@ class RenderMutator extends Mutator
 
       if shouldRender is true
         this.dom.append(view.artifact())
+        view.emit('appended') # TODO: is this the best RPC here?
       else
         view.bind(this.dom.contents())
 
