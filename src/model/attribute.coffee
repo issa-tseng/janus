@@ -36,6 +36,7 @@ class ModelAttribute extends Attribute
   @modelClass: Model
 
   @deserialize: (data) -> this.modelClass.deserialize(data)
+  serialize: -> this.constructor.modelClass.serialize(this.getValue())
 
 class CollectionAttribute extends Attribute
   @collectionClass: Array

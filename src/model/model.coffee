@@ -198,6 +198,33 @@ class Model extends Base
 
     new this(data)
 
+  # TODO: Also not totally sure this is best here.
+  # Returns a serialized representation of the given model.
+  #
+  # **Returns** a serialization-ready plain object with all the relevant
+  # attributes within it.
+  @serialize: (model) ->
+    walkAttrs = (keys, src, target) =>
+      for subKey, value of src
+        thisKey = keys.concat([ subKey ])
+        strKey = thisKey.join('.')
+
+        attribute = model.attribute(strKey)
+
+        target[subKey] =
+          if attribute? and attribute.serialize?
+            attribute.serialize()
+          else if util.isPlainObject(value)
+            walkAttrs(thisKey, value, {})
+          else
+            value
+
+      target
+
+    result = {}
+    walkAttrs([], model.attributes, result)
+    result
+
   # Helper used by `revert()` and some paths of `unset()` to actually clear out
   # a particular key.
   _deleteAttr: (key) ->
