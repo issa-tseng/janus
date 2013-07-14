@@ -27,7 +27,7 @@ class Varying extends Base
   # Sets the value of this Varying and triggers the relevant events.
   #
   # **Returns** the new value.
-  setValue: (value) ->
+  setValue: (value, force) ->
     # Perform a transformation if we're expected to.
     value = this.transform(value) if this.transform?
 
@@ -40,10 +40,14 @@ class Varying extends Base
 
       # We can't just call self#setValue, since it will try to retransform,
       # which we've technically already done to obtain what we have here.
-      this.listenTo(this._childVarying, 'changed', (newValue) => this._doSetValue(newValue))
+      #
+      # We turn force on, since we're already listening to a `Varying`, which
+      # should be weeding out spurious fires already unless it has a reason not
+      # to.
+      this.listenTo(this._childVarying, 'changed', (newValue) => this._doSetValue(newValue, true))
 
     # Update and event if the value has indeed changed.
-    this._doSetValue(value)
+    this._doSetValue(value, force)
 
   # Return a new Varying that applies the given map on top of the existing
   # result.
@@ -54,9 +58,9 @@ class Varying extends Base
     result
 
   # process of actually storing and emitting on the value
-  _doSetValue: (value) ->
+  _doSetValue: (value, force = false) ->
     oldValue = this.value
-    if value isnt oldValue
+    if force is true or value isnt oldValue
       this.value = value
       this.emit('changed', value, oldValue)
 
