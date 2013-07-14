@@ -61,6 +61,7 @@ To be rewritten, and to be completely reorganized.
       util: util # life-saving util funcs
 
       Model: require('./model/model').Model
+      reference: require('./model/reference')
       attribute: require('./model/attribute')
       store: require('./model/store')
       serializer: require('./model/serializer')
