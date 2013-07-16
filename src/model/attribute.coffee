@@ -36,6 +36,8 @@ class EnumAttribute extends Attribute
 
 class NumberAttribute extends Attribute
 
+class BooleanAttribute extends Attribute
+
 class DateAttribute extends Attribute
   @deserialize: (data) -> new Date(data)
 
@@ -81,6 +83,7 @@ util.extend(module.exports,
   ObjectAttribute: ObjectAttribute
   EnumAttribute: EnumAttribute
   NumberAttribute: NumberAttribute
+  BooleanAttribute: BooleanAttribute
   DateAttribute: DateAttribute
   ModelAttribute: ModelAttribute
   CollectionAttribute: CollectionAttribute
