@@ -3,12 +3,16 @@ util = require('../util/util')
 Model = require('./model').Model
 List = require('../collection/list').List
 
+
 # This derivation theoretically means that `Attributes` can contain schemas,
 # which means they can in turn produce `Attributes`. The universe-ending
 # implications of this design quirk are left as an exercise to the implementeur.
 class Attribute extends Model
   constructor: (@model, @key) ->
     super()
+
+    this.model = new ShellModel(this) unless this.model?
+
     this._initialize?()
 
   setValue: (value) -> this.model.set(this.key, value)
@@ -47,6 +51,29 @@ class CollectionAttribute extends Attribute
   @deserialize: (data) -> this.collectionClass.deserialize(data)
 
 
+# Useful for creating standalone `Attribute`s that don't depend on a parent
+# `Model` for databinding; usually for transient vars in `View`s.
+#
+# TODO: is there a less duplicative way of creating this pattern?
+class ShellModel
+  constructor: (@attribute) ->
+
+  get: ->
+    if this._value?
+      this._value
+    else if this.attribute.default?
+      this.attribute.default()
+    else
+      null
+
+  set: (_, value) ->
+    this._value = value
+    this._watcher?.setValue(value)
+
+  watch: ->
+    this._watcher ?= new Varying( value: this._value )
+
+
 util.extend(module.exports,
   Attribute: Attribute
 
@@ -57,5 +84,7 @@ util.extend(module.exports,
   DateAttribute: DateAttribute
   ModelAttribute: ModelAttribute
   CollectionAttribute: CollectionAttribute
+
+  ShellModel: ShellModel
 )
 
