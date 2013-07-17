@@ -90,7 +90,15 @@ class Library extends Base
 
   # Internal recursion method for searching the library.
   _get: (obj, klass, context, options) ->
-    bookId = Library._classId(klass)
+    bookId =
+      if util.isNumber(obj)
+        'number'
+      else if util.isString(obj)
+        'string'
+      else if obj is true or obj is false
+        'boolean'
+      else
+        Library._classId(klass)
     contextShelf = this.bookcase[bookId]?[context]
 
     if contextShelf?
@@ -125,14 +133,21 @@ class Library extends Base
 
   # Class-level method for tagging and reading the tag off of constructors.
   @_classId: (klass) ->
-    id = klass[this.classKey]
-
-    if id? and this.classMap[id] is klass
-      klass[this.classKey]
+    if klass is Number
+      'number'
+    else if klass is String
+      'string'
+    else if klass is Boolean
+      'boolean'
     else
-      id = util.uniqueId()
-      this.classMap[id] = klass
-      klass[this.classKey] = id
+      id = klass[this.classKey]
+
+      if id? and this.classMap[id] is klass
+        klass[this.classKey]
+      else
+        id = util.uniqueId()
+        this.classMap[id] = klass
+        klass[this.classKey] = id
 
 # Internal util func for processing a potential match against its advanced
 # options.
