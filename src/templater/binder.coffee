@@ -207,11 +207,7 @@ class RenderMutator extends Mutator
     if !result?
       null
     else if result instanceof types.WithOptions
-      klass = this.app.getView(result.model, util.extendNew(result.options, { handler: (_) -> _ }))
-      return null if klass is lastKlass
-
-      this._lastKlass = klass
-      new klass(result.model, this.options?.constructorOpts)
+      this.app.getView(result.model, result.options)
     else if result instanceof types.WithView
       result.view
     else if result instanceof types.WithAux
