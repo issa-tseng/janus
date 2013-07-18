@@ -27,6 +27,8 @@ class SuccessState extends CompleteState
 class ErrorState extends CompleteState
   constructor: (@error) ->
   map: (f) -> new ErrorState(f(this.error))
+class UserErrorState extends ErrorState
+class ServiceErrorState extends ErrorState
 
 
 # The class that is actually instantiated to begin a request. There should be
@@ -66,6 +68,8 @@ class Request extends Varying
     Complete: new CompleteState()
     Success: (result) -> new SuccessState(result)
     Error: (error) -> new ErrorState(error)
+    UserError: (error) -> new UserErrorState(error)
+    ServiceError: (error) -> new ServiceErrorState(error)
 
     type:
       Pending: PendingState
@@ -74,6 +78,8 @@ class Request extends Varying
       Complete: CompleteState
       Success: SuccessState
       Error: ErrorState
+      UserError: UserErrorState
+      ServiceError: ServiceErrorState
 
 
 
