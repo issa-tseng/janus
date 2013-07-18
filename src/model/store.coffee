@@ -90,7 +90,7 @@ class Request extends Varying
 # These are then fed to the `storeLibrary` as singletons to be handled against
 # for each request.
 class Store extends Base
-  constructor: (@request) -> super()
+  constructor: (@request, @options = {}) -> super()
 
   # Handle a request.
   handle: ->
@@ -184,9 +184,6 @@ class MemoryCacheStore extends Store
       Store.Unhandled
 
 class OnPageCacheStore extends Store
-  constructor: (@request) ->
-    super()
-
   _dom: ->
 
   _handle: (request) ->
