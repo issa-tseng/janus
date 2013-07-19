@@ -33,6 +33,7 @@ class ObjectAttribute extends Attribute
 
 class EnumAttribute extends Attribute
   values: -> new List([])
+  nullable: false
 
 class NumberAttribute extends Attribute
 
