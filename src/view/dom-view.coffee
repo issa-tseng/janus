@@ -60,7 +60,7 @@ class DomView extends View
 
   # Or, if you really just want to provide some aux data, that's pretty easy
   # to allow too.
-  _auxData: -> {}
+  _auxData: -> this.options.aux ? {}
 
   _app: -> this._app$ ?= do =>
     library = this.options.app.libraries.views.newEventBindings()
