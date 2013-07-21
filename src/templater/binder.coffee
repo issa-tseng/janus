@@ -90,16 +90,13 @@ class Mutator extends Base
 
   _from: (obj, path) ->
     next = (idx) => (result) =>
-      if result instanceof reference.RequestReference
-        result.value.resolve(this.parentBinder.options.app) if result.value instanceof reference.RequestResolver
-        if path[idx]?
-          result.map(next(idx))
-        else
-          result
-      else if path[idx + 1]?
-        result?.watch(path[idx], next(idx + 1))
+      if result instanceof reference.RequestResolver
+        resolved = result.resolve(this.parentBinder.options.app)
+        next(0)(obj) if resolved?
+      else if idx < path.length
+        result?.watch(path[idx]).map(next(idx + 1))
       else
-        result?.watch(path[idx])
+        result
 
     next(0)(obj)
 
