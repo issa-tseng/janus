@@ -179,20 +179,20 @@ class ClassGroupMutator extends Mutator
 class AttrMutator extends Mutator
   @identity: ([ attr ]) -> attr
   _namedParams: ([ @attr ]) ->
-  _apply: (value) -> this.dom.attr(this.attr, if util.isString(value) or util.isNumber(value) then value else '')
+  _apply: (value) -> this.dom.attr(this.attr, if util.isPrimitive(value) then value else '')
 
 class CssMutator extends Mutator
   @identity: ([ cssAttr ]) -> cssAttr
   _namedParams: ([ @cssAttr ]) ->
-  _apply: (value) -> this.dom.css(this.cssAttr, if util.isString(value) or util.isNumber(value) then value else '') # todo: maybe prefix
+  _apply: (value) -> this.dom.css(this.cssAttr, if util.isPrimitive(value) then value else '') # todo: maybe prefix
 
 class TextMutator extends Mutator
   @identity: -> 'text'
-  _apply: (text) -> this.dom.text(if util.isString(text) then text else '')
+  _apply: (text) -> this.dom.text(if util.isPrimitive(text) then text.toString() else '')
 
 class HtmlMutator extends Mutator
   @identity: -> 'html'
-  _apply: (html) -> this.dom.html(if util.isString(html) then html else '')
+  _apply: (html) -> this.dom.html(if util.isPrimitive(html) then html.tString() else '')
 
 class RenderMutator extends Mutator
   _namedParams: ([ @app, @options ]) ->
