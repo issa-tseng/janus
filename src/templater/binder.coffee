@@ -33,7 +33,7 @@ class Binder extends Base
   apply: (f) -> this._attachMutator(ApplyMutator, [ f ])
 
 
-  from: (dataObj, dataKey) -> this.text().from(dataObj, dataKey)
+  from: (path...) -> this.text().from(path...)
   fromVarying: (func) -> this.text().fromVarying(func)
 
 
