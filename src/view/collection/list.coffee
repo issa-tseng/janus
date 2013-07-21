@@ -63,7 +63,7 @@ class ListView extends DomView
     items = [ items ] unless util.isArray(items)
 
     for item in items
-      this._views[item._id].destroy()
+      this._views[item._id]?.destroy()
       delete this._views[item._id]
 
     null
