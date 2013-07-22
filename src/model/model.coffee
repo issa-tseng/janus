@@ -38,10 +38,25 @@ class Model extends Base
   #
   # **Returns** the value of the given key.
   get: (key) ->
-    # get self or shadow first.
-    value =
-      util.deepGet(this.attributes, key) ?
-      this._parent?.get(key)
+    # first try getting self.
+    value = util.deepGet(this.attributes, key)
+
+    # otherwise try the shadow parent.
+    unless value?
+      value = this._parent?.get(key)
+
+      if value?
+        if value instanceof Model
+          # if we got a model instance back, we'll want to shadowclone it and
+          # write that clone to self. don't worry, if they never touch it again
+          # it'll look like nothing happened at all.
+          value = this.set(key, value.shadow())
+
+        else if value instanceof List
+          # if we got some kind of collection back, we'll want to clone it for
+          # now. eventually we'll have to figure out what a shadow clone of a
+          # list would be.
+          value = this.set(key, new value.constructor(value.list))
 
     # if that fails, check the attribute
     unless value?
