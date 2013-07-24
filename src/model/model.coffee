@@ -21,6 +21,9 @@ class Model extends Base
     # Init attribute store so we can bind against it.
     this.attributes = {}
 
+    # If we have a designated shadow parent, set it.
+    this._parent = this.options.parent
+
     # Allow setup tasks without overriding+passing along constructor args.
     this._initialize?()
 
@@ -184,10 +187,7 @@ class Model extends Base
   # know about.
   #
   # **Returns** a new shadow copy, which is an instance of `Model`.
-  shadow: ->
-    shadow = new this.constructor({}, this.options)
-    shadow._parent = this
-    shadow
+  shadow: -> new this.constructor({}, util.extendNew(this.options, { parent: this }))
 
   # Returns the original copy of a model. Returns itself if it's already an
   # original model.
