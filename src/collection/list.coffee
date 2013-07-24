@@ -131,10 +131,10 @@ class List extends OrderedIncrementalList
     unless this.list[idx]?
       this.list[idx] = null
       delete this.list[idx]
-    removed = this.list.splice(idx, elems.length, elems)
+    removed = this.list.splice(idx, elems.length, elems...)
 
     # Event on removals
-    for elem, subidx in removed
+    for elem, subidx in removed when elem?
       this.emit('removed', elem, idx + subidx)
       elem.emit?('removedFrom', this, idx + subidx)
 
