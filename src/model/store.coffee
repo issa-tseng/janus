@@ -65,7 +65,7 @@ class Request extends Varying
     Pending: new PendingState()
     Progress: (progress) -> new ProgressState(progress)
 
-    Complete: new CompleteState()
+    Complete: (result) -> new CompleteState(result)
     Success: (result) -> new SuccessState(result)
     Error: (error) -> new ErrorState(error)
     UserError: (error) -> new UserErrorState(error)
