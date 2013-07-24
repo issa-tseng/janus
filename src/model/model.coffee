@@ -235,13 +235,18 @@ class Model extends Base
 
         attribute = model.attribute(strKey)
 
-        target[subKey] =
+        result =
           if attribute? and attribute.serialize?
             attribute.serialize()
           else if util.isPlainObject(value)
-            walkAttrs(thisKey, value, {})
+            result = {}
+            walkAttrs(thisKey, value, result)
+            result if util.hasProperties(result)
           else
             value
+
+        result = result.flatValue if result instanceof Reference
+        target[subKey] = result
 
       target
 
