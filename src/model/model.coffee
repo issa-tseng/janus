@@ -3,6 +3,7 @@
 
 Base = require('../core/base').Base
 Varying = require('../core/varying').Varying
+{ Reference, Resolver } = require('./reference')
 util = require('../util/util')
 
 Binder = require('./binder').Binder
@@ -48,18 +49,17 @@ class Model extends Base
     unless value?
       value = this._parent?.get(key)
 
-      if value?
-        if value instanceof Model
-          # if we got a model instance back, we'll want to shadowclone it and
-          # write that clone to self. don't worry, if they never touch it again
-          # it'll look like nothing happened at all.
-          value = this.set(key, value.shadow())
+      if value instanceof require('../collection/list').List # ugh circular ref
+        # if we got some kind of collection back, we'll want to clone it for
+        # now. eventually we'll have to figure out what a shadow clone of a
+        # list would be.
+        value = this.set(key, new value.constructor(value.list))
 
-        else if value instanceof List
-          # if we got some kind of collection back, we'll want to clone it for
-          # now. eventually we'll have to figure out what a shadow clone of a
-          # list would be.
-          value = this.set(key, new value.constructor(value.list))
+      else if value instanceof Model
+        # if we got a model instance back, we'll want to shadowclone it and
+        # write that clone to self. don't worry, if they never touch it again
+        # it'll look like nothing happened at all.
+        value = this.set(key, value.shadow())
 
     # if that fails, check the attribute
     unless value?
@@ -75,6 +75,11 @@ class Model extends Base
 
     # drop undef to null
     value ?= null
+
+    # collapse `Reference`s to their current value.
+    # TODO: dangerous assumption?
+    if value instanceof Reference
+      value = if value.value instanceof Resolver then null else value
 
     # collapse shadow-nulled sentinels to null.
     if value is Null then null else value
