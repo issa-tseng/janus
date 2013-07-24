@@ -18,8 +18,21 @@ util =
 
   # Provision a unique serial id.
   #
+  # TODO: possibly return an alphanumeric identifier instead.
+  #
   # **Returns** a unique integer.
   uniqueId: -> util._uniqueId++
+
+
+
+  #### Function Utils
+  # Very simple call limiters.
+  once: (f) ->
+    run = false
+    (args...) ->
+      return if run is true
+      run = true
+      f(args...)
 
 
 
@@ -54,6 +67,11 @@ util =
     obj = {}
     util.extend(obj, srcs...)
     obj
+
+  # Check if an object has any properties at all.
+  hasProperties: (obj) ->
+    (return true) for k of obj when obj.hasOwnProperty(k)
+    false
 
 
   # Helper used by `deepGet` and `deepSet` to standardize the path argument.
