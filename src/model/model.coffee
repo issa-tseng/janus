@@ -80,11 +80,6 @@ class Model extends Base
     # drop undef to null
     value ?= null
 
-    # collapse `Reference`s to their current value.
-    # TODO: dangerous assumption?
-    if value instanceof Reference
-      value = if value.value instanceof Resolver then null else value
-
     # collapse shadow-nulled sentinels to null.
     if value is Null then null else value
 
@@ -105,7 +100,7 @@ class Model extends Base
     else if args.length is 2
       [ key, value ] = args
 
-      oldValue = util.deepGet(this.attributes, key) 
+      oldValue = util.deepGet(this.attributes, key) # TODO: doesn't account for default etc.
       return value if oldValue is value
 
       util.deepSet(this.attributes, key)(if value is Null then null else value)
