@@ -245,7 +245,9 @@ class Model extends Base
         attribute = model.attribute(strKey)
 
         result =
-          if attribute? and attribute.serialize?
+          if value is Null
+            undefined
+          else if attribute? and attribute.serialize?
             attribute.serialize()
           else if util.isPlainObject(value)
             result = {}
@@ -259,7 +261,11 @@ class Model extends Base
 
       target
 
-    result = {}
+    result =
+      if model._parent?
+        this.serialize(model._parent)
+      else
+        {}
     walkAttrs([], model.attributes, result)
     result
 
