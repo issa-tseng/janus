@@ -25,11 +25,15 @@ class Model extends Base
     # If we have a designated shadow parent, set it.
     this._parent = this.options.parent
 
-    # Allow setup tasks without overriding+passing along constructor args.
-    this._initialize?()
+    # Allow setup that happens before attribute binding occurs, without
+    # overriding constructor args.
+    this._preinitialize?()
 
     # Drop in our attributes.
     this.set(attributes)
+
+    # Allow setup tasks without overriding+passing along constructor args.
+    this._initialize?()
 
     # Set our binders against those attributes
     this._binders = (binder.bind(this) for binder in this.constructor.binders())
