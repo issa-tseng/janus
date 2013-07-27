@@ -58,8 +58,13 @@ class Varying extends Base
     result
 
   # Print value to console as it changes for quick debugging.
-  debug: (name = '') ->
+  trace: (name = '') ->
     this.on('changed', (value) -> console.log("Varying #{name} changed:"); console.log(value))
+    this
+
+  # Breakpoint whenever this value changes.
+  debug: ->
+    this.on('changed', (value) -> debugger)
     this
 
   # process of actually storing and emitting on the value
