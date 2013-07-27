@@ -11,6 +11,24 @@ class Reference extends Varying
 
   _resolver: -> new this.constructor.resolverClass(this, this.inner)
 
+  # make references transparent to models.
+  # TODO: is this dangerous? this seems magical and bad.
+  get: ->
+  watch: (key) ->
+    this.map (val) ->
+      if val instanceof require('./model').Model # ugh circular.
+        val.watch(key)
+      else if val instanceof Resolver
+        null
+      else
+        val
+  watchAll: ->
+    this.map (val) ->
+      if val instanceof require('./model').Model # ugh circular.
+        val.watchAll()
+      else
+        null
+
 
 
 # A `Resolver` has simply a method called `resolve` which triggers its
@@ -22,6 +40,12 @@ class Reference extends Varying
 class Resolver
   constructor: (@parent, @value) ->
   resolve: -> this.parent.setValue(this.value)
+
+  # delegate model-like things to parent.
+  # TODO: similarly dangerous.
+  get: ->
+  watch: (key) -> this.parent.watch(key)
+  watchAll: -> this.parent.watchAll()
 
 
 # A `Resolver` that resolves `Request`s. It takes the `app` and kicks off the
