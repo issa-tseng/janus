@@ -71,7 +71,7 @@ class RequestReference extends Reference
 class ModelResolver extends Resolver
   constructor: (@parent, @map) ->
   resolve: (model) ->
-    this.parent.setValue(map(model))
+    this.parent.setValue(this.map(model))
 
 class ModelReference extends Reference
   @resolverClass: ModelResolver
