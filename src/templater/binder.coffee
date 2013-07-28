@@ -89,11 +89,19 @@ class Mutator extends Base
     this
 
   _from: (obj, path) ->
+    results = []
+
     next = (idx) => (result) =>
+      results[idx] = result
+
       if result instanceof reference.RequestResolver
         resolved = result.resolve(this.parentBinder.options.app)
         next(0)(obj) if resolved?
+      else if result instanceof reference.ModelResolver
+        resolved = result.resolve(results[idx - 1])
+        next(0)(obj) if resolved?
       else if idx < path.length
+        debugger if result? and !result.watch?
         result?.watch(path[idx]).map(next(idx + 1))
       else
         result
