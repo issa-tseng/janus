@@ -60,11 +60,12 @@ To be rewritten, and to be completely reorganized.
     janus =
       util: util # life-saving util funcs
 
+      Base: require('./core/base').Base
+
       Model: require('./model/model').Model
       reference: require('./model/reference')
       attribute: require('./model/attribute')
       store: require('./model/store')
-      serializer: require('./model/serializer')
 
       collection: require('./collection/collection')
 
