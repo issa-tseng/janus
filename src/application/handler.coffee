@@ -8,8 +8,6 @@ Endpoint = require('./endpoint').Endpoint
 class Handler extends Base
   constructor: -> super()
 
-  handler: ->
-
   handler: -> ->
 
 class HttpHandler extends Handler

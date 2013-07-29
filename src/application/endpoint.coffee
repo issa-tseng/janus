@@ -27,7 +27,7 @@ class Endpoint extends Base
 
   handle: (env, respond) ->
     # create an app obj for this request.
-    app = this.initApp()
+    app = this.initApp(env)
 
     # create a manifest to track created objects and request completion.
     manifest = new StoreManifest(app.libraries.stores)
@@ -45,7 +45,7 @@ class Endpoint extends Base
     # return dom immediately if the upstream needs/wants it
     dom
 
-  initApp: ->
+  initApp: (env) ->
     # make our own store library so we can track events on it specifically.
     storeLibrary = this.app.libraries.stores.newEventBindings()
     this.app.withStoreLibrary(storeLibrary)
