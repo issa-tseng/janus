@@ -13,8 +13,7 @@ class Binder extends Base
     this._mutatorIndex = {}
     this._mutators = []
 
-
-  find: (selector) -> this._children[selector] ?= new Binder(this.dom.find(selector), parent: this)
+  find: (selector) -> this._children[selector] ?= new Binder(this.dom.find(selector), util.extendNew(this.options, { parent: this }))
 
 
   classed: (className) -> this._attachMutator(ClassMutator, [ className ])
