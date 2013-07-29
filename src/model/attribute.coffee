@@ -1,6 +1,7 @@
 
 util = require('../util/util')
 Model = require('./model').Model
+Varying = require('../core/varying').Varying
 List = require('../collection/list').List
 
 
