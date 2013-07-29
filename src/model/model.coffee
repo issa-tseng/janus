@@ -234,7 +234,7 @@ class Model extends Base
   #
   # **Returns** a serialization-ready plain object with all the relevant
   # attributes within it.
-  @serialize: (model) ->
+  @serialize: (model, opts = {}) ->
     walkAttrs = (keys, src, target) =>
       for subKey, value of src
         thisKey = keys.concat([ subKey ])
@@ -246,7 +246,7 @@ class Model extends Base
           if value is Null
             undefined
           else if attribute? and attribute.serialize?
-            attribute.serialize()
+            attribute.serialize(opts)
           else if util.isPlainObject(value)
             result = {}
             walkAttrs(thisKey, value, result)
@@ -261,7 +261,7 @@ class Model extends Base
 
     result =
       if model._parent?
-        this.serialize(model._parent)
+        this.serialize(model._parent, opts)
       else
         {}
     walkAttrs([], model.attributes, result)
