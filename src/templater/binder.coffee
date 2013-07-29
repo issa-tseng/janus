@@ -214,7 +214,7 @@ class RenderMutator extends Mutator
       this.app.getView(result.model, result.options)
     else if result instanceof types.WithView
       result.view
-    else if result instanceof types.WithAux
+    else if result instanceof types.WithAux and result.primary?
       constructorOpts = util.extendNew(this.options.constructorOpts, { aux: result.aux })
       this.app.getView(result.primary, util.extendNew(this.options, { constructorOpts: constructorOpts }))
     else
