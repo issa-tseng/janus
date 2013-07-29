@@ -22,6 +22,9 @@ class Model extends Base
     # Init attribute store so we can bind against it.
     this.attributes = {}
 
+    # Init attribute obj cache.
+    this._attributes = {}
+
     # If we have a designated shadow parent, set it.
     this._parent = this.options.parent
 
@@ -156,7 +159,7 @@ class Model extends Base
   #
   # **Returns** an `Attribute` object wrapping an attribute for the attribute
   # at the given key.
-  attribute: (key) -> new (this.constructor.attributes()[key])?(this, key)
+  attribute: (key) -> this._attributes[key] ?= new (this.constructor.attributes()[key])?(this, key)
 
   # Get an attribute class for this model.
   #
