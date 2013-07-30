@@ -3,6 +3,9 @@ util = require('../../util/util')
 DomView = require('../dom-view').DomView
 
 class ListView extends DomView
+  _initialize: ->
+    this.options.childOpts ?= {}
+
   _render: ->
     dom = this._dom = super()
 
@@ -52,9 +55,9 @@ class ListView extends DomView
         # TODO: is this acceptable?
         item
       else if this.options.itemView?
-        new (this.options.itemView)(item, app: this.options.app)
+        new (this.options.itemView)(item, util.extendNew(this.options.childOpts, { app: this.options.app }))
       else
-        this._app().getView(item, context: this.options.itemContext)
+        this._app().getView(item, context: this.options.itemContext, constructorOpts: this.options.childOpts)
 
     view.wireEvents() if this._wired is true
     view
