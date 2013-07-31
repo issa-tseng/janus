@@ -38,9 +38,9 @@ class Binder extends Base
 
   end: -> this.options.parent
 
-  data: (primary, aux) ->
-    child.data(primary, aux) for _, child of this._children
-    mutator.data(primary, aux) for mutator in this._mutators
+  data: (primary, aux, shouldRender) ->
+    child.data(primary, aux, shouldRender) for _, child of this._children
+    mutator.data(primary, aux, shouldRender) for mutator in this._mutators
     null
 
 
