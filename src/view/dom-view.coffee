@@ -84,7 +84,10 @@ class DomView extends View
     this._wired = true
 
     # render our artifact before doing any wiring.
-    this.artifact()
+    dom = this.artifact()
+
+    # drop a ref to ourself in the data.
+    dom.data('view', this)
 
     this._wireEvents()
     view?.wireEvents() for view in this._subviews.list if this._subviews?
