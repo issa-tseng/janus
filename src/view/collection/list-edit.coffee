@@ -9,13 +9,13 @@ class ListEditView extends ListView
   _initialize: ->
     super()
     this.options.childOpts = util.extendNew(this.options.childOpts, { context: this.options.itemContext, list: this.subject })
-    this.options.itemContext ?= 'edit'
+    this.options.itemContext ?= 'edit-wrapper'
 
 
 class ListEditItemTemplate extends Templater
   _binding: ->
     binding = super()
-    binding.find('.editItem').render(this.options.app, context: this.options.context).fromSelf()
+    binding.find('.editItem').render(this.options.app, context: this.options.context ? 'edit').fromSelf()
     binding
 
 class ListEditItem extends DomView
