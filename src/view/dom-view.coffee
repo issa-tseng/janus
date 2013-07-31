@@ -24,6 +24,8 @@ class DomView extends View
           subview.emit('appended') for subview in this._subviews.list
       null
 
+    this.destroyWith(this.subject)
+
   # Since we're opinionated enough here to explicitly be dealing with DOM, we
   # can also expose a `markup()` for grabbing the actual HTML.
   markup: -> (node.outerHTML for node in this.artifact().get()).join('')
@@ -94,7 +96,10 @@ class DomView extends View
     null
 
   destroy: ->
-    this.artifact().remove() if this._artifact?
+    if this._artifact?
+      this.artifact().trigger?('destroying')
+      this.artifact().remove()
+
     super()
 
 
