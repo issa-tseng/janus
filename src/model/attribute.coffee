@@ -24,9 +24,14 @@ class Attribute extends Model
   default: ->
   writeDefault: false # set to true to write-on-get the default stated above.
 
+  transient: false # set to true to never diff or serialize this attribute.
+
   # Model tries to be clever about its children; here we assume by default we
   # *are* a child.
   @deserialize: (data) -> data
+
+  # default implementation just spits out the value, unless we're transient.
+  serialize: -> this.getValue() unless this.transient is true
 
 class TextAttribute extends Attribute
 
@@ -47,7 +52,7 @@ class ModelAttribute extends Attribute
   @modelClass: Model
 
   @deserialize: (data) -> this.modelClass.deserialize(data)
-  serialize: -> this.constructor.modelClass.serialize(this.getValue())
+  serialize: -> this.constructor.modelClass.serialize(this.getValue()) unless this.transient is true
 
 class CollectionAttribute extends Attribute
   @collectionClass: Array
