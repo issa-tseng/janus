@@ -56,13 +56,7 @@ class Model extends Base
     unless value?
       value = this._parent?.get(key)
 
-      if value instanceof require('../collection/list').List # ugh circular ref
-        # if we got some kind of collection back, we'll want to clone it for
-        # now. eventually we'll have to figure out what a shadow clone of a
-        # list would be.
-        value = this.set(key, new value.constructor(value.list))
-
-      else if value instanceof Model
+      if value instanceof Model
         # if we got a model instance back, we'll want to shadowclone it and
         # write that clone to self. don't worry, if they never touch it again
         # it'll look like nothing happened at all.
