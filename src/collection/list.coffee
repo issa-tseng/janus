@@ -29,7 +29,7 @@ class List extends OrderedIncrementalList
   #   leave the reference.
   #
   constructor: (list = [], @options = {}) ->
-    super()
+    super({}, @options)
 
     # Init our list, and add the items to it.
     this.list = []
@@ -164,6 +164,23 @@ class List extends OrderedIncrementalList
 
     # return the list that was set.
     list
+
+  # A shadow list is really just a clone that has a backreference so that we
+  # can determine later if it has changed. We could copy-on-write, but that
+  # seems like an unpredictable behaviour to build against.
+  #
+  # We also shadow all Models we contain at time-of-copy.
+  #
+  # **Returns** a copy of this list with its parent reference set.
+  shadow: ->
+    newArray =
+      for item in this.list
+        if item instanceof Model
+          item.shadow()
+        else
+          item
+
+    new List(newArray, util.extendNew(this.options, { parent: this }))
 
   @deserialize: (data) ->
     items =
