@@ -182,6 +182,26 @@ class List extends OrderedIncrementalList
 
     new List(newArray, util.extendNew(this.options, { parent: this }))
 
+  # Check if our list has changed relative to its shadow parent.
+  #
+  # **Returns** true if we have been modified.
+  modified: (deep = true) ->
+    return false unless this._parent?
+    return true if this._parent.list.length isnt this.list.length
+
+    for value, i in this.list
+      parentValue = this._parent.list[i]
+
+      if value instanceof Model
+        if deep is true
+          return true if value.modified()
+        else
+          return true if parentValue isnt value._parent
+      else
+        return true if parentValue isnt value
+
+    return false
+
   @deserialize: (data) ->
     items =
       if this.modelClass? and this.modelClass.prototype instanceof Model

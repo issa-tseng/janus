@@ -190,6 +190,28 @@ class Model extends Base
   # **Returns** a new shadow copy, which is an instance of `Model`.
   shadow: -> new this.constructor({}, util.extendNew(this.options, { parent: this }))
 
+  # Checks if we've changed relative to our original.
+  #
+  # **Returns** true if we have been modified.
+  modified: (deep = true) ->
+    return false unless this._parent?
+
+    result = false
+    util.traverse this.attributes, (path, value) =>
+      attribute = this.attribute(path)
+      unless !attribute? or attribute.transient is true
+        parentValue = this._parent.get(path)
+        if value instanceof Model
+          if deep is true
+            result = result or value.modified()
+          else
+            result = result or parentValue isnt value._parent
+        else
+          value = null if value is Null
+          result = true if parentValue isnt value
+
+    result
+
   # Returns the original copy of a model. Returns itself if it's already an
   # original model.
   #
