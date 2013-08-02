@@ -1,6 +1,8 @@
 util = require('../../util/util')
 
 DomView = require('../dom-view').DomView
+reference = require('../../model/reference')
+Varying = require('../../core/varying').Varying
 
 class ListView extends DomView
   _initialize: ->
@@ -40,30 +42,67 @@ class ListView extends DomView
       afterDom = elem
 
     for item in items
-      view = this._getView(item)
-      this._views[item._id] = view
+      do =>
+        view = viewDom = null
 
-      viewDom = view.artifact()
-      wrappedViewDom = this._wrapChild(viewDom)
-      insert(viewDom)
-      view.emit('appended')
+        # first check if we got a reference, since we should resolve those.
+        item.value.resolve(this.options.app) if item instanceof reference.RequestReference and item.value instanceof reference.RequestResolver
 
-      view.wireEvents() if this._wired is true
+        # now see if we have `Varying`s, because we should actually be rendering
+        # their inner values.
+        if item instanceof Varying
+          varying = item
+          item = varying.value
+
+          # TODO: a little insanely and very repetitively written.
+          varying.on 'changed', (newItem) =>
+            # get a new one.
+            newView = this._getView(newItem)
+            this._views[newItem._id] = newView if newItem?
+
+            # abort if we have nothing.
+            if !newView?
+              newViewDom = this._emptyDom()
+              viewDom.replaceWith(newViewDom)
+              viewDom = newViewDom
+              return
+
+            # render and replace.
+            newViewDom = newView?.artifact() ? this._emptyDom()
+            viewDom.replaceWith(newViewDom)
+
+            # clean up and set up next iter.
+            view?.destroy()
+            view = newView
+
+            # last tasks.
+            view.emit('appended')
+            view.wireEvents() if this._wired is true
+
+        # grab our view.
+        view = this._getView(item)
+        this._views[item._id] = view if item?
+
+        # render and drop in our view.
+        viewDom = view?.artifact() ? this._emptyDom()
+        insert(viewDom)
+
+        # last tasks.
+        if view?
+          view.emit('appended')
+          view.wireEvents() if this._wired is true
 
     null
 
   _getView: (item) ->
-    view =
-      if item instanceof DomView
-        # TODO: is this acceptable?
-        item
-      else if this.options.itemView?
-        new (this.options.itemView)(item, util.extendNew(this.options.childOpts, { app: this.options.app }))
-      else
-        this._app().getView(item, context: this.options.itemContext, constructorOpts: this.options.childOpts)
-
-    view.wireEvents() if this._wired is true
-    view
+    if !item?
+      null
+    else if item instanceof DomView
+      item
+    else if this.options.itemView?
+      new (this.options.itemView)(item, util.extendNew(this.options.childOpts, { app: this.options.app }))
+    else
+      this._app().getView(item, context: this.options.itemContext, constructorOpts: this.options.childOpts)
 
   _remove: (items) ->
     items = [ items ] unless util.isArray(items)
@@ -73,8 +112,6 @@ class ListView extends DomView
       delete this._views[item._id]
 
     null
-
-  _wrapChild: (child) -> child.wrap('<li/>').parent()
 
   _wireEvents: -> view.wireEvents() for _, view of this._views
 
