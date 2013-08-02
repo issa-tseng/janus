@@ -59,7 +59,7 @@ class List extends OrderedIncrementalList
       # If the item is ever destroyed, automatically remove it from our
       # collection. This behavior can be turned off with the `ignoreDestruction`
       # option.
-      this.listenTo(elem, 'destroying', => this.remove(elem)) if elem instanceof Base
+      do (elem) => this.listenTo(elem, 'destroying', => this.remove(elem)) if elem instanceof Base
 
     elems
 
