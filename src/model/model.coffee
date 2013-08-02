@@ -287,6 +287,8 @@ class Model extends Base
   # a particular key.
   _deleteAttr: (key) ->
     util.deepSet(this.attributes, key) (obj, subkey) =>
+      return unless obj?
+
       oldValue = obj[subkey]
       delete obj[subkey]
 
