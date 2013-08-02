@@ -42,7 +42,7 @@ class ListView extends DomView
       afterDom = elem
 
     for item in items
-      do =>
+      do (item) =>
         view = viewDom = null
 
         # first check if we got a reference, since we should resolve those.
@@ -95,14 +95,21 @@ class ListView extends DomView
     null
 
   _getView: (item) ->
-    if !item?
-      null
-    else if item instanceof DomView
-      item
-    else if this.options.itemView?
-      new (this.options.itemView)(item, util.extendNew(this.options.childOpts, { app: this.options.app }))
-    else
-      this._app().getView(item, context: this.options.itemContext, constructorOpts: this.options.childOpts)
+    view =
+      if !item?
+        null
+      else if item instanceof DomView
+        this._subviews.add(item)
+        item
+      else if this.options.itemView?
+        result = new (this.options.itemView)(item, util.extendNew(this.options.childOpts, { app: this.options.app }))
+        this._subviews.add(result)
+        result
+      else
+        this._app().getView(item, context: this.options.itemContext, constructorOpts: this.options.childOpts)
+
+    view?.wireEvents() if this._wired is true
+    view
 
   _remove: (items) ->
     items = [ items ] unless util.isArray(items)
