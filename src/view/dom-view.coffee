@@ -17,11 +17,12 @@ class DomView extends View
   constructor: (@subject, @options = {}) ->
     super(@subject, @options)
 
+    this._subviews = new List()
+
     this.on 'appended', =>
       if this.artifact().closest('body').length > 0
         this.emit('appendedToDocument')
-        if this._subviews?
-          subview.emit('appended') for subview in this._subviews.list
+        subview.emit('appended') for subview in this._subviews.list
       null
 
     this.destroyWith(this.subject)
@@ -68,7 +69,6 @@ class DomView extends View
     library = this.options.app.libraries.views.newEventBindings()
     library.destroyWith(this)
 
-    this._subviews = new List()
     this.listenTo library, 'got', (view) =>
       view.wireEvents() if this._wired is true
       this._subviews.add(view)
