@@ -78,8 +78,7 @@ class IndefiniteList extends OrderedIncrementalList
       process(result)
 
   _truncate: (idx) ->
-    removed = this.list[idx..]
-    this.list = this.list.slice(0, idx)
+    removed = this.list.splice(idx, this.list.length - idx)
 
     for elem, subidx in removed
       this.emit('removed', elem, idx + subidx)
