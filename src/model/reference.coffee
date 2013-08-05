@@ -6,10 +6,10 @@ util = require('../util/util')
 # value the resolver, which when invoked gets replaced with the resolved value.
 class Reference extends Varying
   @resolverClass: Resolver
-  constructor: (@inner, @flatValue) ->
+  constructor: (@inner, @flatValue, @options = {}) ->
     super( value: this._resolver() )
 
-  _resolver: -> new this.constructor.resolverClass(this, this.inner)
+  _resolver: -> new this.constructor.resolverClass(this, this.inner, this.options)
 
   # make references transparent to models.
   # TODO: is this dangerous? this seems magical and bad.
@@ -38,7 +38,7 @@ class Reference extends Varying
 # The default implementation doesn't do anything useful. See the
 # `RequestResolver` and `RequestReference` for the base use case.
 class Resolver
-  constructor: (@parent, @value) ->
+  constructor: (@parent, @value, @options = {}) ->
   resolve: -> this.parent.setValue(this.value)
 
   # delegate model-like things to parent.
@@ -51,13 +51,14 @@ class Resolver
 # A `Resolver` that resolves `Request`s. It takes the `app` and kicks off the
 # request before resolution.
 class RequestResolver extends Resolver
-  constructor: (@parent, @request) ->
+  constructor: (@parent, @request, @options = {}) ->
+    this.options.map ?= (request) -> request.map((result) -> result.successOrElse(null))
   resolve: (app) ->
     store = app.getStore(this.request)
 
     if store?
       store.handle()
-      this.parent.setValue(this.request.map((result) -> result.successOrElse(null)))
+      this.parent.setValue(this.options.map(this.request))
     else
       this.parent.setValue(null)
 
@@ -69,7 +70,7 @@ class RequestReference extends Reference
 # of. This becomes useful for example when deserializing, where you don't have
 # context on what the eventual model is that you're interacting with.
 class ModelResolver extends Resolver
-  constructor: (@parent, @map) ->
+  constructor: (@parent, @map, @options = {}) ->
   resolve: (model) ->
     this.parent.setValue(this.map(model))
 
