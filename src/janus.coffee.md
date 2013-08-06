@@ -87,8 +87,8 @@ To be rewritten, and to be completely reorganized.
         PageModel: require('./model/page-model').PageModel
         PageView: require('./view/page-view').PageView
 
-        ListView: require('./view/collection/list').ListView
-        listEdit: require('./view/collection/list-edit')
+        ListView: require('./view/impl/list').ListView
+        listEdit: require('./view/impl/list-edit')
 
 Module
 ======
