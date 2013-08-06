@@ -76,6 +76,8 @@ class Library extends Base
   #
   # **Returns** a registered book, processed by the Library's `handler`.
   get: (obj, options = {}) ->
+    return null unless obj? # but what if i want to register against null?
+
     book =
       this._get(obj, obj.constructor, options.context ? this._defaultContext, options) ?
       this._get(obj, obj.constructor, 'default', options)
