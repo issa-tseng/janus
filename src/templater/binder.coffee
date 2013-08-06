@@ -112,7 +112,9 @@ class Mutator extends Base
     this
 
   and: this.prototype.from
+  andSelf: this.prototype.fromSelf
   andAux: this.prototype.fromAux
+  andAttribute: this.prototype.fromAttribute
   andVarying: this.prototype.fromVarying
 
   andLast: ->
