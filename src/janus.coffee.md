@@ -57,7 +57,7 @@ To be rewritten, and to be completely reorganized.
 
     util = require('./util/util')
 
-    janus =
+    janus = (window ? global)._janus$ ?=
       util: util # life-saving util funcs
 
       Base: require('./core/base').Base
