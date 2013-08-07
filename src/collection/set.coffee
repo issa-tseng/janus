@@ -12,6 +12,7 @@
 # - `removedFrom`: `(collection, idx)` this collection and the member's
 #   position.
 
+Base = require('../core/base').Base
 List = require('./list').List
 util = require('../util/util')
 
@@ -37,7 +38,7 @@ class Set extends List
 
       # if the item is ever destroyed, automatically remove it from our
       # collection.
-      this.listenTo(elem, 'destroying', => this.remove(elem)) if elem instanceof Base
+      (do => this.listenTo(elem, 'destroying', => this.remove(elem))) if elem instanceof Base
 
 util.extend(module.exports,
   Set: Set
