@@ -15,8 +15,10 @@ class VaryingView extends ViewContainer
       # render a new view if there is one.
       if newValue?
         newView = this._getView(newValue)
-        dom.append(newView.artifact())
-        newView.emit('appended')
+
+        if newView?
+          dom.append(newView.artifact())
+          newView.emit('appended')
 
       # save off our new stuff
       this._value = newValue
