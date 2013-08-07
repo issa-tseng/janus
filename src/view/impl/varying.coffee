@@ -3,7 +3,7 @@ ViewContainer = require('./view-container').ViewContainer
 
 class VaryingView extends ViewContainer
   _render: ->
-    dom = this._dom = super()
+    dom = super()
 
     # handler
     handleValue = (newValue) =>
@@ -16,6 +16,7 @@ class VaryingView extends ViewContainer
       if newValue?
         newView = this._getView(newValue)
         dom.append(newView.artifact())
+        newView.emit('appended')
 
       # save off our new stuff
       this._value = newValue
@@ -23,6 +24,9 @@ class VaryingView extends ViewContainer
     # kick off handlers.
     this.subject.on('changed', handleValue)
     handleValue(this.subject.value)
+
+    # return dom.
+    dom
 
 util.extend(module.exports,
   VaryingView: VaryingView
