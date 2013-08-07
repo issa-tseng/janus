@@ -54,8 +54,7 @@ class ListView extends ViewContainer
         # last tasks.
         if view?
           view.emit('appended')
-          # shouldn't be necessary:
-          #view.wireEvents() if this._wired is true
+          view.wireEvents() if this._wired is true
 
     null
 
