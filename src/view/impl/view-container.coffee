@@ -25,13 +25,11 @@ class ViewContainer extends DomView
     # nothing to do for a null/undef subject.
     return null unless subject?
 
-    debugger if subject instanceof Varying
-
     # get the view we want to render.
     view =
       if subject instanceof DomView
         this._subviews.add(subject)
-        item
+        subject
       else if this.options.itemView?
         result = new (this.options.itemView)(subject, util.extendNew(this.options.childOpts, { app: this.options.app }))
         this._subviews.add(result)
