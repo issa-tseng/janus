@@ -9,16 +9,22 @@ class Manifest extends Base
     super()
 
     this._requestCount = 0
-    this._objects = []
+    this.requests = []
+    this.objects = []
 
     this._setHook()
 
   requested: (request) ->
     this._requestCount += 1
 
+    this.requests.push(request)
+    this.emit('requestStart', request)
+
     request.on 'changed', (state) =>
       if state instanceof Request.state.type.Complete
-        this._objects.push(state.result) if state instanceof Request.state.type.Success
+        this.objects.push(state.result) if state instanceof Request.state.type.Success
+
+        this.emit('requestComplete', request, state.result)
 
         this._requestCount -= 1
         this._setHook()
