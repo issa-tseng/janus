@@ -35,7 +35,7 @@ class ViewContainer extends DomView
         this._subviews.add(result)
         result
       else
-        this._app().getView(subject, context: this.options.itemContext, constructorOpts: this.options.childOpts)
+        this._app().getView(subject, context: this._childContext(), constructorOpts: this.options.childOpts)
 
     # remember it.
     this._views[subject._id] = view
@@ -45,6 +45,9 @@ class ViewContainer extends DomView
 
     # return it.
     view
+
+  # child context determination
+  _childContext: -> this.options.itemContext
 
   # shouldn't be necessary:
   #_wireEvents: -> view.wireEvents() for _, view of this._views
