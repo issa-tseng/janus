@@ -30,6 +30,8 @@ class VaryingView extends ViewContainer
     # return dom.
     dom
 
+  _childContext: -> this.options.itemContext ? this.options.libraryContext
+
 util.extend(module.exports,
   VaryingView: VaryingView
 )

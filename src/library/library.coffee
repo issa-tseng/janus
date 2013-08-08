@@ -31,7 +31,7 @@ class Library extends Base
 
     this.bookcase = {}
 
-    this.options.handler ?= (obj, book, options) -> new book(obj, options.constructorOpts)
+    this.options.handler ?= (obj, book, options) -> new book(obj, util.extendNew(options.constructorOpts, libraryContext: options.context))
 
   # Registers a book with the `Library`. It takes some fixed parameters:
   #
