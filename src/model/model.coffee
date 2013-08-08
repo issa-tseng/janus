@@ -283,6 +283,9 @@ class Model extends Base
     walkAttrs([], model.attributes, result)
     result
 
+  # TODO: do we want this?
+  serialize: -> this.constructor.serialize(this)
+
   # Helper used by `revert()` and some paths of `unset()` to actually clear out
   # a particular key.
   _deleteAttr: (key) ->
