@@ -90,7 +90,8 @@ class Request extends Varying
 # These are then fed to the `storeLibrary` as singletons to be handled against
 # for each request.
 class Store extends Base
-  constructor: (@request, @options = {}) -> super()
+  constructor: (@request, @options = {}) ->
+    super()
 
   # Handle a request.
   handle: ->
@@ -128,11 +129,12 @@ class DeleteRequest extends Request
 # to return `Unhandled` on a cache miss, but to listen on the `Request` that it
 # got a peek at to then cache a result if available.
 class OneOfStore extends Store
-  @handlers: []
+  constructor: (@request, @maybeStores = [], @options = {}) ->
+    super(@request, @options)
 
-  _handler: (request) ->
+  _handle: ->
     handled = Store.Unhandled
-    (handled = handler(request)) for handler in this.constructor.handlers when handled isnt Store.Handled
+    (handled = maybeStore.handle(this.request)) for maybeStore in this.maybeStores when handled isnt Store.Handled
 
     if handled is Store.Unhandled
       request.setValue(Request.state.Error("No handler was available!")) # TODO: actual error types
@@ -144,9 +146,13 @@ class OneOfStore extends Store
 # result for subsequent requests of the same object. It knows to discard its
 # cache for an object if that object gets written to or deleted.
 class MemoryCacheStore extends Store
-  _cache: -> {}
+  # we take no request or options.
+  constructor: ->
+    super()
 
-  _handle: (request) ->
+  _cache: -> this._cache$ ?= {}
+
+  handle: (request) ->
     signature = request.signature()
 
     if signature?
@@ -154,25 +160,26 @@ class MemoryCacheStore extends Store
 
       if request instanceof FetchRequest
         if this._cache()[signature]?
-          # cache hit. set a successful result and proclaim our success.
-          request.setValue(Request.state.Success(this._cache()[signature]))
+          # cache hit. bind against whichever request we already have that
+          # looks identical.
+          request.setValue(this._cache()[signature])
           Store.Handled
 
         else
-          # cache miss, but a fetch query. listen on the result and chain out.
-          request.on 'changed', (state) =>
-            this._cache()[signature] = state.result if state instanceof Request.state.type.Success
+          # cache miss, but a fetch query. store away our result.
+          this._cache()[signature] = request
           Store.Unhandled
 
       else if (request instanceof CreateRequest) or (request instanceof UpdateRequest)
-        # mutation query. clear out our cache and listen on the result.
+        # mutation query. clear out our cache and set the result only if we
+        # succeed. otherwise, leave it clear.
         delete this._cache()[signature]
         request.on 'changed', (state) =>
-          this._cache()[signature] = state.result if state instanceof Request.state.type.Success
+          this._cache()[signature] = state if state instanceof Request.state.type.Success
         Store.Unhandled
 
       else
-        # delete query, or some unknown query type. cleare cache and bail.
+        # delete query, or some unknown query type. clear cache and bail.
         delete this._cache()[signature]
         Store.Unhandled
 
@@ -184,9 +191,13 @@ class MemoryCacheStore extends Store
       Store.Unhandled
 
 class OnPageCacheStore extends Store
+  # we take no request or options.
+  constructor: ->
+    super()
+
   _dom: ->
 
-  _handle: (request) ->
+  handle: (request) ->
     signature = request.signature()
 
     if signature?
