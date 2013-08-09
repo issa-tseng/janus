@@ -15,6 +15,7 @@
 Base = require('../core/base').Base
 OrderedIncrementalList = require('./types').OrderedIncrementalList
 Model = require('../model/model').Model
+Reference = require('../model/reference').Reference
 util = require('../util/util')
 
 # We derive off of Model so that we have free access to attributes.
@@ -210,6 +211,20 @@ class List extends OrderedIncrementalList
         data.slice()
 
     new this(items)
+
+  @serialize: (list) ->
+    for child in list.list
+      if child instanceof Reference
+        child =
+          if child.value instanceof Model
+            child.value
+          else
+            child.flatValue
+
+      if child.serialize?
+        child.serialize()
+      else
+        child
 
 
 util.extend(module.exports,
