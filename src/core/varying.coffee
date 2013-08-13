@@ -79,6 +79,14 @@ class Varying extends Base
   # convenience constructor since sometimes varyings are instantiate-and-forget.
   @combine: (varyings, transform) -> new MultiVarying(varyings, transform)
 
+  # convenience constructor to ensure a Varying. wraps nonVaryings, and returns
+  # Varyings given to it.
+  @ly: (val) ->
+    if val instanceof Varying
+      val
+    else
+      new Varying( value: val )
+
 # A MultiVarying takes multiple Varying objects and puts their values together.
 # It doesn't itself listen to anything but Proxies directly.
 class MultiVarying extends Varying
