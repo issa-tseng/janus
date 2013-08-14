@@ -11,6 +11,8 @@ class RequestState
   flatSuccess: -> this
   successOrElse: (x) -> if util.isFunction(x) then x(this) else x
 
+class InitState extends RequestState
+
 class PendingState extends RequestState
 class ProgressState extends PendingState
   constructor: (@progress) ->
@@ -37,7 +39,7 @@ class ServiceErrorState extends ErrorState
 class Request extends Varying
   constructor: ->
     super()
-    this.value = Request.state.Pending
+    this.value = Request.state.Init
 
   signature: ->
 
@@ -62,6 +64,8 @@ class Request extends Varying
 
   # some default states that request may be in. feel free to add in your own.
   @state:
+    Init: new InitState()
+
     Pending: new PendingState()
     Progress: (progress) -> new ProgressState(progress)
 
@@ -72,6 +76,8 @@ class Request extends Varying
     ServiceError: (error) -> new ServiceErrorState(error)
 
     type:
+      Init: InitState
+
       Pending: PendingState
       Progress: ProgressState
 
