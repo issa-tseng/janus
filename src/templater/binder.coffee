@@ -73,18 +73,18 @@ class Mutator extends Base
     this
 
   fromSelf: ->
-    this._data.push((primary) -> new Varying( value: primary ))
+    this._data.push((primary) -> new Varying(primary))
     this
 
   fromAux: (key, path...) ->
     if path? and path.length > 0
       this._data.push((_, aux) => this._from(util.deepGet(aux, key), path))
     else
-      this._data.push((_, aux) -> new Varying( value: util.deepGet(aux, key) ))
+      this._data.push((_, aux) -> new Varying(util.deepGet(aux, key)))
     this
 
   fromAttribute: (key) ->
-    this._data.push((primary) -> new Varying( value: primary.attribute(key) ))
+    this._data.push((primary) -> new Varying(primary.attribute(key)))
     this
 
   _from: (obj, path) ->

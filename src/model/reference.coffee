@@ -7,7 +7,7 @@ util = require('../util/util')
 class Reference extends Varying
   @resolverClass: Resolver
   constructor: (@inner, @flatValue, @options = {}) ->
-    super( value: this._resolver() )
+    super(this._resolver())
 
   _resolver: -> new this.constructor.resolverClass(this, this.inner, this.options)
 

@@ -135,7 +135,7 @@ class Model extends Base
   # **Returns** a `Varying` object against our attribute at `key`.
   watch: (key) ->
     this._watches[key] ?= do =>
-      varying = new Varying( value: this.get(key) )
+      varying = new Varying(this.get(key))
       varying.listenTo(this, "changed:#{key}", (newValue) -> varying.setValue(newValue))
 
   # Get a `Varying` object for this entire object. It will emit a change event
@@ -144,7 +144,7 @@ class Model extends Base
   #
   # **Returns** a `Varying` object against our whole model.
   watchAll: ->
-    varying = new Varying( value: this )
+    varying = new Varying(this)
     varying.listenTo(this, 'anyChanged', => varying.setValue(this, true))
 
   # Class-level storage bucket for attribute schema definition.

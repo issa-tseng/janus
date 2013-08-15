@@ -20,7 +20,7 @@ class Varying extends Base
   # - `transform`: A function that transforms the value before passing it on if
   #   desired.
   #
-  constructor: ({ value } = {}) ->
+  constructor: (value) ->
     super()
     this.setValue(value)
 
@@ -49,7 +49,7 @@ class Varying extends Base
   # Return a new Varying that applies the given map on top of the existing
   # result.
   map: (f) ->
-    result = new Varying( value: f(this.value) )
+    result = new Varying(f(this.value))
     result.listenTo(this, 'changed', (value) => result.setValue(f(value)))
 
     result
@@ -82,7 +82,7 @@ class Varying extends Base
     if val instanceof Varying
       val
     else
-      new Varying( value: val )
+      new Varying(val)
 
 # A MultiVarying takes multiple Varying objects and puts their values together.
 # It doesn't itself listen to anything but Proxies directly.
