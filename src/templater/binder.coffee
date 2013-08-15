@@ -61,7 +61,7 @@ class Mutator extends Base
 
     this._data = []
     this._listeners = []
-    this._fallback = this._transform = this._value = null
+    this._fallback = this._flatMap = this._value = null
 
     this._parentMutator?._isParent = true
 
@@ -124,11 +124,9 @@ class Mutator extends Base
 
     this
 
-  transform: (transform) ->
-    this._transform = transform
+  flatMap: (f) ->
+    this._flatMap = f
     this
-
-  flatMap: this.prototype.transform
 
   fallback: (fallback) ->
     this._fallback = fallback
@@ -140,8 +138,8 @@ class Mutator extends Base
     this._listeners = (datum(primary, aux) for datum in this._data)
 
     process = (values...) =>
-      if this._transform?
-        this._transform(values...)
+      if this._flatMap?
+        this._flatMap(values...)
       else if values.length is 1
         values[0]
       else
@@ -165,8 +163,6 @@ class Mutator extends Base
   @identity: -> util.uniqueId()
 
   _apply: ->
-
-traverseFrom = (obj, path, transform) ->
 
 class ClassMutator extends Mutator
   @identity: ([ className ]) -> className

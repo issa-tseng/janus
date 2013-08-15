@@ -165,10 +165,11 @@ class MemoryCacheStore extends Store
       # we have a signature to work with; cool.
 
       if request instanceof FetchRequest
-        if this._cache()[signature]?
+        hit = this._cache()[signature]
+        if hit?
           # cache hit. bind against whichever request we already have that
           # looks identical.
-          request.setValue(this._cache()[signature])
+          request.setValue(hit) unless hit is request
           Store.Handled
 
         else
