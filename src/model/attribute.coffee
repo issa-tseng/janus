@@ -80,7 +80,7 @@ class ShellModel
     this._watcher?.setValue(value)
 
   watch: ->
-    this._watcher ?= new Varying( value: this._value )
+    this._watcher ?= new Varying(this._value)
 
 
 util.extend(module.exports,

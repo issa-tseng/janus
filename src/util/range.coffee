@@ -147,7 +147,7 @@ class Continuous extends Coverage
 # so that we can adjust them correctly when our list changes.
 class Range extends Varying
   constructor: (@lower, @upper, value) ->
-    super( value: value )
+    super(value)
 
   # Check if we overlap some range.
   overlaps: (lower, upper) -> (lower <= this.upper) and (upper >= this.lower)

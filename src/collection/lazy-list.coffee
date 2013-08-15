@@ -91,7 +91,7 @@ class LazyList extends Model
 
   # The internal signature generation should return a `Varying` of the
   # signature.
-  _signature: -> new Varying( value: '' )
+  _signature: -> new Varying('')
 
 
 # Cached lazy lists have some considerations: they should cache results in
