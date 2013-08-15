@@ -20,7 +20,7 @@ class Varying extends Base
   # - `transform`: A function that transforms the value before passing it on if
   #   desired.
   #
-  constructor: ({ value, @transform } = {}) ->
+  constructor: ({ value } = {}) ->
     super()
     this.setValue(value)
 
@@ -28,19 +28,16 @@ class Varying extends Base
   #
   # **Returns** the new value.
   setValue: (value, force) ->
-    # Perform a transformation if we're expected to.
-    value = this.transform(value) if this.transform?
-
-    # If our transform returns a Varying itself, we will attach ourselves to its
-    # result.
-    if value instanceof Varying
-      this._childVarying?.destroy()
+    # If our value is a Varying itself, we will attach ourselves to its result;
+    # unless of course we're for some reason being assigned ourself, in which
+    # case set null and bail.
+    if value is this
+      value = null
+    else if value instanceof Varying
+      this._childVarying?.destroy() # bad?
       this._childVarying = value
       value = this._childVarying.value
 
-      # We can't just call self#setValue, since it will try to retransform,
-      # which we've technically already done to obtain what we have here.
-      #
       # We turn force on, since we're already listening to a `Varying`, which
       # should be weeding out spurious fires already unless it has a reason not
       # to.
@@ -52,13 +49,13 @@ class Varying extends Base
   # Return a new Varying that applies the given map on top of the existing
   # result.
   map: (f) ->
-    result = new Varying( value: this.value, transform: f )
-    this.on('changed', (value) => result.setValue(value))
+    result = new Varying( value: f(this.value) )
+    result.listenTo(this, 'changed', (value) => result.setValue(f(value)))
 
     result
 
   # Print value to console as it changes for quick debugging.
-  trace: (name = '') ->
+  trace: (name = this._id) ->
     this.on('changed', (value) -> console.log("Varying #{name} changed:"); console.log(value))
     this
 
@@ -92,8 +89,8 @@ class Varying extends Base
 class MultiVarying extends Varying
 
   # Unlike the base `Varying`, this one simply takes the array of Proxies and a
-  # `transform` function for combining the results of those proxies.
-  constructor: (@varyings = [], @comboTransform) ->
+  # `flatMap` function for combining the results of those proxies.
+  constructor: (@varyings = [], @flatMap) ->
     super()
 
     # Init our values array. It'll get actual values when we call `update` in
@@ -111,13 +108,13 @@ class MultiVarying extends Varying
     # We'll update immediately to set our initial state.
     this.update()
 
-  # Call our transform func for combining, then just rely on `setValue` for the
+  # Call our flatMap func for combining, then just rely on `setValue` for the
   # rest of the behavior.
   #
   # **Returns** the new value.
   update: ->
     value = this.values
-    value = this.comboTransform(value...) if this.comboTransform?
+    value = this.flatMap(value...) if this.flatMap?
     this.setValue(value)
 
 # Export.

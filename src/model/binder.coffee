@@ -28,8 +28,8 @@ class Binder extends Base
   and: this.prototype.from
   andVarying: this.prototype.fromVarying
 
-  flatMap: (transform) ->
-    this._transform = transform
+  flatMap: (f) ->
+    this._flatMap = f
     this
 
   fallback: (fallback) ->
@@ -49,8 +49,8 @@ class Binder extends Base
 
     this._varying = new MultiVarying (data.call(this) for data in this._generators), (values...) =>
       result =
-        if util.isFunction(this._transform)
-          this._transform.apply(this._model, values)
+        if util.isFunction(this._flatMap)
+          this._flatMap.apply(this._model, values)
         else
           if values.length is 1
             values[0]
