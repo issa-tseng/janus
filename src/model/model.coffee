@@ -25,6 +25,9 @@ class Model extends Base
     # Init attribute obj cache.
     this._attributes = {}
 
+    # Init watches cache.
+    this._watches = {}
+
     # If we have a designated shadow parent, set it.
     this._parent = this.options.parent
 
@@ -127,12 +130,13 @@ class Model extends Base
     oldValue
 
   # Get a `Varying` object for a particular key. This simply creates a new
-  # Varying that points at our attribute with the optional `transform`.
+  # Varying that points at our attribute.
   #
   # **Returns** a `Varying` object against our attribute at `key`.
-  watch: (key, transform) ->
-    varying = new Varying( value: this.get(key), transform: transform )
-    varying.listenTo(this, "changed:#{key}", (newValue) -> varying.setValue(newValue))
+  watch: (key) ->
+    this._watches[key] ?= do =>
+      varying = new Varying( value: this.get(key) )
+      varying.listenTo(this, "changed:#{key}", (newValue) -> varying.setValue(newValue))
 
   # Get a `Varying` object for this entire object. It will emit a change event
   # any time any attribute on the entire object changes. Does not event when
@@ -220,6 +224,8 @@ class Model extends Base
 
   # Merges the current model's changed attributes into its parent's. Fails
   # silently if it has no parent.
+  #
+  # TODO: should be [optionally?] deep.
   #
   # **Returns** nothing.
   merge: -> this._parent?.set(this.attributes); null
