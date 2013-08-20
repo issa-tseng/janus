@@ -156,7 +156,7 @@ class Mutator extends Base
 
   calculate: -> this._varying?.value ? this._fallback
   apply: (shouldRender = true) ->
-    this._apply(this.calculate()) unless this._isParent if shouldRender is true
+    this._apply(this.calculate()) if this._isParent isnt true and shouldRender is true
 
   end: -> this.parentBinder
 
@@ -222,12 +222,12 @@ class RenderMutator extends Mutator
     this._clear()
     this._lastView = view
 
-    this.dom.empty()
-
     if view?
       view.destroyWith(this)
 
       if shouldRender is true
+        this.dom.empty()
+
         this.dom.append(view.artifact())
         view.emit('appended') # TODO: is this the best RPC here?
       else
