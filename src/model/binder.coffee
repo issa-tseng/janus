@@ -13,9 +13,9 @@ class Binder extends Base
     this._generators.push ->
       next = (idx) -> (result) ->
         if path[idx + 1]?
-          result?.watch?(path[idx], next(idx + 1))
+          result?.watch(path[idx]).map(next(idx + 1))
         else
-          result?.watch?(path[idx])
+          result?.watch(path[idx])
 
       next(0)(this._model)
 
