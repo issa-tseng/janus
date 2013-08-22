@@ -283,7 +283,7 @@ class Model extends Base
 
     result =
       if model._parent?
-        this.serialize(model._parent, opts)
+        Model.serialize(model._parent, opts)
       else
         {}
     walkAttrs([], model.attributes, result)
