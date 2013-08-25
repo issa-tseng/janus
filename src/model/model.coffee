@@ -130,6 +130,19 @@ class Model extends Base
 
     oldValue
 
+  # Takes an entire attribute bag, and replaces our own attributes with it.
+  # Will fire the appropriate events.
+  #
+  # **Returns** nothing.
+  setAll: (attrs) ->
+    # first clear off attributes that are about to no longer exist.
+    util.traverseAll(this.attributes, (path, value) => this.unset(path) unless util.deepGet(attrs, path)?)
+
+    # now add in the ones we now want.
+    this.set(attrs)
+
+    null
+
   # Get a `Varying` object for a particular key. This simply creates a new
   # Varying that points at our attribute.
   #
