@@ -136,6 +136,19 @@ util =
 
     obj
 
+  # Traverses a hash, calling a passed-in function with the current path and
+  # value for every node.
+  #
+  # **Returns** The original hash.
+  traverseAll: (obj, f, path = []) ->
+    for k, v of obj
+      subpath = path.concat([ k ])
+
+      f(subpath, v)
+      util.traverseAll(obj[k], f, subpath) if obj[k]? and util.isPlainObject(obj[k])
+
+    obj
+
 # Bulk add a bunch of detection functions; thanks to Underscore.js.
 for type in [ 'Arguments', 'Function', 'String', 'Date', 'RegExp' ]
   do (type) ->
