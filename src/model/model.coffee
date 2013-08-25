@@ -136,6 +136,7 @@ class Model extends Base
   watch: (key) ->
     this._watches[key] ?= do =>
       varying = new Varying(this.get(key))
+      varying.listenTo(this._parent, "changed:#{key}", -> varying.setValue(this.get(key))) if this._parent?
       varying.listenTo(this, "changed:#{key}", (newValue) -> varying.setValue(newValue))
 
   # Get a `Varying` object for this entire object. It will emit a change event
