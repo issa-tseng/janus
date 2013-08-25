@@ -42,7 +42,8 @@ class Model extends Base
     this._initialize?()
 
     # Set our binders against those attributes
-    this._binders = (binder.bind(this) for binder in this.constructor.binders())
+    this._binders = {}
+    (this._binders[binder._key] = binder.bind(this)) for binder in this.constructor.binders()
 
   # Get an attribute about this model. The key can be a dot-separated path into
   # a nested plain model. We do not traverse into submodels that have been
@@ -173,6 +174,10 @@ class Model extends Base
     binder = new Binder(key)
     this.binders().push(binder)
     binder
+
+  # Trip a binder to rebind.
+  rebind: (key) ->
+    this._binders[key]?.apply()
 
   # Revert a particular attribute on this model. After this, the model will
   # return whatever its parent thinks the attribute should be. If no parent
