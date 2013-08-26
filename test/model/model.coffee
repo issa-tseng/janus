@@ -2,6 +2,7 @@ should = require('should')
 
 Model = require('../../lib/model/model').Model
 Varying = require('../../lib/core/varying').Varying
+attribute = require('../../lib/model/attribute')
 
 describe 'Model', ->
   describe 'core', ->
@@ -98,114 +99,148 @@ describe 'Model', ->
         model.get('tazza.of').should.equal('cafe')
 
   describe 'binding', ->
-    it 'should bind one attribute from another', ->
-      debugger
+    describe 'application', ->
+      it 'should bind one attribute from another', ->
+        class TestModel extends Model
+          @bind('slave').from('master')
+
+        model = new TestModel()
+        should.not.exist(model.get('slave'))
+
+        model.set('master', 'commander')
+        model.get('slave').should.equal('commander')
+
+      it 'should iterate into nodes', ->
+        class TestModel extends Model
+          @bind('child_id').from('child', 'id')
+
+        (new TestModel( child: new Model( id: 1 ) )).get('child_id').should.equal(1)
+
+      it 'should flatMap multiple attributes together', ->
+        class TestModel extends Model
+          @bind('c').from('a').and('b').flatMap((a, b) -> a + b)
+
+        model = new TestModel()
+        model.set( a: 3, b: 4 )
+
+        model.get('c').should.equal(7)
+
+      it 'should be able to bind from a Varying', ->
+        v = new Varying(2)
+
+        class TestModel extends Model
+          @bind('x').fromVarying(-> v)
+
+        model = new TestModel()
+
+        model.get('x').should.equal(2)
+
+        v.setValue(4)
+        model.get('x').should.equal(4)
+
+      it 'should give model as this in Varying bind', ->
+        called = false
+        class TestModel extends Model
+          @bind('y').fromVarying ->
+            called = true
+            this.should.be.an.instanceof(TestModel)
+            new Varying()
+
+        new TestModel()
+        called.should.be.true
+
+      it 'should take a fallback', ->
+        class TestModel extends Model
+          @bind('z').from('a').fallback('value')
+
+        model = new TestModel()
+
+        model.get('z').should.equal('value')
+
+        model.set('a', 'test')
+        model.get('z').should.equal('test')
+
+    describe 'classtree', ->
+      it 'should not pollute across classdefs', ->
+        class TestA extends Model
+          @bind('a').from('c')
+
+        class TestB extends Model
+          @bind('b').from('c')
+
+        a = new TestA()
+
+        b = new TestB()
+        b.set('c', 47)
+        should.not.exist(b.get('a'))
+
+      it 'should not pollute crosstree', ->
+        class Root extends Model
+          @bind('root').from('x')
+
+        class Left extends Root
+          @bind('left').from('x')
+
+        class Right extends Root
+          @bind('right').from('x')
+
+        root = new Root( x: 'root' )
+        should.not.exist(root.get('left'))
+        should.not.exist(root.get('right'))
+
+        left = new Left( x: 'left' )
+        should.not.exist(left.get('right'))
+
+        right = new Right( x: 'right' )
+        should.not.exist(right.get('left'))
+
+      it 'should extend downtree', ->
+        class Root extends Model
+          @bind('root').from('x')
+
+        class Child extends Root
+          @bind('child').from('x')
+
+        (new Child( x: 'test' )).get('root').should.equal('test')
+
+      it 'should allow child bind to override parent', ->
+        class Root extends Model
+          @bind('contend').from('x')
+
+        class Child extends Root
+          @bind('contend').from('y')
+
+        (new Child( x: 1, y: 2 )).get('contend').should.equal(2)
+
+  describe 'defined attributes', ->
+    it 'should be definable and fetchable', ->
       class TestModel extends Model
-        @bind('slave').from('master')
+        @attribute('attr', attribute.TextAttribute)
 
-      model = new TestModel()
-      should.not.exist(model.get('slave'))
+      (new TestModel()).attribute('attr').should.be.an.instanceof(attribute.TextAttribute)
 
-      model.set('master', 'commander')
-      model.get('slave').should.equal 'commander'
+    it 'should inherit down the classtree', ->
+      class Root extends Model
+        @attribute('attr', attribute.NumberAttribute)
 
-    it 'should flatMap multiple attributes together', ->
-      debugger
-      class TestModel extends Model
-        @bind('c').from('a').and('b').flatMap((a, b) -> a + b)
+      class Child extends Root
 
-      model = new TestModel()
-      model.set( a: 3, b: 4 )
-
-      model.get('c').should.equal(7)
-
-    it 'should be able to bind from a Varying', ->
-      v = new Varying(2)
-
-      class TestModel extends Model
-        @bind('x').fromVarying(-> v)
-
-      model = new TestModel()
-
-      model.get('x').should.equal(2)
-
-      v.setValue(4)
-      model.get('x').should.equal(4)
-
-    it 'should give model as this in Varying bind', ->
-      called = false
-      class TestModel extends Model
-        @bind('y').fromVarying ->
-          called = true
-          this.should.be.an.instanceof(TestModel)
-          new Varying()
-
-      new TestModel()
-      called.should.be.true
-
-    it 'should take a fallback', ->
-      class TestModel extends Model
-        @bind('z').from('a').fallback('value')
-
-      model = new TestModel()
-
-      model.get('z').should.equal('value')
-
-      model.set('a', 'test')
-      model.get('z').should.equal('test')
+      (new Child()).attribute('attr').should.be.an.instanceof(attribute.NumberAttribute)
 
     it 'should not pollute across classdefs', ->
-      class TestA extends Model
-        @bind('a').from('c')
+      class A extends Model
+        @attribute('a', attribute.NumberAttribute)
 
-      class TestB extends Model
-        @bind('b').from('c')
+      class B extends Model
+        @attribute('b', attribute.NumberAttribute)
 
-      a = new TestA()
+      should.not.exist((new A()).attribute('b'))
+      should.not.exist((new B()).attribute('a'))
 
-      b = new TestB()
-      b.set('c', 47)
-      should.not.exist(b.get('a'))
+    it 'should memoize results', ->
+      class TestModel extends Model
+        @attribute('attr', attribute.BooleanAttribute)
 
-    it 'should not pollute crosstree', ->
-      class Root extends Model
-        @bind('root').from('x')
-
-      class Left extends Root
-        @bind('left').from('x')
-
-      class Right extends Root
-        @bind('right').from('x')
-
-      root = new Root( x: 'root' )
-      should.not.exist(root.get('left'))
-      should.not.exist(root.get('right'))
-
-      left = new Left( x: 'left' )
-      should.not.exist(left.get('right'))
-
-      right = new Right( x: 'right' )
-      should.not.exist(right.get('left'))
-
-    it 'should extend downtree', ->
-      class Root extends Model
-        @bind('root').from('x')
-
-      class Child extends Root
-        @bind('child').from('x')
-
-      child = new Child( x: 'test' )
-
-      child.get('root').should.equal('test')
-
-    it 'should allow child bind to override parent', ->
-      class Root extends Model
-        @bind('contend').from('x')
-
-      class Child extends Root
-        @bind('contend').from('y')
-
-      child = new Child( x: 1, y: 2 )
-
-      child.get('contend').should.equal(2)
+      model = new TestModel()
+      model.attribute('attr').should.equal(model.attribute('attr'))
 
