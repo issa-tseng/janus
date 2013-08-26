@@ -116,7 +116,7 @@ util =
 
     (x) ->
       if util.isFunction(x)
-        x()
+        x(obj, path[idx])
       else
         obj[path[idx]] = x
 
