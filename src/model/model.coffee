@@ -161,7 +161,12 @@ class Model extends Base
     varying.listenTo(this, 'anyChanged', => varying.setValue(this, true))
 
   # Class-level storage bucket for attribute schema definition.
-  @attributes: -> this._attributes ?= {}
+  @attributes: ->
+    if this._attributesAgainst isnt this
+      this._attributesAgainst = this
+      this._attributes = {}
+
+    this._attributes
 
   # Declare an attribute for this model.
   @attribute: (key, attribute) -> this.attributes()[key] = attribute
@@ -170,7 +175,17 @@ class Model extends Base
   #
   # **Returns** an `Attribute` object wrapping an attribute for the attribute
   # at the given key.
-  attribute: (key) -> this._attributes[key] ?= new (this.constructor.attributes()[key])?(this, key)
+  attribute: (key) ->
+    recurse = (obj) =>
+      return unless obj.attributes?
+      result = new (obj.attributes()[key])?(this, key)
+
+      if result?
+        result
+      else if obj.__super__?
+        recurse(obj.__super__.constructor)
+
+    this._attributes[key] ?= recurse(this.constructor)
 
   # Get an attribute class for this model.
   #
