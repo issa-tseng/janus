@@ -42,8 +42,7 @@ class Model extends Base
     this._initialize?()
 
     # Set our binders against those attributes
-    this._binders = {}
-    (this._binders[binder._key] = binder.bind(this)) for binder in this.constructor.binders()
+    this._bind()
 
   # Get an attribute about this model. The key can be a dot-separated path into
   # a nested plain model. We do not traverse into submodels that have been
@@ -119,14 +118,13 @@ class Model extends Base
   #
   # **Returns** the value that was cleared.
   unset: (key) ->
-    oldValue = this.get(key)
-
     if this._parent?
+      oldValue = this.get(key)
       util.deepSet(this.attributes, key)(Null)
+      this._emitChange(key, null, oldValue) unless oldValue is null
+
     else
       this._deleteAttr(key)
-
-    this._emitChange(key, null, oldValue) unless oldValue is null
 
     oldValue
 
@@ -136,7 +134,7 @@ class Model extends Base
   # **Returns** nothing.
   setAll: (attrs) ->
     # first clear off attributes that are about to no longer exist.
-    util.traverseAll(this.attributes, (path, value) => this.unset(path) unless util.deepGet(attrs, path)?)
+    util.traverseAll(this.attributes, (path, value) => this.unset(path.join('.')) unless util.deepGet(attrs, path)?)
 
     # now add in the ones we now want.
     this.set(attrs)
@@ -180,13 +178,31 @@ class Model extends Base
   attributeClass: (key) -> this.constructor.attributes()[key]
 
   # Store our binders
-  @binders: -> this._binders ?= []
+  @binders: ->
+    if this._bindersAgainst isnt this
+      this._bindersAgainst = this
+      this._binders = []
+
+    this._binders
 
   # Declare a binding for this model.
   @bind: (key) ->
     binder = new Binder(key)
     this.binders().push(binder)
     binder
+
+  # Actually set up our binding.
+  # **Returns** nothing.
+  _bind: ->
+    this._binders = {}
+    recurse = (obj) =>
+      (this._binders[binder._key] = binder.bind(this)) for binder in obj.binders() when !this._binders[binder._key]?
+      recurse(obj.__super__.constructor) if obj.__super__? and obj.__super__.constructor.binders?
+      null
+
+    debugger
+    recurse(this.constructor)
+    null
 
   # Trip a binder to rebind.
   rebind: (key) ->

@@ -41,7 +41,7 @@ class Binder extends Base
     bound._model = model
 
     bound.apply()
-    null
+    bound
 
   apply: ->
     return if this._applied is true
