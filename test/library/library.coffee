@@ -194,3 +194,19 @@ describe 'Library', ->
       library.get(obj, options)
       evented.should.be.true
 
+    it 'should be able to create a prototype clone with new event bindings', ->
+      fired = false
+      libraryA = new Library()
+
+      class TestObj
+      class TestBook
+      libraryA.register(TestObj, TestBook)
+
+      libraryB = libraryA.newEventBindings()
+      libraryB.on('got', -> fired = true)
+      libraryA.get(new TestObj())
+      fired.should.be.false
+
+      libraryB.get(new TestObj())
+      fired.should.be.true
+
