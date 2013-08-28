@@ -35,6 +35,13 @@ class Base extends EventEmitter
     target?.on?(event, handler)
     this
 
+  # Unlisten entirely to another object immediately.
+  #
+  # **Returns** self.
+  unlistenTo: (tgt) ->
+    target?.off?(event, handler) for { 0: target, 1: event, 2: handler } in this._outwardListeners when target is tgt
+    this
+
   # `destroy()` removes all listeners this object has on others via
   # `listenTo()`, and removes all listeners other objects have on this one.
   #
