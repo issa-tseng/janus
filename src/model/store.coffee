@@ -180,9 +180,13 @@ class MemoryCacheStore extends Store
       else if (request instanceof CreateRequest) or (request instanceof UpdateRequest)
         # mutation query. clear out our cache and set the result only if we
         # succeed. otherwise, leave it clear.
+        #
+        # we allow requests to request not to saveback to the cache in case the
+        # server doesn't give us a full response.
         delete this._cache()[signature]
-        request.on 'changed', (state) =>
-          this._cache()[signature] = state if state instanceof Request.state.type.Success
+        if request.saveResult isnt false
+          request.on 'changed', (state) =>
+            this._cache()[signature] = state if state instanceof Request.state.type.Success
         Store.Unhandled
 
       else
