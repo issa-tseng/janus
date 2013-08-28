@@ -110,15 +110,6 @@ class Library extends Base
     if klass.__super__?
       this._get(obj, klass.__super__.constructor, context, options)
 
-  # Returns a new `Library` that defaults to `context` rather than `"default"`.
-  # The new Library is bound against the same bookcase this one is.
-  #
-  # **Returns** a new `Library`.
-  withContext: (context) ->
-    newLibrary = new Object(this)
-    newLibrary._defaultContext = context
-    newLibrary
-
   # Returns a new `Library` that is identical to and bound to this one in every
   # way except that it has a separate event binding context.
   #
