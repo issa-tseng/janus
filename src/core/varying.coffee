@@ -34,7 +34,8 @@ class Varying extends Base
     if value is this
       value = null
     else if value instanceof Varying
-      this._childVarying?.destroy() # bad?
+      this.unlistenTo(this._childVarying) if this._childVarying?
+
       this._childVarying = value
       value = this._childVarying.value
 
