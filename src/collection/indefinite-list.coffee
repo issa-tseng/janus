@@ -14,7 +14,7 @@
 # state is changed.
 
 Base = require('../core/base').Base
-OrderedIncrementalList = require('./types').OrderedIncrementalList
+OrderedCollection = require('./types').OrderedCollection
 Varying = require('../core/varying').Varying
 util = require('../util/util')
 
@@ -28,7 +28,7 @@ class Indefinite extends StepResult
 class Termination extends StepResult
 
 # We derive off of Model so that we have free access to attributes.
-class IndefiniteList extends OrderedIncrementalList
+class IndefiniteList extends OrderedCollection
   constructor: (step, @options = {}) ->
     super()
 
