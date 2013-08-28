@@ -215,7 +215,6 @@ class Model extends Base
       recurse(obj.__super__.constructor) if obj.__super__? and obj.__super__.constructor.binders?
       null
 
-    debugger
     recurse(this.constructor)
     null
 
