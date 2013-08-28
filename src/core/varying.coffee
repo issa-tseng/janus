@@ -52,6 +52,10 @@ class Varying extends Base
     result = new Varying(f(this.value))
     result.listenTo(this, 'changed', (value) => result.setValue(f(value)))
 
+    # easier debugging:
+    result._parent = this
+    result._mapper = f
+
     result
 
   # Print value to console as it changes for quick debugging.
