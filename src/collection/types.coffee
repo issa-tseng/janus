@@ -5,12 +5,49 @@
 Model = require('../model/model').Model
 util = require('../util/util')
 
-# An `OrderedIncrementalList` provides `add` and `remove` events for every
-# element that is added or removed from the list, along with a positional
-# argument.
-class OrderedIncrementalList extends Model
+# A `Collection` provides `add` and `remove` events for every element that is
+# added or removed from the list.
+class Collection extends Model
+  # Create a new FilteredList based on this list, with the member check
+  # function `f`.
+  #
+  # **Returns** a `FilteredList`
+  filter: (f) -> new (require('./filtered-list').FilteredList)(this, f)
+
+  # Create a new mapped List based on this list, with the mapping function `f`.
+  #
+  # **Returns** a `MappedList`
+  map: (f) -> new (require('./mapped-list').MappedList)(this, f)
+
+  # Create a new concatenated List based on this List, along with the other
+  # Lists provided in the call. Can be passed in either as an arg list of Lists
+  # or as an array of Lists.
+  #
+  # **Returns** a `CattedList`
+  concat: (lists...) ->
+    lists = lists[0] if util.isArray(lists[0]) and lists.length is 1
+    new (require('./catted-list').CattedList)([ this ].concat(lists))
+
+  # Create a new PartitionedList based on this List, with the identification
+  # function `f`. If no function is provided, the element is used directly.
+  #
+  # **Returns** a `PartitionedList`
+  partition: (f) -> new (require('./partitioned-list').PartitionedList)(this, f)
+
+  # Create a new UniqList based on this List, with the identification function
+  # `f`. If no function is provided, the element is used directly.
+  #
+  # **Returns** a `UniqList`
+  uniq: (f) -> new (require('./uniq-list').UniqList)(this, f)
+
+
+# An `OrderedCollection` provides `add` and `remove` events for every element
+# that is added or removed from the list, along with a positional argument.
+class OrderedCollection extends Collection
+
 
 util.extend(module.exports,
-  OrderedIncrementalList: OrderedIncrementalList
+  Collection: Collection
+  OrderedCollection: OrderedCollection
 )
 

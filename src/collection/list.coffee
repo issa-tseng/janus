@@ -13,13 +13,14 @@
 #   position.
 
 Base = require('../core/base').Base
-OrderedIncrementalList = require('./types').OrderedIncrementalList
+Varying = require('../core/varying').Varying
+OrderedCollection = require('./types').OrderedCollection
 Model = require('../model/model').Model
 Reference = require('../model/reference').Reference
 util = require('../util/util')
 
 # We derive off of Model so that we have free access to attributes.
-class List extends OrderedIncrementalList
+class List extends OrderedCollection
 
   # We take in a list of `Model`s and optionally some options for the
   # List. Options are both for framework and implementation use.
@@ -64,18 +65,20 @@ class List extends OrderedIncrementalList
 
     elems
 
-  # Remove one item from the collection. Takes either an integer index
-  # indicating the position of the element to remove, or a reference to the
-  # element itself.
+  # Remove one item from the collection. Takes a reference to the element
+  # to be removed.
   #
   # **Returns** the removed member.
   remove: (which) ->
-
-    # Normalize the argument to an integer index.
     idx = this.list.indexOf(which)
     return false unless util.isNumber(idx) and idx >= 0
+    this.removeAt(idx)
 
-    # Actually remove the element.
+  # Remove one item from the collection. Takes a reference to the element
+  # to be removed.
+  #
+  # **Returns** the removed member.
+  removeAt: (idx) ->
     removed = this.list.splice(idx, 1)[0]
 
     # Event on self and element.
@@ -116,7 +119,31 @@ class List extends OrderedIncrementalList
     oldList
 
   # Get an element from this collection by index.
-  at: (idx) -> this.list[idx]
+  at: (idx) ->
+    if idx >= 0
+      this.list[idx]
+    else
+      this.list[this.list.length + idx]
+
+  # Watch an element from this collection by index.
+  watchAt: (idx) ->
+    result = new Varying(this.at(idx))
+
+    # TODO: finer-grained
+    this.on('added', -> result.setValue(this.at(idx)))
+    this.on('removed', -> result.setValue(this.at(idx)))
+
+    result
+
+  # Watch the length of this collection.
+  watchLength: ->
+    result = new Varying(this.list.length)
+
+    # TODO: noop multi-changes (eg put) ?
+    this.on('added', -> result.setValue(this.list.length))
+    this.on('removed', -> result.setValue(this.list.length))
+
+    result
 
   # Set an index of this collection to the given member.
   #
@@ -226,8 +253,16 @@ class List extends OrderedIncrementalList
       else
         child
 
+class DerivedList extends List
+  for method in [ 'add', 'remove', 'removeAt', 'removeAll', 'put', 'putAll', 'move' ]
+    this["_#{method}"] = this[method]
+    this[method] = undefined
+
+  shadow: -> this
+
 
 util.extend(module.exports,
   List: List
+  DerivedList: DerivedList
 )
 

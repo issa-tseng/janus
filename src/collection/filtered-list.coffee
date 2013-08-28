@@ -1,11 +1,11 @@
 List = require('./list').List
-OrderedIncrementalList = require('./types').OrderedIncrementalList
+OrderedCollection = require('./types').OrderedCollection
 Varying = require('../core/varying').Varying
 util = require('../util/util')
 
 # A read-only view into a proper `List` that filters out nonqualifying
 # elements. Doesn't yet respect positional stability from parent.
-class FilteredList extends OrderedIncrementalList
+class FilteredList extends OrderedCollection
   constructor: (@parent, @isMember, @options = {}) ->
     super()
 
