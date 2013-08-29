@@ -255,8 +255,8 @@ class List extends OrderedCollection
 
 class DerivedList extends List
   for method in [ 'add', 'remove', 'removeAt', 'removeAll', 'put', 'putAll', 'move' ]
-    this["_#{method}"] = this[method]
-    this[method] = undefined
+    this.prototype["_#{method}"] = this.__super__[method]
+    this.prototype[method] = (->)
 
   shadow: -> this
 
