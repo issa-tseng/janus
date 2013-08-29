@@ -20,7 +20,7 @@ class MappedList extends DerivedList
   _add: (elem, idx) ->
     wrapped = Varying.ly(elem)
 
-    mapped = wrapped.map(f)
+    mapped = wrapped.map(this.mapper)
     mapped.destroyWith(wrapped)
     this._mappers.add(mapped, idx)
 
