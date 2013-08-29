@@ -184,7 +184,7 @@ class MemoryCacheStore extends Store
         # we allow requests to request not to saveback to the cache in case the
         # server doesn't give us a full response.
         delete this._cache()[signature]
-        if request.saveResult isnt false
+        if request.cacheResult isnt false
           request.on 'changed', (state) =>
             this._cache()[signature] = state if state instanceof Request.state.type.Success
         Store.Unhandled
