@@ -20,7 +20,7 @@ class Manifest extends Base
     this.requests.push(request)
     this.emit('requestStart', request)
 
-    request.on 'changed', (state) =>
+    handleChange = (state) =>
       if state instanceof Request.state.type.Complete
         this.objects.push(state.result) if state instanceof Request.state.type.Success
 
@@ -28,6 +28,11 @@ class Manifest extends Base
 
         this._requestCount -= 1
         this._setHook()
+
+    request.on('changed', handleChange)
+    handleChange(request.value)
+
+    null
 
   _setHook: ->
     # prevent multiple sets per loop
