@@ -26,7 +26,6 @@ class Binder extends Base
   html: -> this._attachMutator(HtmlMutator)
 
   render: (app, options) -> this._attachMutator(RenderMutator, [ app, options ])
-  renderWith: (klass, options) -> this._attachMutator(RenderWithMutator, [ klass, options ])
 
 
   apply: (f) -> this._attachMutator(ApplyMutator, [ f ])
@@ -235,10 +234,6 @@ class RenderMutator extends Mutator
 
   _clear: -> this._lastView.destroy() if this._lastView?
 
-class RenderWithMutator extends Mutator
-  _namedParams: ([ @klass, @options ]) ->
-  _apply: (model) -> this.dom.empty().append(new this.klass(model, this.options))
-
 class ApplyMutator extends Mutator
   _namedParams: ([ @f ]) ->
   _apply: (value) -> this.f(this.dom, value)
@@ -255,7 +250,6 @@ util.extend(module.exports,
     TextMutator: TextMutator
     HtmlMutator: HtmlMutator
     RenderMutator: RenderMutator
-    RenderWithMutator: RenderWithMutator
     ApplyMutator: ApplyMutator
 )
 
