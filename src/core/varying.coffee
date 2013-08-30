@@ -89,6 +89,36 @@ class Varying extends Base
     else
       new Varying(val)
 
+  # varying ways of institutionally lying to the user.
+  @lie:
+    sticky: (source, delays) ->
+      result = new Varying(source.value)
+      result._parent = source # for debugging
+
+      lookup =
+        if util.isFunction(delays)
+          (x) -> delays(x)
+        else
+          (x) -> delays[x]
+
+      timer = null
+
+      source.on 'changed', (newValue) ->
+        delay = lookup(result.value)
+
+        if delay? and (newValue is result.value or !timer?)
+          clearTimeout(timer)
+          timer = setTimeout((->
+            timer = null
+            result.setValue(source.value)
+          ), delay)
+
+        else if !timer?
+          result.setValue(newValue)
+
+      result
+
+
 # A MultiVarying takes multiple Varying objects and puts their values together.
 # It doesn't itself listen to anything but Proxies directly.
 class MultiVarying extends Varying
