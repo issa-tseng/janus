@@ -1,16 +1,14 @@
-List = require('./list').List
-OrderedCollection = require('./types').OrderedCollection
+DerivedList = require('./list').DerivedList
 Varying = require('../core/varying').Varying
 util = require('../util/util')
 
 # A read-only view into a proper `List` that filters out nonqualifying
 # elements. Doesn't yet respect positional stability from parent.
-class FilteredList extends OrderedCollection
+class FilteredList extends DerivedList
   constructor: (@parent, @isMember, @options = {}) ->
     super()
 
     # build our initial list off of the parent
-    this.list = []
     this._initElems(this.parent.list)
 
     # general init hook.
@@ -34,14 +32,13 @@ class FilteredList extends OrderedCollection
           lastMembership = false # the element isn't current part of the list.
 
           # adds/removes the element given the new membership.
-          handleChange = (newValue) =>
-            membership = newValue is true
+          handleChange = (membership) =>
             if lastMembership isnt membership
               if membership is true
                 this._add(elem)
               else
-                this._remove(elem)
-            lastMembership = membership
+                this._removeAt(this.list.indexOf(elem))
+              lastMembership = membership
 
           result.on('changed', handleChange) # listen to changes.
           handleChange(result.value) # trigger instantly with current change.
@@ -51,30 +48,6 @@ class FilteredList extends OrderedCollection
         this._add(elem)
 
     elems
-
-  # Blindly add the given elements. Does no actual checking.
-  _add: (elem) ->
-    # drop in the new element and event.
-    idx = this.list.length
-
-    this.list.push(elem)
-    this.emit('added', elem, idx)
-    elem.emit?('addedTo', this, idx)
-
-  # Remove the given element if it exists in our list.
-  _remove: (elem) ->
-    # find the element.
-    idx = this.list.indexOf(elem)
-
-    if idx >= 0
-      # if we have an element we've actually added, take it out.
-      removed = this.list.splice(idx, 1)[0]
-
-      # event.
-      this.emit('removed', removed, idx)
-      removed.emit?('removedFrom', this, idx)
-
-      removed
 
 util.extend(module.exports,
   FilteredList: FilteredList
