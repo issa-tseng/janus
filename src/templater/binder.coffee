@@ -225,6 +225,7 @@ class RenderMutator extends Mutator
       view.destroyWith(this)
 
       if shouldRender is true
+        this.dom.children().each(-> $(this).data('view')?.destroy?())
         this.dom.empty()
 
         this.dom.append(view.artifact())
