@@ -104,16 +104,17 @@ class Varying extends Base
       timer = null
 
       source.on 'changed', (newValue) ->
+        return if timer?
         delay = lookup(result.value)
 
-        if delay? and (newValue is result.value or !timer?)
+        if delay?
           clearTimeout(timer)
           timer = setTimeout((->
             timer = null
             result.setValue(source.value)
           ), delay)
 
-        else if !timer?
+        else
           result.setValue(newValue)
 
       result
