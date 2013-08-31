@@ -36,9 +36,15 @@ class Binder extends Base
     this._fallback = fallback
     this
 
+  asDefault: ->
+    this._defaultOnly = true
+    this
+
   bind: (model) ->
     bound = Object.create(this)
     bound._model = model
+
+    return if this._defaultOnly is true and model.get(this._key)?
 
     bound.apply()
     bound
