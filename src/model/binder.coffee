@@ -50,8 +50,7 @@ class Binder extends Base
     bound
 
   apply: ->
-    return if this._applied is true
-    this._applied = true
+    this._varying?.destroy()
 
     this._varying = new MultiVarying (data.call(this) for data in this._generators), (values...) =>
       result =
