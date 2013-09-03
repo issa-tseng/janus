@@ -252,7 +252,7 @@ class Model extends Base
     result = false
     util.traverse this.attributes, (path, value) =>
       attribute = this.attribute(path)
-      unless !attribute? or attribute.transient is true
+      if !attribute? or attribute.transient is false
         parentValue = this._parent.get(path)
         if value instanceof Model
           if deep is true
@@ -261,7 +261,7 @@ class Model extends Base
             result = result or parentValue isnt value._parent
         else
           value = null if value is Null
-          result = true if parentValue isnt value
+          result = true if parentValue isnt value and !(!parentValue? and !value?)
 
     result
 
