@@ -101,7 +101,7 @@ class List extends OrderedCollection
     this.list.splice(idx, 0, elem)
 
     this.emit('moved', elem, idx, oldIdx)
-    elem.emit('movedIn', this.list, idx, oldIdx)
+    elem?.emit('movedIn', this.list, idx, oldIdx)
 
     elem
 
