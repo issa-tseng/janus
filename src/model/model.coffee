@@ -319,9 +319,9 @@ class Model extends Base
           else if attribute? and attribute.serialize?
             attribute.serialize(opts)
           else if util.isPlainObject(value)
-            result = {}
-            walkAttrs(thisKey, value, result)
-            result if util.hasProperties(result)
+            innerResult = target[subKey] ? {}
+            walkAttrs(thisKey, value, innerResult)
+            innerResult
           else
             value
 
