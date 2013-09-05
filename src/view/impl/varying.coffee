@@ -5,11 +5,15 @@ class VaryingView extends ViewContainer
   _render: ->
     dom = super()
 
+    replaceWith = (newDom) ->
+      dom.replaceWith(newDom)
+      dom = newDom
+
     # handler
     handleValue = (newValue) =>
       # clear out the current view if there is one.
       if this._value?
-        dom.empty()
+        replaceWith(this._templater.dom())
         this._removeView(this._value)
 
       # render a new view if there is one.
@@ -17,7 +21,7 @@ class VaryingView extends ViewContainer
         newView = this._getView(newValue)
 
         if newView?
-          dom.append(newView.artifact())
+          replaceWith(newView.artifact())
           newView.emit('appended')
 
       # save off our new stuff
