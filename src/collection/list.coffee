@@ -56,7 +56,7 @@ class List extends OrderedCollection
       this.emit('added', elem, idx + subidx) 
 
       # Event on the item for each item we added
-      elem.emit?('addedTo', this, idx + subidx)
+      elem?.emit?('addedTo', this, idx + subidx)
 
       # If the item is ever destroyed, automatically remove it from our
       # collection. This behavior can be turned off with the `ignoreDestruction`
@@ -83,7 +83,7 @@ class List extends OrderedCollection
 
     # Event on self and element.
     this.emit('removed', removed, idx)
-    removed.emit?('removedFrom', this, idx)
+    removed?.emit?('removedFrom', this, idx)
 
     removed
 
@@ -101,7 +101,7 @@ class List extends OrderedCollection
     this.list.splice(idx, 0, elem)
 
     this.emit('moved', elem, idx, oldIdx)
-    elem.emit?('movedIn', this.list, idx, oldIdx)
+    elem?.emit?('movedIn', this.list, idx, oldIdx)
 
     elem
 
@@ -111,7 +111,7 @@ class List extends OrderedCollection
   removeAll: ->
     for elem, idx in this.list
       this.emit('removed', elem, idx)
-      elem.emit?('removedFrom', this, idx)
+      elem?.emit?('removedFrom', this, idx)
 
     oldList = this.list
     this.list = []
@@ -164,12 +164,12 @@ class List extends OrderedCollection
     # Event on removals
     for elem, subidx in removed when elem?
       this.emit('removed', elem, idx + subidx)
-      elem.emit?('removedFrom', this, idx + subidx)
+      elem?.emit?('removedFrom', this, idx + subidx)
 
     # Event on additions
     for elem, subidx in elems
       this.emit('added', elem, idx + subidx)
-      elem.emit?('addedTo', this, idx + subidx)
+      elem?.emit?('addedTo', this, idx + subidx)
 
     removed
 
