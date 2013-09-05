@@ -112,7 +112,9 @@ util =
     return null unless path?
 
     idx = 0
-    obj = obj[path[idx++]] ?= {} while (idx + 1) < path.length
+    while (idx + 1) < path.length
+      obj = obj[path[idx]] ?= {}
+      idx++
 
     (x) ->
       if util.isFunction(x)

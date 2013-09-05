@@ -30,6 +30,7 @@ class Attribute extends Model
   # *are* a child.
   @deserialize: (data) -> data
 
+  @_plainObject: (method, model, opts = {}) -> model.getValue()
   # default implementation just spits out the value, unless we're transient.
   serialize: -> this.getValue() unless this.transient is true
 
@@ -52,6 +53,7 @@ class ModelAttribute extends Attribute
   @modelClass: Model
 
   @deserialize: (data) -> this.modelClass.deserialize(data)
+  @_plainObject: (method, model, opts = {}) -> model.constructor.modelClass[method](model.getValue(), opts)
   serialize: -> this.constructor.modelClass.serialize(this.getValue()) unless this.transient is true
 
 class CollectionAttribute extends Attribute
