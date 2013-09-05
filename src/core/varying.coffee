@@ -59,6 +59,14 @@ class Varying extends Base
 
     result
 
+  # Perform some action each time this Varying changes. Throw away the result.
+  react: (f) -> this.on('changed', f)
+
+  # Same as #react(), but also executes immediately with the current value.
+  reactNow: (f) ->
+    f(this.value)
+    this.on('changed', f)
+
   # Print value to console as it changes for quick debugging.
   trace: (name = this._id) ->
     this.on('changed', (value) -> console.log("Varying #{name} changed:"); console.log(value))

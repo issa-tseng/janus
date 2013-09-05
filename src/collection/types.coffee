@@ -40,6 +40,16 @@ class Collection extends Model
   # **Returns** a `UniqList`
   uniq: (f) -> new (require('./uniq-list').UniqList)(this, f)
 
+  # Perform some action once for each member of this List, upon insertion.
+  # Throw away the result.
+  react: (f) -> this.on('added', f)
+
+  # Same as #react() but immediately also runs against all elements in the
+  # list.
+  reactNow: (f) ->
+    f(elem) for elem in this.list
+    this.on('added', f)
+
 
 # An `OrderedCollection` provides `add` and `remove` events for every element
 # that is added or removed from the list, along with a positional argument.
