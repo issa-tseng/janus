@@ -239,7 +239,7 @@ class List extends OrderedCollection
 
     new this(items)
 
-  @serialize: (list) ->
+  @_plainObject: (method, list) ->
     for child in list.list
       if child instanceof Reference
         child =
@@ -248,8 +248,8 @@ class List extends OrderedCollection
           else
             child.flatValue
 
-      if child.serialize?
-        child.serialize()
+      if child[method]?
+        child[method]()
       else
         child
 
