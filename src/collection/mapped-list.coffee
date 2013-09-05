@@ -24,7 +24,7 @@ class MappedList extends DerivedList
     mapped.destroyWith(wrapped)
     this._mappers.add(mapped, idx)
 
-    mapped.on('changed', (newValue) => this._put(newValue, this._mappers.list.indexOf(mapped)))
+    mapped.on('changed', (newValue) => this._put(this._mappers.list.indexOf(mapped), newValue))
     super(mapped.value, idx)
 
   _removeAt: (idx) ->
