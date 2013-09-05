@@ -9,7 +9,7 @@ util =
   isArray: Array.isArray ? (obj) -> toString.call(obj) is '[object Array]'
   isNumber: (obj) -> toString.call(obj) is '[object Number]' and !isNaN(obj)
   isPlainObject: (obj) -> obj? and (typeof obj is 'object') and (obj.constructor is Object)
-  isPrimitive: (obj) -> util.isString(obj) or util.isNumber(obj) or util is true or util is false
+  isPrimitive: (obj) -> util.isString(obj) or util.isNumber(obj) or obj is true or obj is false
 
 
   #### Number Utils
