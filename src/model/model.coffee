@@ -168,6 +168,20 @@ class Model extends Base
 
     this._attributes
 
+  # Get all attributes declared on this model, including inherited attributes.
+  # TODO: confusing naming scheme probably
+  @allAttributes: ->
+    attrs = {}
+
+    recurse = (obj) =>
+      return unless obj.attributes?
+      recurse(obj.__super__.constructor) if obj.__super__?
+      attrs[key] = attr for key, attr of obj.attributes()
+      null
+
+    recurse(this)
+    attrs
+
   # Declare an attribute for this model.
   @attribute: (key, attribute) -> this.attributes()[key] = attribute
 
@@ -294,7 +308,7 @@ class Model extends Base
   # **Returns** a `Model` or subclass of `Model`, depending on invocation, with
   # the data populated.
   @deserialize: (data) ->
-    for key, attribute of this.attributes()
+    for key, attribute of this.allAttributes()
       prop = util.deepGet(data, key)
       util.deepSet(data, key)(attribute.deserialize(prop)) if prop?
 
