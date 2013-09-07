@@ -208,7 +208,7 @@ class List extends OrderedCollection
         else
           item
 
-    new List(newArray, util.extendNew(this.options, { parent: this }))
+    new this.constructor(newArray, util.extendNew(this.options, { parent: this }))
 
   # Check if our list has changed relative to its shadow parent.
   #
