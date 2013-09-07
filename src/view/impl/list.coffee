@@ -15,24 +15,27 @@ class ListView extends ViewContainer
 
     dom
 
+  _target: -> this._dom
+
   _add: (items, idx) ->
     items = [ items ] unless util.isArray(items)
 
     # TODO: messy
     afterDom = null
+    target = this._target()
     insert = (elem) =>
-      if this._dom.children().length is 0
-        this._dom.append(elem)
+      if target.children().length is 0
+        target.append(elem)
       else if afterDom?
         afterDom.after(elem)
       else if util.isNumber(idx)
         if idx is 0
-          this._dom.prepend(elem)
+          target.prepend(elem)
         else
-          afterDom = this._dom.children(":nth-child(#{idx})")
+          afterDom = target.children(":nth-child(#{idx})")
           afterDom.after(elem)
       else
-        afterDom = this._dom.children(':last-child')
+        afterDom = target.children(':last-child')
         afterDom.after(elem)
 
       afterDom = elem
