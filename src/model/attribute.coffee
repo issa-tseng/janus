@@ -58,6 +58,7 @@ class CollectionAttribute extends Attribute
   @collectionClass: Array
 
   @deserialize: (data) -> this.collectionClass.deserialize(data)
+  serialize: -> this.constructor.collectionClass.serialize(this.getValue()) unless this.transient is true
 
 
 # Useful for creating standalone `Attribute`s that don't depend on a parent
