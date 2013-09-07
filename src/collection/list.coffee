@@ -232,7 +232,7 @@ class List extends OrderedCollection
 
   @deserialize: (data) ->
     items =
-      if this.modelClass? and this.modelClass.prototype instanceof Model
+      if this.modelClass? and (this.modelClass.prototype instanceof Model or this.modelClass.prototype instanceof OrderedCollection)
         this.modelClass.deserialize(datum) for datum in data
       else
         data.slice()
