@@ -193,7 +193,7 @@ class TextMutator extends Mutator
 
 class HtmlMutator extends Mutator
   @identity: -> 'html'
-  _apply: (html) -> this.dom.html(if util.isPrimitive(html) then html.tString() else '')
+  _apply: (html) -> this.dom.html(if util.isPrimitive(html) then html.toString() else '')
 
 class RenderMutator extends Mutator
   _namedParams: ([ @app, @options ]) ->
