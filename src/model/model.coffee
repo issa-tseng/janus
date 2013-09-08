@@ -319,7 +319,13 @@ class Model extends Base
   #
   # **Returns** a serialization-ready plain object with all the relevant
   # attributes within it.
-  @serialize: (model, opts = {}) ->
+  @serialize: (model, opts = {}) -> @_plainObject('serialize', model, opts)
+
+  # TODO: do we want this?
+  serialize: -> this.constructor.serialize(this)
+
+  @_plainObject: (method, model, opts = {}) ->
+    return null if !model?
     walkAttrs = (keys, src, target) =>
       for subKey, value of src
         thisKey = keys.concat([ subKey ])
@@ -330,8 +336,8 @@ class Model extends Base
         result =
           if value is Null
             undefined
-          else if attribute? and attribute.serialize?
-            attribute.serialize(opts)
+          else if attribute? and attribute[method]?
+            attribute[method](opts)
           else if util.isPlainObject(value)
             innerResult = target[subKey] ? {}
             walkAttrs(thisKey, value, innerResult)
@@ -346,14 +352,19 @@ class Model extends Base
 
     result =
       if model._parent?
-        Model.serialize(model._parent, opts)
+        Model[method](model._parent, opts)
       else
         {}
     walkAttrs([], model.attributes, result)
     result
 
-  # TODO: do we want this?
-  serialize: -> this.constructor.serialize(this)
+  # **Returns** a extracted plain object with all the relevant
+  # attributes within it. Meant for non-Janus code to deal with
+  @extract: (model, f, opts) -> f(@_extract(model, opts))
+  @_extract: (model, opts) -> @_plainObject('_extract', model, opts)
+
+  extract: (f, opts) -> this.constructor.extract(this, f, opts)
+  _extract: (opts) -> this.constructor._extract(this, opts)
 
   # Helper used by `revert()` and some paths of `unset()` to actually clear out
   # a particular key.

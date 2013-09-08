@@ -67,6 +67,9 @@ class Varying extends Base
     f(this.value)
     this.on('changed', f)
 
+  # Extract the underlying value into a simple object on change
+  extract: (f, opts) -> this.react((changedVal) -> changedVal?.extract?(f, opts))
+
   # Print value to console as it changes for quick debugging.
   trace: (name = this._id) ->
     this.on('changed', (value) -> console.log("Varying #{name} changed:"); console.log(value))
