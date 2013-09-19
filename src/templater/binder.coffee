@@ -107,7 +107,7 @@ class Mutator extends Base
     next(0)(obj)
 
   fromVarying: (varyingGenerator) ->
-    this._data.push((primary, aux) -> varyingGenerator(primary, aux))
+    this._data.push((primary, aux) => varyingGenerator.call(this, primary, aux))
     this
 
   and: this.prototype.from
