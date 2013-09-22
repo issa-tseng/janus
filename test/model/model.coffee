@@ -1,8 +1,11 @@
 should = require('should')
 
 Model = require('../../lib/model/model').Model
-Varying = require('../../lib/core/varying').Varying
+Issue = require('../../lib/model/issue').Issue
 attribute = require('../../lib/model/attribute')
+
+Varying = require('../../lib/core/varying').Varying
+collection = require('../../lib/collection/collection')
 
 describe 'Model', ->
   describe 'core', ->
@@ -243,4 +246,104 @@ describe 'Model', ->
 
       model = new TestModel()
       model.attribute('attr').should.equal(model.attribute('attr'))
+
+    # TODO: many noncovered methods
+
+  describe 'issues', ->
+    it 'should return an empty list by default', ->
+      issues = (new Model()).issues()
+      issues.should.be.an.instanceof(collection.Collection)
+      issues.list.length.should.equal(0)
+
+    it 'should contain issues from the Model level', ->
+      issueList = new collection.List()
+
+      class TestModel extends Model
+        _issues: -> issueList
+
+      model = new TestModel()
+      model.issues().list.length.should.equal(0)
+
+      issueList.add(new Issue( active: true ))
+      model.issues().list.length.should.equal(1)
+
+      issueList.removeAll()
+      model.issues().list.length.should.equal(0)
+
+    it 'should contain issues from the Attribute level', ->
+      issueList = new collection.List()
+
+      class TestModel extends Model
+        @attribute 'attr', class extends attribute.Attribute
+          issues: -> issueList
+
+      model = new TestModel()
+      model.issues().list.length.should.equal(0)
+
+      issueList.add(new Issue( active: true ))
+      model.issues().list.length.should.equal(1)
+
+      issueList.removeAll()
+      model.issues().list.length.should.equal(0)
+
+    it 'should only contain active issues', ->
+      class TestModel extends Model
+        @attribute 'attr', class extends attribute.Attribute
+          issues: -> new collection.List([ new Issue( active: this.watchValue() ) ])
+
+      model = new TestModel( attr: false )
+      model.issues().list.length.should.equal(0)
+
+      model.set('attr', true)
+      model.issues().list.length.should.equal(1)
+
+      model.set('attr', false)
+      model.issues().list.length.should.equal(0)
+
+  describe 'validity', ->
+    it 'should return true if no active issues exist', ->
+      class TestModel extends Model
+        @attribute 'attr', class extends attribute.Attribute
+          issues: -> new collection.List([ new Issue( active: this.watchValue() ) ])
+
+      model = new TestModel( attr: false )
+      model.valid().value.should.equal(true)
+
+    it 'should return false if one or more active issues exist', ->
+      class TestModel extends Model
+        @attribute 'attr', class extends attribute.Attribute
+          issues: -> new collection.List([ new Issue( active: this.watchValue() ) ])
+
+        @attribute 'attr2', class extends attribute.Attribute
+          issues: -> new collection.List([ new Issue( active: this.watchValue() ) ])
+
+      model = new TestModel( attr: true, attr2: false )
+      model.valid().value.should.equal(false)
+
+      model.set('attr2', true)
+      model.valid().value.should.equal(false)
+
+      model.set('attr', false)
+      model.set('attr2', false)
+      model.valid().value.should.equal(true)
+
+    it 'should take a severity threshold', ->
+      class TestModel extends Model
+        @attribute 'attr', class extends attribute.Attribute
+          issues: ->
+            new collection.List([
+              new Issue( active: this.watchValue().map((val) -> val > 0), severity: 2 )
+              new Issue( active: this.watchValue().map((val) -> val > 1), severity: 1 )
+            ])
+
+      model = new TestModel( attr: 0 )
+      model.valid().value.should.equal(true)
+
+      model.set('attr', 1)
+      model.valid(1).value.should.equal(true)
+      model.valid(2).value.should.equal(false)
+
+      model.set('attr', 2)
+      model.valid(1).value.should.equal(false)
+      model.valid(2).value.should.equal(false)
 
