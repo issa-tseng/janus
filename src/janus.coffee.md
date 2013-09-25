@@ -65,6 +65,7 @@ To be rewritten, and to be completely reorganized.
       Model: require('./model/model').Model
       reference: require('./model/reference')
       attribute: require('./model/attribute')
+      Issue: require('./model/issue').Issue
       store: require('./model/store')
 
       collection: require('./collection/collection')
