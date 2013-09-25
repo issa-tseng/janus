@@ -153,6 +153,11 @@ util =
 for type in [ 'Arguments', 'Function', 'String', 'Date', 'RegExp' ]
   do (type) ->
     util['is' + type] = (obj) -> toString.call(obj) is "[object #{type}]"
+    
+# The detection functions above don't work quite right in browsers. Replace them
+# if appropriate.
+if typeof window isnt 'undefined'
+  util.isString = (obj) -> Object.prototype.toString.call(obj) is '[object String]'
 
 # Thanks to Underscore again; optimize isFunction if possible.
 (util.isFunction = (obj) -> typeof obj is 'function') if typeof (/./) isnt 'function'
