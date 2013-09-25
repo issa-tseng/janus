@@ -113,10 +113,7 @@ class List extends OrderedCollection
       this.emit('removed', elem, idx)
       elem?.emit?('removedFrom', this, idx)
 
-    oldList = this.list
-    this.list = []
-
-    oldList
+    this.list.splice(0, this.list.length)
 
   # Get an element from this collection by index.
   at: (idx) ->

@@ -104,9 +104,7 @@ class Model extends Base
       return value if oldValue is value
 
       util.deepSet(this.attributes, key)(if value is Null then null else value)
-
       this._emitChange(key, value, oldValue)
-      this.validate(key)
 
       value
 
@@ -206,6 +204,11 @@ class Model extends Base
   # **Returns** an `Attribute` class object for the attribute at the given key.
   attributeClass: (key) -> this.constructor.attributes()[key]
 
+  # Returns actual instances of every attribute associated with this model.
+  #
+  # **Returns** an array of `Attribute`s.
+  allAttributes: -> new klass(this, key) for key, klass of this.constructor.allAttributes()
+
   # Store our binders
   @binders: ->
     if this._bindersAgainst isnt this
@@ -288,18 +291,35 @@ class Model extends Base
   # Merges the current model's changed attributes into its parent's. Fails
   # silently if it has no parent.
   #
-  # TODO: should be [optionally?] deep.
+  # TODO: should be optionally deep.
   #
   # **Returns** nothing.
   merge: -> this._parent?.set(this.attributes); null
 
-  # Performs validation of one or all attributes. Returns a `ValidationResult`
-  # of either `Valid` or `Error`, the latter of which contains details about
-  # the infractions.
+  # Returns a `List` of issues with this model. If no issues exist, the `List`
+  # will be empty.
   #
-  # **Returns** a `ValidationResult`.
-  validate: (key) ->
-    # TODO: implement
+  # **Returns** `List[Issue]`
+  issues: ->
+    this.issues$ ?= do =>
+      issueList = (attr.issues() for attr in this.allAttributes() when attr.issues?)
+      issueList.unshift(this._issues()) if this._issues?
+      (new (require('../collection/collection').CattedList)(issueList)).filter((issue) -> issue.active)
+
+  # To specify model-level validation for this model, declare a `_issues()`
+  # method:
+  #
+  # _issues: ->
+
+  # Returns a `Varying` of `true` or `false` depending on whether this model is
+  # valid or not. Can be given a `severity` to filter by some threshold.
+  #
+  # **Returns** `Varying[Boolean]` indicating current validity.
+  valid: (severity = 0) ->
+    this.issues()
+      .filter((issue) -> issue.severity.map((issueSev) -> issueSev <= severity))
+      .watchLength()
+        .map((length) -> length is 0)
 
   # TODO: I'm not really sure if this is best here.
   # Takes in a data hash and relies upon attribute definition to provide a sane

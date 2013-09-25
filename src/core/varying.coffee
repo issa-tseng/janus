@@ -31,11 +31,13 @@ class Varying extends Base
     # If our value is a Varying itself, we will attach ourselves to its result;
     # unless of course we're for some reason being assigned ourself, in which
     # case set null and bail.
+    if this._childVarying?
+      this.unlistenTo(this._childVarying)
+      this._childVarying = null
+
     if value is this
       value = null
     else if value instanceof Varying
-      this.unlistenTo(this._childVarying) if this._childVarying?
-
       this._childVarying = value
       value = this._childVarying.value
 

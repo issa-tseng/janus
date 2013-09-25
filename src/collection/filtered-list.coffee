@@ -16,7 +16,7 @@ class FilteredList extends DerivedList
 
     # listen to our parent for changes.
     this.parent.on('added', (elem) => this._initElems(elem))
-    this.parent.on('removed', (elem) => this._remove(elem))
+    this.parent.on('removed', (_, idx) => this._removeAt(idx))
 
   # Takes in elements and does a filter check against them. If a `Varying`
   # is returned, listens to the membership changes over time.
@@ -32,16 +32,13 @@ class FilteredList extends DerivedList
           lastMembership = false # the element isn't current part of the list.
 
           # adds/removes the element given the new membership.
-          handleChange = (membership) =>
+          result.reactNow (membership) =>
             if lastMembership isnt membership
               if membership is true
                 this._add(elem)
               else
                 this._removeAt(this.list.indexOf(elem))
               lastMembership = membership
-
-          result.on('changed', handleChange) # listen to changes.
-          handleChange(result.value) # trigger instantly with current change.
 
       else if result is true
         # straight up add.
