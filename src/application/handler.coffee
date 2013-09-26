@@ -14,6 +14,8 @@ class HttpHandler extends Handler
   constructor: (@endpoint) -> super()
 
   handle: (request, response, params) ->
+    handled = false
+
     this.endpoint.handle({
       url: request.url,
       params: params,
@@ -21,6 +23,9 @@ class HttpHandler extends Handler
       requestStream: request.request,
       responseStream: response.response
     }, (result) ->
+      return if handled is true
+      handled = true
+
       response.writeHead(result.httpCode, { 'Content-Type': 'text/html' })
       response.write(result.content)
       response.end()
