@@ -2,6 +2,8 @@
 util = require('../util/util')
 Base = require('../core/base').Base
 
+Request = require('../model/store').Request
+
 App = require('./app').App
 StoreManifest = require('./manifest').StoreManifest
 
@@ -32,6 +34,9 @@ class Endpoint extends Base
     # create a manifest to track created objects and request completion.
     manifest = new StoreManifest(app.libraries.stores)
     manifest.on('allComplete', => this.finish(pageModel, pageView, manifest, respond))
+    manifest.on 'requestComplete', (request) =>
+      if request.value instanceof Request.state.type.Error and request.options.fatal is true
+        this.error(request, respond)
 
     # make our app, our pageModel, and its pageView.
     pageModel = new this.pageModelClass({ env: env }, { app: app })
@@ -55,6 +60,9 @@ class Endpoint extends Base
 
   finish: (pageModel, pageView, manifest, respond) ->
     respond(new OkResponse(pageView.markup()))
+
+  error: (request, respond) ->
+    respond(new InternalErrorResponse())
 
   @factoryWith: (pageLibrary, app) ->
     self = this
