@@ -37,7 +37,7 @@ class ServiceErrorState extends ErrorState
 # one `Request` classtype for each possible operation, with the constructor
 # likely customized to pass in the information relevant to that request.
 class Request extends Varying
-  constructor: ->
+  constructor: (@options = {}) ->
     super()
     this.value = Request.state.Init
 
