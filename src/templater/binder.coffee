@@ -82,6 +82,10 @@ class Mutator extends Base
       this._data.push((_, aux) -> new Varying(util.deepGet(aux, key)))
     this
 
+  fromApp: (path...) ->
+    this._data.push(=> this._from(this.parentBinder.options.app, path))
+    this
+
   fromAttribute: (key) ->
     this._data.push((primary) -> new Varying(primary.attribute(key)))
     this
@@ -113,6 +117,7 @@ class Mutator extends Base
   and: this.prototype.from
   andSelf: this.prototype.fromSelf
   andAux: this.prototype.fromAux
+  andApp: this.prototype.fromApp
   andAttribute: this.prototype.fromAttribute
   andVarying: this.prototype.fromVarying
 
