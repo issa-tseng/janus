@@ -66,7 +66,7 @@ class DomView extends View
   _auxData: -> this.options.aux ? {}
 
   _app: -> this._app$ ?= do =>
-    library = this.options.app.libraries.views.newEventBindings()
+    library = this.options.app.get('views').newEventBindings()
     library.destroyWith(this)
 
     this.listenTo library, 'got', (view) =>

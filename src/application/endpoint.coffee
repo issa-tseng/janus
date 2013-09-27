@@ -32,7 +32,7 @@ class Endpoint extends Base
     app = this.initApp(env)
 
     # create a manifest to track created objects and request completion.
-    manifest = new StoreManifest(app.libraries.stores)
+    manifest = new StoreManifest(app.get('stores'))
     manifest.on('allComplete', => this.finish(pageModel, pageView, manifest, respond))
     manifest.on 'requestComplete', (request) =>
       if request.value instanceof Request.state.type.Error and request.options.fatal is true
@@ -52,7 +52,7 @@ class Endpoint extends Base
 
   initApp: (env) ->
     # make our own store library so we can track events on it specifically.
-    storeLibrary = this.app.libraries.stores.newEventBindings()
+    storeLibrary = this.app.get('stores').newEventBindings()
     this.app.withStoreLibrary(storeLibrary)
 
 
