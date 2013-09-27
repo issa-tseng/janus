@@ -1,24 +1,23 @@
-Base = require('../core/base').Base
+Model = require('../model/model').Model
 util = require('../util/util')
 
 
-class App extends Base
-  constructor: (@libraries) ->
-    super()
-
+class App extends Model
   _get: (library) -> (obj, options = {}) =>
     library.get(obj, util.extendNew(options, { constructorOpts: util.extendNew(options.constructorOpts, { app: this }) }))
 
-  getView: (obj, options) -> this._get(this.libraries.views)(obj, options)
-  getStore: (obj, options) -> this._get(this.libraries.stores)(obj, options)
+  getView: (obj, options) -> this._get(this.get('views'))(obj, options)
+  getStore: (obj, options) -> this._get(this.get('stores'))(obj, options)
 
-  _withLibraries: (ext) ->
-    newApp = new App(util.extendNew(this.libraries, ext))
-    this.emit('derived', newApp)
-    newApp
+  withViewLibrary: (viewLibrary) ->
+    result = this.shadow()
+    result.set('views', viewLibrary)
+    result
 
-  withViewLibrary: (viewLibrary) -> this._withLibraries({ views: viewLibrary })
-  withStoreLibrary: (storeLibrary) -> this._withLibraries({ stores: storeLibrary })
+  withStoreLibrary: (storeLibrary) ->
+    result = this.shadow()
+    result.set('stores', storeLibrary)
+    result
 
 
 util.extend(module.exports,
