@@ -12,11 +12,17 @@ class App extends Model
   withViewLibrary: (viewLibrary) ->
     result = this.shadow()
     result.set('views', viewLibrary)
+
+    this.emit('derived', result)
+
     result
 
   withStoreLibrary: (storeLibrary) ->
     result = this.shadow()
     result.set('stores', storeLibrary)
+
+    this.emit('derived', result)
+
     result
 
 
