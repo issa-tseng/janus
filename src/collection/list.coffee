@@ -218,10 +218,7 @@ class List extends OrderedCollection
       parentValue = this._parent.list[i]
 
       if value instanceof Model
-        if deep is true
-          return true if value.modified()
-        else
-          return true if parentValue isnt value._parent
+        return true if parentValue isnt value._parent or (deep is true and value.modified())
       else
         return true if parentValue isnt value
 
@@ -237,14 +234,11 @@ class List extends OrderedCollection
       this._watchModifiedDeep$ ?= do =>
         result = new Varying(this.modified())
 
-        react = =>
-          if this.list.length isnt this._parent.list.length
-            result.setValue(true)
-          else
-            result.setValue(this.modified())
+        react = => result.setValue(this.modified())
 
         this.on('added', react)
         this.on('removed', react)
+        this.on('moved', react)
 
         watchModel = (model) =>
           result.listenTo model.watchModified(), 'changed', (isChanged) ->
@@ -253,10 +247,16 @@ class List extends OrderedCollection
             else
               react()
 
-        uniqSubmodels = this.filter((elem) -> elem instanceof Model).uniq()
+        uniqSubmodels = this
+          .map((elem) -> elem) # flatten references.
+          .filter((elem) -> elem instanceof Model)
+          .uniq()
+
         watchModel(model) for model in uniqSubmodels.list
         uniqSubmodels.on('added', (newModel) -> watchModel(newModel))
         uniqSubmodels.on('removed', (oldModel) -> result.unlistenTo(oldModel.watchModified()))
+
+        result
 
     else
       this._watchModified$ ?= do =>
