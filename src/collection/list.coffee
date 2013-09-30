@@ -227,6 +227,52 @@ class List extends OrderedCollection
 
     return false
 
+  # Watches whether our List has changed relative to our original.
+  #
+  # **Returns** Varying[Boolean] indicating modified state.
+  watchModified: (deep = true) ->
+    return new Varying(false) unless this._parent?
+
+    if deep is true
+      this._watchModifiedDeep$ ?= do =>
+        result = new Varying(this.modified())
+
+        react = =>
+          if this.list.length isnt this._parent.list.length
+            result.setValue(true)
+          else
+            result.setValue(this.modified())
+
+        this.on('added', react)
+        this.on('removed', react)
+
+        watchModel = (model) =>
+          result.listenTo model.watchModified(), 'changed', (isChanged) ->
+            if isChanged is true
+              result.setValue(true)
+            else
+              react()
+
+        uniqSubmodels = this.filter((elem) -> elem instanceof Model).uniq()
+        watchModel(model) for model in uniqSubmodels.list
+        uniqSubmodels.on('added', (newModel) -> watchModel(newModel))
+        uniqSubmodels.on('removed', (oldModel) -> result.unlistenTo(oldModel.watchModified()))
+
+    else
+      this._watchModified$ ?= do =>
+        result = new Varying(this.modified(false))
+
+        react = =>
+          if this.list.length isnt this._parent.list.length
+            result.setValue(true)
+          else
+            result.setValue(this.modified(false))
+
+        this.on('added', react)
+        this.on('removed', react)
+
+        result
+
   @deserialize: (data) ->
     items =
       if this.modelClass? and (this.modelClass.prototype instanceof Model or this.modelClass.prototype instanceof OrderedCollection)
