@@ -1,6 +1,23 @@
 Varying = require('../core/varying').Varying
 util = require('../util/util')
 
+# A `Resolver` has simply a method called `resolve` which t%3Driggers its
+# replacement with whatever it is trying to resolve within its parent
+# `Reference`.
+#
+# The default implementation doesn't do anything useful. See the
+# `RequestResolver` and `RequestReference` for the base use case.
+class Resolver
+  constructor: (@parent, @value, @options = {}) ->
+  resolve: -> this.parent.setValue(this.value)
+
+  # delegate model-like things to parent.
+  # TODO: similarly dangerous.
+  get: ->
+  watch: (key) -> this.parent.watch(key)
+  watchAll: -> this.parent.watchAll()
+
+
 # A `Reference` squirrels away the idea of a value that is resolvable but
 # should be explicitly resolved (and possibly needs input). It exposes as its
 # value the resolver, which when invoked gets replaced with the resolved value.
@@ -10,6 +27,16 @@ class Reference extends Varying
     super(this._resolver())
 
   _resolver: -> new this.constructor.resolverClass(this, this.inner, this.options)
+
+  map: (f) ->
+    result = new Reference(this.inner, this.flatValue, this.options)
+    this.reactNow((val) -> result.setValue(f(val)))
+
+    # easier debugging.
+    result._parent = this
+    result._mapper = f
+
+    result
 
   # make references transparent to models.
   # TODO: is this dangerous? this seems magical and bad.
@@ -29,23 +56,6 @@ class Reference extends Varying
       else
         null
 
-
-
-# A `Resolver` has simply a method called `resolve` which triggers its
-# replacement with whatever it is trying to resolve within its parent
-# `Reference`.
-#
-# The default implementation doesn't do anything useful. See the
-# `RequestResolver` and `RequestReference` for the base use case.
-class Resolver
-  constructor: (@parent, @value, @options = {}) ->
-  resolve: -> this.parent.setValue(this.value)
-
-  # delegate model-like things to parent.
-  # TODO: similarly dangerous.
-  get: ->
-  watch: (key) -> this.parent.watch(key)
-  watchAll: -> this.parent.watchAll()
 
 
 # A `Resolver` that resolves `Request`s. It takes the `app` and kicks off the

@@ -8,7 +8,10 @@ util = require('../util/util')
 
 Binder = require('./binder').Binder
 
-Null = {} # sentinel value to record a child-nulled value
+# sentinel value to record a child-nulled value. instantiate a class instance
+# so that it doesn't read as a simple object.
+class NullClass
+Null = new NullClass()
 
 # Use Base to get basic methods.
 class Model extends Base
@@ -64,6 +67,17 @@ class Model extends Base
         # write that clone to self. don't worry, if they never touch it again
         # it'll look like nothing happened at all.
         value = this.set(key, value.shadow())
+
+      else if value instanceof Reference
+        # if we got a reference instance back, we'll want to shadowclone the
+        # model contained within it if it is one.
+        mappedValue = value.map (inner) ->
+          if inner instanceof Model
+            inner.shadow()
+          else
+            inner
+
+        value = this.set(key, mappedValue)
 
     # if that fails, check the attribute
     unless value?
@@ -146,7 +160,7 @@ class Model extends Base
   watch: (key) ->
     this._watches[key] ?= do =>
       varying = new Varying(this.get(key))
-      varying.listenTo(this._parent, "changed:#{key}", -> varying.setValue(this.get(key))) if this._parent?
+      varying.listenTo(this._parent, "changed:#{key}", => varying.setValue(this.get(key))) if this._parent?
       varying.listenTo(this, "changed:#{key}", (newValue) -> varying.setValue(newValue))
 
   # Get a `Varying` object for this entire object. It will emit a change event
@@ -267,26 +281,91 @@ class Model extends Base
     return false unless this._parent?
 
     result = false
-    util.traverse this.attributes, (path, value) =>
-      attribute = this.attribute(path)
-      if !attribute? or attribute.transient is false
-        parentValue = this._parent.get(path)
-        if value instanceof Model
-          if deep is true
-            result = result or value.modified()
-          else
-            result = result or parentValue isnt value._parent
-        else
-          value = null if value is Null
-          result = true if parentValue isnt value and !(!parentValue? and !value?)
-
+    util.traverse(this.attributes, (path) => result = true if this.attrModified(path, deep))
     result
+
+  # Checks if one attribute has change relative to our original.
+  #
+  # **Returns** true if the attribute has been modified
+  attrModified: (path, deep = true) ->
+    return false unless this._parent?
+
+    value = util.deepGet(this.attributes, path)
+    return false if !value? # necessarily we're just falling through
+
+    value = null if value is Null
+    value = value.value ? value.flatValue if value instanceof Reference
+
+    attribute = this.attribute(path)
+    transient = attribute? and attribute.transient is true
+
+    if !transient
+      parentValue = this._parent.get(path)
+      parentValue = parentValue.value ? parentValue.flatValue if parentValue instanceof Reference
+
+      if value instanceof Model
+        if deep is true
+          value.modified(true)
+        else
+          parentValue isnt value._parent
+      else
+        parentValue isnt value and !(!parentValue? and !value?)
+    else
+      false
+
+  # Watches whether we've changed relative to our original.
+  #
+  # **Returns** Varying[Boolean] indicating modified state.
+  watchModified: (deep = true) ->
+    if deep is true
+      # for deep, we have to listen not only to our own state changes, but also
+      # to any models we might contain.
+      this._watchModifiedDeep$ ?= do =>
+        # return if we're already initializing. This is to prevent infinite
+        # recursion; if we don't already have a fully realized watch but we've
+        # started one, this instance's state is already covered.
+        return if this._watchModifiedDeep$init is true
+        this._watchModifiedDeep$init = true
+
+        result = new Varying(this.modified())
+        this.on 'anyChanged', (path) =>
+          if this.attrModified(path)
+            result.setValue(true)
+          else
+            result.setValue(this.modified())
+
+        watchModel = (model) =>
+          result.listenTo model.watchModified(), 'changed', (isChanged) =>
+            if isChanged is true
+              result.setValue(true)
+            else
+              result.setValue(this.modified())
+
+        uniqSubmodels = this._submodels().uniq()
+        watchModel(model) for model in uniqSubmodels.list
+        uniqSubmodels.on('added', (newModel) -> watchModel(newModel))
+        uniqSubmodels.on('removed', (oldModel) -> result.unlistenTo(oldModel.watchModified()))
+
+        result
+
+    else
+      # for shallow, we only care about refs, which we'll reliably get events
+      # for via our own change event.
+      this._watchModified$ ?= do =>
+        result = new Varying(this.modified(false))
+        this.on 'anyChanged', (path) =>
+          if this.attrModified(path, false)
+            result.setValue(true)
+          else
+            result.setValue(this.modified(false))
+
+        result
 
   # Returns the original copy of a model. Returns itself if it's already an
   # original model.
   #
   # **Returns** an instance of `Model`.
-  original: -> this._parent? ? this
+  original: -> this._parent ? this
 
   # Merges the current model's changed attributes into its parent's. Fails
   # silently if it has no parent.
@@ -403,23 +482,32 @@ class Model extends Base
   # Helper to generate change events. We emit events for both the actual changed
   # key along with all its parent nests, which this deals with.
   _emitChange: (key, newValue, oldValue) ->
-    parts =
-      if util.isArray(key)
-        key
-      else
-        key.split('.')
+    # split out our path parts if necessary.
+    parts = if util.isArray(key) then key else key.split('.')
 
+    # track all our submodels.
+    this._submodels().remove(oldValue) if oldValue instanceof Model
+    this._submodels().add(newValue) if newValue instanceof Model
+
+    # emit helper.
     emit = (name, partKey) => this.emit("#{name}:#{partKey}", newValue, oldValue, partKey)
 
+    # emit on the direct path part.
     emit('changed', parts.join('.'))
 
+    # emit on the path parents.
     while parts.length > 1
       parts.pop()
       emit('subKeyChanged', parts.join('.'))
 
-    this.emit('anyChanged') # TODO: why doesn't simply leaving off the namespace work?
+    # emit that something changed at all.
+    this.emit('anyChanged', key, newValue, oldValue) # TODO: why doesn't simply leaving off the namespace work?
 
     null
+
+  # Returns the submodel list for this class. Instantiates lazily when
+  # requested otherwise we get stack overflow.
+  _submodels: -> this._submodels$ ?= new (require('../collection/list').List)()
 
 
 # Export.

@@ -34,11 +34,10 @@ class Collection extends Model
   # **Returns** a `PartitionedList`
   partition: (f) -> new (require('./partitioned-list').PartitionedList)(this, f)
 
-  # Create a new UniqList based on this List, with the identification function
-  # `f`. If no function is provided, the element is used directly.
+  # Create a new UniqList based on this List.
   #
   # **Returns** a `UniqList`
-  uniq: (f) -> new (require('./uniq-list').UniqList)(this, f)
+  uniq: -> new (require('./uniq-list').UniqList)(this)
 
   # Perform some action once for each member of this List, upon insertion.
   # Throw away the result.
