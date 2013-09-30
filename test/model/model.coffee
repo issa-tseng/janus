@@ -347,3 +347,193 @@ describe 'Model', ->
       model.valid(1).value.should.equal(false)
       model.valid(2).value.should.equal(false)
 
+  describe 'shadowing', ->
+    describe 'creation', ->
+      it 'should create a new instance of the same model class', ->
+        class TestModel extends Model
+
+        model = new TestModel()
+        shadow = model.shadow()
+
+        shadow.should.not.equal(model)
+        shadow.should.be.an.instanceof(TestModel)
+
+      it 'should return the original of a shadow', ->
+        model = new Model()
+        model.shadow().original().should.equal(model)
+
+      it 'should return itself as the original if it is not a shadow', ->
+        model = new Model()
+        debugger
+        model.original().should.equal(model)
+
+    describe 'attributes', ->
+      it 'should return the parent\'s values', ->
+        model = new Model( test1: 'a' )
+        shadow = model.shadow()
+
+        shadow.get('test1').should.equal('a')
+
+        model.set('test2', 'b')
+        shadow.get('test2').should.equal('b')
+
+      it 'should override the parent\'s values with its own', ->
+        model = new Model( test: 'x' )
+        shadow = model.shadow()
+
+        shadow.get('test').should.equal('x')
+        shadow.set('test', 'y')
+        shadow.get('test').should.equal('y')
+
+        model.get('test').should.equal('x')
+
+      it 'should revert to the parent\'s value on revert()', ->
+        model = new Model( test: 'x' )
+        shadow = model.shadow()
+
+        shadow.set('test', 'y')
+        shadow.get('test').should.equal('y')
+
+        shadow.revert('test')
+        shadow.get('test').should.equal('x')
+
+      it 'should return null for values that have been set and unset, even if the parent has values', ->
+        model = new Model( test: 'x' )
+        shadow = model.shadow()
+
+        shadow.set('test', 'y')
+        shadow.get('test').should.equal('y')
+
+        shadow.unset('test')
+        (shadow.get('test') is null).should.equal(true)
+
+        shadow.revert('test')
+        shadow.get('test').should.equal('x')
+
+      it 'should return null for values that have been directly unset, even if the parent has values', ->
+        model = new Model( test: 'x' )
+        shadow = model.shadow()
+
+        shadow.unset('test')
+        (shadow.get('test') is null).should.equal(true)
+
+      it 'should return a shadow submodel if it sees a model', ->
+        submodel = new Model()
+        model = new Model( test: submodel )
+
+        shadow = model.shadow()
+        shadow.get('test').original().should.equal(submodel)
+
+    describe 'events', ->
+      it 'should event when an inherited attribute value changes', ->
+        model = new Model( test: 'x' )
+        shadow = model.shadow()
+
+        evented = false
+        shadow.watch('test').react (value) ->
+          evented = true
+          value.should.equal('y')
+
+        model.set('test', 'y')
+        evented.should.equal(true)
+
+      it 'should not event when an overriden inherited attribute changes', ->
+        model = new Model( test: 'x' )
+        shadow = model.shadow()
+
+        shadow.set('test', 'y')
+
+        evented = false
+        shadow.watch('test').react(-> evented = true)
+
+        model.set('test', 'z')
+        evented.should.equal(false)
+
+    describe 'merging', ->
+      it 'should merge overriden changes up to its parent on merge()', ->
+        model = new Model( test: 'x' )
+        shadow = model.shadow()
+
+        shadow.set('test', 'y')
+        shadow.merge()
+
+        model.get('test').should.equal('y')
+
+      it 'should merge new attributes up to its parent on merge()', ->
+        model = new Model()
+        shadow = model.shadow()
+
+        shadow.set('test', 'x')
+        shadow.merge()
+
+        model.get('test').should.equal('x')
+
+      it 'should clear unset attributes up to its parent on merge()', ->
+        model = new Model( test: 'x' )
+        shadow = model.shadow()
+
+        shadow.unset('test')
+        shadow.merge()
+
+        should.not.exist(model.get('test'))
+
+    describe 'modification detection', ->
+      it 'should return false if a model has no parent', ->
+        model = new Model()
+        model.modified().should.equal(false)
+        model.attrModified('test').should.equal(false)
+
+      describe 'attribute', ->
+        it 'should return whether an attribute has changed', ->
+          model = new Model( test: 'x', test2: 'y' )
+          shadow = model.shadow()
+
+          shadow.set('test', 'z')
+          shadow.attrModified('test').should.equal(true)
+          shadow.attrModified('test2').should.equal(false)
+
+        it 'should handle unset values correctly', ->
+          model = new Model( test: 'x' )
+          shadow = model.shadow()
+
+          shadow.unset('test')
+          shadow.attrModified('test').should.equal(true)
+
+          shadow.unset('test2')
+          shadow.attrModified('test2').should.equal(false)
+
+        it 'should ignore transient attributes', ->
+          class TestModel extends Model
+            @attribute 'test', class extends attribute.Attribute
+              transient: true
+
+          model = new TestModel( test: 'x' )
+          shadow = model.shadow()
+
+          shadow.set('test', 'y')
+          shadow.attrModified('test').should.equal(false)
+
+        it 'should compare model reference on shallow compare', ->
+          model = new Model( test: new Model() )
+          shadow = model.shadow()
+
+          shadow.get('test').set('test2', 'x')
+          shadow.attrModified('test', false).should.equal(false)
+
+        it 'should compare model modified on deep compare', ->
+          model = new Model( test: new Model() )
+          shadow = model.shadow()
+
+          shadow.get('test').set('test2', 'x')
+          shadow.attrModified('test', true).should.equal(true)
+
+      describe 'model', ->
+        it 'should return whether any attributes have changed', ->
+          model = new Model( test: 'x' )
+          shadow = model.shadow()
+
+          shadow.modified().should.equal(false)
+
+          shadow.set('test2', 'y')
+          shadow.modified().should.equal(true)
+

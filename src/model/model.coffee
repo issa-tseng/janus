@@ -8,7 +8,10 @@ util = require('../util/util')
 
 Binder = require('./binder').Binder
 
-Null = {} # sentinel value to record a child-nulled value
+# sentinel value to record a child-nulled value. instantiate a class instance
+# so that it doesn't read as a simple object.
+class NullClass
+Null = new NullClass()
 
 # Use Base to get basic methods.
 class Model extends Base
@@ -146,7 +149,7 @@ class Model extends Base
   watch: (key) ->
     this._watches[key] ?= do =>
       varying = new Varying(this.get(key))
-      varying.listenTo(this._parent, "changed:#{key}", -> varying.setValue(this.get(key))) if this._parent?
+      varying.listenTo(this._parent, "changed:#{key}", => varying.setValue(this.get(key))) if this._parent?
       varying.listenTo(this, "changed:#{key}", (newValue) -> varying.setValue(newValue))
 
   # Get a `Varying` object for this entire object. It will emit a change event
@@ -267,26 +270,41 @@ class Model extends Base
     return false unless this._parent?
 
     result = false
-    util.traverse this.attributes, (path, value) =>
-      attribute = this.attribute(path)
-      if !attribute? or attribute.transient is false
-        parentValue = this._parent.get(path)
-        if value instanceof Model
-          if deep is true
-            result = result or value.modified()
-          else
-            result = result or parentValue isnt value._parent
-        else
-          value = null if value is Null
-          result = true if parentValue isnt value and !(!parentValue? and !value?)
-
+    util.traverse(this.attributes, (path) => result = true if this.attrModified(path, deep))
     result
+
+  # Checks if one attribute has change relative to our original.
+  #
+  # **Returns** true if the attribute has been modified
+  attrModified: (path, deep = true) ->
+    return false unless this._parent?
+
+    value = util.deepGet(this.attributes, path)
+    return false if !value? # necessarily we're just falling through
+
+    value = null if value is Null
+
+    attribute = this.attribute(path)
+    transient = attribute? and attribute.transient is true
+
+    if !transient
+      parentValue = this._parent.get(path)
+
+      if value instanceof Model
+        if deep is true
+          value.modified(true)
+        else
+          parentValue isnt value._parent
+      else
+        parentValue isnt value and !(!parentValue? and !value?)
+    else
+      false
 
   # Returns the original copy of a model. Returns itself if it's already an
   # original model.
   #
   # **Returns** an instance of `Model`.
-  original: -> this._parent? ? this
+  original: -> this._parent ? this
 
   # Merges the current model's changed attributes into its parent's. Fails
   # silently if it has no parent.
