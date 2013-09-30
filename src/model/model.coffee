@@ -321,6 +321,12 @@ class Model extends Base
       # for deep, we have to listen not only to our own state changes, but also
       # to any models we might contain.
       this._watchModifiedDeep$ ?= do =>
+        # return if we're already initializing. This is to prevent infinite
+        # recursion; if we don't already have a fully realized watch but we've
+        # started one, this instance's state is already covered.
+        return if this._watchModifiedDeep$init is true
+        this._watchModifiedDeep$init = true
+
         result = new Varying(this.modified())
         this.on 'anyChanged', (path) =>
           if this.attrModified(path)
