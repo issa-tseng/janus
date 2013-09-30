@@ -4,6 +4,7 @@ Model = require('../../lib/model/model').Model
 Issue = require('../../lib/model/issue').Issue
 attribute = require('../../lib/model/attribute')
 
+{ Reference, Resolver } = require('../../lib/model/reference')
 Varying = require('../../lib/core/varying').Varying
 collection = require('../../lib/collection/collection')
 
@@ -364,7 +365,6 @@ describe 'Model', ->
 
       it 'should return itself as the original if it is not a shadow', ->
         model = new Model()
-        debugger
         model.original().should.equal(model)
 
     describe 'attributes', ->
@@ -423,6 +423,17 @@ describe 'Model', ->
 
         shadow = model.shadow()
         shadow.get('test').original().should.equal(submodel)
+
+      it 'should return a shadow submodel if it sees one in a reference', ->
+        submodel = new Model()
+        reference = new Reference('x')
+        model = new Model( test: reference )
+        shadow = model.shadow()
+
+        shadow.get('test').value.should.be.an.instanceof(Resolver)
+
+        reference.setValue(submodel)
+        shadow.get('test').value.original().should.equal(submodel)
 
     describe 'events', ->
       it 'should event when an inherited attribute value changes', ->

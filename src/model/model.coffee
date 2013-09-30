@@ -68,6 +68,17 @@ class Model extends Base
         # it'll look like nothing happened at all.
         value = this.set(key, value.shadow())
 
+      else if value instanceof Reference
+        # if we got a reference instance back, we'll want to shadowclone the
+        # model contained within it if it is one.
+        mappedValue = value.map (inner) ->
+          if inner instanceof Model
+            inner.shadow()
+          else
+            inner
+
+        value = this.set(key, mappedValue)
+
     # if that fails, check the attribute
     unless value?
       attribute = this.attribute(key)
