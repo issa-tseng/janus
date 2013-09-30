@@ -294,12 +294,14 @@ class Model extends Base
     return false if !value? # necessarily we're just falling through
 
     value = null if value is Null
+    value = value.value ? value.flatValue if value instanceof Reference
 
     attribute = this.attribute(path)
     transient = attribute? and attribute.transient is true
 
     if !transient
       parentValue = this._parent.get(path)
+      parentValue = parentValue.value ? parentValue.flatValue if parentValue instanceof Reference
 
       if value instanceof Model
         if deep is true
@@ -310,6 +312,48 @@ class Model extends Base
         parentValue isnt value and !(!parentValue? and !value?)
     else
       false
+
+  # Watches whether we've changed relative to our original.
+  #
+  # **Returns** Varying[Boolean] indicating modified state.
+  watchModified: (deep = true) ->
+    if deep is true
+      # for deep, we have to listen not only to our own state changes, but also
+      # to any models we might contain.
+      this._watchModifiedDeep$ ?= do =>
+        result = new Varying(this.modified())
+        this.on 'anyChanged', (path) =>
+          if this.attrModified(path)
+            result.setValue(true)
+          else
+            result.setValue(this.modified())
+
+        watchModel = (model) =>
+          result.listenTo model.watchModified(), 'changed', (isChanged) =>
+            if isChanged is true
+              result.setValue(true)
+            else
+              result.setValue(this.modified())
+
+        uniqSubmodels = this._submodels().uniq()
+        watchModel(model) for model in uniqSubmodels.list
+        uniqSubmodels.on('added', (newModel) -> watchModel(newModel))
+        uniqSubmodels.on('removed', (oldModel) -> result.unlistenTo(oldModel.watchModified()))
+
+        result
+
+    else
+      # for shallow, we only care about refs, which we'll reliably get events
+      # for via our own change event.
+      this._watchModified$ ?= do =>
+        result = new Varying(this.modified(false))
+        this.on 'anyChanged', (path) =>
+          if this.attrModified(path, false)
+            result.setValue(true)
+          else
+            result.setValue(this.modified(false))
+
+        result
 
   # Returns the original copy of a model. Returns itself if it's already an
   # original model.
@@ -401,7 +445,8 @@ class Model extends Base
     walkAttrs([], model.attributes, result)
     result
 
-  # TODO: do we want this?
+  # Shortcut method to serialize a model by the default rules specified by
+  # its own constructor.
   serialize: -> this.constructor.serialize(this)
 
   # Helper used by `revert()` and some paths of `unset()` to actually clear out
@@ -421,23 +466,32 @@ class Model extends Base
   # Helper to generate change events. We emit events for both the actual changed
   # key along with all its parent nests, which this deals with.
   _emitChange: (key, newValue, oldValue) ->
-    parts =
-      if util.isArray(key)
-        key
-      else
-        key.split('.')
+    # split out our path parts if necessary.
+    parts = if util.isArray(key) then key else key.split('.')
 
+    # track all our submodels.
+    this._submodels().remove(oldValue) if oldValue instanceof Model
+    this._submodels().add(newValue) if newValue instanceof Model
+
+    # emit helper.
     emit = (name, partKey) => this.emit("#{name}:#{partKey}", newValue, oldValue, partKey)
 
+    # emit on the direct path part.
     emit('changed', parts.join('.'))
 
+    # emit on the path parents.
     while parts.length > 1
       parts.pop()
       emit('subKeyChanged', parts.join('.'))
 
-    this.emit('anyChanged') # TODO: why doesn't simply leaving off the namespace work?
+    # emit that something changed at all.
+    this.emit('anyChanged', key, newValue, oldValue) # TODO: why doesn't simply leaving off the namespace work?
 
     null
+
+  # Returns the submodel list for this class. Instantiates lazily when
+  # requested otherwise we get stack overflow.
+  _submodels: -> this._submodels$ ?= new (require('../collection/list').List)()
 
 
 # Export.

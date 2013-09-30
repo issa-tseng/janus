@@ -538,6 +538,20 @@ describe 'Model', ->
           shadow.get('test').set('test2', 'x')
           shadow.attrModified('test', true).should.equal(true)
 
+        it 'should flatten and compare References', ->
+          submodel = new Model()
+          reference = new Reference()
+          model = new Model( test: reference )
+          shadow = model.shadow()
+
+          reference.setValue(submodel)
+          shadow.attrModified('test', false).should.equal(false)
+          shadow.attrModified('test', true).should.equal(false)
+
+          shadow.get('test').value.set('test2', 'x')
+          shadow.attrModified('test', false).should.equal(false)
+          shadow.attrModified('test', true).should.equal(true)
+
       describe 'model', ->
         it 'should return whether any attributes have changed', ->
           model = new Model( test: 'x' )
@@ -547,4 +561,77 @@ describe 'Model', ->
 
           shadow.set('test2', 'y')
           shadow.modified().should.equal(true)
+
+      describe 'watch shallow', ->
+        it 'should vary depending on the modified state', ->
+          model = new Model()
+          shadow = model.shadow()
+
+          expected = [ false, true, false ]
+          shadow.watchModified(false).reactNow((isModified) -> isModified.should.equal(expected.shift()))
+
+          shadow.set('test', 'x')
+          shadow.unset('test')
+
+          expected.length.should.equal(0)
+
+        it 'should watch nested models shallowly', ->
+          model = new Model( test: new Model() )
+          shadow = model.shadow()
+
+          evented = false
+          shadow.watchModified(false).reactNow((value) -> evented = true if value is true)
+
+          shadow.get('test').set('test2', 'x')
+          evented.should.equal(false)
+
+      describe 'watch deep', ->
+        it 'should vary depending on own modified state', ->
+          model = new Model()
+          shadow = model.shadow()
+
+          expected = [ false, true, false ]
+          shadow.watchModified().reactNow((isModified) -> isModified.should.equal(expected.shift()))
+
+          shadow.set('test', 'x')
+          shadow.unset('test')
+
+          expected.length.should.equal(0)
+
+        it 'should vary depending on submodel state', ->
+          model = new Model( test: new Model() )
+          shadow = model.shadow()
+
+          expected = [ false, true, false ]
+          shadow.watchModified().reactNow((isModified) -> isModified.should.equal(expected.shift()))
+
+          shadow.get('test').set('test2', 'x')
+          shadow.get('test').revert('test2')
+
+        it 'should vary depending on new submodel state', ->
+          model = new Model()
+          shadow = model.shadow()
+
+          evented = false
+          shadow.watchModified().reactNow((isModified) -> evented = true if isModified)
+
+          model.set('test', new Model())
+          evented.should.equal(false)
+
+          debugger
+          shadow.get('test').set('test2', 'x')
+          evented.should.equal(true)
+
+        it 'should not vary depending on discarded submodel state', ->
+          model = new Model( test: new Model() )
+          shadow = model.shadow()
+
+          expected = [ false, true, false ]
+          shadow.watchModified().reactNow((isModified) -> isModified.should.equal(expected.shift()))
+
+          submodel = shadow.get('test')
+          submodel.set('test2', 'x')
+          shadow.unset('test')
+
+          submodel.set('test3', 'y')
 
