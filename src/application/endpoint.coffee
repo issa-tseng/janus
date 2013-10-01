@@ -39,7 +39,7 @@ class Endpoint extends Base
         this.error(request, respond)
 
     # make our app, our pageModel, and its pageView.
-    pageModel = new this.pageModelClass({ env: env }, { app: app })
+    pageModel = this.initPageModel(env, app, respond)
     pageView = this.pageLibrary.get(pageModel, context: env.context, constructorOpts: { app: app })
 
     # grab dom before resolving so that rendering happens as objects come in.
@@ -55,6 +55,7 @@ class Endpoint extends Base
     storeLibrary = this.app.get('stores').newEventBindings()
     this.app.withStoreLibrary(storeLibrary)
 
+  initPageModel: (env, app, respond) -> new this.pageModelClass({ env: env }, { app: app })
 
   initPageView: (pageView, env) -> pageView.artifact()
 
