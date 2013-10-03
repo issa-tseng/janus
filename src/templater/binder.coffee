@@ -138,7 +138,10 @@ class Mutator extends Base
 
 
   data: (primary, aux, shouldRender) ->
-    listener.destroy() for listener in this._listeners
+    for listener in this._listeners
+      listener.destroy()
+      this.unlistenTo(listener)
+
     this._listeners = (datum(primary, aux) for datum in this._data)
 
     process = (values...) =>
@@ -151,7 +154,7 @@ class Mutator extends Base
 
     this._varying = new MultiVarying(this._listeners, process)
     this._varying.destroyWith(this)
-    this._varying.on('changed', => this.apply())
+    this.listenTo(this._varying, 'changed', => this.apply())
 
     this.apply(shouldRender)
     shouldRender = true # after one cycle, we should always render what we find

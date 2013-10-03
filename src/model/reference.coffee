@@ -29,7 +29,7 @@ class Reference extends Varying
   _resolver: -> new this.constructor.resolverClass(this, this.inner, this.options)
 
   map: (f) ->
-    result = new Reference(this.inner, this.flatValue, this.options)
+    result = new this.constructor(this.inner, this.flatValue, this.options)
     this.reactNow((val) -> result.setValue(f(val)))
 
     # easier debugging.

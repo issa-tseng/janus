@@ -211,6 +211,7 @@ class Model extends Base
       else if obj.__super__?
         recurse(obj.__super__.constructor)
 
+    key = key.join('.') if util.isArray(key)
     this._attributes[key] ?= recurse(this.constructor)
 
   # Get an attribute class for this model.
@@ -287,7 +288,7 @@ class Model extends Base
   # Checks if one attribute has change relative to our original.
   #
   # **Returns** true if the attribute has been modified
-  attrModified: (path, deep = true) ->
+  attrModified: (path, deep) ->
     return false unless this._parent?
 
     value = util.deepGet(this.attributes, path)
@@ -295,6 +296,14 @@ class Model extends Base
 
     value = null if value is Null
     value = value.value ? value.flatValue if value instanceof Reference
+
+    isDeep =
+      if !deep?
+        true
+      else if util.isFunction(deep)
+        deep(this, path, value)
+      else
+        deep is true
 
     attribute = this.attribute(path)
     transient = attribute? and attribute.transient is true
@@ -304,10 +313,10 @@ class Model extends Base
       parentValue = parentValue.value ? parentValue.flatValue if parentValue instanceof Reference
 
       if value instanceof Model
-        if deep is true
-          value.modified(true)
+        if isDeep is true
+          value.modified(deep)
         else
-          parentValue isnt value._parent
+          !(parentValue in value.originals())
       else
         parentValue isnt value and !(!parentValue? and !value?)
     else
@@ -316,8 +325,16 @@ class Model extends Base
   # Watches whether we've changed relative to our original.
   #
   # **Returns** Varying[Boolean] indicating modified state.
-  watchModified: (deep = true) ->
-    if deep is true
+  watchModified: (deep) ->
+    isDeep =
+      if !deep?
+        true
+      else if util.isFunction(deep)
+        deep(this)
+      else
+        deep is true
+
+    if isDeep is true
       # for deep, we have to listen not only to our own state changes, but also
       # to any models we might contain.
       this._watchModifiedDeep$ ?= do =>
@@ -327,24 +344,24 @@ class Model extends Base
         return if this._watchModifiedDeep$init is true
         this._watchModifiedDeep$init = true
 
-        result = new Varying(this.modified())
+        result = new Varying(this.modified(deep))
         this.on 'anyChanged', (path) =>
-          if this.attrModified(path)
+          if this.attrModified(path, deep)
             result.setValue(true)
           else
-            result.setValue(this.modified())
+            result.setValue(this.modified(deep))
 
         watchModel = (model) =>
-          result.listenTo model.watchModified(), 'changed', (isChanged) =>
+          result.listenTo model.watchModified(deep), 'changed', (isChanged) =>
             if isChanged is true
               result.setValue(true)
             else
-              result.setValue(this.modified())
+              result.setValue(this.modified(deep))
 
         uniqSubmodels = this._submodels().uniq()
         watchModel(model) for model in uniqSubmodels.list
         uniqSubmodels.on('added', (newModel) -> watchModel(newModel))
-        uniqSubmodels.on('removed', (oldModel) -> result.unlistenTo(oldModel.watchModified()))
+        uniqSubmodels.on('removed', (oldModel) -> result.unlistenTo(oldModel.watchModified(deep)))
 
         result
 
@@ -352,12 +369,12 @@ class Model extends Base
       # for shallow, we only care about refs, which we'll reliably get events
       # for via our own change event.
       this._watchModified$ ?= do =>
-        result = new Varying(this.modified(false))
+        result = new Varying(this.modified(deep))
         this.on 'anyChanged', (path) =>
-          if this.attrModified(path, false)
+          if this.attrModified(path, deep)
             result.setValue(true)
           else
-            result.setValue(this.modified(false))
+            result.setValue(this.modified(deep))
 
         result
 
@@ -365,7 +382,15 @@ class Model extends Base
   # original model.
   #
   # **Returns** an instance of `Model`.
-  original: -> this._parent ? this
+  original: -> this._parent?.original() ? this
+
+  # Returns all shadow parents of a model. Returns an empty array if it's
+  # already an original model.
+  #
+  # **Returns** Array[Model] of shadow parents.
+  originals: ->
+    cur = this
+    (cur = cur._parent) while cur._parent?
 
   # Merges the current model's changed attributes into its parent's. Fails
   # silently if it has no parent.

@@ -175,6 +175,13 @@ class MemoryCacheStore extends Store
         else
           # cache miss, but a fetch query. store away our result.
           this._cache()[signature] = request
+
+          # if the request indicates that its cache can expire, expire after
+          # that many seconds.
+          if request.expires?
+            after = if util.isFunction(request.expires) then request.expires() else request.expires
+            setInterval((=> delete this._cache()[signature]), after * 1000) if util.isNumber(after)
+
           Store.Unhandled
 
       else if (request instanceof CreateRequest) or (request instanceof UpdateRequest)

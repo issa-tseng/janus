@@ -363,6 +363,23 @@ describe 'Model', ->
         model = new Model()
         model.shadow().original().should.equal(model)
 
+      it 'should return the original of a shadow\'s shadow', ->
+        model = new Model()
+        model.shadow().shadow().original().should.equal(model)
+
+      it 'should return all shadow parents of a model', ->
+        a = new Model()
+        b = a.shadow()
+        c = b.shadow()
+
+        originals = c.originals()
+        originals.length.should.equal(2)
+        originals[0].should.equal(b)
+        originals[1].should.equal(a)
+
+      it 'should return an empty array if it is an original asked for parents', ->
+        (new Model()).originals().should.eql([])
+
       it 'should return itself as the original if it is not a shadow', ->
         model = new Model()
         model.original().should.equal(model)
@@ -538,6 +555,44 @@ describe 'Model', ->
           shadow.get('test').set('test2', 'x')
           shadow.attrModified('test', true).should.equal(true)
 
+        it 'should call a function to determine deepness with the right params', ->
+          model = new Model( test: new Model() )
+          shadow = model.shadow()
+
+          nested = new Model()
+          shadow.set('test', nested)
+
+          called = false
+          isDeep = (obj, path, val) ->
+            obj.should.equal(shadow)
+            path.should.equal('test')
+            val.should.equal(nested)
+            called = true
+
+          shadow.attrModified('test', isDeep)
+          called.should.equal(true)
+
+        it 'should use the result of the function to determine deepness', ->
+          model = new Model( test: new Model() )
+          shadow = model.shadow()
+
+          shadow.get('test').set('x', 'y')
+
+          shadow.attrModified('test', -> true).should.equal(true)
+          shadow.attrModified('test', -> false).should.equal(false)
+
+        it 'should pass the function through if deep', ->
+          model = new Model( test: new Model( test2: 'x' ) )
+          shadow = model.shadow()
+
+          shadow.get('test').set('test2', 'y')
+
+          called = 0
+          isDeep = -> called += 1; true
+          shadow.attrModified('test', isDeep)
+
+          called.should.equal(2)
+
         it 'should flatten and compare References', ->
           submodel = new Model()
           reference = new Reference()
@@ -585,6 +640,16 @@ describe 'Model', ->
           shadow.get('test').set('test2', 'x')
           evented.should.equal(false)
 
+        it 'should watch shallowly if a falsy function is provided', ->
+          model = new Model( test: new Model() )
+          shadow = model.shadow()
+
+          evented = false
+          shadow.watchModified(-> false).reactNow((value) -> evented = true if value is true)
+
+          shadow.get('test').set('test2', 'x')
+          evented.should.equal(false)
+
       describe 'watch deep', ->
         it 'should vary depending on own modified state', ->
           model = new Model()
@@ -618,7 +683,6 @@ describe 'Model', ->
           model.set('test', new Model())
           evented.should.equal(false)
 
-          debugger
           shadow.get('test').set('test2', 'x')
           evented.should.equal(true)
 
@@ -634,4 +698,28 @@ describe 'Model', ->
           shadow.unset('test')
 
           submodel.set('test3', 'y')
+
+        it 'should watch deeply if a truish function is provided', ->
+          model = new Model( test: new Model() )
+          shadow = model.shadow()
+
+          evented = false
+          shadow.watchModified(-> true).reactNow((value) -> evented = true if value is true)
+
+          shadow.get('test').set('test2', 'x')
+          evented.should.equal(true)
+
+        it 'should pass through the deepness function', ->
+          nested = new Model( test2: new Model() )
+          model = new Model( test: nested )
+          shadow = model.shadow()
+
+          evented = false
+          shadow.watchModified((model) -> model.original() isnt nested).reactNow((value) -> evented = true if value is true)
+
+          shadow.get('test').get('test2').set('x', 'y')
+          evented.should.equal(false)
+
+          shadow.get('test').set('a', 'b')
+          evented.should.equal(true)
 
