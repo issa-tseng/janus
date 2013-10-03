@@ -381,7 +381,15 @@ class Model extends Base
   # original model.
   #
   # **Returns** an instance of `Model`.
-  original: -> this._parent ? this
+  original: -> this._parent?.original() ? this
+
+  # Returns all shadow parents of a model. Returns an empty array if it's
+  # already an original model.
+  #
+  # **Returns** Array[Model] of shadow parents.
+  originals: ->
+    cur = this
+    (cur = cur._parent) while cur._parent?
 
   # Merges the current model's changed attributes into its parent's. Fails
   # silently if it has no parent.

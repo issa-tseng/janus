@@ -363,6 +363,23 @@ describe 'Model', ->
         model = new Model()
         model.shadow().original().should.equal(model)
 
+      it 'should return the original of a shadow\'s shadow', ->
+        model = new Model()
+        model.shadow().shadow().original().should.equal(model)
+
+      it 'should return all shadow parents of a model', ->
+        a = new Model()
+        b = a.shadow()
+        c = b.shadow()
+
+        originals = c.originals()
+        originals.length.should.equal(2)
+        originals[0].should.equal(b)
+        originals[1].should.equal(a)
+
+      it 'should return an empty array if it is an original asked for parents', ->
+        (new Model()).originals().should.eql([])
+
       it 'should return itself as the original if it is not a shadow', ->
         model = new Model()
         model.original().should.equal(model)
