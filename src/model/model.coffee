@@ -211,6 +211,7 @@ class Model extends Base
       else if obj.__super__?
         recurse(obj.__super__.constructor)
 
+    key = key.join('.') if util.isArray(key)
     this._attributes[key] ?= recurse(this.constructor)
 
   # Get an attribute class for this model.
