@@ -49,6 +49,7 @@ class List extends OrderedCollection
 
     # Normalize the argument to an array, then dump in our items.
     elems = [ elems ] unless util.isArray(elems)
+    elems = this._processElements(elems)
     Array.prototype.splice.apply(this.list, [ idx, 0 ].concat(elems))
 
     for elem, subidx in elems
@@ -151,11 +152,14 @@ class List extends OrderedCollection
   # **Returns** the replaced element, if any.
   put: (idx, elems...) ->
 
-    # Do the actual splice. If nothing yet exists at the target, populate it
-    # with null so that splice does the right thing.
+    # If nothing yet exists at the target, populate it with null so that splice
+    # does the right thing.
     unless this.list[idx]?
       this.list[idx] = null
       delete this.list[idx]
+
+    # Actually process and splice in the elements.
+    elems = this._processElements(elems)
     removed = this.list.splice(idx, elems.length, elems...)
 
     # Event on removals
@@ -185,7 +189,7 @@ class List extends OrderedCollection
       if oldIdx >= 0
         this.move(elem, i)
       else
-        this.add(elem, i)
+        this.add(this._processElements([ elem ])[0], i)
 
     # return the list that was set.
     list
@@ -225,10 +229,14 @@ class List extends OrderedCollection
     for value, i in this.list
       parentValue = this._parent.list[i]
 
+      value = value.value ? value.flatValue if value instanceof Reference
+      parentValue = parentValue.value ? parentValue.flatValue if parentValue instanceof Reference
+
       if value instanceof Model
-        return true if parentValue isnt value._parent or (isDeep and value.modified(deep))
+        return true unless parentValue in value.originals()
+        return true if isDeep is true and value.modified(deep)
       else
-        return true if parentValue isnt value
+        return true if parentValue isnt value and !(!parentValue? and !value?)
 
     return false
 
@@ -288,6 +296,26 @@ class List extends OrderedCollection
         this.on('removed', react)
 
         result
+
+  # Handles elements as they're added. Returns possibly the same array of
+  # possibly the same elements, to be added.
+  #
+  # **Returns** Array[obj] of objects to be added.
+  _processElements: (elems) ->
+    for elem in elems
+      if this._parent?
+        if elem instanceof Model
+          elem.shadow()
+        else if elem instanceof Reference
+          elem.map (value) ->
+            if value instanceof Model
+              value.shadow()
+            else
+              value
+        else
+          elem
+      else
+        elem
 
   @deserialize: (data) ->
     items =
