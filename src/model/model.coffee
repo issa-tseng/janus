@@ -316,7 +316,7 @@ class Model extends Base
         if isDeep is true
           value.modified(deep)
         else
-          parentValue isnt value._parent
+          !(parentValue in value.originals())
       else
         parentValue isnt value and !(!parentValue? and !value?)
     else
