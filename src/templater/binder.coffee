@@ -93,6 +93,8 @@ class Mutator extends Base
   _from: (obj, path) ->
     results = []
 
+    watched = {}
+
     next = (idx) => (result) =>
       results[idx] = result
 
@@ -104,7 +106,14 @@ class Mutator extends Base
         next(0)(obj) if resolved?
       else if idx < path.length
         debugger if result? and !result.watch?
-        result?.watch(path[idx]).map(next(idx + 1))
+
+        if result?
+          if watched[result._id]?
+            watched[result._id]
+          else
+            watched[result._id] = result?.watch(path[idx]).map(next(idx + 1))
+        else
+          null
       else
         result
 
