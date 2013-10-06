@@ -2,6 +2,7 @@
 util = require('../util/util')
 Base = require('../core/base').Base
 Model = require('../model/model').Model
+List = require('../collection/list').List
 Varying = require('../core/varying').Varying
 
 
@@ -157,6 +158,7 @@ class MemoryCacheStore extends Store
     super()
 
   _cache: -> this._cache$ ?= {}
+  _invalidates: -> this._invalidates$ ?= new List()
 
   handle: (request) ->
     signature = request.signature()
@@ -182,18 +184,31 @@ class MemoryCacheStore extends Store
             after = if util.isFunction(request.expires) then request.expires() else request.expires
             setInterval((=> delete this._cache()[signature]), after * 1000) if util.isNumber(after)
 
+          # if the request indicates that its cache can invalidate, add it to
+          # the registration pool of checkers.
+          if request.invalidate?
+            this._invalidates().add(request)
+
           Store.Unhandled
 
-      else if (request instanceof CreateRequest) or (request instanceof UpdateRequest)
-        # mutation query. clear out our cache and set the result only if we
-        # succeed. otherwise, leave it clear.
-        #
+      else if (request instanceof CreateRequest) or (request instanceof UpdateRequest) or (request instanceof DeleteRequest)
+        # mutation query.
+        # first, check if the handling of this request means something existing
+        # must invalidate.
+        for cached in this._invalidates().list.slice() when cached.invalidate(request)
+          delete this._cache()[cached.signature()]
+          this._invalidates().remove(cached)
+
+        # clear out our cache and set the result only if we succeed. otherwise,
+        # leave it clear.
+        delete this._cache()[signature]
+
         # we allow requests to request not to saveback to the cache in case the
         # server doesn't give us a full response.
-        delete this._cache()[signature]
-        if request.cacheResult isnt false
+        if request.cacheResult isnt false and !(request instanceof DeleteRequest)
           request.on 'changed', (state) =>
             this._cache()[signature] = state if state instanceof Request.state.type.Success
+
         Store.Unhandled
 
       else
