@@ -180,7 +180,8 @@ class MemoryCacheStore extends Store
         if hit?
           # cache hit. bind against whichever request we already have that
           # looks identical.
-          request.setValue(hit) unless hit is request
+          # HACK: temp fix for race condition.
+          setTimeout((->request.setValue(hit)), 0) unless hit is request
           Store.Handled
 
         else
