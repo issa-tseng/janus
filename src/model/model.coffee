@@ -222,7 +222,7 @@ class Model extends Base
   # Returns actual instances of every attribute associated with this model.
   #
   # **Returns** an array of `Attribute`s.
-  allAttributes: -> new klass(this, key) for key, klass of this.constructor.allAttributes()
+  allAttributes: -> this.attribute(key) for key of this.constructor.allAttributes()
 
   # Store our binders
   @binders: ->
