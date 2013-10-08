@@ -163,6 +163,15 @@ class MemoryCacheStore extends Store
   handle: (request) ->
     signature = request.signature()
 
+    if (request instanceof CreateRequest) or (request instanceof UpdateRequest) or (request instanceof DeleteRequest)
+      # mutation query.
+      # first, check if the handling of this request means something existing
+      # must invalidate.
+      for cached in this._invalidates().list.slice() when cached.invalidate(request)
+        delete this._cache()[cached.signature()]
+        this._invalidates().remove(cached)
+
+
     if signature?
       # we have a signature to work with; cool.
 
@@ -192,13 +201,6 @@ class MemoryCacheStore extends Store
           Store.Unhandled
 
       else if (request instanceof CreateRequest) or (request instanceof UpdateRequest) or (request instanceof DeleteRequest)
-        # mutation query.
-        # first, check if the handling of this request means something existing
-        # must invalidate.
-        for cached in this._invalidates().list.slice() when cached.invalidate(request)
-          delete this._cache()[cached.signature()]
-          this._invalidates().remove(cached)
-
         # clear out our cache and set the result only if we succeed. otherwise,
         # leave it clear.
         delete this._cache()[signature]
