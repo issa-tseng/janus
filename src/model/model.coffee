@@ -53,8 +53,10 @@ class Model extends Base
   #
   # If we are a shadow copy, we'll delegate to parent if we find nothing.
   #
+  # TODO: bypassAttribute is an ugly hack around an infrecuse.
+  #
   # **Returns** the value of the given key.
-  get: (key) ->
+  get: (key, bypassAttribute = false) ->
     # first try getting self.
     value = util.deepGet(this.attributes, key)
 
@@ -80,7 +82,7 @@ class Model extends Base
         value = this.set(key, mappedValue)
 
     # if that fails, check the attribute
-    unless value?
+    if !value? and bypassAttribute is false
       attribute = this.attribute(key)
       value =
         if attribute?
