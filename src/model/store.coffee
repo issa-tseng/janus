@@ -180,7 +180,8 @@ class MemoryCacheStore extends Store
         if hit?
           # cache hit. bind against whichever request we already have that
           # looks identical.
-          request.setValue(hit) unless hit is request
+          # HACK: temp fix for race condition.
+          setTimeout((->request.setValue(hit)), 0) unless hit is request
           Store.Handled
 
         else
@@ -191,7 +192,7 @@ class MemoryCacheStore extends Store
           # that many seconds.
           if request.expires?
             after = if util.isFunction(request.expires) then request.expires() else request.expires
-            setInterval((=> delete this._cache()[signature]), after * 1000) if util.isNumber(after)
+            setTimeout((=> delete this._cache()[signature]), after * 1000) if util.isNumber(after)
 
           # if the request indicates that its cache can invalidate, add it to
           # the registration pool of checkers.
