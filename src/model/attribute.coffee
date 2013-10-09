@@ -17,7 +17,13 @@ class Attribute extends Model
     this._initialize?()
 
   setValue: (value) -> this.model.set(this.key, value)
-  getValue: -> this.model.get(this.key)
+  getValue: ->
+    value = this.model.get(this.key, true)
+    if !value? and this.default?
+      value = this.default()
+      if this.writeDefault is true
+        this.setValue(value)
+    value
 
   watchValue: -> this.model.watch(this.key)
 
