@@ -17,6 +17,7 @@ class Attribute extends Model
     this._initialize?()
 
   setValue: (value) -> this.model.set(this.key, value)
+  unsetValue: -> this.model.unset(this.key)
   getValue: ->
     value = this.model.get(this.key, true)
     if !value? and this.default?
