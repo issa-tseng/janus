@@ -83,7 +83,10 @@ class Mutator extends Base
     this
 
   fromApp: (path...) ->
-    this._data.push(=> this._from(this.parentBinder.options.app, path))
+    if path? and path.length > 0
+      this._data.push(=> this._from(this.parentBinder.options.app, path))
+    else
+      this._data.push(=> new Varying(this.parentBinder.options.app))
     this
 
   fromAttribute: (key) ->
