@@ -110,11 +110,11 @@ class List extends OrderedCollection
   #
   # **Returns** the removed elements.
   removeAll: ->
-    for elem, idx in this.list
-      this.emit('removed', elem, idx)
-      elem?.emit?('removedFrom', this, idx)
-
-    this.list.splice(0, this.list.length)
+    while this.list.length > 0
+      elem = this.list.pop()
+      this.emit('removed', elem, this.list.length)
+      elem?.emit?('removedFrom', this, this.list.length)
+      elem
 
   # Get an element from this collection by index.
   at: (idx) ->
