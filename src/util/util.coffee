@@ -32,7 +32,7 @@ util =
     (args...) ->
       return if run is true
       run = true
-      f(args...)
+      f.apply(this, args)
 
 
 
