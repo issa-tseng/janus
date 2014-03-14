@@ -1,7 +1,7 @@
 {
   "name": "janus",
   "description": "the two-faced application library-framework",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "author": "Clint Tseng <clint@dontexplain.com>",
   "homepage": "http://janusjs.org",
   "repository": {
