@@ -530,6 +530,13 @@ describe 'Model', ->
           shadow.unset('test2')
           shadow.attrModified('test2').should.equal(false)
 
+        it 'should handle newly set attributes correctly', ->
+          model = new Model()
+          shadow = model.shadow()
+
+          shadow.set('test', new Model())
+          shadow.attrModified('test').should.equal(true)
+
         it 'should ignore transient attributes', ->
           class TestModel extends Model
             @attribute 'test', class extends attribute.Attribute

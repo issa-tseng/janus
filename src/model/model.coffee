@@ -315,10 +315,9 @@ class Model extends Base
       parentValue = parentValue.value ? parentValue.flatValue if parentValue instanceof Reference
 
       if value instanceof Model
-        if isDeep is true
-          value.modified(deep)
-        else
-          !(parentValue in value.originals())
+        # Check that parentValue != value
+        # If it isn't, check value children.
+        !(parentValue in value.originals()) or (isDeep is true and value.modified(deep))
       else
         parentValue isnt value and !(!parentValue? and !value?)
     else
