@@ -39,6 +39,12 @@ class Collection extends Model
   # **Returns** a `UniqList`
   uniq: -> new (require('./uniq-list').UniqList)(this)
 
+  # Create a list that always takes the first x elements of this collection,
+  # where x may be a number or a Varying[Int].
+  #
+  # **Returns** a `TakenList`
+  take: (x) -> new (require('./taken-list').TakenList)(this, x)
+
   # Perform some action once for each member of this List, upon insertion.
   # Throw away the result.
   react: (f) -> this.on('added', f)
