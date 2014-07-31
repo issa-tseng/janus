@@ -145,6 +145,27 @@ class Varying extends Base
 
       result
 
+    throttle: (source, delay) ->
+      result = new Varying(source.value)
+      result._parent = source # for debugging
+
+      set = -> result.setValue(source.value)
+
+      timer = null
+      pending = false
+      source.on 'changed', ->
+        if timer?
+          pending = true
+        else
+          set()
+          timer = setTimeout((->
+            set() if pending is true
+            pending = false
+            timer = null
+          ), delay)
+
+      result
+
 
 # A MultiVarying takes multiple Varying objects and puts their values together.
 # It doesn't itself listen to anything but Proxies directly.
