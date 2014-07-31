@@ -189,7 +189,7 @@ class Model extends Base
 
     recurse = (obj) =>
       return unless obj.attributes?
-      recurse(obj.__super__.constructor) if obj.__super__?
+      recurse(util.superClass(obj)) if util.superClass(obj)?
       attrs[key] = attr for key, attr of obj.attributes()
       null
 
@@ -210,8 +210,8 @@ class Model extends Base
 
       if result?
         result
-      else if obj.__super__?
-        recurse(obj.__super__.constructor)
+      else if util.superClass(obj)?
+        recurse(util.superClass(obj))
 
     key = key.join('.') if util.isArray(key)
     this._attributes[key] ?= recurse(this.constructor)
@@ -246,7 +246,8 @@ class Model extends Base
     this._binders = {}
     recurse = (obj) =>
       (this._binders[binder._key] = binder.bind(this)) for binder in obj.binders() when !this._binders[binder._key]?
-      recurse(obj.__super__.constructor) if obj.__super__? and obj.__super__.constructor.binders?
+      superClass = util.superClass(obj)
+      recurse(superClass) if superClass and superClass.binders?
       null
 
     recurse(this.constructor)
