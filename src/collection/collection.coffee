@@ -13,6 +13,7 @@ util.extend(module.exports,
   CattedList: require('./catted-list').CattedList
   PartitionedList: require('./partitioned-list').PartitionedList
   UniqList: require('./uniq-list').UniqList
+  TakenList: require('./uniq-list').TakenList
 
   Set: require('./set').Set
 
