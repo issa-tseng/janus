@@ -282,7 +282,7 @@ class Model extends Base
   # know about.
   #
   # **Returns** a new shadow copy, which is an instance of `Model`.
-  shadow: -> new this.constructor({}, util.extendNew(this.options, { parent: this }))
+  shadow: (klass) -> new (klass ? this.constructor)({}, util.extendNew(this.options, { parent: this }))
 
   # Checks if we've changed relative to our original.
   #
