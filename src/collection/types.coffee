@@ -3,6 +3,7 @@
 # so that we can easily register against these collections.
 
 Model = require('../model/model').Model
+folds = require('./folds')
 util = require('../util/util')
 
 # A `Collection` provides `add` and `remove` events for every element that is
@@ -34,14 +35,43 @@ class Collection extends Model
   # **Returns** a `PartitionedList`
   partition: (f) -> new (require('./partitioned-list').PartitionedList)(this, f)
 
+  # Create a new FlattenedList based on this List.
+  #
+  # **Returns** a `FlattenedList`
+  flatten: -> new (require('./flattened-list').FlattenedList)(this)
+
   # Create a new UniqList based on this List.
   #
   # **Returns** a `UniqList`
-  uniq: -> new (require('./uniq-list').UniqList)(this)
+  uniq: (options) -> new (require('./uniq-list').UniqList)(this, options)
 
   # Perform some action once for each member of this List, upon insertion.
   # Throw away the result.
   react: (f) -> this.on('added', f)
+
+  # See if any element in this list qualifies for the condition.
+  any: (f) -> folds.any(new (require('./mapped-list').MappedList)(this, f))
+
+  # fold left across the list.
+  fold: (memo, f) -> folds.fold(this, memo, f)
+
+  # scan left across the list. (alt implementation)
+  scanl: (memo, f) -> folds.scanl(this, memo, f)
+
+  # fold left across the list. (alt implementation)
+  foldl: (memo, f) -> folds.foldl(this, memo, f)
+
+  # get the minimum number on the list.
+  min: -> folds.min(this)
+
+  # get the maximum number on the list.
+  max: -> folds.max(this)
+
+  # get the sum of this list.
+  sum: -> folds.sum(this)
+
+  # get the strings of this list joined by some string.
+  join: (joiner) -> folds.join(this, joiner)
 
   # Same as #react() but immediately also runs against all elements in the
   # list.
