@@ -1,4 +1,4 @@
-# The **Varying** object is a possibly poorly-name object that wraps any single
+# The **Varying** object is a possibly poorly-named object that wraps any single
 # value in a wrapper that can event wher said value changes. Often it is used by
 # Model objects to wrap an attribute for binding against a View, and in fact
 # Models provide a method to do so.
@@ -132,6 +132,56 @@ class Varying extends Base
 
       result
 
+    ignoreNull: (source) ->
+      result = new Varying(source.value)
+      result._parent = source
+
+      source.react((newValue) -> result.setValue(newValue) if newValue?)
+
+      result
+
+    delay: (source, delay) ->
+      result = new Varying(source.value)
+      result._parent = source # for debugging
+
+      source.on('changed', (newValue) -> setTimeout((-> result.setValue(newValue)), delay))
+
+      result
+
+    throttle: (source, delay) ->
+      result = new Varying(source.value)
+      result._parent = source # for debugging
+
+      set = -> result.setValue(source.value)
+
+      timer = null
+      pending = false
+      source.on 'changed', ->
+        if timer?
+          pending = true
+        else
+          set()
+          timer = setTimeout((->
+            set() if pending is true
+            pending = false
+            timer = null
+          ), delay)
+
+      result
+
+    debounce: (source, delay) ->
+      result = new Varying(source.value)
+      result._parent = source # for debugging
+
+      timer = null
+      source.on 'changed', ->
+        clearTimeout(timer) if timer?
+        timer = setTimeout((->
+          result.setValue(source.value)
+          timer = null
+        ), delay)
+
+      result
 
 # A MultiVarying takes multiple Varying objects and puts their values together.
 # It doesn't itself listen to anything but Proxies directly.
