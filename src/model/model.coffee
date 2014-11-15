@@ -486,16 +486,11 @@ class Model extends Base
   # Helper used by `revert()` and some paths of `unset()` to actually clear out
   # a particular key.
   _deleteAttr: (key) ->
-    util.deepSet(this.attributes, key) (obj, subkey) =>
-      return unless obj?
+    oldValue = util.deepDelete(this.attributes, key)
+    newValue = this.get(key)
+    this._emitChange(key, newValue, oldValue) unless newValue is oldValue
 
-      oldValue = obj[subkey]
-      delete obj[subkey]
-
-      newValue = this.get(key)
-      this._emitChange(key, newValue, oldValue) unless newValue is oldValue
-
-      oldValue
+    oldValue
 
   # Helper to generate change events. We emit events for both the actual changed
   # key along with all its parent nests, which this deals with.
