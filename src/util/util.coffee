@@ -23,7 +23,9 @@ util =
   # **Returns** a unique integer.
   uniqueId: -> util._uniqueId++
 
-
+  #### Array Utils
+  # Capitalize the first letter of a string.
+  capitalize: (x) -> x.charAt(0).toUpperCase() + x.slice(1) if x?
 
   #### Function Utils
   # Very simple call limiters.
@@ -34,6 +36,8 @@ util =
       run = true
       f.apply(this, args)
 
+  # Fixed point Y combinator.
+  fix: (f) -> ((x) -> f((y) -> x(x)(y)))((x) -> f((y) -> x(x)(y)))
 
 
   #### Array Utils
@@ -102,11 +106,7 @@ util =
   # Sets a deeply nested key in a hash. Generates nested hashes along the way
   # if it encounters undef keys.
   #
-  # **Returns** a function that takes:
-  #
-  # - a value and sets the requested key, or
-  # - a function, which will be called with the object the key lives on, and
-  #   the key.
+  # **Returns** a function that takes a value and sets the requested key
   deepSet: (obj, path...) ->
     path = util.normalizePath(path)
     return null unless path?
@@ -114,11 +114,24 @@ util =
     idx = 0
     obj = obj[path[idx++]] ?= {} while (idx + 1) < path.length
 
-    (x) ->
-      if util.isFunction(x)
-        x(obj, path[idx])
-      else
-        obj[path[idx]] = x
+    (x) -> obj[path[idx]] = x
+
+  # Deletes a deeply nested key in a hash. Aborts if it can't navigate to the
+  # path in question.
+  #
+  # **Returns** a function that takes a value and sets the requested key
+  deepDelete: (obj, path...) ->
+    path = util.normalizePath(path)
+    return null unless path?
+
+    idx = 0
+    obj = obj[path[idx++]] while (idx + 1) < path.length and obj?
+
+    return unless idx is path.length - 1
+
+    oldValue = obj[path[idx]]
+    delete obj[path[idx]]
+    oldValue
 
 
   # Traverses a hash, calling a passed-in function with the current path and
