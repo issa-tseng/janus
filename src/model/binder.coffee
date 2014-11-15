@@ -1,7 +1,13 @@
 
 util = require('../util/util')
 Base = require('../core/base')
-MultiVarying = require('../core/varying').MultiVarying
+{ Varying, MultiVarying } = require('../core/varying')
+
+fallbackMap = (values...) ->
+  if values.length is 1
+    values[0]
+  else
+    values
 
 # TODO: Shares enough DNA with Templater Binder to be combined probably.
 class Binder extends Base
@@ -25,8 +31,13 @@ class Binder extends Base
     this._generators.push(-> f.call(this._model))
     this
 
+  fromSelf: ->
+    this._generators.push(-> new Varying(this._model))
+    this
+
   and: this.prototype.from
   andVarying: this.prototype.fromVarying
+  andSelf: this.prototype.fromSelf
 
   flatMap: (f) ->
     this._flatMap = f
@@ -52,18 +63,8 @@ class Binder extends Base
   apply: ->
     this._varying?.destroy()
 
-    this._varying = new MultiVarying (data.call(this) for data in this._generators), (values...) =>
-      result =
-        if util.isFunction(this._flatMap)
-          this._flatMap.apply(this._model, values)
-        else
-          if values.length is 1
-            values[0]
-          else
-            values
-
+    this._varying = new MultiVarying((data.call(this) for data in this._generators), this._flatMap ? fallbackMap).map (result) =>
       result ?= this._fallback
-
       this._model.set(this._key, result)
 
 util.extend(module.exports,
