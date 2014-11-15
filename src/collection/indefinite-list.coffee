@@ -86,6 +86,17 @@ class IndefiniteList extends OrderedCollection
 
     null
 
+  # Watch the length of this collection.
+  # TODO: this is just copied from List. I guess we need traits.
+  watchLength: ->
+    result = new Varying(this.list.length)
+
+    # TODO: noop multi-changes (eg put) ?
+    this.on('added', -> result.setValue(this.list.length))
+    this.on('removed', -> result.setValue(this.list.length))
+
+    result
+
   @One: (elem, step) -> new One(elem, step)
   @Many: (elems, step) -> new Many(elems, step)
   @Indefinite: new Indefinite
