@@ -138,6 +138,7 @@ class Model extends Base
       this._emitChange(key, null, oldValue) unless oldValue is null
 
     else
+      oldValue = this.get(key)
       this._deleteAttr(key)
 
     oldValue
