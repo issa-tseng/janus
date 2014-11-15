@@ -113,6 +113,11 @@ class Model extends Base
     if args.length is 1 and util.isPlainObject(args[0])
       util.traverse(args[0], (path, value) => this.set(path, value))
 
+    else if args.length is 2 and util.isPlainObject(args[1])
+      obj = {}
+      util.deepSet(obj, args[0])(args[1])
+      this.set(obj)
+
     else if args.length is 2
       [ key, value ] = args
 
