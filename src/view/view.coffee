@@ -21,7 +21,12 @@ class View extends Base
     # inject our actual subject. Otherwise, accept as-is.
     this.subject =
       if this.constructor.viewModelClass?
-        new this.constructor.viewModelClass( subject: subject )
+        attrs =
+          if this.options.settings?
+            { settings: this.options.settings, subject }
+          else
+            { subject }
+        new this.constructor.viewModelClass(attrs)
       else
         subject
 
