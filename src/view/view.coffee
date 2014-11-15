@@ -14,8 +14,17 @@ class View extends Base
   # The `View` takes first and foremost a `subject`, which is the object it aims
   # to create a view for. It also takes an `options` hash, which has no
   # predefined behavior.
-  constructor: (@subject, @options = {}) ->
+  constructor: (subject, @options = {}) ->
     super()
+
+    # If we have a reference to a ViewModel intermediary, instantiate it and
+    # inject our actual subject. Otherwise, accept as-is.
+    this.subject =
+      if this.constructor.viewModelClass?
+        new this.constructor.viewModelClass( subject: subject )
+      else
+        subject
+
     this._initialize?()
 
   # Returns the artifact this View is managing. If it has not yet created one,

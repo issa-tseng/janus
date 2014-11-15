@@ -78,6 +78,8 @@ class Library extends Base
   get: (obj, options = {}) ->
     return null unless obj? # but what if i want to register against null?
 
+    debugger if options.debug is true
+
     book =
       this._get(obj, obj.constructor, options.context ? this._defaultContext, options) ?
       this._get(obj, obj.constructor, 'default', options)
@@ -107,8 +109,8 @@ class Library extends Base
       # we have a set of possible matches. go through them.
       return record.book for record in contextShelf when match(obj, record, options.attributes)
 
-    if klass.__super__?
-      this._get(obj, klass.__super__.constructor, context, options)
+    if util.superClass(klass)?
+      this._get(obj, util.superClass(klass), context, options)
 
   # Returns a new `Library` that is identical to and bound to this one in every
   # way except that it has a separate event binding context.

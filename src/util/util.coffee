@@ -77,6 +77,13 @@ util =
     (return true) for k of obj when obj.hasOwnProperty(k)
     false
 
+  # Get the superclass of a class. Accounts for Coffeescript and Livescript.
+  superClass: (klass) ->
+    if klass.superclass?
+      klass.superclass
+    else if klass.__super__?
+      klass.__super__.constructor
+
 
   # Helper used by `deepGet` and `deepSet` to standardize the path argument.
   # Accepts `x, y, z`, `'x.y.z'`, and `[x, y, z]`.

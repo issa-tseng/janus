@@ -14,8 +14,11 @@ class ViewContainer extends DomView
     this.options.childOpts ?= {}
 
   _removeView: (subject) ->
+    # nothing to do for a null/undef subject.
+    return null unless subject?
+
     # kill the view; remove our ref.
-    this._views[subject._id]?.destroy()
+    this._views[subject._id ? subject]?.destroy()
     delete this._views[subject._id]
 
     # mutation; return nothing.
@@ -38,7 +41,7 @@ class ViewContainer extends DomView
         this._app().getView(subject, context: this._childContext(), constructorOpts: this.options.childOpts)
 
     # remember it.
-    this._views[subject._id] = view
+    this._views[subject._id ? subject] = view
 
     # wire it if we're already in that state.
     view?.wireEvents() if this._wired is true
