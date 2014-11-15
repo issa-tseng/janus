@@ -14,7 +14,7 @@ class UniqList extends DerivedList
     parent.on('removed', (elem) => this._tryRemove(elem))
 
   _tryAdd: (elem) ->
-    idx = this.list.indexOf(elem)
+    idx = this.list.indexOf(if this.options.by then this.options.by(elem) else elem)
 
     if idx >= 0
       this.counts[idx] += 1
@@ -23,7 +23,7 @@ class UniqList extends DerivedList
       this._add(elem)
 
   _tryRemove: (elem) ->
-    idx = this.list.indexOf(elem)
+    idx = this.list.indexOf(if this.options.by then this.options.by(elem) else elem)
 
     if idx >= 0
       this.counts[idx] -= 1
