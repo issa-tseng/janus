@@ -90,28 +90,40 @@ unapply = (target, handler) -> if isFunction(handler) then target?.unapply(handl
 
 # our matcher.
 match = (args...) ->
-  set = args[0]?.set # assume the first thing is a case.
+  first = args[0] # grab the first item.
+  set = (first?.case ? first)?.set # assume the first thing is a case or an instance.
   seen = {} # track what cases we've covered.
   otherwise = false # does an otherwise exist?
 
   # "compile-time" checks.
-  for i in [0..args.length] by 2 when args[i]?
-    kase = args[i]
+  i = 0
+  while i < args.length
+    x = args[i]
+    kase = if x.case? then x.case else x
 
+    # TODO: function call syntax for otherwise.
     if kase is 'otherwise'
       otherwise = true
     else
       throw new Error("found a case of some other set!") unless set[kase.type]?
       seen[kase.type] = true
 
+    i += if x.case? then 1 else 2
+
   throw new Error('not all cases covered!') for kase of set when seen[kase] isnt true if otherwise is false
 
   # our actual matcher as a result.
   (target) ->
     # walk pairwise.
-    for i in [0..args.length] by 2
-      kase = args[i]
-      handler = args[i + 1]
+    i = 0
+    while i < args.length
+      x = args[i]
+      if x.case?
+        kase = x.case
+        handler = x.value
+      else
+        kase = args[i]
+        handler = args[i + 1]
 
       # always process on otherwise.
       return unapply(target, handler) if kase is 'otherwise'
@@ -119,6 +131,7 @@ match = (args...) ->
       # process if a match otherwise.
       return unapply(target, handler) if kase.type.valueOf() is target?.valueOf()
 
+      i += if x.case? then 1 else 2
 
 # export.
 module.exports = { caseSet, match, otherwise }

@@ -97,6 +97,20 @@ describe 'case', ->
           otherwise, 2
         ).should.be.a.Function
 
+      it 'should allow for direct function call syntax', ->
+        { success, fail } = caseSet('success', 'fail')
+        match(
+          success -> 1
+          fail -> 2
+        ).should.be.a.Function
+
+      it 'should allow for a mix of function call and comma syntaxes', ->
+        { success, fail } = caseSet('success', 'fail')
+        match(
+          success, 1
+          fail -> 2
+        ).should.be.a.Function
+
     describe 'pattern matching', ->
       it 'should return a correct direct match: first case', ->
         { success, fail } = caseSet('success', 'fail')
@@ -122,6 +136,20 @@ describe 'case', ->
         m(fail()).should.equal(3)
         m().should.equal(3)
 
+      it 'should return a correct direct function call match: first case', ->
+        { success, fail } = caseSet('success', 'fail')
+        match(
+          success -> 1
+          fail -> 2
+        )(success()).should.equal(1)
+
+      it 'should return a correct direct function call match: second case', ->
+        { success, fail } = caseSet('success', 'fail')
+        match(
+          success, 1
+          fail -> 2
+        )(fail()).should.equal(2)
+
     describe 'unapplying', ->
       it 'should call my result handler with the inner value', ->
         matched = false
@@ -144,6 +172,18 @@ describe 'case', ->
         )
         m = match(
           success, (x) -> matched = x.result
+          otherwise, null
+        )
+
+        m(success(true)).should.be.true
+        matched.should.be.true
+
+      it 'should call my result handler with the inner value given function call syntax', ->
+        matched = false
+
+        { success, fail } = caseSet('success', 'fail')
+        m = match(
+          success (x) -> matched = x
           otherwise, null
         )
 
