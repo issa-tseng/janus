@@ -1,221 +1,129 @@
-# The **Varying** object is a possibly poorly-named object that wraps any single
-# value in a wrapper that can event wher said value changes. Often it is used by
-# Model objects to wrap an attribute for binding against a View, and in fact
-# Models provide a method to do so.
-#
-# The expectation is that upon spawning a `Varying`, one will use the value's
-# `listenTo` and `setValue` methods in conjuction to trigger updates. This may
-# seem like a strange amount of stuff for a consumer to manage, but the API
-# becomes a bit of a mess otherwise. And, Model objects do this legwork
-# automatically.
+{ isFunction, fix, uniqueId } = require('../util/util')
 
-Base = require('../core/base').Base
-util = require('../util/util')
+class Varying
+  # flag to enable duck-typed detection of this class. thanks, npm.
+  isVarying: true
 
-# Use Base so that we inherit its EventEmitter defaults
-class Varying extends Base
-  # Creates a new Varying. The following options may be supplied:
-  #
-  # - `value`: The initial value of the Varying.
-  # - `transform`: A function that transforms the value before passing it on if
-  #   desired.
-  #
   constructor: (value) ->
-    super()
-    this.setValue(value)
+    this.set(value) # immediately set our internal value.
+    this._observers = {} # track our observers so we can notify on change.
 
-  # Sets the value of this Varying and triggers the relevant events.
-  #
-  # **Returns** the new value.
-  setValue: (value, force) ->
-    # If our value is a Varying itself, we will attach ourselves to its result;
-    # unless of course we're for some reason being assigned ourself, in which
-    # case set null and bail.
-    if this._childVarying?
-      this.unlistenTo(this._childVarying)
-      this._childVarying = null
+    this._generation = 0 # keeps track of which propagation cycle we're on.
 
-    if value is this
-      value = null
-    else if value instanceof Varying
-      this._childVarying = value
-      value = this._childVarying.value
+  map: (f) -> new MappedVarying(this, f)
 
-      # We turn force on, since we're already listening to a `Varying`, which
-      # should be weeding out spurious fires already unless it has a reason not
-      # to.
-      this.listenTo(this._childVarying, 'changed', (newValue) => this._doSetValue(newValue, true))
+  flatten: -> new FlattenedVarying(this)
 
-    # Update and event if the value has indeed changed.
-    this._doSetValue(value, force)
+  flatMap: (f) -> new FlatMappedVarying(this, f)
 
-  # Return a new Varying that applies the given map on top of the existing
-  # result.
-  map: (f) ->
-    result = new Varying(f(this.value))
-    result.listenTo(this, 'changed', (value) => result.setValue(f(value)))
+  react: (f_) ->
+    # use a unique id and an obj for quicker manifest ops than an array.
+    id = uniqueId()
+    this._observers[id] = new Varied(id, f_, => delete this._observers[id])
 
-    # easier debugging:
-    result._parent = this
-    result._mapper = f
+  reactNow: (f_) ->
+    varied = this.react(f_)
+    f_.call(varied, this.get())
+    varied
 
-    result
+  set: (value) ->
+    return if value is this._value
 
-  # Perform some action each time this Varying changes. Throw away the result.
-  react: (f) -> this.on('changed', f)
+    generation = this._generation += 1
+    this._value = value
 
-  # Same as #react(), but also executes immediately with the current value.
-  reactNow: (f) ->
-    f(this.value)
-    this.on('changed', f)
+    for _, observer of this._observers
+      observer.f_(this._value)
+      return if generation isnt this._generation # we've re-triggered setValue. abort.
 
-  # Print value to console as it changes for quick debugging.
-  trace: (name = this._id) ->
-    this.on('changed', (value) -> console.log("Varying #{name} changed:"); console.log(value))
-    this
+    null
 
-  # Breakpoint whenever this value changes.
-  debug: ->
-    this.on('changed', (value) -> debugger)
-    this
+  get: -> this._value
 
-  # process of actually storing and emitting on the value
-  _doSetValue: (value, force = false) ->
-    oldValue = this.value
-    if force is true or value isnt oldValue
-      this.value = value
-      this.emit('changed', value, oldValue)
+  @pure: (args...) ->
+    if util.isFunction(args[0])
+      f = args[0]
+      expected = f.length
 
-    value
+      (fix (curry) -> (args...) ->
+        if args.length < expected
+          (more...) -> curry(args.concat(more))
+        else
+          new ComposedVarying(args, f)
+      )(args)
+    else
+      f = args.pop()
+      new ComposedVarying(args, f)
 
-  # convenience constructor since sometimes varyings are instantiate-and-forget.
-  @combine: (varyings, transform) -> new MultiVarying(varyings, transform)
+  # Synonym for `pure`, in case it's too haskell-y for people to understand.
+  @mapAll: @pure
 
   # convenience constructor to ensure a Varying. wraps nonVaryings, and returns
   # Varyings given to it.
   @ly: (val) ->
-    if val instanceof Varying
+    if val?.isVarying is true
       val
     else
       new Varying(val)
 
-  # varying ways of institutionally lying to the user.
-  @lie:
-    sticky: (source, delays) ->
-      result = new Varying(source.value)
-      result._parent = source # for debugging
+class Varied
+  constructor: (@id, @f_, @stop) ->
 
-      lookup =
-        if util.isFunction(delays)
-          (x) -> delays(x)
+class FlatMappedVarying extends Varying
+  identity = (x) -> x
+
+  constructor: (@_parent, @_f = identity, @_flatten = true) ->
+    this._observers = {}
+
+  react: (callback) ->
+    self = this
+
+    id = uniqueId()
+    this._observers[id] = varied = new Varied(id, callback, =>
+      delete this._observers[id]
+      parentVaried.stop() # the ref below will get hoisted.
+    )
+
+    lastResult = null
+    lastInnerVaried = null
+    onValue = (value) ->
+      result = self._f.call(null, value)
+      return if result is lastResult
+
+      if self._flatten is true and this is parentVaried
+        lastInnerVaried?.stop()
+        if result?.isVarying is true
+          lastInnerVaried = result.reactNow(onValue)
+          return # TODO: i despise non-immediate returns.
         else
-          (x) -> delays[x]
+          lastInnerVaried = null
 
-      timer = null
+      callback.call(varied, result)
+      lastResult = result
 
-      source.on 'changed', (newValue) ->
-        return if timer?
-        delay = lookup(result.value)
+    parentVaried = this._parent.react(onValue)
 
-        if delay?
-          clearTimeout(timer)
-          timer = setTimeout((->
-            timer = null
-            result.setValue(source.value)
-          ), delay)
+    varied
 
-        else
-          result.setValue(newValue)
+  set: null
 
-      result
+  get: ->
+    if this._flatten is true
+      value = this._parent.get()
+      if value?.isVarying is true
+        this._f.call(null, value.get())
+      else
+        this._f.call(null, value)
+    else
+      this._f.call(null, this._parent.get())
 
-    ignoreNull: (source) ->
-      result = new Varying(source.value)
-      result._parent = source
+class FlattenedVarying extends FlatMappedVarying
+  constructor: (parent) -> super(parent, null)
 
-      source.react((newValue) -> result.setValue(newValue) if newValue?)
+class MappedVarying extends FlatMappedVarying
+  constructor: (parent, f) -> super(parent, f, false)
 
-      result
+class ComposedVarying extends FlatMappedVarying
 
-    delay: (source, delay) ->
-      result = new Varying(source.value)
-      result._parent = source # for debugging
-
-      source.on('changed', (newValue) -> setTimeout((-> result.setValue(newValue)), delay))
-
-      result
-
-    throttle: (source, delay) ->
-      result = new Varying(source.value)
-      result._parent = source # for debugging
-
-      set = -> result.setValue(source.value)
-
-      timer = null
-      pending = false
-      source.on 'changed', ->
-        if timer?
-          pending = true
-        else
-          set()
-          timer = setTimeout((->
-            set() if pending is true
-            pending = false
-            timer = null
-          ), delay)
-
-      result
-
-    debounce: (source, delay) ->
-      result = new Varying(source.value)
-      result._parent = source # for debugging
-
-      timer = null
-      source.on 'changed', ->
-        clearTimeout(timer) if timer?
-        timer = setTimeout((->
-          result.setValue(source.value)
-          timer = null
-        ), delay)
-
-      result
-
-# A MultiVarying takes multiple Varying objects and puts their values together.
-# It doesn't itself listen to anything but Proxies directly.
-class MultiVarying extends Varying
-
-  # Unlike the base `Varying`, this one simply takes the array of Proxies and a
-  # `flatMap` function for combining the results of those proxies.
-  constructor: (@varyings = [], @flatMap) ->
-    super()
-
-    # Init our values array. It'll get actual values when we call `update` in
-    # just a bit here.
-    this.values = []
-
-    # Listen to all our proxies for updates.
-    for varying, i in this.varyings
-      do (varying, i) =>
-        this.values[i] = varying.value
-        varying.on 'changed', (value) =>
-          this.values[i] = value
-          this.update()
-
-    # We'll update immediately to set our initial state.
-    this.update()
-
-  # Call our flatMap func for combining, then just rely on `setValue` for the
-  # rest of the behavior.
-  #
-  # **Returns** the new value.
-  update: ->
-    value = this.values
-    value = this.flatMap(value...) if this.flatMap?
-    this.setValue(value)
-
-# Export.
-util.extend(module.exports,
-  Varying: Varying
-  MultiVarying: MultiVarying
-)
+module.exports = { Varying, Varied, FlatMappedVarying, FlattenedVarying, MappedVarying, ComposedVarying }
 
