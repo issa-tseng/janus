@@ -84,6 +84,9 @@ describe.only 'Varying', ->
     it 'should be able to directly get a value', ->
       (new Varying(1)).map((x) -> x * 2).get().should.equal(2)
 
+    it 'should not flatten on get', ->
+      (new Varying(1)).map((x) -> new Varying(x * 2)).get().should.be.an.instanceof(Varying)
+
     it 'should callback with a mapped value when react is called', ->
       v = new Varying(1)
       m = v.map((x) -> x * 2)
@@ -104,6 +107,14 @@ describe.only 'Varying', ->
 
       v.set(2)
       result.should.equal(4)
+
+    it 'should not flatten on react', ->
+      v = new Varying(1)
+      m = v.map((x) -> new Varying(x * 2))
+
+      result = null
+      m.reactNow((x) -> result = x)
+      result.should.be.an.instanceof(Varying)
 
     it 'should bind this to the Varied within the handler', ->
       v = new Varying(1)
@@ -241,7 +252,65 @@ describe.only 'Varying', ->
       (observers += 1) for _ of i._observers
       observers.should.equal(0)
 
-# describe 'flatMap', ->
+  describe 'flatMap', ->
+    it 'should return a FlatMappedVarying when map is called', ->
+      (new Varying()).flatMap().should.be.an.instanceof(FlatMappedVarying)
+
+    it 'should be able to directly get a value', ->
+      (new Varying(1)).flatMap((x) -> x * 2).get().should.equal(2)
+      (new Varying(3)).flatMap((x) -> new Varying(x * 2)).get().should.equal(6)
+
+    it 'should only flatten one level', ->
+      v = (new Varying(4)).flatMap((x) -> new Varying(new Varying(x * 2))).get()
+      v.should.be.an.instanceof(Varying)
+      v.get().should.equal(8)
+
+    it 'should callback with a flatmapped value when react is called', ->
+      v = new Varying(1)
+      m = v.flatMap((x) -> new Varying(x * 2))
+
+      result = 0
+      m.react((x) -> result = x)
+
+      v.set(2)
+      result.should.equal(4)
+
+    it 'should callback immediately with a flatmapped value when react is called', ->
+      v = new Varying(1)
+      m = v.flatMap((x) -> new Varying(x * 2))
+
+      result = 0
+      m.reactNow((x) -> result = x)
+      result.should.equal(2)
+
+      v.set(2)
+      result.should.equal(4)
+
+    it 'should bind this to the Varied within the handler', ->
+      v = new Varying(1)
+      m = v.flatMap((x) -> x * 2)
+      t = null
+
+      r = m.reactNow(-> t = this)
+      r.should.equal(t)
+
+      v.set(2)
+      r.should.equal(t)
+
+    it 'should cease reacting on stopped handlers', ->
+      v = new Varying(1)
+      m = v.flatMap((x) -> x * 2)
+
+      runCount = 0
+      r = m.react(-> runCount += 1)
+
+      v.set(2)
+      runCount.should.equal(1)
+
+      r.stop()
+      v.set(3)
+      runCount.should.equal(1)
+
 
 # describe 'side effects', ->
 #   it 'should not re-execute orphaned propagations', ->

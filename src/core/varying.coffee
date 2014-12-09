@@ -60,11 +60,7 @@ class Varying
 
   # convenience constructor to ensure a Varying. wraps nonVaryings, and returns
   # Varyings given to it.
-  @ly: (val) ->
-    if val?.isVarying is true
-      val
-    else
-      new Varying(val)
+  @ly: (x) -> if x?.isVarying is true then x else new Varying(x)
 
 class Varied
   constructor: (@id, @f_, @stop) ->
@@ -87,7 +83,7 @@ class FlatMappedVarying extends Varying
     lastResult = null
     lastInnerVaried = null
     onValue = (value) ->
-      result = self._f.call(null, value)
+      result = if this is parentVaried then self._f.call(null, value) else value
       return if result is lastResult
 
       if self._flatten is true and this is parentVaried
@@ -96,7 +92,7 @@ class FlatMappedVarying extends Varying
           lastInnerVaried = result.reactNow(onValue)
           return # TODO: i despise non-immediate returns.
         else
-          lastInnerVaried = null
+          lastInnerVaried = null # don't allow .stop() to be called repeatedly.
 
       callback.call(varied, result)
       lastResult = result
@@ -108,17 +104,14 @@ class FlatMappedVarying extends Varying
   set: null
 
   get: ->
-    if this._flatten is true
-      value = this._parent.get()
-      if value?.isVarying is true
-        this._f.call(null, value.get())
-      else
-        this._f.call(null, value)
+    result = this._f.call(null, this._parent.get())
+    if this._flatten is true and result?.isVarying is true
+      result.get()
     else
-      this._f.call(null, this._parent.get())
+      result
 
 class FlattenedVarying extends FlatMappedVarying
-  constructor: (parent) -> super(parent, null)
+  constructor: (parent) -> super(parent)
 
 class MappedVarying extends FlatMappedVarying
   constructor: (parent, f) -> super(parent, f, false)
