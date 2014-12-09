@@ -41,16 +41,15 @@ class Varying
   get: -> this._value
 
   @pure: (args...) ->
-    if util.isFunction(args[0])
+    if isFunction(args[0])
       f = args[0]
-      expected = f.length
 
-      (fix (curry) -> (args...) ->
-        if args.length < expected
+      (fix (curry) -> (args) ->
+        if args.length < f.length
           (more...) -> curry(args.concat(more))
         else
           new ComposedVarying(args, f)
-      )(args)
+      )(args.slice(1))
     else
       f = args.pop()
       new ComposedVarying(args, f)

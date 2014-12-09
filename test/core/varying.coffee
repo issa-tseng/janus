@@ -341,8 +341,44 @@ describe.only 'Varying', ->
       result.should.equal(4)
 
 
-# describe 'side effects', ->
-#   it 'should not re-execute orphaned propagations', ->
+  describe 'side effect management', ->
+    it 'should not re-execute orphaned propagations', ->
+      v = new Varying()
 
-# describe 'pure', ->
+      # first, set up a reaction that causes a cyclic set.
+      hasRetriggered = false
+      v.react(-> v.set(2) unless hasRetriggered)
+
+      # next, set up a reaction later in the chain. count its executions.
+      runCount = 0
+      v.react(-> runCount += 1)
+
+      # now go.
+      v.set(1)
+      runCount.should.equal(1)
+
+    it 'should provide the right value in a cyclic set', ->
+      v = new Varying()
+
+      hasRetriggered = false
+      v.react(-> v.set(2) unless hasRetriggered)
+
+      result = null
+      v.react((x) -> result = x)
+
+      v.set(1)
+      result.should.equal(2)
+
+  describe 'pure', ->
+    it 'should return a ComposedVarying given a, b, c, f', ->
+      Varying.pure(new Varying(), new Varying(), new Varying(), ->).should.be.an.instanceof(ComposedVarying)
+
+    it 'should return a ComposedVarying given f, a, b, c', ->
+      Varying.pure(((a, b, c) ->), new Varying(), new Varying(), new Varying()).should.be.an.instanceof(ComposedVarying)
+
+    it 'should return a curryable function given (a -> b -> c -> x), a, b', ->
+      f = Varying.pure(((a, b, c) ->), new Varying(), new Varying())
+      f.should.be.a.Function
+
+      f(new Varying()).should.be.an.instanceof(ComposedVarying)
 
