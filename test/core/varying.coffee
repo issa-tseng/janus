@@ -311,6 +311,35 @@ describe.only 'Varying', ->
       v.set(3)
       runCount.should.equal(1)
 
+    it 'should re-react to an inner varying after flatMapping', ->
+      v = new Varying()
+      i = null
+      m = v.flatMap((x) -> i = new Varying(x * 2))
+
+      result = null
+      m.reactNow((x) -> result = x)
+
+      v.set(1)
+      result.should.equal(2)
+
+      i.set(3)
+      result.should.equal(3)
+
+    it 'should cease reacting to an inner varying once it is gone', ->
+      v = new Varying()
+      i = null
+      m = v.flatMap((x) -> i = new Varying(x * 2))
+
+      result = null
+      m.reactNow((x) -> result = x)
+
+      v.set(1)
+      i2 = i
+
+      v.set(2)
+      i2.set(3)
+      result.should.equal(4)
+
 
 # describe 'side effects', ->
 #   it 'should not re-execute orphaned propagations', ->
