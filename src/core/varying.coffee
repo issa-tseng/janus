@@ -129,6 +129,7 @@ class MappedVarying extends FlatMappedVarying
 class ComposedVarying extends FlatMappedVarying
   constructor: (@_applicants, @_f = identity, @_flatten = false) ->
     this._observers = {}
+    this._internalObservers = {}
     this._refCount = 0
     this._partial = []
 
@@ -138,21 +139,20 @@ class ComposedVarying extends FlatMappedVarying
   _bind: (callback) ->
     id = uniqueId()
     varied = new Varied(id, callback, =>
+      this._refCount -= 1
       delete this._observers[id]
 
-      this._refCount -= 1
       v.stop() for v in this._parentVarieds if this._refCount is 0
     )
 
     if this._refCount is 0
       this._parentVarieds = for a, idx in this._applicants
-        do (a, idx) => a.reactNow =>
-          this._partial[idx] = a
-          o.f_(this._partial) for o in this._observers
+        do (a, idx) => a.reactNow (value) =>
+          this._partial[idx] = value
+          o.f_(this._f.apply(this._parentVarieds[idx], this._partial)) for _, o of this._internalObservers
 
     this._refCount += 1
-    this._observers.push(varied)
-    varied
+    this._internalObservers[id] = varied
 
   get: ->
     result = this._f.apply(null, (a.get() for a in this._applicants))
