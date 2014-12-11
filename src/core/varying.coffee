@@ -73,6 +73,7 @@ identity = (x) -> x
 class FlatMappedVarying extends Varying
   constructor: (@_parent, @_f = identity, @_flatten = true) ->
     this._observers = {}
+    this._internalObservers = {}
     this._refCount = 0
 
   _react = (self, callback, immediate) ->
@@ -106,7 +107,27 @@ class FlatMappedVarying extends Varying
   react: (f_) -> _react(this, f_, false)
   reactNow: (f_) -> _react(this, f_, true)
 
-  _bind: (callback) -> varied = this._parent.react((x) => callback.call(varied, this._f.call(null, x)))
+  _bind: (callback) ->
+    id = uniqueId()
+    varied = new Varied(id, callback, =>
+      this._refCount -= 1
+      delete this._internalObservers[id]
+
+      this._parentVaried.stop() if this._refCount is 0
+    )
+
+    lastRaw = null
+    if this._refCount is 0
+      this._parentVaried = this._parent.react (raw) =>
+        return if raw is lastRaw
+        lastRaw = raw
+
+        mapped = this._f.call(null, raw)
+        callback.call(o, mapped) for _, o of this._internalObservers
+
+    this._refCount += 1
+    this._internalObservers[id] = varied
+
   _immediate: -> this._f.call(null, this._parent.get())
 
   set: null
@@ -143,7 +164,7 @@ class ComposedVarying extends FlatMappedVarying
     id = uniqueId()
     varied = new Varied(id, callback, =>
       this._refCount -= 1
-      delete this._observers[id]
+      delete this._internalObservers[id]
 
       v.stop() for v in this._parentVarieds if this._refCount is 0
     )
