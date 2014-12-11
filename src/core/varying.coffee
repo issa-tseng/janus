@@ -75,12 +75,10 @@ class FlatMappedVarying extends Varying
     this._observers = {}
     this._refCount = 0
 
-  react: (callback) ->
-    self = this
-
+  _react = (self, callback, immediate) ->
     id = uniqueId()
-    this._observers[id] = varied = new Varied(id, callback, =>
-      delete this._observers[id]
+    self._observers[id] = varied = new Varied(id, callback, ->
+      delete self._observers[id]
       parentVaried.stop() # the ref below will get hoisted.
     )
 
@@ -100,16 +98,21 @@ class FlatMappedVarying extends Varying
       callback.call(varied, value)
       lastResult = value
 
-    parentVaried = this._bind(onValue)
+    parentVaried = self._bind(onValue)
+    onValue.call(parentVaried, self._immediate()) if immediate is true
 
     varied
 
+  react: (f_) -> _react(this, f_, false)
+  reactNow: (f_) -> _react(this, f_, true)
+
   _bind: (callback) -> varied = this._parent.react((x) => callback.call(varied, this._f.call(null, x)))
+  _immediate: -> this._f.call(null, this._parent.get())
 
   set: null
 
   get: ->
-    result = this._f.call(null, this._parent.get())
+    result = this._immediate()
     if this._flatten is true and result?.isVarying is true
       result.get()
     else
@@ -154,12 +157,7 @@ class ComposedVarying extends FlatMappedVarying
     this._refCount += 1
     this._internalObservers[id] = varied
 
-  get: ->
-    result = this._f.apply(null, (a.get() for a in this._applicants))
-    if this._flatten is true and result?.isVarying is true
-      result.get()
-    else
-      result
+  _immediate: -> this._f.apply(null, (a.get() for a in this._applicants))
 
 module.exports = { Varying, Varied, FlatMappedVarying, FlattenedVarying, MappedVarying, ComposedVarying }
 

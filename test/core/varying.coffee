@@ -7,7 +7,7 @@ countObservers = (o) ->
   (observers += 1) for _ of o._observers
   observers
 
-describe 'Varying', ->
+describe.only 'Varying', ->
   describe 'core', ->
     it 'should construct', ->
       (new Varying()).should.be.an.instanceof(Varying)
@@ -218,7 +218,7 @@ describe 'Varying', ->
       i.set(2)
       result.should.equal(2)
 
-    it.skip 'should re-react to an inner varying set before flattening', ->
+    it 'should re-react to an inner varying set before flattening', ->
       i = new Varying(1)
       v = new Varying(i)
       f = v.flatten()
@@ -526,7 +526,7 @@ describe 'Varying', ->
         vz.set(6)
         result.should.equal(6)
 
-      it.skip 'should re-react to an inner varying set before flatMapping', ->
+      it 'should re-react to an inner varying set before flatMapping', ->
         vz = null
         m = Varying.flatMapAll(((x, y) -> vz = new Varying(x + y)), new Varying(1), new Varying(2))
 
