@@ -7,7 +7,7 @@ countObservers = (o) ->
   (observers += 1) for _ of o._observers
   observers
 
-describe.only 'Varying', ->
+describe 'Varying', ->
   describe 'core', ->
     it 'should construct', ->
       (new Varying()).should.be.an.instanceof(Varying)
@@ -119,7 +119,9 @@ describe.only 'Varying', ->
 
       result = null
       m.reactNow((x) -> result = x)
+
       result.should.be.an.instanceof(Varying)
+      result.get().should.equal(2)
 
     it 'should bind this to the Varied within the handler', ->
       v = new Varying(1)
@@ -153,16 +155,6 @@ describe.only 'Varying', ->
       m.react(->).stop()
 
       countObservers(v).should.equal(0)
-
-    it 'should not flatten results', ->
-      v = new Varying(1)
-      m = v.map((x) -> new Varying(x))
-
-      result = null
-      m.reactNow((x) -> result = x)
-
-      result.should.be.an.instanceof(Varying)
-      result.get().should.equal(1)
 
   describe 'flatten', ->
     it 'should return a FlattenedVarying when map is called', ->
@@ -221,6 +213,18 @@ describe.only 'Varying', ->
 
       i = new Varying(1)
       v.set(i)
+      result.should.equal(1)
+
+      i.set(2)
+      result.should.equal(2)
+
+    it.skip 'should re-react to an inner varying set before flattening', ->
+      i = new Varying(1)
+      v = new Varying(i)
+      f = v.flatten()
+
+      result = null
+      f.reactNow((x) -> result = x)
       result.should.equal(1)
 
       i.set(2)
@@ -421,9 +425,7 @@ describe.only 'Varying', ->
         result.should.equal(5)
 
       it 'should not flatten on react', ->
-        va = new Varying(1)
-        vb = new Varying(2)
-        m = Varying.pure(((x, y) -> new Varying(x + y)), va, vb)
+        m = Varying.pure(((x, y) -> new Varying(x + y)), new Varying(1), new Varying(2))
 
         result = null
         m.reactNow((x) -> result = x)
@@ -469,11 +471,86 @@ describe.only 'Varying', ->
         countObservers(va).should.equal(0)
         countObservers(vb).should.equal(0)
 
-      it 'should not flatten results', ->
-        m = Varying.pure(((x, y) -> new Varying(x + y)), new Varying(1), new Varying(2))
+    describe 'flatMapAll', ->
+      it 'should flatten on get', ->
+        Varying.flatMapAll(((x, y) -> new Varying(x + y)), new Varying(1), new Varying(2)).get().should.be.equal(3)
+
+      it 'should callback with a flatmapped value when react is called', ->
+        va = new Varying(1)
+        vb = new Varying(2)
+        m = Varying.flatMapAll(((x, y) -> new Varying(x + y)), va, vb)
+
+        result = 0
+        m.react((x) -> result = x)
+
+        va.set(3)
+        result.should.equal(5)
+
+        vb.set(4)
+        result.should.equal(7)
+
+      it 'should callback immediately with a flatmapped value when reactNow is called', ->
+        va = new Varying(1)
+        vb = new Varying(2)
+        m = Varying.flatMapAll(((x, y) -> new Varying(x + y)), va, vb)
+
+        result = 0
+        m.reactNow((x) -> result = x)
+        result.should.equal(3)
+
+        vb.set(4)
+        result.should.equal(5)
+
+      it 'should flatten on react', ->
+        va = new Varying(1)
+        vb = new Varying(2)
+        m = Varying.flatMapAll(((x, y) -> new Varying(x + y)), va, vb)
 
         result = null
         m.reactNow((x) -> result = x)
-        result.should.be.an.instanceof(Varying)
-        result.get().should.equal(3)
+
+        result.should.equal(3)
+
+      it 'should re-react to an inner varying after flatMapping', ->
+        va = new Varying(1)
+        vb = new Varying(2)
+        vz = null
+        m = Varying.flatMapAll(((x, y) -> vz = new Varying(x + y)), va, vb)
+
+        result = null
+        m.reactNow((x) -> result = x)
+
+        va.set(3)
+        result.should.equal(5)
+
+        vz.set(6)
+        result.should.equal(6)
+
+      it.skip 'should re-react to an inner varying set before flatMapping', ->
+        vz = null
+        m = Varying.flatMapAll(((x, y) -> vz = new Varying(x + y)), new Varying(1), new Varying(2))
+
+        result = null
+        debugger
+        m.reactNow((x) -> result = x)
+        result.should.equal(3)
+
+        vz.set(4)
+        result.should.equal(4)
+
+      it 'should cease reacting to an inner varying once it is gone', ->
+        va = new Varying(1)
+        vb = new Varying(2)
+        vx = null
+        m = Varying.flatMapAll(((x, y) -> vx = new Varying(x + y)), va, vb)
+
+        result = null
+        m.reactNow((x) -> result = x)
+
+        va.set(1)
+        vz = vx
+
+        va.set(3)
+        vz.set(4)
+        result.should.equal(5)
 
