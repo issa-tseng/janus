@@ -190,3 +190,15 @@ describe 'case', ->
         m(success(true)).should.be.true
         matched.should.be.true
 
+      it 'should allow use of otherwise in function call style', ->
+        result = null
+
+        { success, fail } = caseSet('success', 'fail')
+        m = match(
+          success -> 'success'
+          otherwise (x) -> result = x
+        )
+
+        m('otherwise').should.equal('otherwise')
+        result.should.equal('otherwise')
+
