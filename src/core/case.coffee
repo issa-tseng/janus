@@ -31,7 +31,6 @@
 otherwise = (value) ->
   instance = new String('otherwise')
   instance.value = value
-  instance.unapply = (x) -> if isFunction(x) then x(this.value) else x
   instance.case = otherwise
   instance
 otherwise.type = 'otherwise'
@@ -92,9 +91,9 @@ caseSet = (inTypes...) ->
 
 
 # general unapply handler.
-unapply = (target, handler) ->
+unapply = (target, handler, unapply = true) ->
   if isFunction(handler)
-    if isFunction(target?.unapply)
+    if isFunction(target?.unapply) and unapply is true
       target?.unapply(handler)
     else
       handler(target)
@@ -139,7 +138,7 @@ match = (args...) ->
         handler = args[i + 1]
 
       # always process if otherwise.
-      return unapply(target, handler) if kase.type is 'otherwise'
+      return unapply(target, handler, false) if kase.type is 'otherwise'
 
       # process if a match if not.
       return unapply(target, handler) if kase.type.valueOf() is target?.valueOf()
