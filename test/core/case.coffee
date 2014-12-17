@@ -202,3 +202,16 @@ describe 'case', ->
         m('otherwise').should.equal('otherwise')
         result.should.equal('otherwise')
 
+      it 'should leave cases of other sets intact when otherwised', ->
+        result = null
+
+        { success } = caseSet('success')
+        { fail } = caseSet('fail')
+
+        m = match(
+          success -> 'success'
+          otherwise (x) -> result = x
+        )
+
+        m(fail('test')).should.equal('fail')
+
