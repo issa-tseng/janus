@@ -141,7 +141,7 @@ match = (args...) ->
       return unapply(target, handler, false) if kase.type is 'otherwise'
 
       # process if a match if not.
-      return unapply(target, handler) if kase.type.valueOf() is target?.valueOf()
+      return unapply(target, handler) if kase.type.valueOf() is target?.valueOf() and (target?.case ? target)?.set is set
 
       i += if x.case? then 1 else 2
 
