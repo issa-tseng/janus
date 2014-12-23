@@ -7,7 +7,7 @@ countObservers = (o) ->
   (observers += 1) for _ of o._observers
   observers
 
-describe.only 'Varying', ->
+describe 'Varying', ->
   describe 'core', ->
     it 'should construct', ->
       (new Varying()).should.be.an.instanceof(Varying)
@@ -531,7 +531,6 @@ describe.only 'Varying', ->
         m = Varying.flatMapAll(((x, y) -> vz = new Varying(x + y)), new Varying(1), new Varying(2))
 
         result = null
-        debugger
         m.reactNow((x) -> result = x)
         result.should.equal(3)
 
