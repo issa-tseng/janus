@@ -18,7 +18,7 @@ defaultCases = caseSet('dynamic', 'attr', 'definition', 'varying')
 
 # val wraps proxies of Varyings. so you can perform maps or call conjunctions on them.
 val = (conjunction, applicants = []) ->
-  result = {} # ????
+  result = {}
 
   result.map = (f) ->
     [ rest..., last ] = applicants
@@ -53,23 +53,20 @@ build = (cases) ->
   conjunction()
 
 
-  # TODO: reject identically named cases from other sets; diagnose things getting wrapped as varying that aren't
-
 # helper for point() that processes our intermediate maps and such.
+# TODO: defining a map per iteration is slow!
 mappedPoint = (point) -> match(
   ic.map ({ inner, f }) ->
-    inner = mappedPoint(point)(inner)
-    if inner?.isVarying is true
-      ic.varying(inner.map(f))
-    else
-      ic.map({ inner, f })
+    match(
+      ic.varying (x) -> ic.varying(x.map(f))
+      otherwise -> ic.map({ inner, f })
+    )(mappedPoint(point)(inner))
 
   ic.flatMap ({ inner, f }) ->
-    inner = mappedPoint(point)(inner)
-    if inner?.isVarying is true
-      ic.varying(inner.flatMap(f))
-    else
-      ic.flatMap({ inner, f })
+    match(
+      ic.varying (x) -> ic.varying(x.flatMap(f))
+      otherwise -> ic.flatMap({ inner, f })
+    )(mappedPoint(point)(inner))
 
   ic.varying (x) -> ic.varying(x) # TODO: rewrapping is slow.
 
@@ -81,6 +78,7 @@ mappedPoint = (point) -> match(
       x
 )
 
+# matcher that's run in order to finalize.
 matchFinal = match(
   ic.varying (x) -> x
   otherwise (x) -> new Varying(x)
@@ -89,9 +87,8 @@ matchFinal = match(
 # terminus gives you a representation of the entire chain. mapping at this level
 # gives you all mapped values directly in the arg list.
 terminus = (applicants) ->
-  apply = (m) -> (f) ->
-    applying = (matchFinal(x) for x in applicants)
-    m.apply(null, applying.concat([ f ]))
+  # internal helper that takes our applicants, finalizes them, and calls m with them.
+  apply = (m) -> (f) -> m.apply(null, (matchFinal(x) for x in applicants).concat([ f ]))
 
   result = apply(Varying.flatMapAll)
   result.point = (f) -> point = mappedPoint(f); terminus(point(x) for x in applicants)
