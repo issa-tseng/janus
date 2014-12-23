@@ -4,6 +4,8 @@ from = require('../../lib/core/from')
 { match, otherwise } = require('../../lib/core/case')
 Varying = require('../../lib/core/varying').Varying
 
+id = (x) -> x
+
 should.Assertion.add('val', (->
   this.params = { operator: 'to be a val' }
   this.obj.should.be.an.Object
@@ -94,20 +96,20 @@ describe.only 'from', ->
         .and.attr('b', 'c', 'd')
         .all.point(match(
           dynamic incr (xs...) -> new Varying()
-          otherwise incr (x) -> x
+          otherwise incr id
         ))
 
       count.should.equal(2)
 
       f2 = f1.point(match(
         attr incr (xs...) -> new Varying()
-        otherwise incr (x) -> x
+        otherwise incr id
       ))
 
       count.should.equal(3)
 
       f2.point(match(
-        otherwise incr (x) -> x
+        otherwise incr id
       ))
 
       count.should.equal(3)
@@ -172,7 +174,7 @@ describe.only 'from', ->
         .and.attr('b')
         .all.point(match(
           dynamic (x) -> new Varying("dynamic: #{x}")
-          otherwise (x) -> x
+          otherwise id
         )).flatMap((xs...) ->
           called = true
 
@@ -190,4 +192,52 @@ describe.only 'from', ->
       result = null
       from('a').all.flatMap(-> new Varying(3)).reactNow((x) -> result = x)
       result.should.equal(3)
+
+  describe 'inline map', ->
+    it 'should apply a map after point resolution', ->
+      { dynamic } = from.default
+
+      result = null
+      from('a').map((x) -> x + 'b')
+        .all.point(match(
+          dynamic (xs) -> new Varying(xs[0])
+          otherwise ->
+        ))
+        .map(id).reactNow((x) -> result = x)
+
+      result.should.equal('ab')
+
+    it 'should apply chained maps in the right order', ->
+      { dynamic } = from.default
+
+      result = null
+      from('a').map((x) -> x + 'b').map((x) -> x + 'c')
+        .all.point(match(
+          dynamic (xs) -> new Varying(xs[0])
+          otherwise ->
+        ))
+        .map(id).reactNow((x) -> result = x)
+
+      result.should.equal('abc')
+
+  describe 'inline flatmap', ->
+    it 'should apply a flatMap after point resolution', ->
+      { dynamic } = from.default
+
+      # we have to do a v ?= here because the pure function gets called twice
+      # assuming no side-effects, and therefore the ref we side-effect out gets
+      # blasted the second time through.
+      result = null
+      v = null
+      from('a').flatMap((x) -> v ?= new Varying(x + 'b'))
+        .all.point(match(
+          dynamic (xs) -> new Varying(xs[0])
+          otherwise ->
+        ))
+        .map(id).reactNow((x) -> result = x)
+
+      result.should.equal('ab')
+
+      v.set('cd')
+      result.should.equal('cd')
 
