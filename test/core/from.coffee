@@ -35,6 +35,16 @@ should.Assertion.add('terminus', (->
   this.obj.map.should.be.a.Function
 ), true)
 
+should.Assertion.add('varying', (->
+  this.params = { operator: 'to be a Varying' }
+
+  this.obj.flatMap.should.be.a.Function
+  this.obj.map.should.be.a.Function
+
+  this.obj.react.should.be.a.Function
+  this.obj.reactNow.should.be.a.Function
+), true)
+
 describe.only 'from', ->
   describe 'initial val', ->
     it 'should return a val-looking thing', ->
@@ -115,8 +125,8 @@ describe.only 'from', ->
       count.should.equal(3)
 
   describe 'mapAll', ->
-    it 'should return a Varying', ->
-      from('a').and('b').all.map(->).isVarying.should.be.true
+    it 'should return a Varying-looking thing', ->
+      from('a').and('b').all.map(->).should.be.a.varying
 
     it 'should be called with unresolved applicants', ->
       called = false
@@ -276,4 +286,40 @@ describe.only 'from', ->
       { a, b } = custom = caseSet('a', 'b')
 
       from.build(custom).should.not.be.a.Function
+
+  describe 'deferred point calling order', ->
+    it 'should work with react', ->
+      { dynamic } = from.default
+
+      f = from('a').and('b')
+        .all.map((a, b) -> a + b)
+
+      iv = new Varying('c')
+      v = f.point(match(
+        dynamic (x) -> iv.flatMap((y) -> new Varying(x + y))
+        otherwise ->
+      ))
+
+      result = null
+      v.react((x) -> result = x)
+      (result is null).should.be.true
+
+      iv.set('d')
+      result.should.equal('adbd')
+
+    it 'should work with reactNow', ->
+      { dynamic } = from.default
+
+      f = from('a').and('d')
+        .all.map((a, b) -> a + b)
+
+      iv = new Varying('c')
+      v = f.point(match(
+        dynamic (x) -> iv.flatMap((y) -> new Varying(x + y))
+        otherwise ->
+      ))
+
+      result = null
+      v.reactNow((x) -> result = x)
+      result.should.equal('acdc')
 
