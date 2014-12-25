@@ -84,16 +84,36 @@ matchFinal = match(
   otherwise (x) -> new Varying(x)
 )
 
+# helper that applies accumulated maps to a varying.
+# TODO: as with above, perf. also, relies on weird side effects.
+applyMaps = (applicants, maps) ->
+  [ first, rest... ] = maps
+
+  v = match(
+    ic.map (f) -> Varying.mapAll.apply(null, (matchFinal(x) for x in applicants).concat([ f ]))
+    ic.flatMap (f) -> Varying.flatMapAll.apply(null, (matchFinal(x) for x in applicants).concat([ f ]))
+    otherwise -> throw 1
+  )(first)
+
+  apply = match(
+    ic.map (x) -> v.map(x)
+    ic.flatMap (x) -> v.flatMap(x)
+    otherwise -> throw 1
+  )
+  (v = apply(m)) for m in rest
+  v
+
 # terminus gives you a representation of the entire chain. mapping at this level
 # gives you all mapped values directly in the arg list.
-terminus = (applicants) ->
-  # internal helper that takes our applicants, finalizes them, and calls m with them.
-  apply = (m) -> (f) -> m.apply(null, (matchFinal(x) for x in applicants).concat([ f ]))
+terminus = (applicants, maps = []) ->
+  result = (f) -> terminus(applicants, maps.concat([ ic.flatMap(f) ]))
+  result.flatMap = (f) -> terminus(applicants, maps.concat([ ic.flatMap(f) ]))
+  result.map = (f) -> terminus(applicants, maps.concat([ ic.map(f) ]))
 
-  result = apply(Varying.flatMapAll)
-  result.point = (f) -> point = mappedPoint(f); terminus(point(x) for x in applicants)
-  result.flatMap = apply(Varying.flatMapAll)
-  result.map = apply(Varying.mapAll)
+  result.point = (f) -> point = mappedPoint(f); terminus(point(x) for x in applicants, maps)
+
+  result.react = (f_) -> applyMaps(applicants, maps).react(f_)
+  result.reactNow = (f_) -> applyMaps(applicants, maps).reactNow(f_)
 
   result
 
