@@ -1,7 +1,7 @@
 should = require('should')
 
 from = require('../../lib/core/from')
-{ match, otherwise } = require('../../lib/core/case')
+{ caseSet, match, otherwise } = require('../../lib/core/case')
 Varying = require('../../lib/core/varying').Varying
 
 id = (x) -> x
@@ -240,4 +240,40 @@ describe.only 'from', ->
 
       v.set('cd')
       result.should.equal('cd')
+
+  describe 'builder', ->
+    it 'should accept custom cases as intermediate methods/applicants', ->
+      { alpha, beta, gamma } = custom = caseSet('alpha', 'beta', 'gamma')
+
+      v = from.build(custom).alpha('one')
+        .and.beta('two')
+        .and.gamma('three')
+        .all.point(match(
+          alpha (x) -> new Varying("a#{x}")
+          beta (x) -> new Varying("b#{x}")
+          gamma (x) -> new Varying("c#{x}")
+        )).flatMap((xs...) -> xs.join(' '))
+
+      result = null
+      v.reactNow((x) -> result = x)
+      result.should.equal('aone btwo cthree')
+
+    it 'should use the dynamic case if present', ->
+      { dynamic, other } = custom = caseSet('dynamic', 'other')
+
+      v = from.build(custom)('one')
+        .and.other('two')
+        .all.point(match(
+          dynamic (x) -> new Varying("a#{x}")
+          other (x) -> new Varying("b#{x}")
+        )).flatMap((xs...) -> xs.join(' '))
+
+      result = null
+      v.reactNow((x) -> result = x)
+      result.should.equal('aone btwo')
+
+    it 'should not use the dynamic case if not present', ->
+      { a, b } = custom = caseSet('a', 'b')
+
+      from.build(custom).should.not.be.a.Function
 
