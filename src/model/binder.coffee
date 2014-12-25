@@ -51,6 +51,10 @@ class Binder extends Base
     this._defaultOnly = true
     this
 
+  unflat: ->
+    this._unflat = true
+    this
+
   bind: (model) ->
     bound = Object.create(this)
     bound._model = model
@@ -63,9 +67,18 @@ class Binder extends Base
   apply: ->
     this._varying?.destroy()
 
-    this._varying = new MultiVarying((data.call(this) for data in this._generators), this._flatMap ? fallbackMap).map (result) =>
+    data = (data.call(this) for data in this._generators)
+
+    fmap = this._flatMap ? fallbackMap
+
+    setter = (result) =>
       result ?= this._fallback
       this._model.set(this._key, result)
+
+    if this._unflat is true
+      new MultiVarying(data, (values...) -> setter(fmap(values...)))
+    else
+      new MultiVarying(data, fmap).map(setter)
 
 util.extend(module.exports,
   Binder: Binder
