@@ -131,7 +131,9 @@ class FlatMappedVarying extends Varying
     id = uniqueId()
     self._observers[id] = varied = new Varied(id, callback, ->
       delete self._observers[id]
-      parentVaried.stop() # the ref below will get hoisted.
+      # the refs below will get hoisted.
+      lastInnerVaried?.stop()
+      parentVaried.stop()
     )
 
     lastValue = null # allow early return if nothing changed.
