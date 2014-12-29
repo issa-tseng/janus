@@ -245,6 +245,22 @@ describe 'Varying', ->
       i.set(2)
       result.should.equal(0)
 
+    it 'should cease reacting to an inner varying when it does', ->
+      v = new Varying()
+      f = v.flatten()
+
+      i = new Varying(1)
+
+      result = null
+      r = f.reactNow((x) -> result = x)
+
+      v.set(i)
+      result.should.equal(1)
+
+      r.stop()
+      i.set(2)
+      result.should.equal(1)
+
     it 'should internally stop reacting to an inner varying once it is gone', ->
       v = new Varying()
       f = v.flatten()
