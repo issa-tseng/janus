@@ -730,3 +730,15 @@ describe 'Model', ->
           shadow.get('test').set('a', 'b')
           evented.should.equal(true)
 
+        it 'should vary when a Reference resolves', ->
+          varying = new Reference()
+          model = new Model( test: varying )
+          shadow = model.shadow()
+
+          expected = [  false, true ]
+          shadow.watchModified().reactNow((isModified) -> isModified.should.equal(expected.shift()))
+
+          submodel = (new Model()).shadow()
+          shadow.get('test').setValue(submodel)
+          submodel.set('testSub', 'y')
+
