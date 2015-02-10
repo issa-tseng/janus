@@ -180,6 +180,14 @@ class Varying extends Base
 
       result
 
+    freeze: (source, gate) ->
+      result = new Varying(source.value)
+
+      source.on('changed', (newValue) -> result.setValue(newValue) unless gate.value is true)
+      gate.on('changed', (gated) -> result.setValue(source.value) unless gated is true)
+
+      result
+
 # A MultiVarying takes multiple Varying objects and puts their values together.
 # It doesn't itself listen to anything but Proxies directly.
 class MultiVarying extends Varying
