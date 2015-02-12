@@ -81,6 +81,9 @@ class Model extends Base
 
         value = this.set(key, mappedValue)
 
+    # collapse shadow-nulled sentinels to null.
+    value = if value is Null then null else value
+
     # if that fails, check the attribute
     if !value? and bypassAttribute is false
       attribute = this.attribute(key)
@@ -96,9 +99,6 @@ class Model extends Base
     # drop undef to null
     value ?= null
 
-    # collapse shadow-nulled sentinels to null.
-    if value is Null then null else value
-
   # Set an attribute about this model. Takes two forms:
   #
   # 1. Two fixed parameters. As with get, the first parameter is a dot-separated
@@ -112,6 +112,11 @@ class Model extends Base
   set: (args...) ->
     if args.length is 1 and util.isPlainObject(args[0])
       util.traverse(args[0], (path, value) => this.set(path, value))
+
+    else if args.length is 2 and util.isPlainObject(args[1])
+      obj = {}
+      util.deepSet(obj, args[0])(args[1])
+      this.set(obj)
 
     else if args.length is 2
       [ key, value ] = args
@@ -135,9 +140,10 @@ class Model extends Base
     if this._parent?
       oldValue = this.get(key)
       util.deepSet(this.attributes, key)(Null)
-      this._emitChange(key, null, oldValue) unless oldValue is null
+      this._emitChange(key, this.get(key), oldValue) unless oldValue is null
 
     else
+      oldValue = this.get(key)
       this._deleteAttr(key)
 
     oldValue
@@ -276,7 +282,7 @@ class Model extends Base
   # know about.
   #
   # **Returns** a new shadow copy, which is an instance of `Model`.
-  shadow: -> new this.constructor({}, util.extendNew(this.options, { parent: this }))
+  shadow: (klass) -> new (klass ? this.constructor)({}, util.extendNew(this.options, { parent: this }))
 
   # Checks if we've changed relative to our original.
   #
@@ -497,16 +503,11 @@ class Model extends Base
   # Helper used by `revert()` and some paths of `unset()` to actually clear out
   # a particular key.
   _deleteAttr: (key) ->
-    util.deepSet(this.attributes, key) (obj, subkey) =>
-      return unless obj?
+    oldValue = util.deepDelete(this.attributes, key)
+    newValue = this.get(key)
+    this._emitChange(key, newValue, oldValue) unless newValue is oldValue
 
-      oldValue = obj[subkey]
-      delete obj[subkey]
-
-      newValue = this.get(key)
-      this._emitChange(key, newValue, oldValue) unless newValue is oldValue
-
-      oldValue
+    oldValue
 
   # Helper to generate change events. We emit events for both the actual changed
   # key along with all its parent nests, which this deals with.

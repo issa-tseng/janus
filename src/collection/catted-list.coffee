@@ -1,8 +1,6 @@
 DerivedList = require('./list').DerivedList
 util = require('../util/util')
 
-# A read-only view into a proper `List` that filters out nonqualifying
-# elements. Doesn't yet respect positional stability from parent.
 class CattedList extends DerivedList
   constructor: (@lists, @options = {}) ->
     super()

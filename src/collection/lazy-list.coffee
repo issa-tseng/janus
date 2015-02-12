@@ -36,8 +36,8 @@ class LazyList extends Model
   @bind('signature').fromVarying(-> this._signature())
 
   # We need to init some structures to track our cache by cachekey and idx.
-  constructor: (_, @options) ->
-    super([], @options)
+  constructor: (attributes, @options) ->
+    super(attributes, @options)
 
     this._activeRanges = new List()
     this._watchSignature()
