@@ -35,6 +35,9 @@ class IndefiniteList extends OrderedCollection
     # set up our list.
     this.list = []
 
+    # set up our varyings.
+    this.varyingList = []
+
     # run our first step.
     this._step(step, 0)
 
@@ -72,7 +75,8 @@ class IndefiniteList extends OrderedCollection
         this.set('completion', Termination)
 
     if result instanceof Varying
-      result.on('changed', (newResult) -> process(newResult))
+      this.listenTo(result, 'changed', (newResult) -> process(newResult))
+      this.varyingList[idx - 1] = result
       process(result.value)
     else
       process(result)
@@ -81,6 +85,7 @@ class IndefiniteList extends OrderedCollection
     removed = this.list.splice(idx, this.list.length - idx)
 
     for elem, subidx in removed
+      this.unlistenTo(this.varyingList[idx + subidx])
       this.emit('removed', elem, idx + subidx)
       elem.emit?('removedFrom', this, idx + subidx)
 
