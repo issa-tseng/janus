@@ -163,7 +163,7 @@ class List extends OrderedCollection
     removed = this.list.splice(idx, elems.length, elems...)
 
     # Event on removals
-    for elem, subidx in removed when elem?
+    for elem, subidx in removed# when elem? # TODO: this seems wrong, but why was it here?
       this.emit('removed', elem, idx + subidx)
       elem?.emit?('removedFrom', this, idx + subidx)
 
