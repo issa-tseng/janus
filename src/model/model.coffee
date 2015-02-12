@@ -81,6 +81,9 @@ class Model extends Base
 
         value = this.set(key, mappedValue)
 
+    # collapse shadow-nulled sentinels to null.
+    value = if value is Null then null else value
+
     # if that fails, check the attribute
     if !value? and bypassAttribute is false
       attribute = this.attribute(key)
@@ -95,9 +98,6 @@ class Model extends Base
 
     # drop undef to null
     value ?= null
-
-    # collapse shadow-nulled sentinels to null.
-    if value is Null then null else value
 
   # Set an attribute about this model. Takes two forms:
   #
@@ -135,7 +135,7 @@ class Model extends Base
     if this._parent?
       oldValue = this.get(key)
       util.deepSet(this.attributes, key)(Null)
-      this._emitChange(key, null, oldValue) unless oldValue is null
+      this._emitChange(key, this.get(key), oldValue) unless oldValue is null
 
     else
       this._deleteAttr(key)

@@ -38,7 +38,7 @@ class Collection extends Model
   # Create a new FlattenedList based on this List.
   #
   # **Returns** a `FlattenedList`
-  #flatten: -> new (require('./flattened-list').FlattenedList)(this)
+  # flatten: -> new (require('./flattened-list').FlattenedList)(this)
 
   # Create a new UniqList based on this List.
   #
