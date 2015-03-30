@@ -1,6 +1,6 @@
 { Varying } = require('./varying')
 { caseSet, match, otherwise } = require('./case')
-{ immediate } = require('../util/util')
+{ immediate, identity } = require('../util/util')
 
 # TODO:
 # * question: how should varying external cases be handled? right now they are
@@ -89,6 +89,8 @@ matchFinal = match(
 applyMaps = (applicants, maps) ->
   [ first, rest... ] = maps
 
+  first ?= ic.map(identity)
+
   v = match(
     ic.map (f) -> Varying.mapAll.apply(null, (matchFinal(x) for x in applicants).concat([ f ]))
     ic.flatMap (f) -> Varying.flatMapAll.apply(null, (matchFinal(x) for x in applicants).concat([ f ]))
@@ -114,6 +116,9 @@ terminus = (applicants, maps = []) ->
 
   result.react = (f_) -> applyMaps(applicants, maps).react(f_)
   result.reactNow = (f_) -> applyMaps(applicants, maps).reactNow(f_)
+
+  # TODO: is this a good idea? feels like not.
+  result.get = -> matchFinal(applicants[0])
 
   result
 

@@ -1,5 +1,5 @@
 { Varying } = require('../core/varying')
-{ isPrimitive, extendNew } = require('../util/util')
+{ isPrimitive, extendNew, identity } = require('../util/util')
 
 from = require('../core/from')
 { caseSet, match, otherwise } = require('../core/case')
@@ -9,13 +9,18 @@ from = require('../core/from')
 # util.
 safe = (x) -> if isPrimitive(x) then x.toString() else ''
 
+promote = (x) ->
+  if x.react?
+    x
+  else if x.all?
+    promote(x.all)
 
 # base mutator class. state is managed as internally as possible. overriden
 # parts are largely static, which the exception of custom binding methodologies
 # like chaining.
 class Mutator
   constructor: (binding) ->
-    this._bindings = [ binding.flatMap(this.constructor.apply) ]
+    this._bindings = [ binding ]
 
   bind: (artifact) ->
     this._artifact = artifact
@@ -23,7 +28,7 @@ class Mutator
     null
 
   point: (point, app) ->
-    this._point = point ? (-> new Varying())
+    this._point = point
     this._app = app
     this._start()
     null
@@ -31,19 +36,25 @@ class Mutator
   _start: ->
     this.stop()
     return unless this._artifact?
-    this._boundings = ( binding.point(this._point).reactNow((f) => f(this._artifact, this._app)) for binding in this.bindings() )
+
+    pointed = ( promote(binding).point(this._point ? (-> new Varying())) for binding in this.bindings() )
+    this._bound = Varying.flatMapAll.apply(null, pointed.concat([ this.exec() ])).reactNow((f) => f(this._artifact, this._app))
+
+    null
 
   stop: ->
-    ( bounding.stop() for bounding in this._boundings ) if this._boundings?
+    this._bound?.stop()
     null
 
   bindings: -> this._bindings
-  @apply: ->
+
+  exec: -> this.constructor.exec
+  @exec: ->
 
 Mutator0 = Mutator
 class Mutator1 extends Mutator
-  constructor: (param, binding) ->
-    this._bindings = [ binding.flatMap(this.constructor.apply(param)) ]
+  constructor: (@_param, binding) -> super(binding)
+  exec: -> this.constructor.exec(@_param)
 
 
 # here are our standard mutators.
@@ -51,30 +62,30 @@ class Mutator1 extends Mutator
 mutators =
   attr:
     class AttrMutator extends Mutator1
-      @apply: (attr) -> (x) -> (dom) -> dom.attr(attr, safe(x))
+      @exec: (attr) -> (x) -> (dom) -> dom.attr(attr, safe(x))
 
   classGroup:
     class ClassGroupMutator extends Mutator1
-      @apply: (prefix) -> (x) -> (dom) ->
+      @exec: (prefix) -> (x) -> (dom) ->
         existing = dom.attr('class')?.split(' ') ? []
         dom.removeClass(className) for className in existing when className.indexOf(prefix) is 0
         dom.addClass("#{prefix}#{x}") if isPrimitive(value) is true
 
   classed:
     class ClassMutator extends Mutator1
-      @apply: (className) -> (x) -> (dom) -> dom.toggleClass(className, x is true)
+      @exec: (className) -> (x) -> (dom) -> dom.toggleClass(className, x is true)
 
   css:
     class CssMutator extends Mutator1
-      @apply: (prop) -> (x) -> (dom) -> dom.css(prop, safe(x))
+      @exec: (prop) -> (x) -> (dom) -> dom.css(prop, safe(x))
 
   text:
     class TextMutator extends Mutator0
-      @apply: (x) -> (dom) -> dom.text(safe(x))
+      @exec: (x) -> (dom) -> dom.text(safe(x))
 
   html:
     class HtmlMutator extends Mutator0
-      @apply: (x) -> (dom) -> dom.html(safe(x))
+      @exec: (x) -> (dom) -> dom.html(safe(x))
 
   render:
     class RenderMutator extends Mutator
@@ -100,12 +111,12 @@ mutators =
             else
               Varying.ly(binding)
 
-        finalBinding = Varying.pure(this.constructor.apply, pointedBindings.subject, pointedBindings.context,
+        finalBinding = Varying.pure(this.constructor.exec, pointedBindings.subject, pointedBindings.context,
           pointedBindings.library, pointedBindings.options)
 
         this._boundings = [ finalBinding.reactNow((f) => f(this._artifact, this._app)) ]
 
-      @apply: (subject, context, library, options) -> (dom, app) ->
+      @exec: (subject, context, library, options) -> (dom, app) ->
         view = (library?.get ? app?.getView)?(subject, util.extendNew(options ? {}, context: context ))
         dom.data('subview')?.destroy()
         dom.empty()

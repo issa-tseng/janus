@@ -1,4 +1,4 @@
-{ mutators } = require('./mutators')
+{ mutators } = require('./mutator')
 
 # mutations encode single data-to-dom bindings, including the action that should
 # occur in the dom.
