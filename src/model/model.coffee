@@ -6,7 +6,7 @@ Varying = require('../core/varying').Varying
 { Reference, Resolver } = require('./reference')
 util = require('../util/util')
 
-Binder = require('./binder').Binder
+#Binder = require('./binder').Binder
 
 # sentinel value to record a child-nulled value. instantiate a class instance
 # so that it doesn't read as a simple object.
@@ -242,9 +242,11 @@ class Model extends Base
 
   # Declare a binding for this model.
   @bind: (key) ->
+    ###
     binder = new Binder(key)
     this.binders().push(binder)
     binder
+    ###
 
   # Actually set up our binding.
   # **Returns** nothing.

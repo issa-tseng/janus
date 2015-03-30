@@ -39,6 +39,9 @@ util =
   # Fixed point Y combinator.
   fix: (f) -> ((x) -> f((y) -> x(x)(y)))((x) -> f((y) -> x(x)(y)))
 
+  # Self-explanatory.
+  identity: (x) -> x
+
 
   #### Array Utils
   # Exactly what you think it is.

@@ -84,7 +84,7 @@ class Varying
   # in a parameter passed to the returned class. so we implement it once and
   # partially apply with that difference immedatiely.
   _pure = (flat) -> (args...) ->
-    if isFunction(args[0])
+    if isFunction(args[0]) and not args[0].react?
       f = args[0]
 
       (fix (curry) -> (args) ->
