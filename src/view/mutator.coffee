@@ -127,5 +127,5 @@ mutators =
 
         dom.data('subview', view)
 
-module.exports = { Mutator, mutators }
+module.exports = { Mutator, mutators, _internal: { Mutator1 } }
 

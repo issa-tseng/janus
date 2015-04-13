@@ -45,7 +45,7 @@ should.Assertion.add('varying', (->
   this.obj.reactNow.should.be.a.Function
 ), true)
 
-describe.only 'from', ->
+describe 'from', ->
   describe 'initial val', ->
     it 'should return a val-looking thing', ->
       from('a').should.be.a.val
