@@ -89,7 +89,7 @@ matchFinal = match(
 applyMaps = (applicants, maps) ->
   [ first, rest... ] = maps
 
-  first ?= ic.map(identity)
+  first ?= ic.flatMap(identity)
 
   v = match(
     ic.map (f) -> Varying.mapAll.apply(null, (matchFinal(x) for x in applicants).concat([ f ]))
@@ -118,7 +118,7 @@ terminus = (applicants, maps = []) ->
   result.reactNow = (f_) -> applyMaps(applicants, maps).reactNow(f_)
 
   # TODO: is this a good idea? feels like not.
-  result.get = -> matchFinal(applicants[0])
+  result.get = -> matchFinal(mappedPoint(->)(applicants[0]))?.get()
 
   result
 
