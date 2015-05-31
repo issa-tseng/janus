@@ -6,6 +6,12 @@ cases = from.default
 { Varying } = require('../../lib/core/varying')
 { Mutator, mutators, _internal: { Mutator1 } } = require('../../lib/view/mutator')
 
+
+passthrough = match(
+  cases.varying (x) -> Varying.ly(x)
+  otherwise ->
+)
+
 describe 'Mutator', ->
   describe 'base class', ->
     it 'should construct', ->
@@ -117,10 +123,7 @@ describe 'Mutator', ->
 
       m = new TestMutator(4, from.varying(new Varying(8)))
       m.bind({})
-      m.point(match(
-        cases.varying (x) -> Varying.ly(x)
-        otherwise ->
-      ))
+      m.point(passthrough)
       calledValue.should.equal(8)
 
     it 'should apply exec() third-level with the binding', ->
@@ -131,4 +134,35 @@ describe 'Mutator', ->
       dom = {}
       (new TestMutator(15, from.varying(new Varying(16)))).bind(dom)
       calledValue.should.equal(dom)
+
+  describe 'attr', ->
+    it 'should call attr on the dom obj correctly', ->
+      param = null
+      value = null
+
+      dom = { attr: (x, y) -> param = x; value = y }
+      m = new mutators.attr('style', from.varying(new Varying('display')))
+      m.bind(dom)
+      m.point(passthrough)
+
+      param.should.equal('style')
+      value.should.equal('display')
+
+    it 'should force the parameter to a string', ->
+      value = null
+
+      dom = { attr: (_, x) -> value = x }
+      v = new Varying(null)
+      m = new mutators.attr('_', from.varying(v))
+      m.bind(dom)
+      m.point(passthrough)
+
+      v.set(0)
+      value.should.equal('0')
+
+      v.set(true)
+      value.should.equal('true')
+
+      v.set(null)
+      value.should.equal('')
 
