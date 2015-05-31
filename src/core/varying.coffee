@@ -119,6 +119,7 @@ class Varied
   constructor: (@id, @f_, @stop) ->
 
 identity = (x) -> x
+nothing = {}
 
 class FlatMappedVarying extends Varying
   constructor: (@_parent, @_f = identity, @_flatten = true) ->
@@ -136,7 +137,7 @@ class FlatMappedVarying extends Varying
       parentVaried.stop()
     )
 
-    lastValue = null # allow early return if nothing changed.
+    lastValue = nothing # allow early return if nothing changed.
     lastInnerVaried = null # track whether we're bound to an inner Varying's result.
 
     # onValue is the handler called for both the parent changing _as well as_
