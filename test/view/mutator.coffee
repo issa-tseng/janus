@@ -166,3 +166,56 @@ describe 'Mutator', ->
       v.set(null)
       value.should.equal('')
 
+  describe 'classGroup', ->
+    it 'should attempt to add the new class', ->
+      addedClass = null
+      dom = 
+        removeClass: ->
+        attr: ->
+        addClass: (x) -> addedClass = x
+
+      m = new mutators.classGroup('type-', from.varying(new Varying('test')))
+      m.bind(dom)
+      m.point(passthrough)
+
+      addedClass.should.equal('type-test')
+
+    it 'should attempt to remove old classes', ->
+      removedClasses = []
+      dom = 
+        removeClass: (x) -> removedClasses.push(x)
+        attr: -> 'type-old otherclass some-type-here'
+        addClass: ->
+
+      m = new mutators.classGroup('type-', from.varying(new Varying('test')))
+      m.bind(dom)
+      m.point(passthrough)
+
+      removedClasses.should.eql([ 'type-old', 'type-old' ])
+
+  describe 'classed', ->
+    it 'should call toggleClass with the class name', ->
+      className = null
+      dom = { toggleClass: (x, _) -> className = x }
+
+      new mutators.classed('hide', from.varying(new Varying('test'))).bind(dom)
+
+      className.should.equal('hide')
+
+    it 'should call toggleClass with truthiness', ->
+      truthy = null
+      dom = { toggleClass: (_, x) -> truthy = x }
+
+      v = new Varying('test')
+      m = new mutators.classed('hide', from.varying(v))
+      m.bind(dom)
+      m.point(passthrough)
+
+      truthy.should.equal(false)
+
+      v.set(true)
+      truthy.should.equal(true)
+
+      v.set(null)
+      truthy.should.equal(false)
+

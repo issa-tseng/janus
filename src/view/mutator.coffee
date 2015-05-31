@@ -69,7 +69,7 @@ mutators =
       @exec: (prefix) -> (x) -> (dom) ->
         existing = dom.attr('class')?.split(' ') ? []
         dom.removeClass(className) for className in existing when className.indexOf(prefix) is 0
-        dom.addClass("#{prefix}#{x}") if isPrimitive(value) is true
+        dom.addClass("#{prefix}#{x}") if isPrimitive(x) is true
 
   classed:
     class ClassMutator extends Mutator1
