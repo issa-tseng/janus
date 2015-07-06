@@ -38,5 +38,11 @@
     "grunt-contrib-watch": "~0.4.0",
 
     "grunt-simple-mocha": "~0.4.0"
+  },
+  "coffeelintConfig": {
+    "max_line_length": {
+      "value": 120,
+      "level": "warn"
+    }
   }
 }

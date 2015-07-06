@@ -73,6 +73,23 @@ Installation
 
 Simply install with `npm`: `npm install janus`
 
+Linting
+=======
+
+To install `coffeelint`, run:
+
+```
+npm i -g coffeelint
+```
+
+To run `coffeelint` in the `src` directory, run:
+
+```
+coffeelint src
+```
+
+See `package.json` for the configuration options.
+
 License
 =======
 
