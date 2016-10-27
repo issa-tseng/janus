@@ -7,7 +7,7 @@ countObservers = (o) ->
   (observers += 1) for _ of o._observers
   observers
 
-describe.only 'Varying', ->
+describe 'Varying', ->
   describe 'core', ->
     it 'should construct', ->
       (new Varying()).should.be.an.instanceof(Varying)
@@ -244,6 +244,22 @@ describe.only 'Varying', ->
       v.set(0)
       i.set(2)
       result.should.equal(0)
+
+    it 'should cease reacting to an inner varying when it does', ->
+      v = new Varying()
+      f = v.flatten()
+
+      i = new Varying(1)
+
+      result = null
+      r = f.reactNow((x) -> result = x)
+
+      v.set(i)
+      result.should.equal(1)
+
+      r.stop()
+      i.set(2)
+      result.should.equal(1)
 
     it 'should internally stop reacting to an inner varying once it is gone', ->
       v = new Varying()
@@ -531,7 +547,6 @@ describe.only 'Varying', ->
         m = Varying.flatMapAll(((x, y) -> vz = new Varying(x + y)), new Varying(1), new Varying(2))
 
         result = null
-        debugger
         m.reactNow((x) -> result = x)
         result.should.equal(3)
 
