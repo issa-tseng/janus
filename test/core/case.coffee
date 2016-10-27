@@ -150,6 +150,15 @@ describe 'case', ->
           fail -> 2
         )(fail()).should.equal(2)
 
+      it 'should not match like-named cases from other sets', ->
+        { success, fail } = caseSet('success', 'fail')
+        success2 = caseSet('success').success
+
+        match(
+          success -> 1
+          otherwise -> 2
+        )(success2()).should.equal(2)
+
     describe 'unapplying', ->
       it 'should call my result handler with the inner value', ->
         matched = false
@@ -189,4 +198,29 @@ describe 'case', ->
 
         m(success(true)).should.be.true
         matched.should.be.true
+
+      it 'should allow use of otherwise in function call style', ->
+        result = null
+
+        { success, fail } = caseSet('success', 'fail')
+        m = match(
+          success -> 'success'
+          otherwise (x) -> result = x
+        )
+
+        m('otherwise').should.equal('otherwise')
+        result.should.equal('otherwise')
+
+      it 'should leave cases of other sets intact when otherwised', ->
+        result = null
+
+        { success } = caseSet('success')
+        { fail } = caseSet('fail')
+
+        m = match(
+          success -> 'success'
+          otherwise (x) -> result = x
+        )
+
+        m(fail('test')).should.equal('fail')
 
