@@ -26,8 +26,14 @@
 { extendNew, capitalize, isPlainObject, isFunction } = require('../util/util')
 
 
-# sentinel value.
-otherwise = 'otherwise'
+# otherwise is a case that like the others can be referenced by string or used
+# as a function.
+otherwise = (value) ->
+  instance = new String('otherwise')
+  instance.value = value
+  instance.case = otherwise
+  instance
+otherwise.type = 'otherwise'
 
 
 # the main constructor.
@@ -85,7 +91,14 @@ caseSet = (inTypes...) ->
 
 
 # general unapply handler.
-unapply = (target, handler) -> if isFunction(handler) then target?.unapply(handler) else handler
+unapply = (target, handler, unapply = true) ->
+  if isFunction(handler)
+    if isFunction(target?.unapply) and unapply is true
+      target?.unapply(handler)
+    else
+      handler(target)
+  else
+    handler
 
 
 # our matcher.
@@ -93,7 +106,7 @@ match = (args...) ->
   first = args[0] # grab the first item.
   set = (first?.case ? first)?.set # assume the first thing is a case or an instance.
   seen = {} # track what cases we've covered.
-  otherwise = false # does an otherwise exist?
+  hasOtherwise = false # does an otherwise exist?
 
   # "compile-time" checks.
   i = 0
@@ -101,16 +114,15 @@ match = (args...) ->
     x = args[i]
     kase = if x.case? then x.case else x
 
-    # TODO: function call syntax for otherwise.
-    if kase is 'otherwise'
-      otherwise = true
+    if kase.type is 'otherwise'
+      hasOtherwise = true
     else
       throw new Error("found a case of some other set!") unless set[kase.type]?
       seen[kase.type] = true
 
     i += if x.case? then 1 else 2
 
-  throw new Error('not all cases covered!') for kase of set when seen[kase] isnt true if otherwise is false
+  throw new Error('not all cases covered!') for kase of set when seen[kase] isnt true if hasOtherwise is false
 
   # our actual matcher as a result.
   (target) ->
@@ -125,11 +137,11 @@ match = (args...) ->
         kase = args[i]
         handler = args[i + 1]
 
-      # always process on otherwise.
-      return unapply(target, handler) if kase is 'otherwise'
+      # always process if otherwise.
+      return unapply(target, handler, false) if kase.type is 'otherwise'
 
-      # process if a match otherwise.
-      return unapply(target, handler) if kase.type.valueOf() is target?.valueOf()
+      # process if a match if not.
+      return unapply(target, handler) if kase.type.valueOf() is target?.valueOf() and (target?.case ? target)?.set is set
 
       i += if x.case? then 1 else 2
 
