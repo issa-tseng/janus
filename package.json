@@ -28,8 +28,8 @@
   },
   "devDependencies": {
     "coffee-script": "1.6.2",
-    "mocha": "~1.9.0",
-    "should": "~1.2.2",
+    "mocha": "~2.0.1",
+    "should": "~4.4.1",
 
 
     "grunt": "~0.4.1",
