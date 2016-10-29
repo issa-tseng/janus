@@ -14,6 +14,9 @@ node_modules:
 
 build: $(LIB)
 
+test: build node_modules
+	node node_modules/mocha/bin/mocha --compilers coffee:coffee-script --recursive
+
 clean:
 	rm -rf lib
 

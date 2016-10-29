@@ -1,3 +1,4 @@
+return
 should = require('should')
 
 Model = require('../../lib/model/model').Model
