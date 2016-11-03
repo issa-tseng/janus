@@ -43,17 +43,15 @@ mutators =
 
   render: (data, args = {}) ->
     result = (dom, point) ->
-      _render = (subject, context, app, find, options) ->
+      _getView = (subject, context, app, find, options) -> app.getView(subject, extendNew(find ? {}, context: context, constructorOpts: options))
+
+      Varying.flatMapAll(_getView, terminate(data).point(point), doPoint(args.context, point), point('app'), doPoint(args.find, point), doPoint(args.options, point)).reactNow (view) ->
         dom.data('subview')?.destroy()
         dom.empty()
-
-        view = app.getView(subject, util.extendNew(find ? {}, context: context, constructorOpts: options))
-        if view?
-          dom.append(view.artifact())
-          dom.data('subview', view)
-          # TODO: do we have to inform the view it's been appended?
-
-      Varying.pure(_render, terminate(data).point(point), doPoint(args.context), point('app'), doPoint(args.find), doPoint(args.options))
+        return unless view?
+        dom.append(view.artifact())
+        dom.data('subview', view)
+        # TODO: do we have to inform the view it's been appended?
 
     result.context = (context) -> mutators.render(data, extendNew(args, context: context ))
     result.find = (find) -> mutators.render(data, extendNew(args, find: find ))

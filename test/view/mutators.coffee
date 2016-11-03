@@ -5,6 +5,7 @@ from = require('../../lib/core/from')
 { Varying } = require('../../lib/core/varying')
 mutators = require('../../lib/view/mutators')
 
+# TODO: no tests for from.[...].all, only from.x directly.
 
 passthrough = match(
   from.default.varying (x) -> Varying.ly(x)
@@ -244,4 +245,110 @@ describe 'Mutator', ->
       m.stop()
       v.set('test 2')
       value.should.equal('test')
+
+  describe 'render', ->
+    it 'passes the subject to the library', ->
+      subject = null
+      dom = { append: (->), empty: (->), data: (->) }
+      app = { getView: (x) -> subject = x; { artifact: (->) } }
+      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+
+      mutators.render(from.varying(new Varying(1)))(dom, point)
+      subject.should.equal(1)
+
+    it 'passes bare context to the library if provided', ->
+      subject = null
+      context = null
+      dom = { append: (->), empty: (->), data: (->) }
+      app = { getView: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
+      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+
+      mutators
+        .render(from.varying(new Varying(1)))
+        .context('edit')(dom, point)
+      subject.should.equal(1)
+      context.should.equal('edit')
+
+    it 'passes varying context to the library if provided', ->
+      subject = null
+      context = null
+      dom = { append: (->), empty: (->), data: (->) }
+      app = { getView: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
+      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+
+      mutators
+        .render(from.varying(new Varying(1)))
+        .context(from.varying(new Varying('edit')))(dom, point)
+      subject.should.equal(1)
+      context.should.equal('edit')
+
+    # also checks for appropriate context merging.
+    it 'passes bare find options to the library if provided', ->
+      opts = null
+      dom = { append: (->), empty: (->), data: (->) }
+      app = { getView: (x, y) -> opts = y; { artifact: (->) } }
+      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+
+      mutators
+        .render(from.varying(new Varying(1)))
+        .context('edit')
+        .find({ attrs: 2 })(dom, point)
+      opts.attrs.should.equal(2)
+      opts.context.should.equal('edit')
+
+    # also checks for appropriate find merging.
+    it 'passes constructor options to the library if provided', ->
+      opts = null
+      dom = { append: (->), empty: (->), data: (->) }
+      app = { getView: (x, y) -> opts = y; { artifact: (->) } }
+      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+
+      mutators
+        .render(from.varying(new Varying(1)))
+        .find({ attrs: 2 })
+        .options({ test: 3 })(dom, point)
+      opts.attrs.should.equal(2)
+      opts.constructorOpts.should.eql({ test: 3 })
+
+    it 'clears out the previous subview', ->
+      emptied = false
+      destroyed = false
+      key = null
+      oldView = { destroy: -> destroyed = true }
+      dom = { append: (->), empty: (-> emptied = true), data: ((k) -> key = k; oldView) }
+      app = { getView: (->) }
+      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+
+      mutators.render(from.varying(new Varying(1)))(dom, point)
+      emptied.should.equal(true)
+      destroyed.should.equal(true)
+      key.should.equal('subview')
+
+    it 'drops in the new subview', ->
+      appended = null
+      dataKey = null
+      dataValue = null
+      newView = { artifact: -> 4 }
+      dom = { append: ((x) -> appended = x), empty: (->), data: ((k, v) -> dataKey = k; dataValue = v) }
+      app = { getView: (-> newView) }
+      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+
+      mutators.render(from.varying(new Varying(1)))(dom, point)
+      appended.should.equal(4)
+      dataKey.should.equal('subview')
+      dataValue.should.equal(newView)
+
+    it 'should return a Varied that can stop mutation', ->
+      value = null
+      dom = { append: ((x) -> value = x), empty: (->), data: (->) }
+      app = { getView: (x) -> { artifact: -> x } }
+      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+
+      v = new Varying(1)
+      m = mutators.render(from.varying(v))(dom, point)
+      value.should.equal(1)
+
+      m.stop()
+      v.set(2)
+      value.should.equal(1)
 
