@@ -93,7 +93,7 @@ class Varying
         else
           new ComposedVarying(args, f, flat)
       )(args.slice(1))
-    else
+    else # TODO: can't we curry here too until we see a function?
       f = args.pop()
       new ComposedVarying(args, f, flat)
 
