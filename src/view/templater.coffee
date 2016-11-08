@@ -1,27 +1,18 @@
-mutators = require('./mutators')
+defaultMutators = require('./mutators')
 
-# mutations encode single data-to-dom bindings, including the action that should
-# occur in the dom.
+# wrap given mutators with a find() facility that records a selector and enables
+# chaining of the mutator if provided, returning (dom) -> (point) -> Varied.
+_recurse = (m, selector) ->
+  result = (dom) ->
+    target = dom.find(selector)
+    (point) -> m(target, point)
+  for k, v of m
+    do (v) -> result[k] = (args...) -> _recurse(v(args...), selector)
+  result
 
-class Mutation
-  isMutation: true
-  constructor: (@selector, @mutator) ->
+build = (mutators) -> (selector) -> _recurse(mutators, selector)
 
-# TODO: this feels stupid. there must be a better way?
-# TODO: do i care about the possibility of namespace collisions?
-build = (objs) ->
-  methods = {}
-  for obj in objs
-    for name, klass of obj
-      do (name, kase) ->
-        methods[name] = (selector) -> (args...) -> new Mutation(selector, new klass(args...))
-
-  (selector) ->
-    result = { selector }
-    result[k] = v(selector) for k, v of methods
-    result
-
-find = build(mutators)
+find = build(defaultMutators)
 find.build = build
 
 # templates are collections of mutations. they are immutable and just declarative.
