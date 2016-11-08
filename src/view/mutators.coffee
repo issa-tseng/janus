@@ -53,9 +53,9 @@ mutators =
         dom.data('subview', view)
         # TODO: do we have to inform the view it's been appended?
 
-    result.context = (context) -> mutators.render(data, extendNew(args, context: context ))
-    result.find = (find) -> mutators.render(data, extendNew(args, find: find ))
-    result.options = (options) -> mutators.render(data, extendNew(args, options: options ))
+    result.context = (context) -> mutators.render(data, extendNew(args, { context }))
+    result.find = (find) -> mutators.render(data, extendNew(args, { find }))
+    result.options = (options) -> mutators.render(data, extendNew(args, { options }))
 
     result
 
