@@ -22,7 +22,7 @@
   "engines": {
     "node": ">= 0.8.0"
   },
-  "keywords": [ "framework", "server-side", "mvvm", "application", "508", "seo" ],
+  "keywords": [ "framework", "server-side", "mvvm", "frp", "rx", "application", "508", "seo" ],
   "dependencies": {
     "eventemitter2": "~0.4.11"
   },
