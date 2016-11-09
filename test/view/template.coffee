@@ -1,7 +1,7 @@
 should = require('should')
 
 { extendNew } = require('../../lib/util/util')
-{ find, template } = require('../../lib/view/templater')
+{ find, template } = require('../../lib/view/template')
 
 describe 'templater', ->
   describe 'find', ->
