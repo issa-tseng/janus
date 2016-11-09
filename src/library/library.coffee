@@ -43,8 +43,9 @@ class Library extends Base
   # 3. `options`: *Optional*: A hash with any of the following additional
   #    options:
   #    - `context`: A string denoting what sort of match we're looking
-  #      for. This can be anything; recommended usages include 'client' vs
-  #      'server', 'default' vs 'edit', etc.
+  #      for. This can be anything; recommended usages involve logical rather
+  #      than physical differences; eg "default" vs "edit" is best practice,
+  #      whereas "client" vs "server" is better resolved by registration itself.
   #    - `priority`: A positive integer denoting the priority of this
   #      registration. The higher the value, the higher the priority.
   #    - `attributes`: An additional set of descriptive attributes in hash
