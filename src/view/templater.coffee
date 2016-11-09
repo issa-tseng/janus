@@ -16,53 +16,11 @@ find = build(defaultMutators)
 find.build = build
 
 # templates are collections of mutations. they are immutable and just declarative.
+# in fact, all template() does remember a bunch of functions and recursively call
+# them all later. after pointing, it returns an array of the resulting `Varied`s.
+template = (xs...) -> (dom) ->
+  found = (x(dom) for x in xs)
+  (point) -> Array.prototype.concat.apply([], (f(point) for f in found))
 
-class Template
-  isTemplate: true
-  constructor: (@mutations) ->
-
-  bind: (dom, point) -> new BoundTemplate(dom, this.mutations, point)
-
-template = (mutations...) ->
-  result = []
-
-  for mutation in mutations
-    if mutation.isMutation is true
-      result.push(mutation)
-    else
-      result = result.concat(template(mutation))
-
-  new Template(result)
-
-# bound templates are created when a template is bound to a dom fragment. they
-# do the actual binding and state management involved.
-
-class BoundTemplate
-  constructor: (@dom, @mutations, point) ->
-    # weird shuffle dance to wrap the dom without referencing a framework, but
-    # support jquery/zepto/cheerio. we can use wrap() if cheerio adds it.
-    dom.prepend('<div/>')
-    this.wrappedDom = wrapper = dom.children(':first')
-    wrapper.remove()
-    wrapper.append(dom)
-
-    # now actually bind against our dom nodes.
-    this.point(point)
-    this._bind(point)
-
-  _bind: (point) ->
-    mutation.mutator.bind(this.wrappedDom.find(mutation.selector)) for mutation in this.mutations
-    null
-
-  point: (point) ->
-    mutation.mutator.point(point) for mutation in this.mutations
-    null
-
-  destroy: ->
-    mutation.mutator.stop() for mutation in this.mutations
-    dom.trigger('destroying')
-    null
-
-
-module.exports = { template, find }
+module.exports = { find, template }
 
