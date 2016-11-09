@@ -1,7 +1,7 @@
 should = require('should')
 
 { extendNew } = require('../../lib/util/util')
-{ find, templater } = require('../../lib/view/templater')
+{ find, template } = require('../../lib/view/templater')
 
 describe 'templater', ->
   describe 'find', ->
@@ -101,4 +101,45 @@ describe 'templater', ->
         myfind('a').test(3, 4)({ find: -> })(->)
         x.should.equal(3)
         y.should.equal(4)
+
+  describe 'template', ->
+    m = (cb) -> (dom) ->
+      cb(dom)
+      (point) -> cb(point)
+
+    it 'returns a function', ->
+      template().should.be.a.Function
+      template(->).should.be.a.Function
+
+    it 'calls all directly passed mutators (first-order)', ->
+      all = []
+      cb = (val) -> m((x) -> all.push(val, x))
+
+      template(cb(1), cb(2), cb(3))(9)
+      all.should.eql([ 1, 9, 2, 9, 3, 9 ])
+
+    it 'calls all nested mutators (first-order)', ->
+      all = []
+      cb = (val) -> m((x) -> all.push(val, x))
+
+      template(cb(1), template(cb(2), cb(3)))(9)
+      all.should.eql([ 1, 9, 2, 9, 3, 9 ])
+
+    it 'calls all deeply nested mutators (first-order)', ->
+      all = []
+      cb = (val) -> m((x) -> all.push(val, x))
+
+      template(cb(1), template(cb(2), template(cb(3), cb(4))))(9)
+      all.should.eql([ 1, 9, 2, 9, 3, 9, 4, 9 ])
+
+    it 'calls all mutators (second-order)', ->
+      all = []
+      cb = (val) -> m((x) -> all.push(val, x))
+
+      template(cb(1), template(cb(2), template(cb(3), cb(4))))(9)(99)
+      all.should.eql([ 1, 9, 2, 9, 3, 9, 4, 9, 1, 99, 2, 99, 3, 99, 4, 99 ])
+
+    it 'returns all final objs flatly (second-order call)', ->
+      cb = (val) -> m(-> val)
+      template(cb(1), template(cb(2), template(cb(3), cb(4))))()().should.eql([ 1, 2, 3, 4 ])
 
