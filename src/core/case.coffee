@@ -69,7 +69,7 @@ caseSet = (inTypes...) ->
             # decorate TOrElse:
             instance[fType + 'OrElse'] = (x) -> if type is fType then this.value else x
 
-            # decorate flatT:
+            # decorate flatT: TODO: possible rename this something like extractX.
             instance['flat' + capitalize(fType)] = -> if type is fType then this.value else this
 
         # decorate the rest:
@@ -140,7 +140,7 @@ match = (args...) ->
       # always process if otherwise.
       return unapply(target, handler, false) if kase.type is 'otherwise'
 
-      # process if a match if not.
+      # process if a match if not. TODO: checking set ref against set ref breaks npm-agnosticity.
       return unapply(target, handler) if kase.type.valueOf() is target?.valueOf() and (target?.case ? target)?.set is set
 
       i += if x.case? then 1 else 2

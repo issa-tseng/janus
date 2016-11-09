@@ -84,7 +84,7 @@ class Varying
   # in a parameter passed to the returned class. so we implement it once and
   # partially apply with that difference immedatiely.
   _pure = (flat) -> (args...) ->
-    if isFunction(args[0])
+    if isFunction(args[0]) and not args[0].react?
       f = args[0]
 
       (fix (curry) -> (args) ->
@@ -93,7 +93,7 @@ class Varying
         else
           new ComposedVarying(args, f, flat)
       )(args.slice(1))
-    else
+    else # TODO: can't we curry here too until we see a function?
       f = args.pop()
       new ComposedVarying(args, f, flat)
 
@@ -119,6 +119,7 @@ class Varied
   constructor: (@id, @f_, @stop) ->
 
 identity = (x) -> x
+nothing = {}
 
 class FlatMappedVarying extends Varying
   constructor: (@_parent, @_f = identity, @_flatten = true) ->
@@ -136,7 +137,7 @@ class FlatMappedVarying extends Varying
       parentVaried.stop()
     )
 
-    lastValue = null # allow early return if nothing changed.
+    lastValue = nothing # allow early return if nothing changed.
     lastInnerVaried = null # track whether we're bound to an inner Varying's result.
 
     # onValue is the handler called for both the parent changing _as well as_
