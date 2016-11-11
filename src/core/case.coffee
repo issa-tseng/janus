@@ -55,7 +55,7 @@ caseSet = (inTypes...) ->
       # the per-case properties we're going to decorate on.
       props =
         map: (f) -> kase(f(this.value))
-        unapply: (x) -> if isFunction(x) then x(this.value) else x
+        unapply: (x, additional) -> if isFunction(x) then x(this.value, additional...) else x
         toString: -> "#{this}: #{this.value}"
 
       # make the wrapper.
@@ -91,12 +91,12 @@ caseSet = (inTypes...) ->
 
 
 # general unapply handler.
-unapply = (target, handler, unapply = true) ->
+unapply = (target, handler, additional, unapply = true) ->
   if isFunction(handler)
     if isFunction(target?.unapply) and unapply is true
-      target?.unapply(handler)
+      target.unapply(handler, additional)
     else
-      handler(target)
+      handler(target, additional...)
   else
     handler
 
@@ -125,7 +125,7 @@ match = (args...) ->
   throw new Error('not all cases covered!') for kase of set when seen[kase] isnt true if hasOtherwise is false
 
   # our actual matcher as a result.
-  (target) ->
+  (target, additional...) ->
     # walk pairwise.
     i = 0
     while i < args.length
@@ -138,10 +138,10 @@ match = (args...) ->
         handler = args[i + 1]
 
       # always process if otherwise.
-      return unapply(target, handler, false) if kase.type is 'otherwise'
+      return unapply(target, handler, additional, false) if kase.type is 'otherwise'
 
       # process if a match if not. TODO: checking set ref against set ref breaks npm-agnosticity.
-      return unapply(target, handler) if kase.type.valueOf() is target?.valueOf() and (target?.case ? target)?.set is set
+      return unapply(target, handler, additional) if kase.type.valueOf() is target?.valueOf() and (target?.case ? target)?.set is set
 
       i += if x.case? then 1 else 2
 
