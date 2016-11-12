@@ -46,15 +46,11 @@ class DomView extends View
   _templaterOptions: -> {}
 
   # When we want to bind, we really just want to create a Templater against the
+  # When we want to attach, we really just want to create a Templater against the
   # dom we've been given and tell it not to apply on init. We then want to feed
   # it the data we have, much like when we fully render.
-  _bind: (dom) ->
-    this._templater = new this.templateClass(
-      app: this._app()
-      dom: dom
-    )
-
-    this._setTemplaterData(false)
+  _attach: (dom) ->
+    # TODO.
     null
 
   # Define how we set our data onto our templater, so that aux data can be
