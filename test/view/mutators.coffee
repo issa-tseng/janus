@@ -338,6 +338,16 @@ describe 'Mutator', ->
       dataKey.should.equal('subview')
       dataValue.should.equal(newView)
 
+    it 'notifies the new subview it\'s been appended', ->
+      evented = false
+      newView = { artifact: (-> 4), emit: ((x) -> evented = true if x is 'appended') }
+      dom = { append: (->), empty: (->), data: (->) }
+      app = { getView: (-> newView) }
+      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+
+      mutators.render(from.varying(new Varying(1)))(dom, point)
+      evented.should.equal(true)
+
     it 'should return a Varied that can stop mutation', ->
       value = null
       dom = { append: ((x) -> value = x), empty: (->), data: (->) }

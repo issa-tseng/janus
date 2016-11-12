@@ -42,6 +42,8 @@ mutators =
   html: (data) -> (dom, point) -> terminate(data).point(point).reactNow((x) -> dom.html(safe(x)))
 
   render: (data, args = {}) ->
+    # TODO: eventually should analyze the view that may be already there and see if
+    # it's already appropriate, in which case do nothing (for the attach case).
     result = (dom, point) ->
       _getView = (subject, context, app, find, options) -> app.getView(subject, extendNew(find ? {}, context: context, constructorOpts: options))
 
@@ -49,9 +51,10 @@ mutators =
         dom.data('subview')?.destroy()
         dom.empty()
         return unless view?
+
         dom.append(view.artifact())
+        view.emit?('appended') # tell it it's been appended. it will figure out for itself where to.
         dom.data('subview', view)
-        # TODO: do we have to inform the view it's been appended?
 
     result.context = (context) -> mutators.render(data, extendNew(args, { context }))
     result.find = (find) -> mutators.render(data, extendNew(args, { find }))
