@@ -36,12 +36,11 @@ val = (conjunction, applicants = []) ->
 # creates a conjunction with the relevant methods.
 build = (cases) ->
   methods = {}
-  for name, kase of cases when name not in [ 'dynamic', 'varying' ]
+  for name, kase of cases when name isnt 'dynamic'
     do (name, kase) ->
-      methods[name] = (applicants) -> (args...) -> val(conjunction, conj(applicants, kase(args)))
+      methods[name] = (applicants) -> (x) -> val(conjunction, conj(applicants, kase(x)))
 
-  methods.varying = (applicants) -> (f) -> val(conjunction, conj(applicants, cases.varying(f)))
-  base = if cases.dynamic? then ((applicants) -> (args...) -> val(conjunction, conj(applicants, cases.dynamic(args)))) else (-> {})
+  base = if cases.dynamic? then ((applicants) -> (x) -> val(conjunction, conj(applicants, cases.dynamic(x)))) else (-> {})
 
   # conjuctions let you start new applicants.
   conjunction = (applicants = []) ->

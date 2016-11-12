@@ -79,22 +79,22 @@ describe 'from', ->
       args = []
 
       from('a')
-        .and.attr('b', 'c')
-        .and.definition('d', 'e')
-        .and.varying('f')
+        .and.attr('b')
+        .and.definition('c')
+        .and.varying('d')
         .all.point((x) -> args.push(x); x)
 
       args[0].should.eql('dynamic')
-      args[0].value.should.eql([ 'a' ])
+      args[0].value.should.equal('a')
 
       args[1].should.eql('attr')
-      args[1].value.should.eql([ 'b', 'c' ])
+      args[1].value.should.equal('b')
 
       args[2].should.eql('definition')
-      args[2].value.should.eql([ 'd', 'e' ])
+      args[2].value.should.equal('c')
 
       args[3].should.eql('varying')
-      args[3].value.should.eql('f')
+      args[3].value.should.equal('d')
 
     it 'should only point for things that have not resolved to varying', ->
       { dynamic, attr, definition, varying } = from.default
@@ -103,7 +103,7 @@ describe 'from', ->
       incr = (f) -> (args...) -> count += 1; f(args...)
 
       f1 = from('a')
-        .and.attr('b', 'c', 'd')
+        .and.attr('b')
         .all.point(match(
           dynamic incr (xs...) -> new Varying()
           otherwise incr id
