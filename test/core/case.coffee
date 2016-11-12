@@ -172,6 +172,19 @@ describe 'case', ->
         m(success(true)).should.be.true
         matched.should.be.true
 
+      it 'should additionally pass along additional arguments if provided', ->
+        a = b = c = null
+        { success, fail } = caseSet('success', 'fail')
+        m = match(
+          success (x, y, z) -> a = x; b = y; c = z
+          otherwise -> null
+        )
+
+        m(success(1), 2, 3)
+        a.should.equal(1)
+        b.should.equal(2)
+        c.should.equal(3)
+
       it 'should allow for custom unapply', ->
         matched = false
 
