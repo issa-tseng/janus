@@ -247,6 +247,46 @@ describe 'dom-view', ->
       view.emit('appended')
       called.should.equal(2)
 
+  describe 'client event wiring', ->
+    it 'only wires events once', ->
+      count = 0
+      class TestView extends DomView
+        @_dom: -> { data: (->) }
+        @_template: inf
+        _wireEvents: -> count += 1
+
+      view = new TestView({})
+      view.wireEvents()
+      view.wireEvents()
+      count.should.equal(1)
+
+    it 'adds a reference to self on the top-level dom node', ->
+      dataKey = dataValue = null
+      class TestView extends DomView
+        @_dom: -> { data: ((k, v) -> dataKey = k; dataValue = v) }
+        @_template: inf
+
+      view = new TestView()
+      view.wireEvents()
+      dataKey.should.equal('view')
+      dataValue.should.equal(view)
+
+    it 'also wires subview events', ->
+      wired = []
+      class TestView extends DomView
+        @_dom: -> { data: ((k, v) -> dataKey = k; dataValue = v) }
+        @_template: inf
+        _wireEvents: -> wired.push(this)
+
+      childA = new TestView({})
+      childB = new TestView({})
+      subviews = new List([ childA, childB ])
+
+      view = new TestView()
+      view._subviews = subviews
+      view.wireEvents()
+      wired.should.eql([ view, childA, childB ])
+
   describe 'lifecycle', ->
     it 'triggers a `destroying` event on the dom fragment root', ->
       triggered = null
