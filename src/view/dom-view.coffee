@@ -4,15 +4,22 @@
 # * It returns a DOM node.
 #
 
-util = require('../util/util')
+{ Varying } = require('../core/varying')
+{ match } = require('../core/case')
+{ dynamic, attr, definition, varying } = require('../core/from').default
 View = require('./view').View
 List = require('../collection/list').List
+{ extendNew, extend, isFunction, isString } = require('../util/util')
 
 class DomView extends View
-  # When deriving from DomView, set the templater class to determine which
-  # templater to use.
-  # TODO: make class var
-  templateClass: null
+  # Here we supply the internal DOM fragment we'll use to actually render.
+  # Calling this method should always result in a fresh DOM fragment wrapped
+  # with a jQuery-compatible API (maybe someday we'll go native).
+  @_dom: ->
+
+  # When deriving from DomView, declare a template class var so that we have
+  # something to render with.
+  @_template: null
 
   constructor: (@subject, @options = {}) ->
     super(@subject, @options)
@@ -35,17 +42,26 @@ class DomView extends View
   # DOM via our templater and attach the binder against what we know is our
   # primary data.
   _render: ->
-    this._templater = new this.templateClass(
-      util.extendNew({ app: this._app() }, this._templaterOptions()))
-
-    dom = this._templater.dom()
-    this._setTemplaterData()
+    dom = this.constructor._dom()
+    found = this.constructor._template(dom)
+    this._bindings = found((x) => this.constructor._point(x, this.subject)) #k
     dom
 
-  # Allow for templater options to be passed in easily.
-  _templaterOptions: -> {}
+  # Point is provided here as a top-level class method so that it's "compiled"
+  # as few times as possible. It deals with all the default cases.
+  @_point: match(
+    dynamic (x, subject) ->
+      if isFunction(x)
+        Varying.ly(x(subject))
+      else if isString(x)
+        subject.watch(x)
+      else
+        Varying.ly(x) # i guess? TODO
+    attr (x, subject) -> subject.watch(x)
+    definition (x, subject) -> new Varying(subject.attribute(x))
+    varying (x, subject) -> if isFunction(x) then Varying.ly(x(subject)) else Varying.ly(x)
+  )
 
-  # When we want to bind, we really just want to create a Templater against the
   # When we want to attach, we really just want to create a Templater against the
   # dom we've been given and tell it not to apply on init. We then want to feed
   # it the data we have, much like when we fully render.
@@ -53,14 +69,8 @@ class DomView extends View
     # TODO.
     null
 
-  # Define how we set our data onto our templater, so that aux data can be
-  # provided if needed.
-  _setTemplaterData: (shouldRender) -> this._templater.data(this.subject, this._auxData(), shouldRender)
-
-  # Or, if you really just want to provide some aux data, that's pretty easy
-  # to allow too.
-  _auxData: -> this.options.aux ? {}
-
+  # Internal helper to get an App, since there's a lot of juggling we want to do
+  # to get various follow-on effects to work correctly. Memoized for perf.
   _app: -> this._app$ ?= do =>
     library = this.options.app.get('views').newEventBindings()
     library.destroyWith(this)
@@ -95,11 +105,12 @@ class DomView extends View
     if this._artifact?
       this.artifact().trigger?('destroying')
       this.artifact().remove()
+      binding.stop() for binding in this._bindings
 
     super()
 
 
-util.extend(module.exports,
+extend(module.exports,
   DomView: DomView
 )
 
