@@ -29,6 +29,7 @@
   "devDependencies": {
     "coffee-script": "1.6.2",
     "mocha": "~3",
-    "should": "~11"
+    "should": "~11",
+    "istanbul": "~0.4"
   }
 }
