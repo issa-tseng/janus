@@ -6,7 +6,7 @@
 
 { Varying } = require('../core/varying')
 { match } = require('../core/case')
-{ dynamic, attr, definition, varying } = require('../core/from').default
+{ dynamic, attr, definition, varying, app } = require('../core/from').default
 View = require('./view').View
 List = require('../collection/list').List
 { extendNew, extend, isFunction, isString } = require('../util/util')
@@ -44,22 +44,23 @@ class DomView extends View
   _render: ->
     dom = this.constructor._dom()
     found = this.constructor._template(dom)
-    this._bindings = found((x) => this.constructor._point(x, this.subject)) #k
+    this._bindings = found((x) => this.constructor._point(x, this)) #k
     dom
 
   # Point is provided here as a top-level class method so that it's "compiled"
   # as few times as possible. It deals with all the default cases.
   @_point: match(
-    dynamic (x, subject) ->
+    dynamic (x, view) ->
       if isFunction(x)
-        Varying.ly(x(subject))
+        Varying.ly(x(view.subject))
       else if isString(x)
-        subject.watch(x)
+        view.subject.watch(x)
       else
         Varying.ly(x) # i guess? TODO
-    attr (x, subject) -> subject.watch(x)
-    definition (x, subject) -> new Varying(subject.attribute(x))
-    varying (x, subject) -> if isFunction(x) then Varying.ly(x(subject)) else Varying.ly(x)
+    attr (x, view) -> view.subject.watch(x)
+    definition (x, view) -> new Varying(view.subject.attribute(x))
+    varying (x, view) -> if isFunction(x) then Varying.ly(x(view.subject)) else Varying.ly(x)
+    app (x, view) -> new Varying(view._app())
   )
 
   # When we want to attach, we really just want to create a Templater against the

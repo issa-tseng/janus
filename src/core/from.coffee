@@ -14,7 +14,7 @@ conj = (x, y) -> x.concat([ y ])
 internalCases = ic = caseSet('varying', 'map', 'flatMap')
 
 # default applicants:
-defaultCases = caseSet('dynamic', 'attr', 'definition', 'varying')
+defaultCases = caseSet('dynamic', 'attr', 'definition', 'varying', 'app')
 
 # val wraps proxies of Varyings. so you can perform maps or call conjunctions on them.
 val = (conjunction, applicants = []) ->
@@ -53,7 +53,7 @@ build = (cases) ->
 
 
 # helper for point() that processes our intermediate maps and such.
-# TODO: defining a map per iteration is slow!
+# TODO: defining a match per iteration is slow!
 mappedPoint = (point) -> match(
   ic.map ({ inner, f }) ->
     match(
