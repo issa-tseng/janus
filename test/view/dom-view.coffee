@@ -199,6 +199,17 @@ describe 'dom-view', ->
       v.set('test 2')
       rendered.should.eql([ 'test', 'test 2' ])
 
+    it 'points app correctly', ->
+      rendered = null
+      app = { get: (-> { newEventBindings: -> app }), withViewLibrary: (-> app), destroyWith: (->), toString: (-> 'test app') }
+      dom = { find: (-> dom), text: ((x) -> rendered = x) }
+      class TestView extends DomView
+        @_dom: -> dom
+        @_template: template(find('.title').text(from.app().map((x) -> x.toString())))
+
+      (new TestView({}, { app })).artifact()
+      rendered.should.equal('test app')
+
   describe 'dom events', ->
     it 'emits appendedToDocument when it is appended to body', ->
       dom = { find: (-> dom), text: (->), closest: (-> [ 42 ]) }

@@ -12,10 +12,10 @@
 
 { Varying } = require('../core/varying')
 from = require('../core/from')
-{ isPrimitive, extendNew } = require('../util/util')
+{ isFunction, extendNew } = require('../util/util')
 
 # util.
-safe = (x) -> if isPrimitive(x) then x.toString() else ''
+safe = (x) -> if isFunction(x?.toString) then x.toString() else ''
 terminate = (x) -> if x.point? then x else x.all
 doPoint = (x, point) ->
   if x?.point?
