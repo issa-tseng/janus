@@ -19,8 +19,8 @@ util.extend(module.exports,
 
   IndefiniteList: require('./indefinite-list').IndefiniteList
 
-  LazyList: require('./lazy-list').LazyList
-  CachedLazyList: require('./lazy-list').CachedLazyList
-  Window: require('./window').Window
+  #LazyList: require('./lazy-list').LazyList
+  #CachedLazyList: require('./lazy-list').CachedLazyList
+  #Window: require('./window').Window
 )
 
