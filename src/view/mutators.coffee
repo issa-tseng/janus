@@ -11,6 +11,7 @@
 # side effect computation that can be easily canceled.
 
 { Varying } = require('../core/varying')
+from = require('../core/from')
 { isPrimitive, extendNew } = require('../util/util')
 
 # util.
@@ -47,7 +48,7 @@ mutators =
     result = (dom, point) ->
       _getView = (subject, context, app, find, options) -> app.getView(subject, extendNew(find ? {}, context: context, constructorOpts: options))
 
-      Varying.flatMapAll(_getView, terminate(data).point(point), doPoint(args.context, point), point('app'), doPoint(args.find, point), doPoint(args.options, point)).reactNow (view) ->
+      Varying.flatMapAll(_getView, terminate(data).point(point), doPoint(args.context, point), doPoint(from.app(), point), doPoint(args.find, point), doPoint(args.options, point)).reactNow (view) ->
         dom.data('subview')?.destroy()
         dom.empty()
         return unless view?

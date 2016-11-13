@@ -11,6 +11,11 @@ passthrough = match(
   from.default.varying (x) -> Varying.ly(x)
   otherwise ->
 )
+passthroughWithApp = (given) ->
+  match(
+    from.default.app -> Varying.ly(given)
+    otherwise (x) -> passthrough(x)
+  )
 
 describe 'Mutator', ->
   describe 'attr', ->
@@ -56,7 +61,7 @@ describe 'Mutator', ->
   describe 'classGroup', ->
     it 'should attempt to add the new class', ->
       addedClass = null
-      dom = 
+      dom =
         removeClass: ->
         attr: ->
         addClass: (x) -> addedClass = x
@@ -67,7 +72,7 @@ describe 'Mutator', ->
 
     it 'should attempt to remove old classes', ->
       removedClasses = []
-      dom = 
+      dom =
         removeClass: (x) -> removedClasses.push(x)
         attr: -> 'type-old otherclass some-type-here'
         addClass: ->
@@ -251,7 +256,7 @@ describe 'Mutator', ->
       subject = null
       dom = { append: (->), empty: (->), data: (->) }
       app = { getView: (x) -> subject = x; { artifact: (->) } }
-      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+      point = passthroughWithApp(app)
 
       mutators.render(from.varying(new Varying(1)))(dom, point)
       subject.should.equal(1)
@@ -261,7 +266,7 @@ describe 'Mutator', ->
       context = null
       dom = { append: (->), empty: (->), data: (->) }
       app = { getView: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
-      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+      point = passthroughWithApp(app)
 
       mutators
         .render(from.varying(new Varying(1)))
@@ -274,7 +279,7 @@ describe 'Mutator', ->
       context = null
       dom = { append: (->), empty: (->), data: (->) }
       app = { getView: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
-      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+      point = passthroughWithApp(app)
 
       mutators
         .render(from.varying(new Varying(1)))
@@ -287,7 +292,7 @@ describe 'Mutator', ->
       opts = null
       dom = { append: (->), empty: (->), data: (->) }
       app = { getView: (x, y) -> opts = y; { artifact: (->) } }
-      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+      point = passthroughWithApp(app)
 
       mutators
         .render(from.varying(new Varying(1)))
@@ -301,7 +306,7 @@ describe 'Mutator', ->
       opts = null
       dom = { append: (->), empty: (->), data: (->) }
       app = { getView: (x, y) -> opts = y; { artifact: (->) } }
-      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+      point = passthroughWithApp(app)
 
       mutators
         .render(from.varying(new Varying(1)))
@@ -317,7 +322,7 @@ describe 'Mutator', ->
       oldView = { destroy: -> destroyed = true }
       dom = { append: (->), empty: (-> emptied = true), data: ((k) -> key = k; oldView) }
       app = { getView: (->) }
-      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+      point = passthroughWithApp(app)
 
       mutators.render(from.varying(new Varying(1)))(dom, point)
       emptied.should.equal(true)
@@ -331,7 +336,7 @@ describe 'Mutator', ->
       newView = { artifact: -> 4 }
       dom = { append: ((x) -> appended = x), empty: (->), data: ((k, v) -> dataKey = k; dataValue = v) }
       app = { getView: (-> newView) }
-      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+      point = passthroughWithApp(app)
 
       mutators.render(from.varying(new Varying(1)))(dom, point)
       appended.should.equal(4)
@@ -343,7 +348,7 @@ describe 'Mutator', ->
       newView = { artifact: (-> 4), emit: ((x) -> evented = true if x is 'appended') }
       dom = { append: (->), empty: (->), data: (->) }
       app = { getView: (-> newView) }
-      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+      point = passthroughWithApp(app)
 
       mutators.render(from.varying(new Varying(1)))(dom, point)
       evented.should.equal(true)
@@ -352,7 +357,7 @@ describe 'Mutator', ->
       value = null
       dom = { append: ((x) -> value = x), empty: (->), data: (->) }
       app = { getView: (x) -> { artifact: -> x } }
-      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+      point = passthroughWithApp(app)
 
       v = new Varying(1)
       m = mutators.render(from.varying(v))(dom, point)
@@ -379,7 +384,7 @@ describe 'Mutator', ->
       context = null
       dom = { append: (->), empty: (->), data: (->) }
       app = { getView: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
-      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+      point = passthroughWithApp(app)
 
       mutators
         .render(from.varying(new Varying(1)).all)
