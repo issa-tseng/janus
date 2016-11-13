@@ -362,3 +362,28 @@ describe 'Mutator', ->
       v.set(2)
       value.should.equal(1)
 
+  describe 'all-terminated froms', ->
+    it 'should work if passed an all-terminated from', ->
+      value = null
+      dom = { text: ((x) -> value = x) }
+      mutators.text(
+        from.varying(new Varying(2))
+          .and.varying(new Varying(3))
+          .all.map((a, b) -> a + b)
+      )(dom, passthrough)
+
+      value.should.equal('5')
+
+    it 'should work in chains if passed an all-terminated from', ->
+      subject = null
+      context = null
+      dom = { append: (->), empty: (->), data: (->) }
+      app = { getView: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
+      point = (x) -> if x is 'app' then new Varying(app) else passthrough(x)
+
+      mutators
+        .render(from.varying(new Varying(1)).all)
+        .context(from.varying(new Varying('edit')).all)(dom, point)
+      subject.should.equal(1)
+      context.should.equal('edit')
+
