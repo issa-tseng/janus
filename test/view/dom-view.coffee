@@ -298,6 +298,14 @@ describe 'dom-view', ->
       view.wireEvents()
       wired.should.eql([ view, childA, childB ])
 
+  it 'concats dom outerHTMLs to provide markup', ->
+    class TestView extends DomView
+      @_dom: -> { get: (-> [ { outerHTML: '123' }, { outerHTML: 'abc' } ]), data: (->) }
+      @_template: inf
+
+    view = new TestView()
+    view.markup().should.equal('123abc')
+
   describe 'lifecycle', ->
     it 'triggers a `destroying` event on the dom fragment root', ->
       triggered = null
