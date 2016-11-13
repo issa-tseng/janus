@@ -4,10 +4,36 @@ from = require('../../lib/core/from')
 { template, find } = require('../../lib/view/template')
 { DomView } = require('../../lib/view/dom-view')
 { Varying } = require('../../lib/core/varying')
+{ List } = require('../../lib/collection/collection')
 
 inf = -> inf
 
-describe 'DomView', ->
+describe 'dom-view', ->
+  describe 'definition', ->
+    it 'throws an exception if no dom method is provided', ->
+      class TestView extends DomView
+        @_template: -> inf
+
+      view = new TestView({})
+      thrown = null
+      try
+        view.artifact()
+      catch ex
+        thrown = ex.message
+      thrown.should.equal('no dom fragment provided!')
+
+    it 'throws an exception if no template method is provided', ->
+      class TestView extends DomView
+        @_dom: -> {}
+
+      view = new TestView({})
+      thrown = null
+      try
+        view.artifact()
+      catch ex
+        thrown = ex.message
+      thrown.should.equal('no template provided!')
+
   describe 'template dom handling', ->
     it 'renders based on the provided dom fragment method', ->
       dom = { find: -> dom }
@@ -172,6 +198,54 @@ describe 'DomView', ->
 
       v.set('test 2')
       rendered.should.eql([ 'test', 'test 2' ])
+
+  describe 'dom events', ->
+    it 'emits appendedToDocument when it is appended to body', ->
+      dom = { find: (-> dom), text: (->), closest: (-> [ 42 ]) }
+      class TestView extends DomView
+        @_dom: -> dom
+        @_template: template(find('.title').text(from.varying(42)))
+
+      emitted = false
+      view = new TestView({})
+      view.on('appendedToDocument', -> emitted = true)
+      view.artifact()
+      emitted.should.equal(false)
+      view.emit('appended')
+      emitted.should.equal(true)
+
+    it 'emits appendedToDocument only when it is appended to body', ->
+      dom = { find: (-> dom), text: (->), closest: (-> []) }
+      class TestView extends DomView
+        @_dom: -> dom
+        @_template: template(find('.title').text(from.varying(42)))
+
+      emitted = false
+      view = new TestView({})
+      view.on('appendedToDocument', -> emitted = true)
+      view.artifact()
+      view.emit('appended')
+      emitted.should.equal(false)
+
+    it 'triggers appended events on subviews when appended to body', ->
+      dom = { find: (-> dom), text: (->), closest: (-> [ 42 ]) }
+      class TestView extends DomView
+        @_dom: -> dom
+        @_template: template(find('.title').text(from.varying(42)))
+
+      called = 0
+      childA = new TestView({})
+      childA.on('appended', -> called += 1)
+      childB = new TestView({})
+      childB.on('appended', -> called += 1)
+      subviews = new List([ childA, childB ])
+
+      view = new TestView({})
+      view._subviews = subviews # yeah, i know, i'm cheating.
+      view.artifact()
+      called.should.equal(0)
+      view.emit('appended')
+      called.should.equal(2)
 
   describe 'lifecycle', ->
     it 'triggers a `destroying` event on the dom fragment root', ->

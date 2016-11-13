@@ -15,11 +15,11 @@ class DomView extends View
   # Here we supply the internal DOM fragment we'll use to actually render.
   # Calling this method should always result in a fresh DOM fragment wrapped
   # with a jQuery-compatible API (maybe someday we'll go native).
-  @_dom: ->
+  @_dom: -> throw new Error('no dom fragment provided!')
 
   # When deriving from DomView, declare a template class var so that we have
   # something to render with.
-  @_template: null
+  @_template: -> throw new Error('no template provided!')
 
   constructor: (@subject, @options = {}) ->
     super(@subject, @options)
