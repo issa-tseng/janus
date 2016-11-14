@@ -155,7 +155,7 @@ class FlatMappedVarying extends Varying
           lastInnerVaried = null # don't allow .stop() to be called repeatedly.
 
       callback.call(varied, value) # now notify the consumer.
-      lastResult = value
+      lastValue = value
 
     parentVaried = self._bind(onValue) # now grab the listener that represents our parent value.
     onValue.call(parentVaried, self._immediate()) if immediate is true # handle reactNow. see below.

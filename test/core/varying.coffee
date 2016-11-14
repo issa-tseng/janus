@@ -35,6 +35,16 @@ describe 'Varying', ->
 
       results.should.eql([ 2, 3 ])
 
+    it 'should not re-react to old values on react()', ->
+      results = []
+      v = new Varying(1)
+      v.react((x) -> results.push(x))
+
+      v.set(2)
+      v.set(2)
+
+      results.should.eql([ 2 ])
+
     it 'should react immediately and on new values on reactNow()', ->
       results = []
       v = new Varying(1)
@@ -101,6 +111,17 @@ describe 'Varying', ->
 
       v.set(2)
       result.should.equal(4)
+
+    it 'should not callback with a dupe mapped value when react is called', ->
+      v = new Varying(1)
+      m = v.map(-> 4)
+
+      count = 0
+      m.reactNow((x) -> count += 1)
+
+      v.set(2)
+      v.set(3)
+      count.should.equal(1)
 
     it 'should callback immediately with a mapped value when react is called', ->
       v = new Varying(1)
