@@ -1,11 +1,11 @@
-return
 should = require('should')
+
+from = require('../../lib/core/from')
 
 Model = require('../../lib/model/model').Model
 Issue = require('../../lib/model/issue').Issue
 attribute = require('../../lib/model/attribute')
 
-{ Reference, Resolver } = require('../../lib/model/reference')
 Varying = require('../../lib/core/varying').Varying
 collection = require('../../lib/collection/collection')
 
@@ -107,7 +107,7 @@ describe 'Model', ->
     describe 'application', ->
       it 'should bind one attribute from another', ->
         class TestModel extends Model
-          @bind('slave').from('master')
+          @bind('slave', from('master'))
 
         model = new TestModel()
         should.not.exist(model.get('slave'))
@@ -115,15 +115,17 @@ describe 'Model', ->
         model.set('master', 'commander')
         model.get('slave').should.equal('commander')
 
+      ### TODO
       it 'should iterate into nodes', ->
         class TestModel extends Model
-          @bind('child_id').from('child', 'id')
+          @bind('child_id', from('child', 'id'))
 
         (new TestModel( child: new Model( id: 1 ) )).get('child_id').should.equal(1)
+      ###
 
-      it 'should flatMap multiple attributes together', ->
+      it 'should map multiple attributes together', ->
         class TestModel extends Model
-          @bind('c').from('a').and('b').flatMap((a, b) -> a + b)
+          @bind('c', from('a').and('b').all.map((a, b) -> a + b))
 
         model = new TestModel()
         model.set( a: 3, b: 4 )
@@ -134,26 +136,28 @@ describe 'Model', ->
         v = new Varying(2)
 
         class TestModel extends Model
-          @bind('x').fromVarying(-> v)
+          @bind('x', from.varying(-> v))
 
         model = new TestModel()
 
         model.get('x').should.equal(2)
 
-        v.setValue(4)
+        v.set(4)
         model.get('x').should.equal(4)
 
-      it 'should give model as this in Varying bind', ->
+      it 'should give model as param in Varying bind', ->
         called = false
         class TestModel extends Model
-          @bind('y').fromVarying ->
+          @bind('y', from.varying((self) ->
             called = true
-            this.should.be.an.instanceof(TestModel)
+            self.should.be.an.instanceof(TestModel)
             new Varying()
+          ))
 
         new TestModel()
         called.should.be.true
 
+      ### TODO (is this necessary?
       it 'should take a fallback', ->
         class TestModel extends Model
           @bind('z').from('a').fallback('value')
@@ -164,14 +168,15 @@ describe 'Model', ->
 
         model.set('a', 'test')
         model.get('z').should.equal('test')
+      ###
 
     describe 'classtree', ->
       it 'should not pollute across classdefs', ->
         class TestA extends Model
-          @bind('a').from('c')
+          @bind('a', from('c'))
 
         class TestB extends Model
-          @bind('b').from('c')
+          @bind('b', from('c'))
 
         a = new TestA()
 
@@ -181,13 +186,13 @@ describe 'Model', ->
 
       it 'should not pollute crosstree', ->
         class Root extends Model
-          @bind('root').from('x')
+          @bind('root', from('x'))
 
         class Left extends Root
-          @bind('left').from('x')
+          @bind('left', from('x'))
 
         class Right extends Root
-          @bind('right').from('x')
+          @bind('right', from('x'))
 
         root = new Root( x: 'root' )
         should.not.exist(root.get('left'))
@@ -201,19 +206,19 @@ describe 'Model', ->
 
       it 'should extend downtree', ->
         class Root extends Model
-          @bind('root').from('x')
+          @bind('root', from('x'))
 
         class Child extends Root
-          @bind('child').from('x')
+          @bind('child', from('x'))
 
         (new Child( x: 'test' )).get('root').should.equal('test')
 
       it 'should allow child bind to override parent', ->
         class Root extends Model
-          @bind('contend').from('x')
+          @bind('contend', from('x'))
 
         class Child extends Root
-          @bind('contend').from('y')
+          @bind('contend', from('y'))
 
         (new Child( x: 1, y: 2 )).get('contend').should.equal(2)
 
@@ -309,7 +314,7 @@ describe 'Model', ->
           issues: -> new collection.List([ new Issue( active: this.watchValue() ) ])
 
       model = new TestModel( attr: false )
-      model.valid().value.should.equal(true)
+      model.valid().get().should.equal(true)
 
     it 'should return false if one or more active issues exist', ->
       class TestModel extends Model
@@ -320,14 +325,14 @@ describe 'Model', ->
           issues: -> new collection.List([ new Issue( active: this.watchValue() ) ])
 
       model = new TestModel( attr: true, attr2: false )
-      model.valid().value.should.equal(false)
+      model.valid().get().should.equal(false)
 
       model.set('attr2', true)
-      model.valid().value.should.equal(false)
+      model.valid().get().should.equal(false)
 
       model.set('attr', false)
       model.set('attr2', false)
-      model.valid().value.should.equal(true)
+      model.valid().get().should.equal(true)
 
     it 'should take a severity threshold', ->
       class TestModel extends Model
@@ -339,15 +344,15 @@ describe 'Model', ->
             ])
 
       model = new TestModel( attr: 0 )
-      model.valid().value.should.equal(true)
+      model.valid().get().should.equal(true)
 
       model.set('attr', 1)
-      model.valid(1).value.should.equal(true)
-      model.valid(2).value.should.equal(false)
+      model.valid(1).get().should.equal(true)
+      model.valid(2).get().should.equal(false)
 
       model.set('attr', 2)
-      model.valid(1).value.should.equal(false)
-      model.valid(2).value.should.equal(false)
+      model.valid(1).get().should.equal(false)
+      model.valid(2).get().should.equal(false)
 
   describe 'shadowing', ->
     describe 'creation', ->
@@ -441,17 +446,6 @@ describe 'Model', ->
 
         shadow = model.shadow()
         shadow.get('test').original().should.equal(submodel)
-
-      it 'should return a shadow submodel if it sees one in a reference', ->
-        submodel = new Model()
-        reference = new Reference('x')
-        model = new Model( test: reference )
-        shadow = model.shadow()
-
-        shadow.get('test').value.should.be.an.instanceof(Resolver)
-
-        reference.setValue(submodel)
-        shadow.get('test').value.original().should.equal(submodel)
 
     describe 'events', ->
       it 'should event when an inherited attribute value changes', ->
@@ -549,13 +543,6 @@ describe 'Model', ->
           shadow.set('test', 'y')
           shadow.attrModified('test').should.equal(false)
 
-        it 'should compare model reference on shallow compare', ->
-          model = new Model( test: new Model() )
-          shadow = model.shadow()
-
-          shadow.get('test').set('test2', 'x')
-          shadow.attrModified('test', false).should.equal(false)
-
         it 'should compare model modified on deep compare', ->
           model = new Model( test: new Model() )
           shadow = model.shadow()
@@ -600,20 +587,6 @@ describe 'Model', ->
           shadow.attrModified('test', isDeep)
 
           called.should.equal(2)
-
-        it 'should flatten and compare References', ->
-          submodel = new Model()
-          reference = new Reference()
-          model = new Model( test: reference )
-          shadow = model.shadow()
-
-          reference.setValue(submodel)
-          shadow.attrModified('test', false).should.equal(false)
-          shadow.attrModified('test', true).should.equal(false)
-
-          shadow.get('test').value.set('test2', 'x')
-          shadow.attrModified('test', false).should.equal(false)
-          shadow.attrModified('test', true).should.equal(true)
 
       describe 'model', ->
         it 'should return whether any attributes have changed', ->
@@ -730,16 +703,4 @@ describe 'Model', ->
 
           shadow.get('test').set('a', 'b')
           evented.should.equal(true)
-
-        it 'should vary when a Reference resolves', ->
-          varying = new Reference()
-          model = new Model( test: varying )
-          shadow = model.shadow()
-
-          expected = [  false, true ]
-          shadow.watchModified().reactNow((isModified) -> isModified.should.equal(expected.shift()))
-
-          submodel = (new Model()).shadow()
-          shadow.get('test').setValue(submodel)
-          submodel.set('testSub', 'y')
 

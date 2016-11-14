@@ -1,12 +1,12 @@
 # **Model**s contain primarily an attribute bag, a schema for said bag, and
 # eventing around modifications to it.
 
-Base = require('../core/base').Base
-Varying = require('../core/varying').Varying
-{ Reference, Resolver } = require('./reference')
-util = require('../util/util')
+from = require('../core/from')
+{ match, otherwise } = require('../core/case')
 
-#Binder = require('./binder').Binder
+{ Base } = require('../core/base')
+{ Varying } = require('../core/varying')
+util = require('../util/util')
 
 # sentinel value to record a child-nulled value. instantiate a class instance
 # so that it doesn't read as a simple object.
@@ -69,17 +69,6 @@ class Model extends Base
         # write that clone to self. don't worry, if they never touch it again
         # it'll look like nothing happened at all.
         value = this.set(key, value.shadow())
-
-      else if value instanceof Reference
-        # if we got a reference instance back, we'll want to shadowclone the
-        # model contained within it if it is one.
-        mappedValue = value.map (inner) ->
-          if inner instanceof Model
-            inner.shadow()
-          else
-            inner
-
-        value = this.set(key, mappedValue)
 
     # collapse shadow-nulled sentinels to null.
     value = if value is Null then null else value
@@ -168,8 +157,9 @@ class Model extends Base
   watch: (key) ->
     this._watches[key] ?= do =>
       varying = new Varying(this.get(key))
-      varying.listenTo(this._parent, "changed:#{key}", => varying.setValue(this.get(key))) if this._parent?
-      varying.listenTo(this, "changed:#{key}", (newValue) -> varying.setValue(newValue))
+      this.listenTo(this._parent, "changed:#{key}", => varying.set(this.get(key))) if this._parent?
+      this.listenTo(this, "changed:#{key}", (newValue) -> varying.set(newValue))
+      varying
 
   # Get a `Varying` object for this entire object. It will emit a change event
   # any time any attribute on the entire object changes. Does not event when
@@ -178,7 +168,7 @@ class Model extends Base
   # **Returns** a `Varying` object against our whole model.
   watchAll: ->
     varying = new Varying(this)
-    varying.listenTo(this, 'anyChanged', => varying.setValue(this, true))
+    this.listenTo(this, 'anyChanged', => varying.set(this, true)) # TODO this is no longer viable
 
   # Class-level storage bucket for attribute schema definition.
   @attributes: ->
@@ -241,19 +231,23 @@ class Model extends Base
     this._binders
 
   # Declare a binding for this model.
-  @bind: (key) ->
-    ###
-    binder = new Binder(key)
-    this.binders().push(binder)
-    binder
-    ###
+  @bind: (key, binding) ->
+    binding._key = key # avoids creating new objs; perf.
+    this.binders().push(binding)
 
   # Actually set up our binding.
   # **Returns** nothing.
+  terminate = (x) -> if x.all? then x.all else x
   _bind: ->
     this._binders = {}
     recurse = (obj) =>
-      (this._binders[binder._key] = binder.bind(this)) for binder in obj.binders() when !this._binders[binder._key]?
+      for binder in obj.binders() when !this._binders[binder._key]?
+        do (binder) =>
+          key = binder._key
+          this._binders[key] = terminate(binder)
+            .point((x) => this.constructor._point(x, this))
+            .reactNow((value) => this.set(key, value))
+
       superClass = util.superClass(obj)
       recurse(superClass) if superClass and superClass.binders?
       null
@@ -261,9 +255,19 @@ class Model extends Base
     recurse(this.constructor)
     null
 
-  # Trip a binder to rebind.
-  rebind: (key) ->
-    this._binders[key]?.apply()
+  @_point: match(
+    from.default.dynamic (x, self) ->
+      if util.isFunction(x)
+        Varying.ly(x(self))
+      else if util.isString(x)
+        self.watch(x)
+      else
+        Varying.ly(x) # i guess? TODO
+    from.default.attr (x, self) -> self.watch(x)
+    from.default.definition (x, self) -> new Varying(self.attribute(x))
+    from.default.varying (x, self) -> if util.isFunction(x) then Varying.ly(x(self)) else Varying.ly(x)
+    otherwise -> x
+  )
 
   # Revert a particular attribute on this model. After this, the model will
   # return whatever its parent thinks the attribute should be. If no parent
@@ -306,7 +310,6 @@ class Model extends Base
     return false if !value? # necessarily we're just falling through
 
     value = null if value is Null
-    value = value.value ? value.flatValue if value instanceof Reference
 
     isDeep =
       if !deep?
@@ -321,7 +324,6 @@ class Model extends Base
 
     if !transient
       parentValue = this._parent.get(path)
-      parentValue = parentValue.value ? parentValue.flatValue if parentValue instanceof Reference
 
       if value instanceof Model
         # Check that parentValue != value
@@ -357,16 +359,16 @@ class Model extends Base
         result = new Varying(this.modified(deep))
         this.on 'anyChanged', (path) =>
           if this.attrModified(path, deep)
-            result.setValue(true)
+            result.set(true)
           else
-            result.setValue(this.modified(deep))
+            result.set(this.modified(deep))
 
         watchModel = (model) =>
-          result.listenTo model.watchModified(deep), 'changed', (isChanged) =>
+          model.watchModified(deep).react (isChanged) =>
             if isChanged is true
-              result.setValue(true)
+              result.set(true)
             else
-              result.setValue(this.modified(deep))
+              result.set(this.modified(deep))
 
         # wait for varying to resolve into a model, then stop watching it.
         watchVarying = (varying) =>
@@ -382,7 +384,7 @@ class Model extends Base
         watchModel(model) for model in uniqSubmodels.list
         watchVarying(varying) for varying in uniqSubvaryings.list
         uniqSubmodels.on('added', (newModel) => watchModel(newModel))
-        uniqSubmodels.on('removed', (oldModel) -> result.unlistenTo(oldModel.watchModified(deep)))
+        uniqSubmodels.on('removed', (oldModel) => this.unlistenTo(oldModel.watchModified(deep)))
         uniqSubvaryings.on('added', (newVarying) => watchVarying(newVarying))
 
         result
@@ -394,9 +396,9 @@ class Model extends Base
         result = new Varying(this.modified(deep))
         this.on 'anyChanged', (path) =>
           if this.attrModified(path, deep)
-            result.setValue(true)
+            result.set(true)
           else
-            result.setValue(this.modified(deep))
+            result.set(this.modified(deep))
 
         result
 
@@ -485,7 +487,6 @@ class Model extends Base
           else
             value
 
-        result = result.flatValue if result instanceof Reference
         target[subKey] = result
 
       target

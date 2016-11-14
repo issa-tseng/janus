@@ -18,7 +18,7 @@ class FilteredList extends DerivedList
       [ filterer ] = this._filterers.splice(idx, 1)
       [ oldIdx ] = this._idxMap.splice(idx, 1)
 
-      if filterer.value is true
+      if filterer.get() is true
         this._removeAt(oldIdx)
 
         for adjIdx in [idx...this._idxMap.length]

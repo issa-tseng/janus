@@ -16,7 +16,6 @@ Base = require('../core/base').Base
 Varying = require('../core/varying').Varying
 OrderedCollection = require('./types').OrderedCollection
 Model = require('../model/model').Model
-Reference = require('../model/reference').Reference
 util = require('../util/util')
 
 # We derive off of Model so that we have free access to attributes.
@@ -128,8 +127,8 @@ class List extends OrderedCollection
     result = new Varying(this.at(idx))
 
     # TODO: finer-grained
-    this.on('added', -> result.setValue(this.at(idx)))
-    this.on('removed', -> result.setValue(this.at(idx)))
+    this.on('added', -> result.set(this.at(idx)))
+    this.on('removed', -> result.set(this.at(idx)))
 
     result
 
@@ -138,8 +137,8 @@ class List extends OrderedCollection
     result = new Varying(this.list.length)
 
     # TODO: noop multi-changes (eg put) ?
-    this.on('added', -> result.setValue(this.list.length))
-    this.on('removed', -> result.setValue(this.list.length))
+    this.on('added', -> result.set(this.list.length))
+    this.on('removed', -> result.set(this.list.length))
 
     result
 
@@ -229,9 +228,6 @@ class List extends OrderedCollection
     for value, i in this.list
       parentValue = this._parent.list[i]
 
-      value = value.value ? value.flatValue if value instanceof Reference
-      parentValue = parentValue.value ? parentValue.flatValue if parentValue instanceof Reference
-
       if value instanceof Model
         return true unless parentValue in value.originals()
         return true if isDeep is true and value.modified(deep)
@@ -258,27 +254,27 @@ class List extends OrderedCollection
       this._watchModifiedDeep$ ?= do =>
         result = new Varying(this.modified(deep))
 
-        react = => result.setValue(this.modified(deep))
+        react = => result.set(this.modified(deep))
 
         this.on('added', react)
         this.on('removed', react)
         this.on('moved', react)
 
         watchModel = (model) =>
-          result.listenTo model.watchModified(deep), 'changed', (isChanged) ->
+          this.listenTo model.watchModified(deep), 'changed', (isChanged) ->
             if isChanged is true
-              result.setValue(true)
+              result.set(true)
             else
               react()
 
         uniqSubmodels = this
-          .map((elem) -> elem) # flatten references.
+          .map((elem) -> elem) # flatten references. TODO: still necessary?
           .filter((elem) -> elem instanceof Model)
           .uniq()
 
         watchModel(model) for model in uniqSubmodels.list
         uniqSubmodels.on('added', (newModel) -> watchModel(newModel))
-        uniqSubmodels.on('removed', (oldModel) -> result.unlistenTo(oldModel.watchModified(deep)))
+        uniqSubmodels.on('removed', (oldModel) -> this.unlistenTo(oldModel.watchModified(deep)))
 
         result
 
@@ -288,9 +284,9 @@ class List extends OrderedCollection
 
         react = =>
           if this.list.length isnt this._parent.list.length
-            result.setValue(true)
+            result.set(true)
           else
-            result.setValue(this.modified(deep))
+            result.set(this.modified(deep))
 
         this.on('added', react)
         this.on('removed', react)
@@ -306,12 +302,6 @@ class List extends OrderedCollection
       if this._parent?
         if elem instanceof Model
           elem.shadow()
-        else if elem instanceof Reference
-          elem.map (value) ->
-            if value instanceof Model
-              value.shadow()
-            else
-              value
         else
           elem
       else
@@ -328,13 +318,6 @@ class List extends OrderedCollection
 
   @serialize: (list) ->
     for child in list.list
-      if child instanceof Reference
-        child =
-          if child.value instanceof Model
-            child.value
-          else
-            child.flatValue
-
       if child.serialize?
         child.serialize()
       else
