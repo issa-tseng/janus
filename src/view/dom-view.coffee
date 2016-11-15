@@ -43,7 +43,15 @@ class DomView extends View
   # primary data.
   _render: ->
     dom = this.constructor._dom()
-    found = this.constructor._template(dom)
+
+    # shuffle dance to wrap the actual contents so that .find() behaves as expected.
+    dom.prepend('<div/>')
+    wrapper = dom.filter(':first')
+    wrapper.remove()
+    wrapper.append(dom)
+
+    # apply the bindings and save the resulting Varieds so we can stop them later.
+    found = this.constructor._template(wrapper)
     this._bindings = found((x) => this.constructor._point(x, this)) #k
     dom
 

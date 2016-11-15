@@ -1,5 +1,6 @@
 should = require('should')
 
+{ extend } = require('../../lib/util/util')
 from = require('../../lib/core/from')
 { template, find } = require('../../lib/view/template')
 { DomView } = require('../../lib/view/dom-view')
@@ -7,8 +8,12 @@ from = require('../../lib/core/from')
 { List } = require('../../lib/collection/collection')
 
 inf = -> inf
+makeDom = (dom = {}) ->
+  result = { remove: (->), append: (->), find: (-> result), data: (->), prepend: (-> result), filter: (-> result) }
+  extend(result, dom)
+  result
 
-describe 'dom-view', ->
+describe 'DomView', ->
   describe 'definition', ->
     it 'throws an exception if no dom method is provided', ->
       class TestView extends DomView
@@ -24,7 +29,7 @@ describe 'dom-view', ->
 
     it 'throws an exception if no template method is provided', ->
       class TestView extends DomView
-        @_dom: -> {}
+        @_dom: -> makeDom()
 
       view = new TestView({})
       thrown = null
@@ -36,7 +41,7 @@ describe 'dom-view', ->
 
   describe 'template dom handling', ->
     it 'renders based on the provided dom fragment method', ->
-      dom = { find: -> dom }
+      dom = makeDom()
       class TestView extends DomView
         @_dom: -> dom
         @_template: inf
@@ -45,7 +50,7 @@ describe 'dom-view', ->
 
     it 'finds the appropriate spots in the dom', ->
       finds = []
-      dom = { find: ((x) -> finds.push(x); dom), text: (->) }
+      dom = makeDom({ find: ((x) -> finds.push(x); dom), text: (->) })
 
       class TestView extends DomView
         @_dom: -> dom
@@ -54,15 +59,14 @@ describe 'dom-view', ->
           find('.body').text(from('somewhere-else'))
         )
 
-      (new TestView({ watch: -> })).artifact()
+      (new TestView({ resolve: -> })).artifact()
       finds.should.eql([ '.title', '.body' ])
 
   describe 'template pointing', ->
     it 'applies a point function correctly', ->
       called = false
-      dom = { find: (-> dom), text: (->) }
       class TestView extends DomView
-        @_dom: -> dom
+        @_dom: -> makeDom({ text: (->) })
         @_template: template(
           find('.title').text(from((x) -> passed = x; v))
         )
@@ -76,11 +80,10 @@ describe 'dom-view', ->
       rendered = []
       v = new Varying('test')
 
-      dom = { find: (-> dom), text: ((x) -> rendered.push(x)) }
       subject = {}
 
       class TestView extends DomView
-        @_dom: -> dom
+        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
         @_template: template(
           find('.title').text(from((x) -> passed = x; v))
         )
@@ -97,11 +100,10 @@ describe 'dom-view', ->
       rendered = []
 
       v = new Varying('test')
-      dom = { find: (-> dom), text: ((x) -> rendered.push(x)) }
-      subject = { watch: (x) -> attr = x; v }
+      subject = { resolve: (x) -> attr = x; v }
 
       class TestView extends DomView
-        @_dom: -> dom
+        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
         @_template: template(find('.title').text(from('someattr')))
 
       (new TestView(subject)).artifact()
@@ -114,11 +116,10 @@ describe 'dom-view', ->
       rendered = []
 
       v = new Varying('test')
-      dom = { find: (-> dom), text: ((x) -> rendered.push(x)) }
-      subject = { watch: (x) -> attr = x; v }
+      subject = { resolve: (x) -> attr = x; v }
 
       class TestView extends DomView
-        @_dom: -> dom
+        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
         @_template: template(find('.title').text(from(42)))
 
       (new TestView(subject)).artifact()
@@ -129,11 +130,10 @@ describe 'dom-view', ->
       rendered = []
 
       v = new Varying('test')
-      dom = { find: (-> dom), text: ((x) -> rendered.push(x)) }
-      subject = { watch: (x) -> attr = x; v }
+      subject = { resolve: (x) -> attr = x; v }
 
       class TestView extends DomView
-        @_dom: -> dom
+        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
         @_template: template(find('.title').text(from.attr('someattr')))
 
       (new TestView(subject)).artifact()
@@ -148,11 +148,10 @@ describe 'dom-view', ->
       rendered = []
 
       attribute = 'test'
-      dom = { find: (-> dom), text: ((x) -> rendered.push(x)) }
       subject = { attribute: (x) -> attr = x; attribute }
 
       class TestView extends DomView
-        @_dom: -> dom
+        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
         @_template: template(find('.title').text(from.definition('test_attr')))
 
       (new TestView(subject)).artifact()
@@ -164,11 +163,10 @@ describe 'dom-view', ->
       rendered = []
       v = new Varying('test')
 
-      dom = { find: (-> dom), text: ((x) -> rendered.push(x)) }
       subject = {}
 
       class TestView extends DomView
-        @_dom: -> dom
+        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
         @_template: template(
           find('.title').text(from.varying((x) -> passed = x; v))
         )
@@ -184,11 +182,10 @@ describe 'dom-view', ->
       rendered = []
       v = new Varying('test')
 
-      dom = { find: (-> dom), text: ((x) -> rendered.push(x)) }
       subject = {}
 
       class TestView extends DomView
-        @_dom: -> dom
+        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
         @_template: template(
           find('.title').text(from.varying(v))
         )
@@ -202,9 +199,8 @@ describe 'dom-view', ->
     it 'points app correctly', ->
       rendered = null
       app = { get: (-> { newEventBindings: -> app }), withViewLibrary: (-> app), destroyWith: (->), toString: (-> 'test app') }
-      dom = { find: (-> dom), text: ((x) -> rendered = x) }
       class TestView extends DomView
-        @_dom: -> dom
+        @_dom: -> makeDom({ text: ((x) -> rendered = x) })
         @_template: template(find('.title').text(from.app().map((x) -> x.toString())))
 
       (new TestView({}, { app })).artifact()
@@ -212,9 +208,8 @@ describe 'dom-view', ->
 
   describe 'dom events', ->
     it 'emits appendedToDocument when it is appended to body', ->
-      dom = { find: (-> dom), text: (->), closest: (-> [ 42 ]) }
       class TestView extends DomView
-        @_dom: -> dom
+        @_dom: -> makeDom({ text: (->), closest: (-> [ 42 ]) })
         @_template: template(find('.title').text(from.varying(42)))
 
       emitted = false
@@ -226,9 +221,8 @@ describe 'dom-view', ->
       emitted.should.equal(true)
 
     it 'emits appendedToDocument only when it is appended to body', ->
-      dom = { find: (-> dom), text: (->), closest: (-> []) }
       class TestView extends DomView
-        @_dom: -> dom
+        @_dom: -> makeDom ({ text: (->), closest: (-> []) })
         @_template: template(find('.title').text(from.varying(42)))
 
       emitted = false
@@ -239,9 +233,8 @@ describe 'dom-view', ->
       emitted.should.equal(false)
 
     it 'triggers appended events on subviews when appended to body', ->
-      dom = { find: (-> dom), text: (->), closest: (-> [ 42 ]) }
       class TestView extends DomView
-        @_dom: -> dom
+        @_dom: -> makeDom({ text: (->), closest: (-> [ 42 ]) })
         @_template: template(find('.title').text(from.varying(42)))
 
       called = 0
@@ -262,7 +255,7 @@ describe 'dom-view', ->
     it 'only wires events once', ->
       count = 0
       class TestView extends DomView
-        @_dom: -> { data: (->) }
+        @_dom: -> makeDom()
         @_template: inf
         _wireEvents: -> count += 1
 
@@ -274,7 +267,7 @@ describe 'dom-view', ->
     it 'adds a reference to self on the top-level dom node', ->
       dataKey = dataValue = null
       class TestView extends DomView
-        @_dom: -> { data: ((k, v) -> dataKey = k; dataValue = v) }
+        @_dom: -> makeDom({ data: ((k, v) -> dataKey = k; dataValue = v) })
         @_template: inf
 
       view = new TestView()
@@ -285,7 +278,7 @@ describe 'dom-view', ->
     it 'also wires subview events', ->
       wired = []
       class TestView extends DomView
-        @_dom: -> { data: ((k, v) -> dataKey = k; dataValue = v) }
+        @_dom: -> makeDom({ data: ((k, v) -> dataKey = k; dataValue = v) })
         @_template: inf
         _wireEvents: -> wired.push(this)
 
@@ -300,7 +293,7 @@ describe 'dom-view', ->
 
   it 'concats dom outerHTMLs to provide markup', ->
     class TestView extends DomView
-      @_dom: -> { get: (-> [ { outerHTML: '123' }, { outerHTML: 'abc' } ]), data: (->) }
+      @_dom: -> makeDom({ get: (-> [ { outerHTML: '123' }, { outerHTML: 'abc' } ]) })
       @_template: inf
 
     view = new TestView()
@@ -309,10 +302,9 @@ describe 'dom-view', ->
   describe 'lifecycle', ->
     it 'triggers a `destroying` event on the dom fragment root', ->
       triggered = null
-      dom = { find: (-> dom), text: (->), remove: (->), trigger: ((x) -> triggered = x) }
 
       class TestView extends DomView
-        @_dom: -> dom
+        @_dom: -> makeDom({ trigger: ((x) -> triggered = x), text: (->) })
         @_template: template(
           find('.title').text(from(42))
         )
@@ -326,10 +318,9 @@ describe 'dom-view', ->
 
     it 'removes itself from the dom when destroyed', ->
       removed = false
-      dom = { find: (-> dom), text: (->), remove: (-> removed = true) }
 
       class TestView extends DomView
-        @_dom: -> dom
+        @_dom: -> makeDom({ remove: (-> removed = true), filter: (-> makeDom({ text: (->) })) })
         @_template: template(
           find('.title').text(from(42))
         )
@@ -345,10 +336,8 @@ describe 'dom-view', ->
       rendered = []
       v = new Varying('test')
 
-      dom = { find: (-> dom), text: ((x) -> rendered.push(x)), remove: (->) }
-
       class TestView extends DomView
-        @_dom: -> dom
+        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
         @_template: template(
           find('.title').text(from(v))
         )
