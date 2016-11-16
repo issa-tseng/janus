@@ -394,6 +394,39 @@ describe 'Varying', ->
       v.set(3)
       result.should.equal(3)
 
+    it 'behaves as expected when reacted multiple times off a flatMap', ->
+      v = new Varying(1)
+      vv = new Varying(v)
+
+      flat = vv.flatMap((x) -> x)
+
+      ra = rb = null
+      a = flat.reactNow((x) -> ra = x)
+      b = flat.reactNow((x) -> rb = x)
+      ra.should.equal(1)
+      rb.should.equal(1)
+
+      v.set(2)
+      ra.should.equal(2)
+      rb.should.equal(2)
+
+    it 'still works if just one reaction is stopped', ->
+      v = new Varying(1)
+      vv = new Varying(v)
+
+      flat = vv.flatMap((x) -> x)
+
+      ra = rb = null
+      a = flat.reactNow((x) -> ra = x)
+      b = flat.reactNow((x) -> rb = x)
+      ra.should.equal(1)
+      rb.should.equal(1)
+
+      a.stop()
+      v.set(2)
+      ra.should.equal(1)
+      rb.should.equal(2)
+
   describe 'side effect management', ->
     it 'should not re-execute orphaned propagations', ->
       v = new Varying()
