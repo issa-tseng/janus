@@ -62,10 +62,10 @@ class DomView extends View
       if isFunction(x)
         Varying.ly(x(view.subject))
       else if isString(x)
-        view.subject.watch(x)
+        view.subject.resolve(x, view._app())
       else
         Varying.ly(x) # i guess? TODO
-    attr (x, view) -> view.subject.watch(x)
+    attr (x, view) -> view.subject.resolve(x, view._app())
     definition (x, view) -> new Varying(view.subject.attribute(x))
     varying (x, view) -> if isFunction(x) then Varying.ly(x(view.subject)) else Varying.ly(x)
     app (x, view) -> new Varying(view._app())
@@ -81,6 +81,8 @@ class DomView extends View
   # Internal helper to get an App, since there's a lot of juggling we want to do
   # to get various follow-on effects to work correctly. Memoized for perf.
   _app: -> this._app$ ?= do =>
+    return null unless this.options.app?
+
     library = this.options.app.get('views').newEventBindings()
     library.destroyWith(this)
 

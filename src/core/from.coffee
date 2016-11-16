@@ -118,6 +118,7 @@ terminus = (applicants, maps = []) ->
 
   # TODO: is this a good idea? feels like not.
   result.get = -> matchFinal(mappedPoint(->)(applicants[0]))?.get()
+  result.isVarying = true
 
   result
 
