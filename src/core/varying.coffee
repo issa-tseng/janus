@@ -189,7 +189,7 @@ class FlatMappedVarying extends Varying
     # bind to parent if we haven't yet.
     lastRaw = null
     if this._refCount is 0
-      this._parentVaried = this._parent.react (raw) =>
+      this._parentVaried = this._parent.reactNow (raw) =>
         return if raw is lastRaw # early return.
         lastRaw = raw
 

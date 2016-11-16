@@ -382,6 +382,17 @@ describe 'Varying', ->
       i2.set(3)
       result.should.equal(4)
 
+    it 'should attach itself to an inner varying if reacted secondarily', ->
+      v = new Varying()
+      vv = new Varying(v)
+
+      result = null
+      vv.flatMap((x) -> x).map((x) -> x).reactNow((x) -> result = x)
+
+      v.set(2)
+      result.should.equal(2)
+      v.set(3)
+      result.should.equal(3)
 
   describe 'side effect management', ->
     it 'should not re-execute orphaned propagations', ->
