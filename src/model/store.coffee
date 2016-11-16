@@ -1,37 +1,10 @@
 
 util = require('../util/util')
+types = require('../util/types')
 Base = require('../core/base').Base
 Model = require('../model/model').Model
 List = require('../collection/list').List
 Varying = require('../core/varying').Varying
-
-
-# A set of classes to help track what the status of the request is, and provide
-# meaningful views against each.
-class RequestState
-  flatSuccess: -> this
-  successOrElse: (x) -> if util.isFunction(x) then x(this) else x
-
-class InitState extends RequestState
-
-class PendingState extends RequestState
-class ProgressState extends PendingState
-  constructor: (@progress) ->
-  map: (f) -> new ProgressState(f(this.progress))
-
-class CompleteState extends RequestState
-  constructor: (@result) ->
-  map: (f) -> new CompleteState(f(this.error))
-class SuccessState extends CompleteState
-  constructor: (@result) ->
-  map: (f) -> new SuccessState(f(this.result))
-  flatSuccess: -> this.result
-  successOrElse: -> this.result
-class ErrorState extends CompleteState
-  constructor: (@error) ->
-  map: (f) -> new ErrorState(f(this.error))
-class UserErrorState extends ErrorState
-class ServiceErrorState extends ErrorState
 
 
 # The class that is actually instantiated to begin a request. There should be
@@ -43,52 +16,6 @@ class Request extends Varying
     this.value = Request.state.Init
 
   signature: ->
-
-  # by default, first deserialize the response body before passing it through
-  # to the underlying implementation.
-  setValue: (response) -> super(this.deserialize(response))
-
-  # default parsing implementation, reads success bodies as entities based on
-  # attribute definition.
-  deserialize: (response) ->
-    if response instanceof Request.state.type.Success
-      response.map((data) => this.constructor.modelClass.deserialize(data))
-
-    else
-      # everything else just goes through.
-      # TODO: This should generate an object too. How does that happen?
-      response
-
-  # the default parse implementation uses the entity type declared here to
-  # read in its attributes and make parsing decisions.
-  @modelClass: Model
-
-  # some default states that request may be in. feel free to add in your own.
-  @state:
-    Init: new InitState()
-
-    Pending: new PendingState()
-    Progress: (progress) -> new ProgressState(progress)
-
-    Complete: (result) -> new CompleteState(result)
-    Success: (result) -> new SuccessState(result)
-    Error: (error) -> new ErrorState(error)
-    UserError: (error) -> new UserErrorState(error)
-    ServiceError: (error) -> new ServiceErrorState(error)
-
-    type:
-      Init: InitState
-
-      Pending: PendingState
-      Progress: ProgressState
-
-      Complete: CompleteState
-      Success: SuccessState
-      Error: ErrorState
-      UserError: UserErrorState
-      ServiceError: ServiceErrorState
-
-
 
 # `Store`s handle requests. Generally, unless you're really clever and/or start
 # mucking with reflection, you'll instantiate one `Store` per possible
@@ -144,7 +71,7 @@ class OneOfStore extends Store
     (handled = maybeStore.handle(this.request)) for maybeStore in this.maybeStores when handled isnt Store.Handled
 
     if handled is Store.Unhandled
-      request.setValue(Request.state.Error("No handler was available!")) # TODO: actual error types
+      request.set(types.result.error("No handler was available!")) # TODO: actual error types
 
     handled
 
@@ -181,7 +108,7 @@ class MemoryCacheStore extends Store
           # cache hit. bind against whichever request we already have that
           # looks identical.
           # HACK: temp fix for race condition.
-          setTimeout((->request.setValue(hit)), 0) unless hit is request
+          setTimeout((->request.set(hit)), 0) unless hit is request
           Store.Handled
 
         else
@@ -209,8 +136,7 @@ class MemoryCacheStore extends Store
         # we allow requests to request not to saveback to the cache in case the
         # server doesn't give us a full response.
         if request.cacheResult isnt false and !(request instanceof DeleteRequest)
-          request.on 'changed', (state) =>
-            this._cache()[signature] = state if state instanceof Request.state.type.Success
+          request.react((state) => this._cache()[signature] = state if state == 'success')
 
         Store.Unhandled
 
@@ -240,7 +166,7 @@ class OnPageCacheStore extends Store
       cacheDom = this._dom().find("> ##{signature}")
       if cacheDom.length > 0
         if request instanceof FetchRequest
-          request.setValue(Request.state.Success(cacheDom.text()))
+          request.set(types.result.success(cacheDom.text()))
           Store.Handled
         else
           cacheDom.remove()
