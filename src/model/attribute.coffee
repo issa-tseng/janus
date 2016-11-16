@@ -1,5 +1,6 @@
 
 util = require('../util/util')
+from = require('../core/from')
 Model = require('./model').Model
 Varying = require('../core/varying').Varying
 List = require('../collection/list').List
@@ -67,6 +68,23 @@ class CollectionAttribute extends Attribute
   @deserialize: (data) -> this.collectionClass.deserialize(data)
   serialize: -> this.constructor.collectionClass.serialize(this.getValue()) unless this.transient is true
 
+class ReferenceAttribute extends Attribute
+  isReference: true
+  transient: true
+
+  # By default, you should only have to provide a request-given-a-model and the
+  # default resolver implementation will take care of everything just fine. But
+  # if you need custom handling you can go the other way around and just write a
+  # custom resolver.
+  request: -> null
+  resolver: ->
+    from.varying(new Varying(this.request()))
+      .and.app()
+      .all.flatMap((request, app) -> app.getStore(request).handle(); request)
+
+  @contains: Model
+  @deserialize: (data) -> this.contains.deserialize(data)
+
 
 # Useful for creating standalone `Attribute`s that don't depend on a parent
 # `Model` for databinding; usually for transient vars in `View`s.
@@ -102,6 +120,7 @@ util.extend(module.exports,
   DateAttribute: DateAttribute
   ModelAttribute: ModelAttribute
   CollectionAttribute: CollectionAttribute
+  ReferenceAttribute: ReferenceAttribute
 
   ShellModel: ShellModel
 )

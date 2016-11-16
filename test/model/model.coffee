@@ -1,6 +1,7 @@
 should = require('should')
 
 from = require('../../lib/core/from')
+types = require('../../lib/util/types')
 
 Model = require('../../lib/model/model').Model
 Issue = require('../../lib/model/issue').Issue
@@ -253,6 +254,130 @@ describe 'Model', ->
 
       model = new TestModel()
       model.attribute('attr').should.equal(model.attribute('attr'))
+
+  describe 'resolving', ->
+    it 'should behave like watch for non-reference attributes', ->
+      values = []
+
+      class TestModel extends Model
+        @attribute('a', attribute.NumberAttribute)
+
+      m = new TestModel()
+      m.resolve('a', null).reactNow((x) -> values.push(x))
+
+      m.set('a', 2)
+      values.should.eql([ null, 2 ])
+
+    it 'should return the proper value for a resolved reference attribute', ->
+      values = []
+
+      class TestModel extends Model
+        @attribute('a', attribute.ReferenceAttribute)
+
+      m = new TestModel()
+      m.set('a', 1)
+
+      m.resolve('a', null).reactNow((x) -> values.push(x))
+      m.set('a', 2)
+      values.should.eql([ 1, 2 ])
+
+    it 'should point the reference request from the store library given an app', ->
+      ourRequest = new Varying()
+      givenRequest = null
+      app = { getStore: ((x) -> givenRequest = x; { handle: (->) }) }
+      class TestModel extends Model
+        @attribute 'a', class extends attribute.ReferenceAttribute
+          request: -> ourRequest
+
+      m = new TestModel()
+      v = m.resolve('a', app)
+      should(givenRequest).equal(null) # doesn't actually point until reacted.
+      v.reactNow(->)
+      givenRequest.should.equal(ourRequest)
+
+    it 'calls handle on the store that handles the request', ->
+      called = false
+      app = { getStore: (x) -> { handle: (-> called = true) } }
+      class TestModel extends Model
+        @attribute 'a', class extends attribute.ReferenceAttribute
+          request: -> new Varying()
+
+      m = new TestModel()
+      v = m.resolve('a', app)
+      called.should.equal(false) # doesn't actually point until reacted.
+      v.reactNow(->)
+      called.should.equal(true)
+
+    it 'gives the request\'s inner value as its own', ->
+      value = null
+      request = new Varying()
+      app = { getStore: (x) -> { handle: (->) } }
+      class TestModel extends Model
+        @attribute 'a', class extends attribute.ReferenceAttribute
+          request: -> request
+
+      m = new TestModel()
+      m.resolve('a', app).reactNow((x) -> value = x)
+      should(value).equal(undefined)
+
+      request.set(types.result.progress(26))
+      value.should.equal('progress')
+      value.value.should.equal(26)
+
+      request.set(types.result.success())
+      value.should.be.an.instanceof(Model)
+
+    it 'deserializes with the attribute\'s declared contained class deserializer', ->
+      called = false
+      value = null
+      request = new Varying()
+      app = { getStore: (x) -> { handle: (->) } }
+      class TestInner extends Model
+        @deserialize: (data) ->
+          called = true
+          super(data)
+      class TestModel extends Model
+        @attribute 'a', class extends attribute.ReferenceAttribute
+          @contains: TestInner
+          request: -> request
+
+      m = new TestModel()
+      m.resolve('a', app).reactNow((x) -> value = x)
+
+      request.set(types.result.success({ a: 42 }))
+      called.should.equal(true)
+      value.get('a').should.equal(42)
+
+    it 'resolves correctly when given a value in handle()', ->
+      value = null
+      app = { getStore: (x) -> { handle: -> x.set(types.result.success({ a: 42 })) } }
+      class TestModel extends Model
+        @attribute 'a', class extends attribute.ReferenceAttribute
+          request: -> new Varying()
+
+      m = new TestModel()
+      m.resolve('a', app).reactNow((x) -> value = x)
+      value.should.equal('success')
+      value.value.get('a').should.equal(42)
+
+    it 'sets a successful value concretely if found', ->
+      value = null
+      request = new Varying()
+      app = { getStore: (x) -> { handle: (->) } }
+      class TestModel extends Model
+        @attribute 'a', class extends attribute.ReferenceAttribute
+          request: -> request
+
+      m = new TestModel()
+      m.resolve('a', app).reactNow(->)
+      should(m.get('a')).equal(null)
+
+      request.set(types.result.progress(26))
+      should(m.get('a')).equal(null)
+
+      request.set(types.result.success({ b: 42 }))
+      m.get('a').should.be.an.instanceof(Model)
+      m.get('a').get('b').should.equal(42)
 
     # TODO: many noncovered methods
 

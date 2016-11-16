@@ -3,6 +3,7 @@
 
 from = require('../core/from')
 { match, otherwise } = require('../core/case')
+types = require('../util/types')
 
 { Base } = require('../core/base')
 { Varying } = require('../core/varying')
@@ -25,11 +26,10 @@ class Model extends Base
     # Init attribute store so we can bind against it.
     this.attributes = {}
 
-    # Init attribute obj cache.
+    # Init various caches.
     this._attributes = {}
-
-    # Init watches cache.
     this._watches = {}
+    this._resolves = {}
 
     # If we have a designated shadow parent, set it.
     this._parent = this.options.parent
@@ -161,6 +161,28 @@ class Model extends Base
       this.listenTo(this, "changed:#{key}", (newValue) -> varying.set(newValue))
       varying
 
+  # Like `#watch(key)`, but if the attribute in question is an unresolved
+  # `ReferenceAttribute` then we take the given app object and kick off the
+  # appropriate actions. The resulting `Varying` from this call contains
+  # wrapped `types.result` cases. The actual property key will be populated
+  # with a successful value if it comes.
+  terminate = (x) -> if x.all? then x.all else x # TODO: becoming a common pattern. move to util.
+  resolve: (key, app) ->
+    this._resolves[key] ?= do =>
+      this.watch(key).flatMap (value) =>
+        if !value? and (attribute = this.attribute(key)).isReference is true
+          # point the attribute's resolver definition with an app and count
+          # on it to fire off the request. but listen to the result and set
+          # the concret value if we get one.
+          result = terminate(attribute.resolver())
+            .point((x) => this.constructor._point(x, this, app))
+            .map((x) => x?.mapSuccess((y) -> attribute.constructor.deserialize(y)) ? x)
+
+          result.reactNow((x) => types.result.success.match(x, (y) => this.set(key, y)))
+          result
+        else
+          new Varying(value) # wrap for symmetry (because this is a flatMap)
+
   # Get a `Varying` object for this entire object. It will emit a change event
   # any time any attribute on the entire object changes. Does not event when
   # nested model attributes change, however.
@@ -266,7 +288,7 @@ class Model extends Base
     from.default.attr (x, self) -> self.watch(x)
     from.default.definition (x, self) -> new Varying(self.attribute(x))
     from.default.varying (x, self) -> if util.isFunction(x) then Varying.ly(x(self)) else Varying.ly(x)
-    otherwise -> x
+    from.default.app (_, self, app) -> if app? then new Varying(app) else from.default.app()
   )
 
   # Revert a particular attribute on this model. After this, the model will
