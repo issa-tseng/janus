@@ -59,17 +59,48 @@ describe 'case', ->
         success(42).successOrElse(13).should.equal(42)
         fail(4).successOrElse(47).should.equal(47)
 
-      it 'should return its inner value if it passes flatX, otherwise self', ->
+      it 'should return its inner value if it passes getX, otherwise self', ->
         { success, fail } = caseSet('success', 'fail')
-        success('awesome').flatSuccess().should.equal('awesome')
-        fail('awesome').flatSuccess().should.equal('fail')
-        fail('awesome').flatSuccess().value.should.equal('awesome')
+        success('awesome').getSuccess().should.equal('awesome')
+        fail('awesome').getSuccess().should.equal('fail')
+        fail('awesome').getSuccess().value.should.equal('awesome')
+
+      it 'should map its inner value on mapT if it matches T', ->
+        { success, fail } = caseSet('success', 'fail')
+        result = success('cool').mapSuccess((x) -> x + ' beans')
+        result.should.equal('success')
+        result.value.should.equal('cool beans')
+
+      it 'should map its inner value on mapT only if it matches T', ->
+        { success, fail } = caseSet('success', 'fail')
+        result = success('cool').mapFail((x) -> x + ' beans')
+        result.should.equal('success')
+        result.value.should.equal('cool')
 
       it 'should return a friendly string on toString', ->
         { friendly } = caseSet('friendly')
         friendly('string').toString().should.equal('friendly: string')
 
   describe 'match', ->
+    describe 'single case', ->
+      it 'should run the given function if the provided instance matches the case', ->
+        { success, fail } = caseSet('success', 'fail')
+        called = false
+        success.match(success(1), (-> called = true))
+        called.should.equal(true)
+
+      it 'should provide the inner value if the instance matches the case', ->
+        { success, fail } = caseSet('success', 'fail')
+        given = null
+        success.match(success(1), ((x) -> given = x))
+        given.should.equal(1)
+
+      it 'should not run the given function unless the provided instance matches the case', ->
+        { success, fail } = caseSet('success', 'fail')
+        called = false
+        success.match(fail(1), (-> called = true))
+        called.should.equal(false)
+
     describe 'initialization', ->
       it 'should return a function', ->
         match().should.be.a.Function
