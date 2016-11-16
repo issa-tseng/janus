@@ -61,6 +61,7 @@ caseSet = (inTypes...) ->
       # make the wrapper.
       kase = (value) ->
         instance = new String('' + type)
+        instance.type = type
         instance.value = value
 
         # decorate set-based methods:
@@ -69,8 +70,11 @@ caseSet = (inTypes...) ->
             # decorate TOrElse:
             instance[fType + 'OrElse'] = (x) -> if type is fType then this.value else x
 
-            # decorate flatT: TODO: possible rename this something like extractX.
-            instance['flat' + capitalize(fType)] = -> if type is fType then this.value else this
+            # decorate getT:
+            instance['get' + capitalize(fType)] = -> if type is fType then this.value else this
+
+            # decorate mapT:
+            instance['map' + capitalize(fType)] = (f) -> if type is fType then kase(f(this.value)) else this
 
         # decorate the rest:
         instance.case = kase
@@ -82,6 +86,9 @@ caseSet = (inTypes...) ->
       # decorate some things to help us find ourselves.
       kase.type = type
       kase.set = set
+
+      # decorate direct matcher.
+      kase.match = (x, f_) -> f_(x.value) if x?.type is type
 
       # add the wrapper.
       set[type] = kase
