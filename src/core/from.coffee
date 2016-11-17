@@ -11,7 +11,7 @@
 
 # util.
 conj = (x, y) -> x.concat([ y ])
-internalCases = ic = caseSet('varying', 'map', 'flatMap')
+internalCases = ic = caseSet('varying', 'map', 'flatMap', 'resolve')
 
 # default applicants:
 defaultCases = caseSet('dynamic', 'watch', 'resolve', 'attribute', 'varying', 'app')
@@ -32,6 +32,10 @@ val = (conjunction, applicants = []) ->
     [ rest..., last ] = applicants
     f = (obj) -> obj?.watch?(attr) ? orElse
     val(conjunction, conj(rest, internalCases.flatMap( inner: last, f: f )))
+
+  result.resolve = (attr) ->
+    [ rest..., last ] = applicants
+    val(conjunction, conj(rest, internalCases.resolve( inner: last, attr: attr )))
 
   result.all = terminus(applicants)
   result.and = conjunction(applicants)
@@ -57,7 +61,7 @@ build = (cases) ->
   conjunction()
 
 
-# helper for point() that processes our intermediate maps and such.
+# helper for point() that processes our intermediate maps within one applicant chain.
 mappedPoint = match(
   ic.map ({ inner, f }, point) ->
     match(
@@ -69,6 +73,12 @@ mappedPoint = match(
     match(
       ic.varying (x) -> ic.varying(x.flatMap(f))
       otherwise -> ic.flatMap({ inner, f })
+    )(mappedPoint(inner, point))
+
+  ic.resolve ({ inner, attr }, point) ->
+    match(
+      ic.varying (x) -> ic.varying(x.flatMap((obj) -> point(from.default.app()).flatMap((app) -> obj.resolve(attr, app)) if obj?))
+      otherwise -> ic.resolve({ inner, f })
     )(mappedPoint(inner, point))
 
   ic.varying (x) -> ic.varying(x) # TODO: rewrapping is slow.
@@ -87,7 +97,7 @@ matchFinal = match(
   otherwise (x) -> new Varying(x)
 )
 
-# helper that applies accumulated maps to a varying.
+# helper that applies accumulated maps across applicants to a varying.
 # TODO: recompiling matches is slow. also, relies on weird side effects.
 applyMaps = (applicants, maps) ->
   [ first, rest... ] = maps
