@@ -1,38 +1,42 @@
 util = require('./util/util')
 
+# pre-require these to fan them out top-level
+kase = require('./core/case')
+template = require('./view/template')
+
+# TODO: once we're sure the global is superfluous, remove.
 janus = (window ? global)._janus$ ?=
-  util: util # life-saving util funcs
+  util: util
 
-  Base: require('./core/base').Base
+  # core functionality.
+  Varying: require('./core/varying').Varying
+  caseSet: kase.caseSet
+  match: kase.match
+  otherwise: kase.otherwise
+  from: require('./core/from')
+  Library: require('./library/library').Library
 
+  # model functionality.
   Model: require('./model/model').Model
-  reference: require('./model/reference')
   attribute: require('./model/attribute')
   Issue: require('./model/issue').Issue
   store: require('./model/store')
 
+  # collection functionality. TODO: toplevel in 0.4?
   collection: require('./collection/collection')
 
+  # view and templating functionality.
   View: require('./view/view').View
   DomView: require('./view/dom-view').DomView
-  Templater: require('./templater/templater').Templater
-  templater: require('./templater/package')
+  find: template.find
+  template: template.template
 
-  Library: require('./library/library').Library
-  varying: require('./core/varying')
-  Chainer: require('./core/chain').Chainer
-
+  # application stuff is nested to reduce clutter.
   application:
     App: require('./application/app').App
     endpoint: require('./application/endpoint')
     handler: require('./application/handler')
     manifest: require('./application/manifest')
 
-    PageModel: require('./model/page-model').PageModel
-    PageView: require('./view/page-view').PageView
-
-    VaryingView: require('./view/impl/varying').VaryingView
-    ListView: require('./view/impl/list').ListView
-    listEdit: require('./view/impl/list-edit')
-
 util.extend(module.exports, janus)
+
