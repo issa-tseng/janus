@@ -21,8 +21,9 @@ should.Assertion.add('val', (->
 should.Assertion.add('conjunction', (->
   this.params = { operator: 'to be a default conjunction' }
   this.obj.should.be.a.Function
-  this.obj.attr.should.be.a.Function
-  this.obj.definition.should.be.a.Function
+  this.obj.watch.should.be.a.Function
+  this.obj.resolve.should.be.a.Function
+  this.obj.attribute.should.be.a.Function
   this.obj.varying.should.be.a.Function
 ), true)
 
@@ -51,8 +52,9 @@ describe 'from', ->
       from('a').should.be.a.val
 
     it 'should contain functions that return val-looking things', ->
-      from.attr('b').should.be.a.val
-      from.definition('b').should.be.a.val
+      from.watch('b').should.be.a.val
+      from.resolve('b').should.be.a.val
+      from.attribute('b').should.be.a.val
       from.varying('b').should.be.a.val
 
     it 'should not contain function called dynamic', ->
@@ -79,31 +81,35 @@ describe 'from', ->
       args = []
 
       from('a')
-        .and.attr('b')
-        .and.definition('c')
-        .and.varying('d')
+        .and.watch('b')
+        .and.resolve('c')
+        .and.attribute('d')
+        .and.varying('e')
         .all.point((x) -> args.push(x); x)
 
       args[0].should.eql('dynamic')
       args[0].value.should.equal('a')
 
-      args[1].should.eql('attr')
+      args[1].should.eql('watch')
       args[1].value.should.equal('b')
 
-      args[2].should.eql('definition')
+      args[2].should.eql('resolve')
       args[2].value.should.equal('c')
 
-      args[3].should.eql('varying')
+      args[3].should.eql('attribute')
       args[3].value.should.equal('d')
 
+      args[4].should.eql('varying')
+      args[4].value.should.equal('e')
+
     it 'should only point for things that have not resolved to varying', ->
-      { dynamic, attr, definition, varying } = from.default
+      { dynamic, watch, resolve, definition, varying } = from.default
 
       count = 0
       incr = (f) -> (args...) -> count += 1; f(args...)
 
       f1 = from('a')
-        .and.attr('b')
+        .and.watch('b')
         .all.point(match(
           dynamic incr (xs...) -> new Varying()
           otherwise incr id
@@ -112,7 +118,7 @@ describe 'from', ->
       count.should.equal(2)
 
       f2 = f1.point(match(
-        attr incr (xs...) -> new Varying()
+        watch incr (xs...) -> new Varying()
         otherwise incr id
       ))
 
@@ -132,14 +138,14 @@ describe 'from', ->
       called = false
 
       v = from('a')
-        .and.attr('b')
+        .and.watch('b')
         .all.map (xs...) ->
           called = true
 
           xs.length.should.equal(2)
 
           xs[0].should.eql('dynamic')
-          xs[1].should.eql('attr')
+          xs[1].should.eql('watch')
 
       called.should.be.false
 
@@ -147,14 +153,14 @@ describe 'from', ->
       called.should.be.true
 
     it 'should be called with resolved applicants', ->
-      { dynamic, attr, definition, varying } = from.default
+      { dynamic, watch, resolve, definition, varying } = from.default
       called = false
 
       v = from('a')
-        .and.attr('b')
+        .and.watch('b')
         .all.point(match(
           dynamic (x) -> new Varying("dynamic: #{x}")
-          attr (x) -> new Varying("attr: #{x}")
+          watch (x) -> new Varying("watch: #{x}")
           otherwise -> null
         )).map((xs...) ->
           called = true
@@ -162,7 +168,7 @@ describe 'from', ->
           xs.length.should.equal(2)
 
           xs[0].should.equal('dynamic: a')
-          xs[1].should.equal('attr: b')
+          xs[1].should.equal('watch: b')
         )
 
       v.reactNow(->)
@@ -177,11 +183,11 @@ describe 'from', ->
   describe 'flatMapAll', ->
     # very condensed test because the mapAll tests should cover this.
     it 'should be called with appropriate applicants', ->
-      { dynamic, attr, definition, varying } = from.default
+      { dynamic, watch, resolve, definition, varying } = from.default
       called = false
 
       v = from('a')
-        .and.attr('b')
+        .and.watch('b')
         .all.point(match(
           dynamic (x) -> new Varying("dynamic: #{x}")
           otherwise id
@@ -192,7 +198,7 @@ describe 'from', ->
 
           xs[0].should.equal('dynamic: a')
 
-          xs[1].should.eql('attr')
+          xs[1].should.eql('watch')
         )
 
       v.reactNow(->)

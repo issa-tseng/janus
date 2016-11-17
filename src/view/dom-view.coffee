@@ -6,7 +6,7 @@
 
 { Varying } = require('../core/varying')
 { match } = require('../core/case')
-{ dynamic, attr, definition, varying, app } = require('../core/from').default
+{ dynamic, watch, resolve, attribute, varying, app } = require('../core/from').default
 View = require('./view').View
 List = require('../collection/list').List
 { extendNew, extend, isFunction, isString } = require('../util/util')
@@ -65,8 +65,9 @@ class DomView extends View
         view.subject.resolve(x, view._app())
       else
         Varying.ly(x) # i guess? TODO
-    attr (x, view) -> view.subject.resolve(x, view._app())
-    definition (x, view) -> new Varying(view.subject.attribute(x))
+    watch (x, view) -> view.subject.watch(x)
+    resolve (x, view) -> view.subject.resolve(x, view._app())
+    attribute (x, view) -> new Varying(view.subject.attribute(x))
     varying (x, view) -> if isFunction(x) then Varying.ly(x(view.subject)) else Varying.ly(x)
     app (x, view) -> new Varying(view._app())
   )
