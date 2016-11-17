@@ -257,6 +257,36 @@ describe 'from', ->
       v.set('cd')
       result.should.equal('cd')
 
+  describe 'inline watch', ->
+    it 'should apply as a flatMap after point resolution', ->
+      { dynamic } = from.default
+
+      called = null
+      result = null
+      iv = new Varying(2)
+      from('a').watch('myattr')
+        .all.point(match(
+          dynamic -> new Varying({ watch: (x) -> called = x; iv })
+          otherwise ->
+        ))
+        .map(id).reactNow((x) -> result = x)
+
+      called.should.equal('myattr')
+      result.should.equal(2)
+
+    it 'should use the fallback value if the obj is null', ->
+      { dynamic } = from.default
+
+      result = null
+      from('a').watch('myattr', 'no luck')
+        .all.point(match(
+          dynamic -> new Varying()
+          otherwise ->
+        ))
+        .map(id).reactNow((x) -> result = x)
+
+      result.should.equal('no luck')
+
   describe 'builder', ->
     it 'should accept custom cases as intermediate methods/applicants', ->
       { alpha, beta, gamma } = custom = caseSet('alpha', 'beta', 'gamma')
