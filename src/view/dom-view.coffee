@@ -109,7 +109,7 @@ class DomView extends View
     dom.data('view', this)
 
     this._wireEvents()
-    view?.wireEvents() for view in this._subviews.list if this._subviews?
+    view?.wireEvents() for view in this._subviews.list
     null
 
   destroy: ->
