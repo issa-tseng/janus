@@ -287,6 +287,26 @@ describe 'from', ->
 
       result.should.equal('no luck')
 
+  describe 'inline resolve', ->
+    it 'should apply as a flatMap after point resolution', ->
+      { dynamic, app } = from.default
+
+      iv = new Varying(2)
+      myApp = {}
+      result = null
+      calledAttr = calledApp = null
+      from('a').resolve('myattr')
+        .all.point(match(
+          dynamic -> new Varying({ resolve: (attr, app) -> calledAttr = attr; calledApp = app; iv })
+          app -> new Varying(myApp)
+          otherwise ->
+        ))
+        .map(id).reactNow((x) -> result = x)
+
+      result.should.equal(2)
+      calledAttr.should.equal('myattr')
+      calledApp.should.equal(myApp)
+
   describe 'builder', ->
     it 'should accept custom cases as intermediate methods/applicants', ->
       { alpha, beta, gamma } = custom = caseSet('alpha', 'beta', 'gamma')
