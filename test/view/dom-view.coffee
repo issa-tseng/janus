@@ -291,6 +291,37 @@ describe 'DomView', ->
       view.wireEvents()
       wired.should.eql([ view, childA, childB ])
 
+    it 'wires child events if appropriate', ->
+      wired = 0
+      class TestView extends DomView
+        @_dom: -> makeDom()
+        @_template: inf
+        _wireEvents: -> wired += 1
+
+      child = new TestView()
+      library = { on: ((event, f_) -> this.f_ = f_ if event is 'got'), getView: (-> this.f_(child)), newEventBindings: (-> library), destroyWith: (->) }
+      parent = new TestView({}, { app: { get: (-> library), withViewLibrary: (->) } })
+
+      parent._app()
+      parent.wireEvents()
+      library.getView()
+      wired.should.equal(2)
+
+    it 'does not wire child events if not appropriate', ->
+      wired = 0
+      class TestView extends DomView
+        @_dom: -> makeDom()
+        @_template: inf
+        _wireEvents: -> wired += 1
+
+      child = new TestView()
+      library = { on: ((event, f_) -> this.f_ = f_ if event is 'got'), getView: (-> this.f_(child)), newEventBindings: (-> library), destroyWith: (->) }
+      parent = new TestView({}, { app: { get: (-> library), withViewLibrary: (->) } })
+
+      parent._app()
+      library.getView()
+      wired.should.equal(0)
+
   it 'concats dom outerHTMLs to provide markup', ->
     class TestView extends DomView
       @_dom: -> makeDom({ get: (-> [ { outerHTML: '123' }, { outerHTML: 'abc' } ]) })
