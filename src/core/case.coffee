@@ -88,7 +88,9 @@ caseSet = (inTypes...) ->
       kase.set = set
 
       # decorate direct matcher.
-      kase.match = (x, f_) -> f_(x.value) if x?.type is type
+      kase.match = (x, f_) ->
+        matches = x?.type is type
+        if isFunction(f_) then (f_(x.value) if matches) else matches
 
       # add the wrapper.
       set[type] = kase
