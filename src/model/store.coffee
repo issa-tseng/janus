@@ -13,7 +13,7 @@ Varying = require('../core/varying').Varying
 class Request extends Varying
   constructor: (@options = {}) ->
     super()
-    this.value = Request.state.Init
+    this.value = types.result.init()
 
   signature: ->
 

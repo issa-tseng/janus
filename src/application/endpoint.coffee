@@ -1,5 +1,6 @@
 
 util = require('../util/util')
+types = require('../util/types')
 Base = require('../core/base').Base
 
 Request = require('../model/store').Request
@@ -35,7 +36,7 @@ class Endpoint extends Base
     manifest = new StoreManifest(app.get('stores'))
     manifest.on('allComplete', => this.finish(pageModel, pageView, manifest, respond))
     manifest.on 'requestComplete', (request) =>
-      if request.value instanceof Request.state.type.Error and request.options.fatal is true
+      if types.result.failure.match(request.value) and request.options.fatal is true
         this.error(request, respond)
 
     # make our app, our pageModel, and its pageView.
