@@ -101,6 +101,11 @@ describe 'case', ->
         success.match(fail(1), (-> called = true))
         called.should.equal(false)
 
+      it 'defaults to returning boolean on the instance matching the case if no function is provided', ->
+        { success, fail } = caseSet('success', 'fail')
+        success.match(success(1)).should.equal(true)
+        fail.match(success(1)).should.equal(false)
+
     describe 'initialization', ->
       it 'should return a function', ->
         match().should.be.a.Function
