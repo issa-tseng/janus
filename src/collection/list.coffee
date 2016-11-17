@@ -260,21 +260,19 @@ class List extends OrderedCollection
         this.on('removed', react)
         this.on('moved', react)
 
+        watching = {}
         watchModel = (model) =>
-          this.listenTo model.watchModified(deep), 'changed', (isChanged) ->
+          watching[model._id] = model.watchModified(deep).react((isChanged) ->
             if isChanged is true
               result.set(true)
             else
               react()
+          )
 
-        uniqSubmodels = this
-          .map((elem) -> elem) # flatten references. TODO: still necessary?
-          .filter((elem) -> elem instanceof Model)
-          .uniq()
-
+        uniqSubmodels = this.filter((elem) -> elem instanceof Model).uniq()
         watchModel(model) for model in uniqSubmodels.list
         uniqSubmodels.on('added', (newModel) -> watchModel(newModel))
-        uniqSubmodels.on('removed', (oldModel) -> this.unlistenTo(oldModel.watchModified(deep)))
+        uniqSubmodels.on('removed', (oldModel) -> watching[oldModel._id]?.stop?())
 
         result
 
