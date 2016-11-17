@@ -1,5 +1,6 @@
 
 util = require('../util/util')
+types = require('../util/types')
 Base = require('../core/base').Base
 
 Request = require('../model/store').Request
@@ -21,10 +22,10 @@ class Manifest extends Base
     this.emit('requestStart', request)
 
     handleChange = (state) =>
-      if state instanceof Request.state.type.Complete
-        this.objects.push(state.result) if state instanceof Request.state.type.Success
+      if types.result.success.match(state) or types.result.failure.match(state)
+        types.result.success.match(state, (x) => this.objects.push(x))
 
-        this.emit('requestComplete', request, state.result)
+        this.emit('requestComplete', request, state.value)
 
         this._requestCount -= 1
         this._setHook()
