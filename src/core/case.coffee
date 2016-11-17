@@ -37,7 +37,7 @@ otherwise.type = 'otherwise'
 
 
 # the main constructor.
-caseSet = (inTypes...) ->
+caseSet = (namespace, inTypes...) ->
   set = {}
 
   # allow for a bare string or a k/v pair, or many k/v pairs.
@@ -86,6 +86,7 @@ caseSet = (inTypes...) ->
       # decorate some things to help us find ourselves.
       kase.type = type
       kase.set = set
+      kase.namespace = namespace
 
       # decorate direct matcher.
       kase.match = (x, f_) ->
@@ -114,6 +115,7 @@ unapply = (target, handler, additional, unapply = true) ->
 match = (args...) ->
   first = args[0] # grab the first item.
   set = (first?.case ? first)?.set # assume the first thing is a case or an instance.
+  namespace = (first?.case ? first)?.namespace # ditto.
   seen = {} # track what cases we've covered.
   hasOtherwise = false # does an otherwise exist?
 
@@ -126,7 +128,7 @@ match = (args...) ->
     if kase.type is 'otherwise'
       hasOtherwise = true
     else
-      throw new Error("found a case of some other set!") unless set[kase.type]?
+      throw new Error("found a case of some other set!") unless kase.namespace is namespace
       seen[kase.type] = true
 
     i += if x.case? then 1 else 2
@@ -150,7 +152,7 @@ match = (args...) ->
       return unapply(target, handler, additional, false) if kase.type is 'otherwise'
 
       # process if a match if not. TODO: checking set ref against set ref breaks npm-agnosticity.
-      return unapply(target, handler, additional) if kase.type.valueOf() is target?.valueOf() and (target?.case ? target)?.set is set
+      return unapply(target, handler, additional) if kase.type.valueOf() is target?.valueOf() and (target?.case ? target)?.namespace is namespace
 
       i += if x.case? then 1 else 2
 
