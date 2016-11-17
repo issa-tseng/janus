@@ -28,6 +28,11 @@ val = (conjunction, applicants = []) ->
     [ rest..., last ] = applicants
     val(conjunction, conj(rest, internalCases.flatMap( inner: last, f: f )))
 
+  result.watch = (attr, orElse = null) ->
+    [ rest..., last ] = applicants
+    f = (obj) -> obj?.watch?(attr) ? orElse
+    val(conjunction, conj(rest, internalCases.flatMap( inner: last, f: f )))
+
   result.all = terminus(applicants)
   result.and = conjunction(applicants)
 
