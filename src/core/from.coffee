@@ -14,7 +14,7 @@ conj = (x, y) -> x.concat([ y ])
 internalCases = ic = caseSet('org.janus.core.from.internal', 'varying', 'map', 'flatMap', 'resolve')
 
 # default applicants:
-defaultCases = caseSet('org.janus.core.from.default', 'dynamic', 'watch', 'resolve', 'attribute', 'varying', 'app')
+defaultCases = dc = caseSet('org.janus.core.from.default', 'dynamic', 'watch', 'resolve', 'attribute', 'varying', 'app')
 
 # val wraps proxies of Varyings. so you can perform maps or call conjunctions on them.
 val = (conjunction, applicants = []) ->
@@ -118,6 +118,12 @@ applyMaps = (applicants, maps) ->
   (v = apply(m)) for m in rest
   v
 
+plainMap = match(
+  dc.dynamic (x) -> Varying.ly(x)
+  dc.varying (x) -> Varying.ly(x)
+  otherwise (x) -> x
+)
+
 # terminus gives you a representation of the entire chain. mapping at this level
 # gives you all mapped values directly in the arg list.
 terminus = (applicants, maps = []) ->
@@ -125,10 +131,12 @@ terminus = (applicants, maps = []) ->
   result.flatMap = (f) -> terminus(applicants, maps.concat([ ic.flatMap(f) ]))
   result.map = (f) -> terminus(applicants, maps.concat([ ic.map(f) ]))
 
-  result.point = (f) -> point = terminus(mappedPoint(x, f) for x in applicants, maps)
+  result.point = (f) -> terminus(mappedPoint(x, f) for x in applicants, maps)
 
   result.react = (f_) -> applyMaps(applicants, maps).react(f_)
   result.reactNow = (f_) -> applyMaps(applicants, maps).reactNow(f_)
+
+  result.plain = -> result.point(plainMap)
 
   # TODO: is this a good idea? feels like not.
   result.get = -> matchFinal(mappedPoint(applicants[0], (->)))?.get()

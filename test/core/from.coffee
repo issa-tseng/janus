@@ -130,6 +130,21 @@ describe 'from', ->
 
       count.should.equal(3)
 
+  describe 'plain', ->
+    it 'should automatically resolve Varyings', ->
+      v1 = new Varying('a')
+      v2 = new Varying('b')
+
+      result = null
+      from(v1).and.varying(v2).all.plain().map((x, y) -> x + y).reactNow((x) -> result = x)
+      result.should.equal('ab')
+
+      v1.set('x')
+      result.should.equal('xb')
+
+      v2.set('y')
+      result.should.equal('xy')
+
   describe 'mapAll', ->
     it 'should return a Varying-looking thing', ->
       from('a').and('b').all.map(->).should.be.a.varying
