@@ -14,7 +14,7 @@ conj = (x, y) -> x.concat([ y ])
 internalCases = ic = caseSet('varying', 'map', 'flatMap')
 
 # default applicants:
-defaultCases = caseSet('dynamic', 'attr', 'definition', 'varying', 'app')
+defaultCases = caseSet('dynamic', 'watch', 'resolve', 'attribute', 'varying', 'app')
 
 # val wraps proxies of Varyings. so you can perform maps or call conjunctions on them.
 val = (conjunction, applicants = []) ->

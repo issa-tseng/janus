@@ -125,16 +125,16 @@ describe 'DomView', ->
       (new TestView(subject)).artifact()
       rendered.should.eql([ '42' ])
 
-    it 'points attr inputs correctly', ->
+    it 'points watch inputs correctly', ->
       attr = null
       rendered = []
 
       v = new Varying('test')
-      subject = { resolve: (x) -> attr = x; v }
+      subject = { watch: (x) -> attr = x; v }
 
       class TestView extends DomView
         @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
-        @_template: template(find('.title').text(from.attr('someattr')))
+        @_template: template(find('.title').text(from.watch('someattr')))
 
       (new TestView(subject)).artifact()
       attr.should.equal('someattr')
@@ -143,7 +143,25 @@ describe 'DomView', ->
       v.set('test 2')
       rendered.should.eql([ 'test', 'test 2' ])
 
-    it 'points definition inputs correctly', ->
+    it 'points resolve inputs correctly', ->
+      attr = null
+      rendered = []
+
+      v = new Varying('test')
+      subject = { resolve: (x) -> attr = x; v }
+
+      class TestView extends DomView
+        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
+        @_template: template(find('.title').text(from.resolve('someattr')))
+
+      (new TestView(subject)).artifact()
+      attr.should.equal('someattr')
+      rendered.should.eql([ 'test' ])
+
+      v.set('test 2')
+      rendered.should.eql([ 'test', 'test 2' ])
+
+    it 'points attribute inputs correctly', ->
       attr = null
       rendered = []
 
@@ -152,7 +170,7 @@ describe 'DomView', ->
 
       class TestView extends DomView
         @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
-        @_template: template(find('.title').text(from.definition('test_attr')))
+        @_template: template(find('.title').text(from.attribute('test_attr')))
 
       (new TestView(subject)).artifact()
       attr.should.equal('test_attr')
