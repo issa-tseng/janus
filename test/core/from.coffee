@@ -309,7 +309,7 @@ describe 'from', ->
 
   describe 'builder', ->
     it 'should accept custom cases as intermediate methods/applicants', ->
-      { alpha, beta, gamma } = custom = caseSet('alpha', 'beta', 'gamma')
+      { alpha, beta, gamma } = custom = caseSet('org.janus.test', 'alpha', 'beta', 'gamma')
 
       v = from.build(custom).alpha('one')
         .and.beta('two')
@@ -325,7 +325,7 @@ describe 'from', ->
       result.should.equal('aone btwo cthree')
 
     it 'should use the dynamic case if present', ->
-      { dynamic, other } = custom = caseSet('dynamic', 'other')
+      { dynamic, other } = custom = caseSet('org.janus.test', 'dynamic', 'other')
 
       v = from.build(custom)('one')
         .and.other('two')
@@ -339,7 +339,7 @@ describe 'from', ->
       result.should.equal('aone btwo')
 
     it 'should not use the dynamic case if not present', ->
-      { a, b } = custom = caseSet('a', 'b')
+      { a, b } = custom = caseSet('org.janus.test', 'a', 'b')
 
       from.build(custom).should.not.be.a.Function
 
