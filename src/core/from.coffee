@@ -58,23 +58,22 @@ build = (cases) ->
 
 
 # helper for point() that processes our intermediate maps and such.
-# TODO: defining a match per iteration is slow!
-mappedPoint = (point) -> match(
-  ic.map ({ inner, f }) ->
+mappedPoint = match(
+  ic.map ({ inner, f }, point) ->
     match(
       ic.varying (x) -> ic.varying(x.map(f))
       otherwise -> ic.map({ inner, f })
-    )(mappedPoint(point)(inner))
+    )(mappedPoint(inner, point))
 
-  ic.flatMap ({ inner, f }) ->
+  ic.flatMap ({ inner, f }, point) ->
     match(
       ic.varying (x) -> ic.varying(x.flatMap(f))
       otherwise -> ic.flatMap({ inner, f })
-    )(mappedPoint(point)(inner))
+    )(mappedPoint(inner, point))
 
   ic.varying (x) -> ic.varying(x) # TODO: rewrapping is slow.
 
-  otherwise (x) ->
+  otherwise (x, point) ->
     result = point(x)
     if result?.isVarying is true
       ic.varying(result)
@@ -89,7 +88,7 @@ matchFinal = match(
 )
 
 # helper that applies accumulated maps to a varying.
-# TODO: as with above, perf. also, relies on weird side effects.
+# TODO: recompiling matches is slow. also, relies on weird side effects.
 applyMaps = (applicants, maps) ->
   [ first, rest... ] = maps
 
@@ -116,13 +115,13 @@ terminus = (applicants, maps = []) ->
   result.flatMap = (f) -> terminus(applicants, maps.concat([ ic.flatMap(f) ]))
   result.map = (f) -> terminus(applicants, maps.concat([ ic.map(f) ]))
 
-  result.point = (f) -> point = mappedPoint(f); terminus(point(x) for x in applicants, maps)
+  result.point = (f) -> point = terminus(mappedPoint(x, f) for x in applicants, maps)
 
   result.react = (f_) -> applyMaps(applicants, maps).react(f_)
   result.reactNow = (f_) -> applyMaps(applicants, maps).reactNow(f_)
 
   # TODO: is this a good idea? feels like not.
-  result.get = -> matchFinal(mappedPoint(->)(applicants[0]))?.get()
+  result.get = -> matchFinal(mappedPoint(applicants[0], (->)))?.get()
   result.isVarying = true
 
   result
