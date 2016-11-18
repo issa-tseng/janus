@@ -1,6 +1,7 @@
 should = require('should')
 
 Library = require('../../lib/library/library').Library
+{ caseSet } = require('../../lib/core/case')
 
 describe 'Library', ->
   describe 'core', ->
@@ -151,6 +152,29 @@ describe 'Library', ->
 
       obj.accept = false
       library.get(obj).should.be.an.instanceof(TestBookB)
+
+  describe 'case registration', ->
+    it 'should store and retrieve cases correctly', ->
+      library = new Library()
+      { success, fail } = caseSet('org.janus.test', 'success', 'fail')
+
+      class SuccessBook
+      library.register(success, SuccessBook)
+
+      library.get(success(42)).should.be.an.instanceof(SuccessBook)
+      library.get(success).should.be.an.instanceof(SuccessBook)
+      should(library.get(fail)).equal(null)
+
+    it 'should not conflate like-named cases from different sets', ->
+      library = new Library()
+      set1 = caseSet('org.janus.test', 'success', 'fail')
+      set2 = caseSet('org.janus.test2', 'success', 'fail')
+
+      class SuccessBook
+      library.register(set1.success, SuccessBook)
+
+      should(library.get(set2.success(42))).equal(null)
+      should(library.get(set2.success)).equal(null)
 
   describe 'events', ->
     it 'should emit a got event when a book is retrieved', ->

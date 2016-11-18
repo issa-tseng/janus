@@ -84,6 +84,7 @@ caseSet = (namespace, inTypes...) ->
         instance
 
       # decorate some things to help us find ourselves.
+      kase.isCase = true
       kase.type = type
       kase.set = set
       kase.namespace = namespace

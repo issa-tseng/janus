@@ -96,7 +96,11 @@ class Library extends Base
   # Internal recursion method for searching the library.
   _get: (obj, klass, context, options) ->
     bookId =
-      if util.isNumber(obj)
+      if obj.case?
+        "case@#{obj.case.namespace}.#{obj.type}"
+      else if obj.isCase is true
+        "case@#{obj.namespace}.#{obj.type}"
+      else if util.isNumber(obj)
         'number'
       else if util.isString(obj)
         'string'
@@ -129,7 +133,11 @@ class Library extends Base
 
   # Class-level method for tagging and reading the tag off of constructors.
   @_classId: (klass) ->
-    if klass is Number
+    if klass.case?
+      "case@#{klass.case.namespace}.#{klass.type}"
+    else if klass.isCase is true
+      "case@#{klass.namespace}.#{klass.type}"
+    else if klass is Number
       'number'
     else if klass is String
       'string'
