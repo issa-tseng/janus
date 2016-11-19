@@ -14,7 +14,6 @@ janus = (window ? global)._janus$ ?=
   match: kase.match
   otherwise: kase.otherwise
   from: require('./core/from')
-  Library: require('./library/library').Library
 
   # model functionality.
   Model: require('./model/model').Model
@@ -34,6 +33,7 @@ janus = (window ? global)._janus$ ?=
   # application stuff is nested to reduce clutter.
   application:
     App: require('./application/app').App
+    Library: require('./application/library').Library
     endpoint: require('./application/endpoint')
     handler: require('./application/handler')
     manifest: require('./application/manifest')
