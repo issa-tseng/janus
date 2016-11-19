@@ -37,7 +37,7 @@ otherwise.type = 'otherwise'
 
 
 # the main constructor.
-caseSet = (namespace, inTypes...) ->
+defcase = (namespace, inTypes...) ->
   set = {}
 
   # allow for a bare string or a k/v pair, or many k/v pairs.
@@ -158,5 +158,5 @@ match = (args...) ->
       i += if x.case? then 1 else 2
 
 # export.
-module.exports = { caseSet, match, otherwise }
+module.exports = { defcase, match, otherwise }
 
