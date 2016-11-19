@@ -18,6 +18,22 @@ describe 'Model', ->
     it 'should construct with an attribute bag', ->
       (new Model( test: 'attr' )).attributes.test.should.equal('attr')
 
+    it 'should call preinitialize before attributes are populated', ->
+      result = -1
+      class TestModel extends Model
+        _preinitialize: -> result = this.get('a')
+
+      new TestModel({ a: 42 })
+      should(result).equal(null)
+
+    it 'should call initialize after attributes are populated', ->
+      result = -1
+      class TestModel extends Model
+        _initialize: -> result = this.get('a')
+
+      new TestModel({ a: 42 })
+      result.should.equal(42)
+
   describe 'attribute', ->
     describe 'get', ->
       it 'should be able to get a shallow attribute', ->
@@ -47,6 +63,14 @@ describe 'Model', ->
 
         model.attributes.colman.pool.should.equal('slide')
         model.get('colman.pool').should.equal('slide')
+
+      it 'should be able to set a deep attribute bag', ->
+        model = new Model()
+        model.set('colman.pool', { location: 'west seattle', length: { amount: 50, unit: 'meter' } })
+
+        model.get('colman.pool.location').should.equal('west seattle')
+        model.get('colman.pool.length.amount').should.equal(50)
+        model.get('colman.pool.length.unit').should.equal('meter')
 
       it 'should accept a bag of attributes', ->
         model = new Model()
@@ -116,14 +140,6 @@ describe 'Model', ->
         model.set('master', 'commander')
         model.get('slave').should.equal('commander')
 
-      ### TODO
-      it 'should iterate into nodes', ->
-        class TestModel extends Model
-          @bind('child_id', from('child', 'id'))
-
-        (new TestModel( child: new Model( id: 1 ) )).get('child_id').should.equal(1)
-      ###
-
       it 'should map multiple attributes together', ->
         class TestModel extends Model
           @bind('c', from('a').and('b').all.map((a, b) -> a + b))
@@ -158,18 +174,103 @@ describe 'Model', ->
         new TestModel()
         called.should.be.true
 
-      ### TODO (is this necessary?
-      it 'should take a fallback', ->
+    describe 'pointing', ->
+      it 'should point dynamic varying functions', ->
+        calledWith = null
+        v = new Varying(1)
         class TestModel extends Model
-          @bind('z').from('a').fallback('value')
+          @bind('b', from((self) ->
+            calledWith = self
+            v
+          ))
 
-        model = new TestModel()
+        m = new TestModel()
+        calledWith.should.equal(m)
+        m.get('b').should.equal(1)
 
-        model.get('z').should.equal('value')
+        v.set(2)
+        m.get('b').should.equal(2)
 
-        model.set('a', 'test')
-        model.get('z').should.equal('test')
-      ###
+      it 'should point dynamic attribute names', ->
+        class TestModel extends Model
+          @bind('b', from('a'))
+
+        m = new TestModel()
+        m.set('a', 1)
+        m.get('b').should.equal(1)
+        m.set('a', 2)
+        m.get('b').should.equal(2)
+
+      it 'should point dynamic other objects', ->
+        class TestModel extends Model
+          @bind('b', from(42))
+
+        m = new TestModel()
+        m.get('b').should.equal(42)
+
+      it 'should point watch attribute names', ->
+        class TestModel extends Model
+          @bind('b', from.watch('a'))
+
+        m = new TestModel()
+        m.set('a', 1)
+        m.get('b').should.equal(1)
+        m.set('a', 2)
+        m.get('b').should.equal(2)
+
+      it 'should not point resolve attribute names by default', ->
+        class TestModel extends Model
+          @bind('b', from.resolve('a'))
+
+        m = new TestModel()
+        m.get('b').should.equal('resolve')
+
+      it 'should point attribute objects', ->
+        class TestModel extends Model
+          @attribute('a', attribute.NumberAttribute)
+          @bind('b', from.attribute('a'))
+
+        m = new TestModel()
+        m.get('b').should.equal(m.attribute('a'))
+
+      it 'should point explicit varying functions', ->
+        calledWith = null
+        v = new Varying(1)
+        class TestModel extends Model
+          @bind('b', from.varying((self) ->
+            calledWith = self
+            v
+          ))
+
+        m = new TestModel()
+        calledWith.should.equal(m)
+        m.get('b').should.equal(1)
+
+        v.set(2)
+        m.get('b').should.equal(2)
+
+      it 'should not point apps by default', ->
+        class TestModel extends Model
+          @bind('b', from.app())
+
+        m = new TestModel()
+        m.get('b').should.equal('app')
+
+      it 'should point self by function', ->
+        calledWith = null
+        class TestModel extends Model
+          @bind('b', from.self((x) -> calledWith = x; 42))
+
+        m = new TestModel()
+        calledWith.should.equal(m)
+        m.get('b').should.equal(42)
+
+      it 'should point self statically', ->
+        class TestModel extends Model
+          @bind('b', from.self())
+
+        m = new TestModel()
+        m.get('b').should.equal(m)
 
     describe 'classtree', ->
       it 'should not pollute across classdefs', ->
@@ -544,6 +645,11 @@ describe 'Model', ->
 
         shadow.revert('test')
         shadow.get('test').should.equal('x')
+
+      it 'should do nothing on revert() if there is no parent', ->
+        model = new Model( test: 'x' )
+        model.revert('test')
+        model.get('test').should.equal('x')
 
       it 'should return null for values that have been set and unset, even if the parent has values', ->
         model = new Model( test: 'x' )

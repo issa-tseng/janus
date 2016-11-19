@@ -234,11 +234,6 @@ class Model extends Base
     key = key.join('.') if util.isArray(key)
     this._attributes[key] ?= recurse(this.constructor)
 
-  # Get an attribute class for this model.
-  #
-  # **Returns** an `Attribute` class object for the attribute at the given key.
-  attributeClass: (key) -> this.constructor.attributes()[key]
-
   # Returns actual instances of every attribute associated with this model.
   #
   # **Returns** an array of `Attribute`s.
