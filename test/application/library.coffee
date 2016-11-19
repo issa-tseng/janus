@@ -1,6 +1,6 @@
 should = require('should')
 
-Library = require('../../lib/library/library').Library
+Library = require('../../lib/application/library').Library
 { defcase } = require('../../lib/core/case')
 
 describe 'Library', ->
