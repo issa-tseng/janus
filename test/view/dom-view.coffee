@@ -9,7 +9,7 @@ from = require('../../lib/core/from')
 
 inf = -> inf
 makeDom = (dom = {}) ->
-  result = { remove: (->), append: (->), find: (-> result), data: (->), prepend: (-> result), filter: (-> result) }
+  result = { remove: (->), append: (->), find: (-> result), data: (->), prepend: (-> result), children: (-> result) }
   extend(result, dom)
   result
 
@@ -388,7 +388,7 @@ describe 'DomView', ->
       removed = false
 
       class TestView extends DomView
-        @_dom: -> makeDom({ remove: (-> removed = true), filter: (-> makeDom({ text: (->) })) })
+        @_dom: -> makeDom({ remove: (-> removed = true), children: (-> makeDom({ text: (->) })) })
         @_template: template(
           find('.title').text(from(42))
         )

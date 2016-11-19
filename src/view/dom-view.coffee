@@ -46,7 +46,7 @@ class DomView extends View
 
     # shuffle dance to wrap the actual contents so that .find() behaves as expected.
     dom.prepend('<div/>')
-    wrapper = dom.filter(':first')
+    wrapper = dom.children(':first-child')
     wrapper.remove()
     wrapper.append(dom)
 
