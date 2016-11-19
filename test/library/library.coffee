@@ -1,7 +1,7 @@
 should = require('should')
 
 Library = require('../../lib/library/library').Library
-{ caseSet } = require('../../lib/core/case')
+{ defcase } = require('../../lib/core/case')
 
 describe 'Library', ->
   describe 'core', ->
@@ -156,7 +156,7 @@ describe 'Library', ->
   describe 'case registration', ->
     it 'should store and retrieve cases correctly', ->
       library = new Library()
-      { success, fail } = caseSet('org.janus.test', 'success', 'fail')
+      { success, fail } = defcase('org.janusjs.test', 'success', 'fail')
 
       class SuccessBook
       library.register(success, SuccessBook)
@@ -167,8 +167,8 @@ describe 'Library', ->
 
     it 'should not conflate like-named cases from different sets', ->
       library = new Library()
-      set1 = caseSet('org.janus.test', 'success', 'fail')
-      set2 = caseSet('org.janus.test2', 'success', 'fail')
+      set1 = defcase('org.janusjs.test', 'success', 'fail')
+      set2 = defcase('org.janusjs.test2', 'success', 'fail')
 
       class SuccessBook
       library.register(set1.success, SuccessBook)

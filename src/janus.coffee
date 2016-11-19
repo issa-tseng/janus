@@ -10,7 +10,7 @@ janus = (window ? global)._janus$ ?=
 
   # core functionality.
   Varying: require('./core/varying').Varying
-  caseSet: kase.caseSet
+  defcase: kase.defcase
   match: kase.match
   otherwise: kase.otherwise
   from: require('./core/from')

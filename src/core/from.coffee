@@ -1,5 +1,5 @@
 { Varying } = require('./varying')
-{ caseSet, match, otherwise } = require('./case')
+{ defcase, match, otherwise } = require('./case')
 { immediate, identity } = require('../util/util')
 
 # TODO:
@@ -11,10 +11,10 @@
 
 # util.
 conj = (x, y) -> x.concat([ y ])
-internalCases = ic = caseSet('org.janusjs.core.from.internal', 'varying', 'map', 'flatMap', 'resolve')
+internalCases = ic = defcase('org.janusjs.core.from.internal', 'varying', 'map', 'flatMap', 'resolve')
 
 # default applicants:
-defaultCases = dc = caseSet('org.janusjs.core.from.default', 'dynamic', 'watch', 'resolve', 'attribute', 'varying', 'app', 'self')
+defaultCases = dc = defcase('org.janusjs.core.from.default', 'dynamic', 'watch', 'resolve', 'attribute', 'varying', 'app', 'self')
 
 # val wraps proxies of Varyings. so you can perform maps or call conjunctions on them.
 val = (conjunction, applicants = []) ->
