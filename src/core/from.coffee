@@ -11,10 +11,10 @@
 
 # util.
 conj = (x, y) -> x.concat([ y ])
-internalCases = ic = caseSet('org.janus.core.from.internal', 'varying', 'map', 'flatMap', 'resolve')
+internalCases = ic = caseSet('org.janusjs.core.from.internal', 'varying', 'map', 'flatMap', 'resolve')
 
 # default applicants:
-defaultCases = dc = caseSet('org.janus.core.from.default', 'dynamic', 'watch', 'resolve', 'attribute', 'varying', 'app')
+defaultCases = dc = caseSet('org.janusjs.core.from.default', 'dynamic', 'watch', 'resolve', 'attribute', 'varying', 'app', 'self')
 
 # val wraps proxies of Varyings. so you can perform maps or call conjunctions on them.
 val = (conjunction, applicants = []) ->

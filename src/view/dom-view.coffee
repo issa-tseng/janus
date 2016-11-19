@@ -6,7 +6,7 @@
 
 { Varying } = require('../core/varying')
 { match } = require('../core/case')
-{ dynamic, watch, resolve, attribute, varying, app } = require('../core/from').default
+{ dynamic, watch, resolve, attribute, varying, app, self } = require('../core/from').default
 View = require('./view').View
 List = require('../collection/list').List
 { extendNew, extend, isFunction, isString } = require('../util/util')
@@ -70,6 +70,7 @@ class DomView extends View
     attribute (x, view) -> new Varying(view.subject.attribute(x))
     varying (x, view) -> if isFunction(x) then Varying.ly(x(view.subject)) else Varying.ly(x)
     app (x, view) -> new Varying(view._app())
+    self (x, view) -> if isFunction(x) then Varying.ly(x(view)) else Varying.ly(view)
   )
 
   # When we want to attach, we really just want to create a Templater against the
