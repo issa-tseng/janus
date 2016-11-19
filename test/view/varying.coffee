@@ -14,8 +14,7 @@ dummyApp = (new App()).withViewLibrary(new Library())
 describe 'view', ->
   describe 'varying', ->
     it 'should render a div of the appropriate class', ->
-      v = new Varying(1)
-      view = new VaryingView(v, { app: dummyApp })
+      view = new VaryingView(new Varying(1), { app: dummyApp })
 
       dom = view.artifact()
       dom.is('div').should.equal(true)
@@ -30,8 +29,7 @@ describe 'view', ->
       library.register(Number, NumberView)
       app = (new App()).withViewLibrary(library)
 
-      v = new Varying(1)
-      view = new VaryingView(v, { app })
+      view = new VaryingView(new Varying(1), { app })
       dom = view.artifact()
       dom.children('span.janus-test').length.should.equal(1)
       dom.children().length.should.equal(1)
