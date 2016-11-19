@@ -224,7 +224,7 @@ describe 'DomView', ->
       (new TestView({}, { app })).artifact()
       rendered.should.equal('test app')
 
-    it 'points self correctly', ->
+    it 'points self functions correctly', ->
       rendered = []
       pointed = null
       v = new Varying('test')
@@ -233,6 +233,25 @@ describe 'DomView', ->
         @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
         @_template: template(
           find('.title').text(from.self((x) -> pointed = x; v))
+        )
+
+      t = new TestView({})
+      t.artifact()
+      pointed.should.equal(t)
+      rendered.should.eql([ 'test' ])
+
+      v.set('test 2')
+      rendered.should.eql([ 'test', 'test 2' ])
+
+    it 'points static self correctly', ->
+      rendered = []
+      pointed = null
+      v = new Varying('test')
+
+      class TestView extends DomView
+        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
+        @_template: template(
+          find('.title').text(from.self().map((x) -> pointed = x; v))
         )
 
       t = new TestView({})
