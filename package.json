@@ -20,7 +20,7 @@
     "test": "make test"
   },
   "engines": {
-    "node": ">= 0.8.0"
+    "node": ">= 0.10.0"
   },
   "keywords": [ "framework", "server-side", "mvvm", "frp", "rx", "application", "508", "seo" ],
   "dependencies": {
