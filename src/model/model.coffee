@@ -290,6 +290,7 @@ class Model extends Base
     from.default.attribute (x, self) -> new Varying(self.attribute(x))
     from.default.varying (x, self) -> if util.isFunction(x) then Varying.ly(x(self)) else Varying.ly(x)
     from.default.app (_, self, app) -> if app? then new Varying(app) else from.default.app()
+    from.default.self (x, self) -> if util.isFunction(x) then Varying.ly(x(self)) else Varying.ly(self)
   )
 
   # Revert a particular attribute on this model. After this, the model will
