@@ -1,0 +1,32 @@
+{
+  "name": "janus-stdlib",
+  "author": "Clint Tseng <clint@dontexplain.com>",
+  "description": "The reference set of code components and build tools for Janus",
+  "files": [ "lib" ],
+  "version": "0.2.0",
+  "bugs": {
+    "url": "https://github.com/clint-tseng/janus-stdlib/issues"
+  },
+  "licenses": [{
+    "type": "WTFPL",
+    "url": "http://www.wtfpl.net/txt/copying"
+  }],
+  "scripts": {
+    "test": "make test"
+  },
+  "dependencies": {
+    "janus": "git://github.com/clint-tseng/janus.git"
+  },
+  "devDependencies": {
+    "coffee-script": "~1.11",
+    "jade": "~1.11",
+
+    "domino": "~1.0",
+    "zepto-node": "~1.0",
+
+    "mocha": "~3",
+    "should": "~11",
+    "istanbul": "~0.4"
+  }
+}
+
