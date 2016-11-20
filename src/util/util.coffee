@@ -9,7 +9,6 @@ util =
   isArray: Array.isArray ? (obj) -> toString.call(obj) is '[object Array]'
   isNumber: (obj) -> toString.call(obj) is '[object Number]' and !isNaN(obj)
   isPlainObject: (obj) -> obj? and (typeof obj is 'object') and (obj.constructor is Object)
-  isPrimitive: (obj) -> util.isString(obj) or util.isNumber(obj) or obj is true or obj is false
 
 
   #### Number Utils
@@ -28,14 +27,6 @@ util =
   capitalize: (x) -> x.charAt(0).toUpperCase() + x.slice(1) if x?
 
   #### Function Utils
-  # Very simple call limiters.
-  once: (f) ->
-    run = false
-    (args...) ->
-      return if run is true
-      run = true
-      f.apply(this, args)
-
   # Fixed point Y combinator.
   fix: (f) -> ((x) -> f((y) -> x(x)(y)))((x) -> f((y) -> x(x)(y)))
 
@@ -52,18 +43,6 @@ util =
   # Still exactly what you think it is.
   reduceLeft: (arr, f) -> util.foldLeft(arr[0])(arr, f)
 
-  # Also pretty obvious.
-  first: (arr) -> arr[0]
-  last: (arr) -> arr[arr.length - 1]
-
-  # Pull out an item and replace it with one or more items. Appends to the end
-  # of the list if the element is not found.
-  resplice: (arr, pull, push) ->
-    idx = arr.indexOf(pull)
-    idx = arr.length if idx < 0
-
-    arr.splice(idx, 1, push...)
-
 
   #### Object Utils
   # Basic shallow copy in emulation of simplest jQuery extend case. warning: mutates!
@@ -74,11 +53,6 @@ util =
     obj = {}
     util.extend(obj, srcs...)
     obj
-
-  # Check if an object has any properties at all.
-  hasProperties: (obj) ->
-    (return true) for k of obj when obj.hasOwnProperty(k)
-    false
 
   # Get the superclass of a class. Accounts for Coffeescript and Livescript.
   superClass: (klass) ->
