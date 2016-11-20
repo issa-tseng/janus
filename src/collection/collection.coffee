@@ -9,6 +9,7 @@ util.extend(module.exports,
   List: require('./list').List
   DerivedList: require('./list').DerivedList
   MappedList: require('./mapped-list').MappedList
+  FlatMappedList: require('./mapped-list').FlatMappedList
   FilteredList: require('./filtered-list').FilteredList
   CattedList: require('./catted-list').CattedList
   PartitionedList: require('./partitioned-list').PartitionedList

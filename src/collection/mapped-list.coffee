@@ -2,37 +2,50 @@
 Varying = require('../core/varying').Varying
 util = require('../util/util')
 
-# A read-only view into a proper `List` that maps all elements to new ones. The
-# mapping can be based on a `Varying`, which means that the mapping can change
-# over time independently of list changes.
 class MappedList extends DerivedList
   constructor: (@parent, @mapper, @options = {}) ->
     super()
-
-    # keep track of our maps so that we can appropriately discard later.
-    this._mappers = new List()
 
     # add initial items then keep track of membership changes.
     this._add(elem) for elem in this.parent.list
     this.parent.on('added', (elem, idx) => this._add(elem, idx))
     this.parent.on('removed', (_, idx) => this._removeAt(idx))
 
+  _add: (elem, idx) -> super(this.mapper(elem), idx)
+
+class FlatMappedList extends DerivedList
+  constructor: (@parent, @mapper, @options = {}) ->
+    super()
+
+    # keep track of our maps so that we can appropriately discard later.
+    this._bindings = new List()
+
+    # add initial items then keep track of membership changes.
+    this._add(elem, idx) for elem, idx in this.parent.list
+    this.parent.on('added', (elem, idx) => this._add(elem, idx))
+    this.parent.on('removed', (_, idx) => this._removeAt(idx))
+
   _add: (elem, idx) ->
-    wrapped = Varying.ly(elem)
+    wrapped = new Varying(elem)
 
-    mapped = wrapped.map(this.mapper)
-    mapped.destroyWith(wrapped)
-    this._mappers.add(mapped, idx)
+    initial = null
+    mapping = wrapped.flatMap(this.mapper)
+    binding = mapping.reactNow((newValue) =>
+      initial ?= newValue # perf: saves us one mapping.get()
+      bidx = this._bindings.list.indexOf(binding)
+      this._put(bidx, newValue) if bidx >= 0
+    )
 
-    mapped.on('changed', (newValue) => this._put(this._mappers.list.indexOf(mapped), newValue))
-    super(mapped.value, idx)
+    this._bindings.add(binding, idx)
+    super(initial, idx)
 
   _removeAt: (idx) ->
-    this._mappers.removeAt(idx)?.destroy()
+    this._bindings.removeAt(idx).stop()
     super(idx)
 
 
 util.extend(module.exports,
+  FlatMappedList: FlatMappedList
   MappedList: MappedList
 )
 
