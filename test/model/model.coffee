@@ -49,6 +49,43 @@ describe 'Model', ->
         (model.get('vivace') is null).should.be.true
         (model.get('cafe.vivace') is null).should.be.true
 
+      it 'should return the default value if defined', ->
+        class TestAttribute extends attribute.Attribute
+          default: -> 'espresso'
+
+        class TestModel extends Model
+          @attribute('latte', TestAttribute)
+
+        m = new TestModel()
+        m.get('latte').should.equal('espresso')
+
+        m2 = new TestModel({ latte: 'good' })
+        m2.get('latte').should.equal('good')
+
+      it 'should not write the default value if not specified', ->
+        class TestAttribute extends attribute.Attribute
+          default: -> 'espresso'
+
+        class TestModel extends Model
+          @attribute('latte', TestAttribute)
+
+        m = new TestModel()
+        m.get('latte').should.equal('espresso')
+        m.serialize().should.eql({})
+
+      it 'should write the default value if writeDefault is true', ->
+        class TestAttribute extends attribute.Attribute
+          default: -> 'espresso'
+          writeDefault: true
+
+        class TestModel extends Model
+          @attribute('latte', TestAttribute)
+
+        m = new TestModel()
+        m.serialize().should.eql({})
+        m.get('latte').should.equal('espresso')
+        m.serialize().should.eql({ latte: 'espresso' })
+
     describe 'set', ->
       it 'should be able to set a shallow attribute', ->
         model = new Model()
