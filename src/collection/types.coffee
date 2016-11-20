@@ -20,6 +20,13 @@ class Collection extends Model
   # **Returns** a `MappedList`
   map: (f) -> new (require('./mapped-list').MappedList)(this, f)
 
+  # Create a new mapped List based on this list, with the mapping function `f`.
+  # Due to the flatMap, `f` may return a `Varying` that changes, which will in
+  # turn change the value in the resulting list.
+  #
+  # **Returns** a `MappedList`
+  flatMap: (f) -> new (require('./mapped-list').FlatMappedList)(this, f)
+
   # Create a new concatenated List based on this List, along with the other
   # Lists provided in the call. Can be passed in either as an arg list of Lists
   # or as an array of Lists.
