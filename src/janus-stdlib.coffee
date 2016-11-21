@@ -1,6 +1,7 @@
 
 module.exports =
   view:
+    list: require('./view/list')
     literal: require('./view/literal')
     varying: require('./view/varying')
 
