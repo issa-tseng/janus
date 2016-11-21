@@ -1,7 +1,7 @@
 {
   "name": "janus",
   "description": "the two-faced application library-framework",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "author": "Clint Tseng <clint@dontexplain.com>",
   "homepage": "http://janusjs.org",
   "repository": {
@@ -11,10 +11,7 @@
   "bugs": {
     "url": "https://github.com/clint-tseng/janus/issues"
   },
-  "licenses": [{
-    "type": "WTFPL",
-    "url": "http://www.wtfpl.net/txt/copying"
-  }],
+  "license": "WTFPL",
   "main": "lib/janus",
   "scripts": {
     "test": "make test"
