@@ -13,9 +13,10 @@ Usage
 To start, require the npm package: `janus-stdlib`.
 
 You can register the entire library wholesale (recommended): `require('janus-stdlib').view.registerWith(myLibrary)`.
-Or, you can pick and choose what you wish to register: `view.registerWith(myLibrary) for view in require('janus-stdlib').view when view not in [ 'literal', 'varying' ]`.
 
-As noted above, there needs to be a jQuery-compatible library available. Currently, we default to using a combination of [`domino`](https://github.com/fgnass/domino) and [`Zepto-node`](https://github.com/fgnass/zepto-node) for server-side rendering and unit testing (this may be replaced by [`Cheerio`](https://cheerio.js.org/) at some point in the future), and we look for jQuery and Zepto on the `window` object client-side. If someone has a better idea on how to inject this dependency without wrapping the entire library in a closure, please open a ticket and file a pull request.
+Or, you can pick and choose what you wish to register; for instance: `view.registerWith(myLibrary) for view in require('janus-stdlib').view when view not in [ 'literal', 'varying' ]`.
+
+As noted above, there needs to be a jQuery-compatible library available. Currently, we default to using a combination of [`domino`](https://github.com/fgnass/domino) and [`jQuery`](https://github.com/jquery/jquery) for server-side rendering and unit testing (this may be replaced by [`Cheerio`](https://cheerio.js.org/) at some point in the future), and we look for jQuery and Zepto on the `window` object client-side. If someone has a better idea on how to inject this dependency without wrapping the entire library in a closure, please open a ticket and file a pull request.
 
 Development
 -----------

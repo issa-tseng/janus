@@ -1,8 +1,5 @@
 should = require('should')
 
-domino = require('domino')
-Zepto = require('zepto-node')
-
 { Varying, DomView, template, find, from } = require('janus')
 { App, Library } = require('janus').application
 { LiteralView, registerWith } = require('../../lib/view/literal')

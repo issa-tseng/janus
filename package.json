@@ -22,7 +22,7 @@
     "jade": "~1.11",
 
     "domino": "~1.0",
-    "zepto-node": "~1.0",
+    "jquery": "~3.1",
 
     "mocha": "~3",
     "should": "~11",
