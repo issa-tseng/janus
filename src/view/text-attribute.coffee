@@ -2,7 +2,6 @@
 { TextAttribute } = require('janus').attribute
 
 $ = require('../util/dollar')
-{ ListView } = require('./list')
 
 class TextAttributeEditView extends DomView
   @_dom: -> $('<input/>')
