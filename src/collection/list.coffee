@@ -130,7 +130,7 @@ class List extends OrderedCollection
     this.on('added', -> result.set(this.at(idx)))
     this.on('removed', -> result.set(this.at(idx)))
 
-    result
+    result.flatten()
 
   # Watch the length of this collection.
   watchLength: ->
