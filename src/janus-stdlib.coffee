@@ -5,6 +5,7 @@ module.exports =
     listEdit: require('./view/list-edit')
     literal: require('./view/literal')
     varying: require('./view/varying')
+    textAttribute: require('./view/text-attribute')
 
     registerWith: (library) -> view.registerWith(library) for _, view of this
 
