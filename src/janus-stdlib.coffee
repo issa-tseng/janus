@@ -7,6 +7,7 @@ module.exports =
     varying: require('./view/varying')
     textAttribute: require('./view/text-attribute')
     booleanAttribute: require('./view/boolean-attribute')
+    numberAttribute: require('./view/number-attribute')
 
     registerWith: (library) -> view.registerWith(library) for _, view of this
 
