@@ -23,9 +23,39 @@ class BooleanAttributeEditView extends DomView
     subject.watchValue().reactNow(-> _updateVal(input, subject))
     input.on('input change', -> subject.setValue(input.prop('checked')))
 
+class BooleanButtonAttributeEditView extends DomView
+  @_dom: -> $('<button/>')
+  @_template: template(
+    find('button').text(
+      from.self().flatMap((view) -> view.stringify())
+        .and.self().flatMap((view) -> view.subject.watchValue())
+        .all.map((f, value) -> f(value)))
+
+    find('button').classed('checked', from.self().flatMap((view) -> view.subject.watchValue()))
+  )
+
+  stringify: -> this.stringify$ ?= do =>
+    # prefer options.stringify, then attribute.stringify, fall back to toString.
+    if this.options.stringify?
+      Varying.ly(this.options.stringify)
+    else if this.subject.stringify?
+      Varying.ly(this.subject.stringify)
+    else
+      new Varying((x) -> x?.toString())
+
+  _wireEvents: ->
+    dom = this.artifact()
+
+    dom.on('click', (event) =>
+      event.preventDefault() # prevent submits in forms.
+      this.subject.setValue(!this.subject.getValue())
+    )
+
 module.exports = {
   BooleanAttributeEditView,
+  BooleanButtonAttributeEditView,
   registerWith: (library) ->
     library.register(BooleanAttribute, BooleanAttributeEditView, context: 'edit')
+    library.register(BooleanAttribute, BooleanAttributeEditView, context: 'edit', attributes: { style: 'button' })
 }
 
