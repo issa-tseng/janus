@@ -6,9 +6,7 @@ template = require('./view/template')
 collection = require('./collection/collection')
 
 # TODO: once we're sure the global is superfluous, remove.
-janus = (window ? global)._janus$ ?=
-  util: util
-
+module.exports = (window ? global)._janus$ ?=
   # core functionality.
   Varying: require('./core/varying').Varying
   defcase: kase.defcase
@@ -17,6 +15,7 @@ janus = (window ? global)._janus$ ?=
   from: require('./core/from')
 
   # model functionality.
+  Base: require('./core/base').Base
   Model: require('./model/model').Model
   attribute: require('./model/attribute')
   Issue: require('./model/issue').Issue
@@ -41,5 +40,6 @@ janus = (window ? global)._janus$ ?=
     handler: require('./application/handler')
     manifest: require('./application/manifest')
 
-util.extend(module.exports, janus)
+  # maybe folks could use these.
+  util: util
 
