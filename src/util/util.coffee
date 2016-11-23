@@ -41,7 +41,7 @@ util =
     value
 
   # Still exactly what you think it is.
-  reduceLeft: (arr, f) -> util.foldLeft(arr[0])(arr, f)
+  reduceLeft: (arr, f) -> util.foldLeft(arr[0])(arr.slice(1), f)
 
 
   #### Object Utils
@@ -81,7 +81,6 @@ util =
   # **Returns** the value in question, or else `null`.
   deepGet: (obj, path...) ->
     path = util.normalizePath(path)
-    return null unless path?
 
     idx = 0
     obj = obj[path[idx++]] while obj? and idx < path.length
@@ -93,7 +92,6 @@ util =
   # **Returns** a function that takes a value and sets the requested key
   deepSet: (obj, path...) ->
     path = util.normalizePath(path)
-    return null unless path?
 
     idx = 0
     obj = obj[path[idx++]] ?= {} while (idx + 1) < path.length
@@ -103,10 +101,9 @@ util =
   # Deletes a deeply nested key in a hash. Aborts if it can't navigate to the
   # path in question.
   #
-  # **Returns** a function that takes a value and sets the requested key
+  # **Returns** the deleted value
   deepDelete: (obj, path...) ->
     path = util.normalizePath(path)
-    return null unless path?
 
     idx = 0
     obj = obj[path[idx++]] while (idx + 1) < path.length and obj?
