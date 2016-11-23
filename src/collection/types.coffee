@@ -9,6 +9,8 @@ util = require('../util/util')
 # A `Collection` provides `add` and `remove` events for every element that is
 # added or removed from the list.
 class Collection extends Model
+  isCollection: true
+
   # Create a new FilteredList based on this list, with the member check
   # function `f`.
   #
