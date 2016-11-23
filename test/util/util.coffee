@@ -24,12 +24,22 @@ describe 'Util', ->
 
       util.isPlainObject([]).should.equal(false)
       util.isPlainObject(0).should.equal(false)
-      return
       util.isPlainObject(true).should.equal(false)
       util.isPlainObject('test').should.equal(false)
       class TestClass
       util.isPlainObject(new TestClass()).should.equal(false)
       util.isPlainObject(null).should.equal(false)
+
+  describe 'isPrimitive', ->
+    it 'should return true only for strings, numbers, and booleans', ->
+      util.isPrimitive('test').should.equal(true)
+      util.isPrimitive(0).should.equal(true)
+      util.isPrimitive(true).should.equal(true)
+      util.isPrimitive(false).should.equal(true)
+
+      util.isPrimitive(null).should.equal(false)
+      util.isPrimitive({}).should.equal(false)
+      util.isPrimitive([]).should.equal(false)
 
   describe 'uniqueId', ->
     it 'should return monotonically increasing numbers', ->
