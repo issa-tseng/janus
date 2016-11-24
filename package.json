@@ -12,6 +12,7 @@
     "url": "https://github.com/clint-tseng/janus-stdlib/issues"
   },
   "license": "WTFPL",
+  "main": "lib/janus-stdlib",
   "scripts": {
     "test": "make test"
   },
