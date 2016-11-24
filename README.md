@@ -5,7 +5,7 @@ The Janus Standard Library is a collection of useful `Model`s, `Collection`s, an
 
 It depends on the presence of a DOM manipulation library largely compatible with the jQuery API: jQuery, Zepto, (and Cheerio? [TBD]) are all supported targets.
 
-[![Build Status](https://secure.travis-ci.org/clint-tseng/janus-stdlib.png)](http://travis-ci.org/clint-tseng/janus-stdlib)
+[![Build Status](https://img.shields.io/travis/clint-tseng/janus-stdlib.svg)](http://travis-ci.org/clint-tseng/janus-stdlib) [![NPM version](https://img.shields.io/npm/v/janus-stdlib.svg)](https://www.npmjs.com/package/janus-stdlib)
 
 Usage
 -----
