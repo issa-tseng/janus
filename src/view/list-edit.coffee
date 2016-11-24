@@ -101,6 +101,10 @@ module.exports = {
   ListEditItemView,
   ListEditView,
   registerWith: (library) ->
+    # TODO: eventually possibly allow '*' or something.
+    library.register(Number, ListEditItemView, context: 'edit-wrapper')
+    library.register(Boolean, ListEditItemView, context: 'edit-wrapper')
+    library.register(String, ListEditItemView, context: 'edit-wrapper')
     library.register(Base, ListEditItemView, context: 'edit-wrapper')
     library.register(List, ListEditView, context: 'edit')
 }
