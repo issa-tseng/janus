@@ -9,6 +9,7 @@ module.exports =
     booleanAttribute: require('./view/boolean-attribute')
     numberAttribute: require('./view/number-attribute')
     enumAttribute: require('./view/enum-attribute')
+    enumAttributeList: require('./view/enum-attribute-list')
 
     registerWith: (library) -> view.registerWith(library) for _, view of this
 
