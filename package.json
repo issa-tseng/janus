@@ -20,7 +20,6 @@
   },
   "devDependencies": {
     "coffee-script": "~1.11",
-    "jade": "~1.11",
 
     "domino": "~1.0",
     "jquery": "~3.1",
