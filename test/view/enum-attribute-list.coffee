@@ -4,7 +4,7 @@ should = require('should')
 { App, Library } = require('janus').application
 { LiteralView } = require('../../lib/view/literal')
 { ListView } = require('../../lib/view/list')
-{ ListSelectItemView, EnumAttributeListEditView } = require('../../lib/view/enum-attribute-list')
+{ ListSelectItemView, EnumAttributeListEditView, registerWith } = require('../../lib/view/enum-attribute-list')
 
 $ = require('../../lib/util/dollar')
 
@@ -90,6 +90,25 @@ describe 'view', ->
       for label, idx in [ 1, 2, 3 ]
         checkListItem(listDom.children().eq(idx), (inner) -> checkLiteral(inner, label.toString()))
 
+    it 'should default the button label to "Select"', ->
+      class TestAttribute extends attribute.EnumAttribute
+        values: -> [ 1, 2, 3 ]
+      dom = (new EnumAttributeListEditView(new TestAttribute(new Model(), 'test'), { app: testApp })).artifact()
+
+      dom.find('button:first').text().should.equal('Select')
+
+    it 'should allow specifying the button label', ->
+      class TestAttribute extends attribute.EnumAttribute
+        values: -> [ 1, 2, 3 ]
+      v = new Varying('test')
+      buttonLabel = -> v
+      dom = (new EnumAttributeListEditView(new TestAttribute(new Model(), 'test'), { app: testApp, buttonLabel })).artifact()
+
+      dom.find('button:first').text().should.equal('test')
+
+      v.set('test 2')
+      dom.find('button:first').text().should.equal('test 2')
+
     it 'should apply a selected class to the selected item', ->
       class TestAttribute extends attribute.EnumAttribute
         values: -> [ 1, 2, 3 ]
@@ -119,4 +138,14 @@ describe 'view', ->
 
       wrappers.eq(2).find('button').click()
       m.get('test').should.equal(3)
+
+    it 'should register the wrapper against a basic set', ->
+      library = new Library()
+      registerWith(library)
+
+      library.get(1, context: 'select-wrapper').should.be.an.instanceof(ListSelectItemView)
+      library.get(true, context: 'select-wrapper').should.be.an.instanceof(ListSelectItemView)
+      library.get(false, context: 'select-wrapper').should.be.an.instanceof(ListSelectItemView)
+      library.get('test', context: 'select-wrapper').should.be.an.instanceof(ListSelectItemView)
+      library.get(new Model(), context: 'select-wrapper').should.be.an.instanceof(ListSelectItemView)
 
