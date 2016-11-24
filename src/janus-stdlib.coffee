@@ -8,6 +8,7 @@ module.exports =
     textAttribute: require('./view/text-attribute')
     booleanAttribute: require('./view/boolean-attribute')
     numberAttribute: require('./view/number-attribute')
+    enumAttribute: require('./view/enum-attribute')
 
     registerWith: (library) -> view.registerWith(library) for _, view of this
 
