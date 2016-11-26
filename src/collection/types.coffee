@@ -60,10 +60,6 @@ class Collection extends Model
   # **Returns** a `TakenList`
   take: (x) -> new (require('./taken-list').TakenList)(this, x)
 
-  # Perform some action once for each member of this List, upon insertion.
-  # Throw away the result.
-  react: (f) -> this.on('added', f)
-
   # See if any element in this list qualifies for the condition.
   any: (f) -> folds.any(new (require('./mapped-list').MappedList)(this, f))
 
@@ -87,12 +83,6 @@ class Collection extends Model
 
   # get the strings of this list joined by some string.
   join: (joiner) -> folds.join(this, joiner)
-
-  # Same as #react() but immediately also runs against all elements in the
-  # list.
-  reactNow: (f) ->
-    f(elem) for elem in this.list
-    this.on('added', f)
 
 
 # An `OrderedCollection` provides `add` and `remove` events for every element

@@ -17,11 +17,5 @@ util.extend(module.exports,
   TakenList: require('./uniq-list').TakenList
 
   Set: require('./set').Set
-
-  IndefiniteList: require('./indefinite-list').IndefiniteList
-
-  #LazyList: require('./lazy-list').LazyList
-  #CachedLazyList: require('./lazy-list').CachedLazyList
-  #Window: require('./window').Window
 )
 
