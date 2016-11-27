@@ -128,14 +128,14 @@ class List extends OrderedCollection
         result.set(elem)
       else if (idx > 0) and (midx < idx)
         result.set(this.at(idx))
-      else if (idx < 0) and (midx > (this.list.length - idx))
+      else if (idx < 0) and (midx >= (this.list.length + idx))
         result.set(this.at(idx))
     )
 
-    this.on('removed', (_, idx) ->
+    this.on('removed', (_, midx) ->
       if (idx >= 0) and (midx <= idx)
         result.set(this.at(idx))
-      else if (idx < 0) and (midx > (this.list.length - idx))
+      else if (idx < 0) and (midx >= (this.list.length + idx))
         result.set(this.at(idx))
     )
 

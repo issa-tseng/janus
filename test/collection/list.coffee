@@ -261,3 +261,37 @@ describe 'List', ->
       l.removeAll()
       eventedArgs.should.eql([ l, 0, 0, l, 0, 1, l, 0, 2 ])
 
+  describe 'watchAt', ->
+    it 'should watch the value at an index', ->
+      l = new List([ 1, 2, 3 ])
+      results = []
+      l.watchAt(4).reactNow((x) -> results.push(x))
+      l.add(4) # 1, 2, 3, 4
+      l.add(5) # 1, 2, 3, 4, *5
+      l.add(0, 0) # 0, 1, 2, 3, *4, 5
+      l.add(6) # 0, 1, 2, 3, *4, 5, 6
+      l.removeAt(4) # 0, 1, 2, 3, *5, 6
+      results.should.eql([ undefined, 5, 4, 5 ])
+
+    it 'should watch the value at a reverse index', ->
+      l = new List([ 1, 2, 3, 4 ])
+      results = []
+      l.watchAt(-5).reactNow((x) -> results.push(x))
+      l.add(5) # *1, 2, 3, 4, 5
+      l.add(0, 0) # 0, *1, 2, 3, 4, 5
+      l.add(1.5, 2) # 0, 1, *1.5, 2, 3, 4, 5
+      l.removeAt(0) # 1, *1.5, 2, 3, 4, 5
+      l.removeAt(-1) # *1, *1.5, 2, 3, 4
+      results.should.eql([ undefined, 1, 1.5, 1 ])
+
+  describe 'watchLength', ->
+    it 'should watch the length of the list', ->
+      l = new List([ 1, 2, 3, 4 ])
+      results = []
+      l.watchLength().reactNow((x) -> results.push(x))
+      l.add(5)
+      l.add([ 6, 7 ])
+      l.removeAt(0)
+      l.removeAt(1)
+      results.should.eql([ 4, 5, 7, 6, 5 ])
+
