@@ -21,23 +21,13 @@ util = require('../util/util')
 # We derive off of Model so that we have free access to attributes.
 class List extends OrderedCollection
 
-  # We take in a list of `Model`s and optionally some options for the
-  # List. Options are both for framework and implementation use.
-  # Framework options:
-  #
-  # - `ignoreDestruction`: Defaults to `false`. By default, when a member is
-  #   destroyed the list will remove that child from itself. Set to false to
-  #   leave the reference.
-  #
-  constructor: (list = [], @options = {}) ->
-    super({}, @options)
+  # We take a list of elements, and initialize to empty list if nothing is given.
+  constructor: (list = []) ->
+    super({})
 
     # Init our list, and add the items to it.
     this.list = []
     this.add(list)
-
-    # Allow setup tasks without overriding+passing along constructor args.
-    this._initialize?()
 
   # Add one or more items to this collection. Optionally takes a second `index`
   # parameter indicating what position in the list all the items should be
@@ -58,9 +48,7 @@ class List extends OrderedCollection
       # Event on the item for each item we added
       elem?.emit?('addedTo', this, idx + subidx)
 
-      # If the item is ever destroyed, automatically remove it from our
-      # collection. This behavior can be turned off with the `ignoreDestruction`
-      # option.
+      # If the item is destroyed, automatically remove it from our collection.
       (do (elem) => this.listenTo(elem, 'destroying', => this.remove(elem))) if elem instanceof Base
 
     elems
@@ -71,7 +59,7 @@ class List extends OrderedCollection
   # **Returns** the removed member.
   remove: (which) ->
     idx = this.list.indexOf(which)
-    return false unless util.isNumber(idx) and idx >= 0
+    return undefined unless idx >= 0
     this.removeAt(idx)
 
   # Remove one item from the collection. Takes a reference to the element
@@ -79,17 +67,25 @@ class List extends OrderedCollection
   #
   # **Returns** the removed member.
   removeAt: (idx) ->
-    removed = this.list.splice(idx, 1)[0]
+    idx = this.list.length + idx if idx < 0
 
-    # Event on self and element.
+    removed = # perf. matters a lot in big batches.
+      if idx is 0
+        this.list.shift()
+      else if idx is this.list.length - 1
+        this.list.pop()
+      else
+        this.list.splice(idx, 1)[0]
+
     this.emit('removed', removed, idx)
     removed?.emit?('removedFrom', this, idx)
-
     removed
 
   # Move an item to an index in the collection. This will trigger `moved`
   # events for only the shifted element. But, it will give the new and old
   # indices so that ranges can be correctly dealt with if necessary.
+  #
+  # Does _not_ trigger `add` or `remove` events.
   move: (elem, idx) ->
 
     # If we don't already know about the element, bail.
@@ -110,7 +106,7 @@ class List extends OrderedCollection
   # **Returns** the removed elements.
   removeAll: ->
     while this.list.length > 0
-      elem = this.list.pop()
+      elem = this.list.shift()
       this.emit('removed', elem, this.list.length)
       elem?.emit?('removedFrom', this, this.list.length)
       elem
@@ -126,17 +122,32 @@ class List extends OrderedCollection
   watchAt: (idx) ->
     result = new Varying(this.at(idx))
 
-    # TODO: finer-grained
-    this.on('added', -> result.set(this.at(idx)))
-    this.on('removed', -> result.set(this.at(idx)))
+    this.on('added', (elem, midx) =>
+      if idx is midx
+        result.set(elem)
+      else if (idx > 0) and (midx < idx)
+        result.set(this.at(idx))
+      else if (idx < 0) and (midx > (this.list.length - idx))
+        result.set(this.at(idx))
+    )
 
-    result.flatten()
+    this.on('removed', (_, idx) ->
+      if (idx >= 0) and (midx <= idx)
+        result.set(this.at(idx))
+      else if (idx < 0) and (midx > (this.list.length - idx))
+        result.set(this.at(idx))
+    )
+
+    result
+
+  # Provide something that looks like a normal length getter:
+  Object.defineProperty(@prototype, 'length', get: -> this.list.length)
+
 
   # Watch the length of this collection.
   watchLength: ->
     result = new Varying(this.list.length)
 
-    # TODO: noop multi-changes (eg put) ?
     this.on('added', -> result.set(this.list.length))
     this.on('removed', -> result.set(this.list.length))
 
@@ -173,12 +184,11 @@ class List extends OrderedCollection
 
     removed
 
-  # Smartly resets the entire list to a new one. Does a merge of the two such
-  # that adds/removes are limited.
+  # Somewhat smartly resets the entire list to a new one. Does a merge of the
+  # two such that adds/removes are limited.
   putAll: (list) ->
     # first remove all existing models that should no longer exist.
-    oldList = this.list.slice()
-    (this.remove(elem) unless list.indexOf(elem) >= 0) for elem in oldList
+    (this.remove(elem) unless list.indexOf(elem) >= 0) for elem in this.list.slice()
 
     # now go through each elem one at a time and add or move as necessary.
     for elem, i in list
@@ -203,12 +213,12 @@ class List extends OrderedCollection
   shadow: ->
     newArray =
       for item in this.list
-        if item instanceof Model
+        if item?.isModel is true
           item.shadow()
         else
           item
 
-    new this.constructor(newArray, util.extendNew(this.options, { parent: this }))
+    new this.constructor(newArray, { parent: this })
 
   # Check if our list has changed relative to its shadow parent.
   #
@@ -298,7 +308,7 @@ class List extends OrderedCollection
   _processElements: (elems) ->
     for elem in elems
       if this._parent?
-        if elem instanceof Model
+        if elem?.isModel is true
           elem.shadow()
         else
           elem
@@ -307,7 +317,7 @@ class List extends OrderedCollection
 
   @deserialize: (data) ->
     items =
-      if this.modelClass? and (this.modelClass.prototype instanceof Model or this.modelClass.prototype instanceof OrderedCollection)
+      if this.modelClass? and (this.modelClass.prototype.isModel is true or this.modelClass.prototype.isCollection is true)
         this.modelClass.deserialize(datum) for datum in data
       else
         data.slice()

@@ -16,6 +16,7 @@ Null = new NullClass()
 
 # Use Base to get basic methods.
 class Model extends Base
+  isModel: true
 
   # We take in an attribute bag and optionally some options for this Model.
   # Options are for both framework and implementation use.
