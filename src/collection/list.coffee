@@ -49,7 +49,7 @@ class List extends OrderedCollection
       elem?.emit?('addedTo', this, idx + subidx)
 
       # If the item is destroyed, automatically remove it from our collection.
-      (do (elem) => this.listenTo(elem, 'destroying', => this.remove(elem))) if elem instanceof Base
+      (do (elem) => this.listenTo(elem, 'destroying', => this.remove(elem))) if elem.isBase is true
 
     elems
 
@@ -68,6 +68,7 @@ class List extends OrderedCollection
   # **Returns** the removed member.
   removeAt: (idx) ->
     idx = this.list.length + idx if idx < 0
+    return if idx < 0 or idx >= this.list.length
 
     removed = # perf. matters a lot in big batches.
       if idx is 0
@@ -97,7 +98,7 @@ class List extends OrderedCollection
     this.list.splice(idx, 0, elem)
 
     this.emit('moved', elem, idx, oldIdx)
-    elem?.emit?('movedIn', this.list, idx, oldIdx)
+    elem?.emit?('movedIn', this, idx, oldIdx)
 
     elem
 
@@ -107,8 +108,8 @@ class List extends OrderedCollection
   removeAll: ->
     while this.list.length > 0
       elem = this.list.shift()
-      this.emit('removed', elem, this.list.length)
-      elem?.emit?('removedFrom', this, this.list.length)
+      this.emit('removed', elem, 0)
+      elem?.emit?('removedFrom', this, 0)
       elem
 
   # Get an element from this collection by index.
