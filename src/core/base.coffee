@@ -6,6 +6,7 @@ util = require('../util/util')
 
 # Extend EventEmitter into pretty much everything we do.
 class Base extends EventEmitter
+  isBase: true
 
   # We have some things to keep track of; do so here.
   constructor: ->
