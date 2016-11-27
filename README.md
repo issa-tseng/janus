@@ -44,6 +44,8 @@ Currently, the `0.1` branch of Janus is fully functional and comprehensive, but 
 * `0.3` will be the great unbundling of `Model`:
     * The meanest, smallest kernel of the model system will become the `Struct`, which is purely a collection of `Varying` objects addressed by property keys.
     * All follow-on behaviour that `Model` currently supports become either increasingly powerful subclasses, or extension behaviour that may be plugged in to `Model`: shadow copying, attribute behaviour, property binding, validation, serialization, and change tracking.
+    * Enumerability (hashes whose k/v pairs may be mapped) likely goes here, possibly to support serialization and change tracking.
+    * Serialization/change tracking mechanisms for collections will also be considered in this rev; no tests will be written for either in the meantime.
     * `0.3` will required **minor code changes** -- all the final features are superset and all concepts remain identical, but things will be cleaned up internally and possibly minorly moved about.
 * `0.4` will be a refactoring of `Collection`:
     * For the most part, the external collection API is entirely satisfactory, in that it resembles a standard collection API. But the internal code is a bit slipshod.
