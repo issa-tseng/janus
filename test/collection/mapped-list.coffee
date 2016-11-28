@@ -34,6 +34,14 @@ describe 'collection', ->
       l.removeAt(0)
       m.list.should.eql([ 6 ])
 
+    it 'should move the correct values', ->
+      l = new List([ 1, 2, 3 ])
+      m = l.map((x) -> 2 * x)
+
+      l.move(2, 0)
+      for elem, idx in [ 4, 2, 6 ]
+        m.at(idx).should.equal(elem)
+
   describe 'flatMapped list', ->
     it 'should populate initially with appropriate values', ->
       v = new Varying(2)
@@ -83,6 +91,17 @@ describe 'collection', ->
 
       v.set(3)
       m.list.should.eql([ 3, 12 ])
+
+    it 'should move the correct values and mappers', ->
+      v = new Varying(2)
+      l = new List([ 1, 2, 3, 4 ])
+      m = l.flatMap((x) -> v.map((y) -> x * y))
+
+      l.move(3, 1)
+      m.list.should.eql([ 2, 6, 4, 8 ])
+
+      v.set(3)
+      m.list.should.eql([ 3, 9, 6, 12 ])
 
     it 'should stop Varieds related to removed items', ->
       calledWith = []

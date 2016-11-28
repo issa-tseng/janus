@@ -10,6 +10,7 @@ class MappedList extends DerivedList
     this._add(elem) for elem in this.parent.list
     this.parent.on('added', (elem, idx) => this._add(elem, idx))
     this.parent.on('removed', (_, idx) => this._removeAt(idx))
+    this.parent.on('moved', (_, idx, oldIdx) => this._moveAt(oldIdx, idx))
 
   _add: (elem, idx) -> super(this.mapper(elem), idx)
 
@@ -24,6 +25,7 @@ class FlatMappedList extends DerivedList
     this._add(elem, idx) for elem, idx in this.parent.list
     this.parent.on('added', (elem, idx) => this._add(elem, idx))
     this.parent.on('removed', (_, idx) => this._removeAt(idx))
+    this.parent.on('moved', (_, idx, oldIdx) => this._moveAt(idx, oldIdx))
 
   _add: (elem, idx) ->
     wrapped = new Varying(elem)
@@ -42,6 +44,10 @@ class FlatMappedList extends DerivedList
   _removeAt: (idx) ->
     this._bindings.removeAt(idx).stop()
     super(idx)
+
+  _moveAt: (idx, oldIdx) ->
+    this._bindings.moveAt(oldIdx, idx)
+    super(oldIdx, idx)
 
 
 util.extend(module.exports,

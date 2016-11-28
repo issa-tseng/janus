@@ -35,7 +35,6 @@ class Collection extends Model
   #
   # **Returns** a `CattedList`
   concat: (lists...) ->
-    lists = lists[0] if util.isArray(lists[0]) and lists.length is 1
     new (require('./catted-list').CattedList)([ this ].concat(lists))
 
   # Create a new PartitionedList based on this List, with the identification
