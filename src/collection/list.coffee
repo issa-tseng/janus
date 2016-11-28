@@ -96,6 +96,12 @@ class List extends OrderedCollection
     oldIdx = this.list.indexOf(elem)
     return unless oldIdx >= 0
 
+    this.moveAt(oldIdx, idx)
+
+  # Same as move, but by index rather than element reference.
+  moveAt: (oldIdx, idx) ->
+    elem = this.list[oldIdx]
+
     # Move the element, then trigger `moved` event.
     this.list.splice(oldIdx, 1)
     this.list.splice(idx, 0, elem)
@@ -338,7 +344,7 @@ class List extends OrderedCollection
         child
 
 class DerivedList extends List
-  for method in [ 'add', 'remove', 'removeAt', 'removeAll', 'put', 'putAll', 'move' ]
+  for method in [ 'add', 'remove', 'removeAt', 'removeAll', 'put', 'putAll', 'move', 'moveAt' ]
     this.prototype["_#{method}"] = this.__super__[method]
     this.prototype[method] = (->)
 

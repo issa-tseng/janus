@@ -2,7 +2,7 @@ DerivedList = require('./list').DerivedList
 util = require('../util/util')
 
 class CattedList extends DerivedList
-  constructor: (@lists, @options = {}) ->
+  constructor: (@lists) ->
     super()
 
     this.list = util.foldLeft([])(this.lists, (elems, list) -> elems.concat(list.list))
@@ -14,6 +14,7 @@ class CattedList extends DerivedList
 
         list.on('added', (elem, idx) => this._add(elem, getOverallIdx(idx)))
         list.on('removed', (_, idx) => this._removeAt(getOverallIdx(idx)))
+        list.on('moved', (_, idx, oldIdx) => this._moveAt(getOverallIdx(oldIdx), getOverallIdx(idx)))
 
 
 util.extend(module.exports,
