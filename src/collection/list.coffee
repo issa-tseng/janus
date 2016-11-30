@@ -52,7 +52,7 @@ class List extends OrderedCollection
       elem?.emit?('addedTo', this, idx + subidx)
 
       # If the item is destroyed, automatically remove it from our collection.
-      (do (elem) => this.listenTo(elem, 'destroying', => this.remove(elem))) if elem.isBase is true
+      (do (elem) => this.listenTo(elem, 'destroying', => this.remove(elem))) if elem?.isBase is true
 
     elems
 
