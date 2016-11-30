@@ -12,7 +12,6 @@ util.extend(module.exports,
   FlatMappedList: require('./mapped-list').FlatMappedList
   FilteredList: require('./filtered-list').FilteredList
   CattedList: require('./catted-list').CattedList
-  PartitionedList: require('./partitioned-list').PartitionedList
   UniqList: require('./uniq-list').UniqList
   TakenList: require('./uniq-list').TakenList
 

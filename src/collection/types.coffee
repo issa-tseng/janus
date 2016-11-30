@@ -37,12 +37,6 @@ class Collection extends Model
   concat: (lists...) ->
     new (require('./catted-list').CattedList)([ this ].concat(lists))
 
-  # Create a new PartitionedList based on this List, with the identification
-  # function `f`. If no function is provided, the element is used directly.
-  #
-  # **Returns** a `PartitionedList`
-  partition: (f) -> new (require('./partitioned-list').PartitionedList)(this, f)
-
   # Create a new FlattenedList based on this List.
   #
   # **Returns** a `FlattenedList`
