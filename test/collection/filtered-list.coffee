@@ -81,9 +81,15 @@ describe 'collection', ->
         fl.at(idx).should.equal(elem)
 
       # nonmember -> earlier.
-      ol.moveAt(3, 2) # 6 3 2 1 4 5
+      ol.moveAt(3, 2) # 6 3 1 2 4 5
       fl.length.should.equal(3)
       for elem, idx in [ 6, 2, 4 ]
+        fl.at(idx).should.equal(elem)
+
+      # move the first item somewhere.
+      ol.moveAt(0, 3) # 3 1 2 6 4 5
+      fl.length.should.equal(3)
+      for elem, idx in [ 2, 6, 4 ]
         fl.at(idx).should.equal(elem)
 
     it 'should accept a Varying and use its result to determine membership', ->
