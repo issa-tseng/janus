@@ -43,9 +43,9 @@ class List extends OrderedCollection
       this.list.push(elems[0]) # for perf. matters a lot in big batches.
     else
       if idx > this.list.length # as with #put, this will make splice behave correctly.
-        this.list[idx] = null
-        delete this.list[idx]
-      Array.prototype.splice.apply(this.list, [ idx, 1 ].concat(elems))
+        this.list[idx - 1] = null
+        delete this.list[idx - 1]
+      Array.prototype.splice.apply(this.list, [ idx, 0 ].concat(elems))
 
     for elem, subidx in elems
       # Event on ourself for each item we added
