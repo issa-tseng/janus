@@ -1,37 +1,51 @@
-DerivedList = require('./list').DerivedList
+{ List, DerivedList } = require('./list')
 util = require('../util/util')
 
 
 class FlattenedList extends DerivedList
-  constructor: (@source, @options = {}) ->
+  constructor: (@parent, @options = {}) ->
     super()
 
     this._listListeners = new List()
 
-    this.source.on('removed', (list, idx) => this._removeList(list, idx))
-    this.source.on('added', (list, idx) => this._addList(list, idx))
+    this._addObj(list, idx) for list, idx in this.parent.list
+    this.parent.on('added', (obj, idx) => this._addObj(obj, idx))
+    this.parent.on('moved', (_, idx, oldIdx) => 0)#??
+    this.parent.on('removed', (obj, idx) => this._removeObj(obj, idx))
 
-    this._addList(list, idx) for list, idx in this.source.list
+  _getOverallIdx: (parentIdx, offset = 0) ->
+    util.foldLeft(0)(this.parent.list[0...parentIdx], (length, x) -> length + (if x?.isCollection is true then x.length else 1)) + offset
 
-  _getOverallIdx: (list, offset = 0) ->
-    listIdx = this.source.list.indexOf(list)
-    util.foldLeft(0)(this.source.list[0...listIdx], (length, list) -> length + list.list.length) + offset
+  _addObj: (obj, idx) ->
+    if obj?.isCollection is true
+      listeners = {
+        added: (elem, offset) =>
+          this._add(elem, this._getOverallIdx(this._listListeners.list.indexOf(listeners), offset))
+        removed: (_, offset) =>
+          this._removeAt(this._getOverallIdx(this._listListeners.list.indexOf(listeners), offset))
+      }
+      obj.on(event, handler) for event, handler of listeners
+      this._listListeners.add(listeners, idx)
 
-  _addList: (list, idx) ->
-    listeners = {
-      added: (elem, idx) => this._add(elem, this._getOverallIdx(list, idx))
-      removed: (_, idx) => this._removeAt(this._getOverallIdx(list, idx))
-    }
-    list.on(event, handler) for event, handler of listeners
-    this._listListeners.add(listeners, idx)
+      this._add(elem, this._getOverallIdx(idx, offset)) for elem, offset in obj.list
+    else
+      this._add(obj, this._getOverallIdx(idx))
 
-    this._add(elem, this._getOverallIdx(list, idx)) for elem, idx in list.list
+  _removeObj: (obj, idx) ->
+    objStartIdx = this._getOverallIdx(idx)
+    listeners = this._listListeners.removeAt(idx)
 
-  _removeList: (list, idx) ->
-    listStartIdx = this._getOverallIdx(list)
-    this._removeAt(listStartIdx) for _ in list.list
+    if obj?.isCollection is true
+      obj.off(event, handler) for event, handler of listeners
+      this._removeAt(objStartIdx) for _ in obj.list
+    else
+      this._removeAt(objStartIdx)
 
-    list.off(event, handler) for event, handler of this._listListeners.removeAt(idx)
+    null
+
+  destroy: ->
+    this.parent.list[idx].off(event, handler) for event, handler of listeners for listeners in this._listListeners.list when listeners?
+    super()
 
 
 module.exports = { FlattenedList }
