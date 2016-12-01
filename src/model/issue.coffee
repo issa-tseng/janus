@@ -1,6 +1,6 @@
 Base = require('../core/base').Base
 Varying = require('../core/varying').Varying
-util = require('../util/util')
+
 
 class Issue extends Base
   constructor: ({ active, severity, message, target } = {}) ->
@@ -9,7 +9,6 @@ class Issue extends Base
     this.message = Varying.ly(message ? '')
     this.target = Varying.ly(target)
 
-util.extend(module.exports,
-  Issue: Issue
-)
+
+module.exports = { Issue }
 

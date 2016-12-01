@@ -4,7 +4,7 @@
 
 Model = require('../model/model').Model
 folds = require('./folds')
-util = require('../util/util')
+
 
 # A `Collection` provides `add` and `remove` events for every element that is
 # added or removed from the list.
@@ -83,8 +83,5 @@ class Collection extends Model
 class OrderedCollection extends Collection
 
 
-util.extend(module.exports,
-  Collection: Collection
-  OrderedCollection: OrderedCollection
-)
+module.exports = { Collection, OrderedCollection }
 

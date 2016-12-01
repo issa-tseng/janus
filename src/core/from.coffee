@@ -9,6 +9,7 @@
 #   returned from a point operation. is this right? also, currently the way
 #   things are written varying is a required external case. that seems weird.
 
+
 # util.
 conj = (x, y) -> x.concat([ y ])
 internalCases = ic = defcase('org.janusjs.core.from.internal', 'varying', 'map', 'flatMap', 'resolve')
@@ -148,6 +149,7 @@ terminus = (applicants, maps = []) ->
 from = build(defaultCases)
 from.build = build
 from.default = defaultCases
+
 
 module.exports = from
 

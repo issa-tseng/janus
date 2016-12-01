@@ -18,6 +18,7 @@ OrderedCollection = require('./collection').OrderedCollection
 Model = require('../model/model').Model
 util = require('../util/util')
 
+
 # We derive off of Model so that we have free access to attributes.
 class List extends OrderedCollection
 
@@ -351,8 +352,5 @@ class DerivedList extends List
   shadow: -> this
 
 
-util.extend(module.exports,
-  List: List
-  DerivedList: DerivedList
-)
+module.exports = { List, DerivedList }
 

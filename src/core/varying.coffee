@@ -32,6 +32,7 @@
 
 { isFunction, fix, uniqueId } = require('../util/util')
 
+
 class Varying
   # flag to enable duck-typed detection of this class. thanks, npm.
   isVarying: true
@@ -257,6 +258,7 @@ class ComposedVarying extends FlatMappedVarying
     this._internalObservers[id] = varied # return Varied.
 
   _immediate: -> this._f.apply(null, (a.get() for a in this._applicants))
+
 
 module.exports = { Varying, Varied, FlatMappedVarying, FlattenedVarying, MappedVarying, ComposedVarying }
 

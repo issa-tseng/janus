@@ -177,7 +177,7 @@ class OnPageCacheStore extends Store
       Store.Unhandled
 
 
-util.extend(module.exports,
+module.exports = {
   Request: Request
   Store: Store
 
@@ -190,5 +190,5 @@ util.extend(module.exports,
     CreateRequest: CreateRequest
     UpdateRequest: UpdateRequest
     DeleteRequest: DeleteRequest
-)
+}
 

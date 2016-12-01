@@ -1,5 +1,6 @@
 defaultMutators = require('./mutators')
 
+
 # wrap given mutators with a find() facility that records a selector and enables
 # chaining of the mutator if provided, returning (dom) -> (point) -> Varied.
 _recurse = (m, selector) ->
@@ -21,6 +22,7 @@ find.build = build
 template = (xs...) -> (dom) ->
   found = (x(dom) for x in xs)
   (point) -> Array.prototype.concat.apply([], (f(point) for f in found))
+
 
 module.exports = { find, template }
 

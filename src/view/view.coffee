@@ -6,7 +6,7 @@
 # supplies with its Views.
 
 Base = require('../core/base').Base
-util = require('../util/util')
+
 
 # Base gives us event listening things
 class View extends Base
@@ -72,8 +72,6 @@ class View extends Base
     null
   _attach: ->
 
-# Export.
-util.extend(module.exports,
-  View: View
-)
+
+module.exports = { View }
 

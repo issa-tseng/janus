@@ -4,6 +4,7 @@
 EventEmitter = require('eventemitter2').EventEmitter2
 util = require('../util/util')
 
+
 # Extend EventEmitter into pretty much everything we do.
 class Base extends EventEmitter
   isBase: true
@@ -60,8 +61,6 @@ class Base extends EventEmitter
   # **Returns** self.
   destroyWith: (other) -> this.listenTo(other, 'destroying', => this.destroy())
 
-# Export.
-util.extend(module.exports,
-  Base: Base
-)
+
+module.exports = { Base }
 
