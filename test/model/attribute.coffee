@@ -3,7 +3,7 @@ should = require('should')
 Model = require('../../lib/model/model').Model
 attribute = require('../../lib/model/attribute')
 
-{ List } = require('../../lib/collection/collection')
+{ List } = require('../../lib/collection/list')
 
 describe 'Attribute', ->
   describe 'value manipulation', ->

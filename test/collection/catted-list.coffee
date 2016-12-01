@@ -3,7 +3,7 @@ should = require('should')
 Model = require('../../lib/model/model').Model
 
 Varying = require('../../lib/core/varying').Varying
-{ List } = require('../../lib/collection/collection')
+{ List } = require('../../lib/collection/list')
 
 describe 'collection', ->
   describe 'catted list', ->
