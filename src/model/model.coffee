@@ -452,7 +452,7 @@ class Model extends Base
     this.issues$ ?= do =>
       issueList = (attr.issues() for attr in this.allAttributes() when attr.issues?)
       issueList.unshift(this._issues()) if this._issues?
-      (new (require('../collection/collection').CattedList)(issueList)).filter((issue) -> issue.active)
+      (new (require('../collection/catted-list').CattedList)(issueList)).filter((issue) -> issue.active)
 
   # To specify model-level validation for this model, declare a `_issues()`
   # method:

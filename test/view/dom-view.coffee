@@ -5,7 +5,7 @@ from = require('../../lib/core/from')
 { template, find } = require('../../lib/view/template')
 { DomView } = require('../../lib/view/dom-view')
 { Varying } = require('../../lib/core/varying')
-{ List } = require('../../lib/collection/collection')
+{ List } = require('../../lib/collection/list')
 
 inf = -> inf
 makeDom = (dom = {}) ->

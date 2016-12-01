@@ -8,7 +8,8 @@ Issue = require('../../lib/model/issue').Issue
 attribute = require('../../lib/model/attribute')
 
 Varying = require('../../lib/core/varying').Varying
-collection = require('../../lib/collection/collection')
+{ List } = require('../../lib/collection/list')
+{ Collection } = require('../../lib/collection/types')
 
 describe 'Model', ->
   describe 'core', ->
@@ -522,11 +523,11 @@ describe 'Model', ->
   describe 'issues', ->
     it 'should return an empty list by default', ->
       issues = (new Model()).issues()
-      issues.should.be.an.instanceof(collection.Collection)
+      issues.should.be.an.instanceof(Collection)
       issues.list.length.should.equal(0)
 
     it 'should contain issues from the Model level', ->
-      issueList = new collection.List()
+      issueList = new List()
 
       class TestModel extends Model
         _issues: -> issueList
@@ -541,7 +542,7 @@ describe 'Model', ->
       model.issues().list.length.should.equal(0)
 
     it 'should contain issues from the Attribute level', ->
-      issueList = new collection.List()
+      issueList = new List()
 
       class TestModel extends Model
         @attribute 'attr', class extends attribute.Attribute
@@ -559,7 +560,7 @@ describe 'Model', ->
     it 'should only contain active issues', ->
       class TestModel extends Model
         @attribute 'attr', class extends attribute.Attribute
-          issues: -> new collection.List([ new Issue( active: this.watchValue() ) ])
+          issues: -> new List([ new Issue( active: this.watchValue() ) ])
 
       model = new TestModel( attr: false )
       model.issues().list.length.should.equal(0)
@@ -574,7 +575,7 @@ describe 'Model', ->
     it 'should return true if no active issues exist', ->
       class TestModel extends Model
         @attribute 'attr', class extends attribute.Attribute
-          issues: -> new collection.List([ new Issue( active: this.watchValue() ) ])
+          issues: -> new List([ new Issue( active: this.watchValue() ) ])
 
       model = new TestModel( attr: false )
       model.valid().get().should.equal(true)
@@ -582,10 +583,10 @@ describe 'Model', ->
     it 'should return false if one or more active issues exist', ->
       class TestModel extends Model
         @attribute 'attr', class extends attribute.Attribute
-          issues: -> new collection.List([ new Issue( active: this.watchValue() ) ])
+          issues: -> new List([ new Issue( active: this.watchValue() ) ])
 
         @attribute 'attr2', class extends attribute.Attribute
-          issues: -> new collection.List([ new Issue( active: this.watchValue() ) ])
+          issues: -> new List([ new Issue( active: this.watchValue() ) ])
 
       model = new TestModel( attr: true, attr2: false )
       model.valid().get().should.equal(false)
@@ -601,7 +602,7 @@ describe 'Model', ->
       class TestModel extends Model
         @attribute 'attr', class extends attribute.Attribute
           issues: ->
-            new collection.List([
+            new List([
               new Issue( active: this.watchValue().map((val) -> val > 0), severity: 2 )
               new Issue( active: this.watchValue().map((val) -> val > 1), severity: 1 )
             ])
