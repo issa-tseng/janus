@@ -3,6 +3,7 @@ util = require('./util/util')
 # pre-require these to fan them out top-level
 kase = require('./core/case')
 template = require('./view/template')
+collection = require('./collection/collection')
 
 # TODO: once we're sure the global is superfluous, remove.
 module.exports = (window ? global)._janus$ ?=
@@ -23,7 +24,8 @@ module.exports = (window ? global)._janus$ ?=
   # collection functionality.
   List: require('./collection/list').List
   Set: require('./collection/set').Set
-  collection: require('./collection/types')
+  Collection: collection.Collection
+  OrderedCollection: collection.OrderedCollection
 
   # view and templating functionality.
   View: require('./view/view').View

@@ -14,7 +14,7 @@
 
 Base = require('../core/base').Base
 Varying = require('../core/varying').Varying
-OrderedCollection = require('./types').OrderedCollection
+OrderedCollection = require('./collection').OrderedCollection
 Model = require('../model/model').Model
 util = require('../util/util')
 
