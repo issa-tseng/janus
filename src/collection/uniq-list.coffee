@@ -1,5 +1,5 @@
 DerivedList = require('./list').DerivedList
-util = require('../util/util')
+
 
 # A read-only view into a proper `List` that only allows unique values from
 # its parent.
@@ -32,7 +32,6 @@ class UniqList extends DerivedList
         this.counts.splice(idx, 1)
         this._removeAt(idx)
 
-util.extend(module.exports,
-  UniqList: UniqList
-)
+
+module.exports = { UniqList }
 

@@ -9,6 +9,7 @@ types = require('../util/types')
 { Varying } = require('../core/varying')
 util = require('../util/util')
 
+
 # sentinel value to record a child-nulled value. instantiate a class instance
 # so that it doesn't read as a simple object.
 class NullClass
@@ -568,8 +569,5 @@ class Model extends Base
   _subvaryings: -> this._subvaryings$ ?= new (require('../collection/list').List)()
 
 
-# Export.
-util.extend(module.exports,
-  Model: Model
-)
+module.exports = { Model }
 

@@ -1,12 +1,9 @@
-
-util = require('../util/util')
 types = require('../util/types')
 Base = require('../core/base').Base
 
-Request = require('../model/store').Request
-
 App = require('./app').App
 StoreManifest = require('./manifest').StoreManifest
+
 
 class EndpointResponse
   constructor: (@content) ->
@@ -71,7 +68,7 @@ class Endpoint extends Base
     (pageModelClass) -> new self(pageModelClass, pageLibrary, app)
 
 
-util.extend(module.exports,
+module.exports = {
   Endpoint: Endpoint
 
   responses:
@@ -83,5 +80,5 @@ util.extend(module.exports,
     ForbiddenResponse: ForbiddenResponse
     NotFoundResponse: NotFoundResponse
     InternalErrorResponse: InternalErrorResponse
-)
+}
 

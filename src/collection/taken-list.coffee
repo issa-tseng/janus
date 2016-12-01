@@ -3,7 +3,7 @@
 
 DerivedList = require('./list').DerivedList
 Varying = require('../core/varying').Varying
-util = require('../util/util')
+
 
 class TakenList extends DerivedList
   constructor: (@parent, @number) ->
@@ -32,7 +32,6 @@ class TakenList extends DerivedList
         this._removeAt(take)
     null
 
-util.extend(module.exports,
-  TakenList: TakenList
-)
+
+module.exports = { TakenList }
 

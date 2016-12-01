@@ -153,6 +153,6 @@ for type in [ 'Arguments', 'Function', 'String', 'Date', 'RegExp' ]
 # Thanks to Underscore again; optimize isFunction if possible.
 (util.isFunction = (obj) -> typeof obj is 'function') if typeof (/./) isnt 'function'
 
-# Use our freshly-declared `extend()` to populate our module exports.
-util.extend(module.exports, util)
+
+module.exports = util
 

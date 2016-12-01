@@ -1,6 +1,7 @@
 DerivedList = require('./list').DerivedList
 util = require('../util/util')
 
+
 class CattedList extends DerivedList
   constructor: (@lists) ->
     super()
@@ -17,7 +18,5 @@ class CattedList extends DerivedList
         list.on('moved', (_, idx, oldIdx) => this._moveAt(getOverallIdx(oldIdx), getOverallIdx(idx)))
 
 
-util.extend(module.exports,
-  CattedList: CattedList
-)
+module.exports = { CattedList }
 

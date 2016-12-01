@@ -9,7 +9,8 @@
 { dynamic, watch, resolve, attribute, varying, app, self } = require('../core/from').default
 View = require('./view').View
 List = require('../collection/list').List
-{ extendNew, extend, isFunction, isString } = require('../util/util')
+{ isFunction, isString } = require('../util/util')
+
 
 class DomView extends View
   # Here we supply the internal DOM fragment we'll use to actually render.
@@ -123,7 +124,5 @@ class DomView extends View
     super()
 
 
-extend(module.exports,
-  DomView: DomView
-)
+module.exports = { DomView }
 

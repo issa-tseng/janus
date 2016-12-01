@@ -14,6 +14,7 @@
 util = require('../util/util')
 Base = require('../core/base').Base
 
+
 class Library extends Base
   _defaultContext: 'default'
 
@@ -164,7 +165,6 @@ match = (obj, record, attributes) ->
 
   isMatch
 
-# Export.
-util.extend module.exports,
-  Library: Library
+
+module.exports = { Library }
 

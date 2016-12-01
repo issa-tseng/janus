@@ -1,6 +1,6 @@
-List = require('./list').List
 DerivedList = require('./list').DerivedList
 util = require('../util/util')
+
 
 class FlattenedList extends DerivedList
   constructor: (@source, @options = {}) ->
@@ -33,7 +33,6 @@ class FlattenedList extends DerivedList
 
     list.off(event, handler) for event, handler of this._listListeners.removeAt(idx)
 
-util.extend(module.exports,
-  FlattenedList: FlattenedList
-)
+
+module.exports = { FlattenedList }
 

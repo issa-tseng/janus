@@ -1,5 +1,3 @@
-
-util = require('../util/util')
 from = require('../core/from')
 Model = require('./model').Model
 Varying = require('../core/varying').Varying
@@ -84,7 +82,7 @@ class ReferenceAttribute extends Attribute
   @deserialize: (data) -> this.contains.deserialize(data)
 
 
-util.extend(module.exports,
+module.exports = {
   Attribute: Attribute
 
   TextAttribute: TextAttribute
@@ -95,5 +93,5 @@ util.extend(module.exports,
   ModelAttribute: ModelAttribute
   CollectionAttribute: CollectionAttribute
   ReferenceAttribute: ReferenceAttribute
-)
+}
 

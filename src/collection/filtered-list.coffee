@@ -1,6 +1,5 @@
 { List, DerivedList } = require('./list')
 Varying = require('../core/varying').Varying
-util = require('../util/util')
 
 
 # A read-only view into a proper `List` that filters out nonqualifying
@@ -79,6 +78,7 @@ class FilteredList extends DerivedList
 
     # adjust our reified list, but only if it was actually in the list at all.
     super(oldMappedIdx, this._idxMap[newIdx]) if delta is 1
+
 
 module.exports = { FilteredList }
 

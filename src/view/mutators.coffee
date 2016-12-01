@@ -14,6 +14,7 @@
 from = require('../core/from')
 { isFunction, extendNew } = require('../util/util')
 
+
 # util.
 safe = (x) -> if isFunction(x?.toString) then x.toString() else ''
 terminate = (x) -> if x.point? then x else x.all
@@ -62,6 +63,7 @@ mutators =
     result.options = (options) -> mutators.render(data, extendNew(args, { options }))
 
     result
+
 
 module.exports = mutators
 

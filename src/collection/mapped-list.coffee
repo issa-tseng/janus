@@ -1,6 +1,6 @@
 { List, DerivedList } = require('./list')
 Varying = require('../core/varying').Varying
-util = require('../util/util')
+
 
 class MappedList extends DerivedList
   constructor: (@parent, @mapper, @options = {}) ->

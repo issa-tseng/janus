@@ -26,7 +26,5 @@ class App extends Model
     result
 
 
-util.extend(module.exports,
-  App: App
-)
+module.exports = { App }
 

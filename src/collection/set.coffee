@@ -40,7 +40,6 @@ class Set extends List
       # collection.
       (do => this.listenTo(elem, 'destroying', => this.remove(elem))) if elem instanceof Base
 
-util.extend(module.exports,
-  Set: Set
-)
+
+module.exports = { Set }
 

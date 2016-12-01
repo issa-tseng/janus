@@ -1,9 +1,8 @@
-
-util = require('../util/util')
 types = require('../util/types')
 Base = require('../core/base').Base
 
 Request = require('../model/store').Request
+
 
 class Manifest extends Base
   constructor: ->
@@ -53,8 +52,5 @@ class StoreManifest extends Manifest
       store.on('requesting', (request) => this.requested(request))
 
 
-util.extend(module.exports,
-  Manifest: Manifest
-  StoreManifest: StoreManifest
-)
+module.exports = { Manifest, StoreManifest }
 
