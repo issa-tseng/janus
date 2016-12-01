@@ -53,6 +53,13 @@ describe 'List', ->
       for val, idx in [ 4, 8, 15, 16 ]
         l.at(idx).should.equal(val)
 
+    it 'should add elements past the end', ->
+      l = new List([ 1 ])
+      l.add(5, 4)
+      l.length.should.equal(5)
+      for val, idx in [ 1, undefined, undefined, undefined, 5 ]
+        should(l.at(idx)).equal(val)
+
     it 'should add multiple new elements at the end', ->
       l = new List([ 4, 8 ])
 

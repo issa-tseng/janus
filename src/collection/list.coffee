@@ -36,14 +36,16 @@ class List extends OrderedCollection
   #
   # **Returns** the added items as an array.
   add: (elems, idx = this.list.length) ->
-
     # Normalize the argument to an array, then dump in our items.
     elems = [ elems ] unless util.isArray(elems)
     elems = this._processElements(elems)
     if idx is this.list.length and elems.length is 1
       this.list.push(elems[0]) # for perf. matters a lot in big batches.
     else
-      Array.prototype.splice.apply(this.list, [ idx, 0 ].concat(elems))
+      if idx > this.list.length # as with #put, this will make splice behave correctly.
+        this.list[idx] = null
+        delete this.list[idx]
+      Array.prototype.splice.apply(this.list, [ idx, 1 ].concat(elems))
 
     for elem, subidx in elems
       # Event on ourself for each item we added
@@ -177,7 +179,7 @@ class List extends OrderedCollection
 
     # If nothing yet exists at the target, populate it with null so that splice
     # does the right thing.
-    unless this.list[idx]?
+    if idx > this.list.length
       this.list[idx] = null
       delete this.list[idx]
 
