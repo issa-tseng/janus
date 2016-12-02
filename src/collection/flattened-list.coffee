@@ -74,7 +74,7 @@ class FlattenedList extends DerivedList
     null
 
   destroy: ->
-    this.parent.list[idx].off(event, handler) for event, handler of listeners for listeners in this._listListeners.list when listeners?
+    this.parent.list[idx].off(event, handler) for event, handler of listeners for listeners, idx in this._listListeners.list when listeners?
     super()
 
 
