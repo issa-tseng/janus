@@ -78,3 +78,68 @@ describe 'collection', ->
       for elem, idx in [ 1, 2, 5, 6 ]
         fl.at(idx).should.equal(elem)
 
+    it 'should handle moved toplevel objects', ->
+      ol = new List([ 1, 2, new List([ 3, 4 ]), 5, new List([ 6 ]) ])
+      fl = ol.flatten()
+
+      # primitive element back.
+      ol.moveAt(0, 2) # [ 2 [ 3 4 ] 1 5 [ 6 ] ]
+      fl.length.should.equal(6)
+      for elem, idx in [ 2, 3, 4, 1, 5, 6 ]
+        fl.at(idx).should.equal(elem)
+
+      # list back.
+      ol.moveAt(1, 3) # [ 2 1 5 [ 3 4 ] [ 6 ] ]
+      fl.length.should.equal(6)
+      for elem, idx in [ 2, 1, 5, 3, 4, 6 ]
+        fl.at(idx).should.equal(elem)
+
+      # shuffling.
+      ol.moveAt(4, 1) # [ 2 [ 6 ] 1 5 [ 3 4 ] ]
+      fl.length.should.equal(6)
+      for elem, idx in [ 2, 6, 1, 5, 3, 4 ]
+        fl.at(idx).should.equal(elem)
+
+      # list forward.
+      ol.moveAt(4, 1) # [ 2 [ 3 4 ] [ 6 ] 1 5 ]
+      fl.length.should.equal(6)
+      for elem, idx in [ 2, 3, 4, 6, 1, 5 ]
+        fl.at(idx).should.equal(elem)
+
+      # primitive forward.
+      ol.moveAt(3, 2) # [ 2 [ 3 4 ] 1 [ 6 ] 5 ]
+      fl.length.should.equal(6)
+      for elem, idx in [ 2, 3, 4, 1, 6, 5 ]
+        fl.at(idx).should.equal(elem)
+
+    it 'should remap list listeners correctly post-move', ->
+      ol = new List([ 1, 2, new List([ 3, 4 ]), 5, new List([ 6 ]) ])
+      fl = ol.flatten()
+
+      ol.moveAt(2, 3)
+      ol.at(3).removeAt(1)
+
+      fl.length.should.equal(5)
+      for elem, idx in [ 1, 2, 5, 3, 6 ]
+        fl.at(idx).should.equal(elem)
+
+    it 'should handle moved items within a nested list', ->
+      ol = new List([ 1, new List([ 2, 3, 4 ]), 5, new List([ 6 ]) ])
+      fl = ol.flatten()
+
+      ol.at(1).moveAt(2, 0)
+      fl.length.should.equal(6)
+      for elem, idx in [ 1, 4, 2, 3, 5, 6 ]
+        fl.at(idx).should.equal(elem)
+
+    it 'should no longer pay attention to removed lists', ->
+      ol = new List([ 1, new List([ 2, 3, 4 ]), 5, new List([ 6 ]) ])
+      fl = ol.flatten()
+
+      sl = ol.removeAt(1)
+      sl.removeAt(1)
+
+      fl.length.should.equal(3)
+      for elem, idx in [ 1, 5, 6 ]
+        fl.at(idx).should.equal(elem)
+
