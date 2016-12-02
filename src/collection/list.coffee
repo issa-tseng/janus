@@ -341,7 +341,7 @@ class List extends OrderedCollection
 
   @serialize: (list) ->
     for child in list.list
-      if child.serialize?
+      if child?.serialize?
         child.serialize()
       else
         child
