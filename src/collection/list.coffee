@@ -133,6 +133,9 @@ class List extends OrderedCollection
 
   # Watch an element from this collection by index.
   watchAt: (idx) ->
+    if idx?.isVarying is true
+      return idx.flatMap((tidx) => this.watchAt(tidx))
+
     result = new Varying(this.at(idx))
 
     this.on('added', (elem, midx) =>
