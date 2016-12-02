@@ -293,6 +293,16 @@ describe 'List', ->
       l.removeAt(-1) # *1, *1.5, 2, 3, 4
       results.should.eql([ undefined, 1, 1.5, 1 ])
 
+    it 'should be able to take a Varying index to watch', ->
+      results = []
+      l = new List([ 1, 2, 3, 4 ])
+      v = new Varying(2)
+      l.watchAt(v).reactNow((x) -> results.push(x))
+      l.removeAt(1) # 1 3 *4
+      v.set(0) # *1 3 4
+      l.add(0, 0) # *0 1 3 4
+      results.should.eql([ 3, 4, 1, 0 ])
+
   describe 'watchLength', ->
     it 'should watch the length of the list', ->
       l = new List([ 1, 2, 3, 4 ])
