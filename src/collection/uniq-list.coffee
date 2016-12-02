@@ -2,9 +2,9 @@ DerivedList = require('./list').DerivedList
 
 
 # A read-only view into a proper `List` that only allows unique values from
-# its parent.
+# its parent. By its nature, element ordering is undefined.
 class UniqList extends DerivedList
-  constructor: (@parent, @options = {}) ->
+  constructor: (@parent) ->
     super()
 
     this.counts = []
@@ -14,7 +14,7 @@ class UniqList extends DerivedList
     parent.on('removed', (elem) => this._tryRemove(elem))
 
   _tryAdd: (elem) ->
-    idx = this.list.indexOf(if this.options.by then this.options.by(elem) else elem)
+    idx = this.list.indexOf(elem)
 
     if idx >= 0
       this.counts[idx] += 1
@@ -23,7 +23,7 @@ class UniqList extends DerivedList
       this._add(elem)
 
   _tryRemove: (elem) ->
-    idx = this.list.indexOf(if this.options.by then this.options.by(elem) else elem)
+    idx = this.list.indexOf(elem)
 
     if idx >= 0
       this.counts[idx] -= 1

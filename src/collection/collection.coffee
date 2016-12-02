@@ -45,7 +45,7 @@ class Collection extends Model
   # Create a new UniqList based on this List.
   #
   # **Returns** a `UniqList`
-  uniq: (options) -> new (require('./uniq-list').UniqList)(this, options)
+  uniq: -> new (require('./uniq-list').UniqList)(this)
 
   # Create a list that always takes the first x elements of this collection,
   # where x may be a number or a Varying[Int].
