@@ -143,3 +143,13 @@ describe 'collection', ->
       for elem, idx in [ 1, 5, 6 ]
         fl.at(idx).should.equal(elem)
 
+    it 'should stop listening to the parent on destroy', ->
+      ol = new List([ 1, new List([ 2, 3, 4 ]), 5, new List([ 6 ]) ])
+      fl = ol.flatten()
+      sl = ol.at(1)
+
+      fl.destroy()
+      sl.listeners('added').should.eql([])
+      sl.listeners('moved').should.eql([])
+      sl.listeners('removed').should.eql([])
+
