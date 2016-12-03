@@ -24,6 +24,7 @@ class List extends OrderedCollection
 
   # We take a list of elements, and initialize to empty list if nothing is given.
   constructor: (list = []) ->
+    # super first so Model stuff and _initialize gets set up before initial add.
     super({})
 
     # Init our list, and add the items to it.
