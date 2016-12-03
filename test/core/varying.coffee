@@ -394,6 +394,17 @@ describe 'Varying', ->
       v.set(3)
       result.should.equal(3)
 
+    it 'should trip react on inner varying changing before the outer', -> # GH #33
+      v = new Varying(2)
+      v2 = new Varying(2)
+
+      result = null
+      v.flatMap((x) -> v2.map((y) -> x * y)).react((z) -> result = z)
+      should(result).equal(null)
+
+      v2.set(3)
+      result.should.equal(6)
+
     it 'behaves as expected when reacted multiple times off a flatMap', ->
       v = new Varying(1)
       vv = new Varying(v)
