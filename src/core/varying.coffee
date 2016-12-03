@@ -143,6 +143,7 @@ class FlatMappedVarying extends Varying
 
     # onValue is the handler called for both the parent changing _as well as_
     # an inner flattened value changing.
+    ignoreFirst = true
     onValue = (value) ->
       return if value is lastValue
 
@@ -155,11 +156,17 @@ class FlatMappedVarying extends Varying
         else
           lastInnerVaried = null # don't allow .stop() to be called repeatedly.
 
-      callback.call(varied, value) # now notify the consumer.
+      unless immediate is false and ignoreFirst is true
+        # we always call onValue immediately; so we don't want to notify if
+        # this is our first trip and immediate is false.
+        callback.call(varied, value) # notify the consumer.
       lastValue = value
 
     parentVaried = self._bind(onValue) # now grab the listener that represents our parent value.
-    onValue.call(parentVaried, self._immediate()) if immediate is true # handle reactNow. see below.
+    if self._flatten is true or immediate is true
+      # the only case we can ignore the initial value is a nonflat nonimmediate.
+      onValue.call(parentVaried, self._immediate())
+    ignoreFirst = false
 
     varied
 
