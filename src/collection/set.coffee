@@ -1,44 +1,59 @@
 # **Sets** are possibly-ordered sets of objects. The base `Set` implementation
-# is pretty simple; one can add and remove elements to and from it.
+# is pretty simple; it just bails if we already have an object upon adding.
+# Otherwise all behaviour is delegated to our parent.
 #
-# **Events**:
-#
-# - `added`: `(item, idx)` the item that was added and its position.
-# - `removed`: `(item, idx)` the item that was removed and its position.
-#
-# **Member Events**:
-#
-# - `addedTo`: `(collection, idx)` this collection and the member's position.
-# - `removedFrom`: `(collection, idx)` this collection and the member's
-#   position.
+# No guaranteed ordering semantic is provided. As such, #move and #moveAt are
+# unavailable.
 
-Base = require('../core/base').Base
+Varying = require('../core/varying').Varying
 List = require('./list').List
 util = require('../util/util')
 
-# We derive off of List since we're essentially a list with additional rules
-# evaluated at add-time, plus a possible ordering semantic
+# TODO: by derivation this inheritance implies Set: OrderedCollection which is
+# obviously wrong. But we don't currenty really rely on that identity yet, so
+# we can punt the question.
 class Set extends List
-
-  has: (elem) -> this.list.indexOf(elem) >= 0
+  _initialize: ->
+    # TODO: someday WeakMaps will be better.
+    this._watched = []
+    this._watchers = []
 
   add: (elems) ->
-
     # Normalize the argument to an array, then add each elem if possible.
     elems = [ elems ] unless util.isArray(elems)
+    for elem in elems when not this.has(elem)
+      widx = this._watched.indexOf(elem)
+      this._watchers[widx].set(true) if widx >= 0
+      List.prototype.add.call(this, elem) # using super here breaks the cs compiler (??)
+    elems
 
-    for elem in elems
-      # bail if we already have one.
-      continue if this.has(elem)
+  remove: (elem) ->
+    widx = this._watched.indexOf(elem)
+    this._watchers[widx].set(false) if widx >= 0
 
-      # we're all good; add and emit.
-      this.list.push(elem)
-      this.emit('added', elem)
-      elem.emit?('addedTo', this)
+    idx = this.list.indexOf(elem)
+    return undefined unless idx >= 0
+    List.prototype.removeAt.call(this, idx)
 
-      # if the item is ever destroyed, automatically remove it from our
-      # collection.
-      (do => this.listenTo(elem, 'destroying', => this.remove(elem))) if elem instanceof Base
+  putAll: (elems) ->
+    list = this.list.slice(0)
+    elems = [ elems ] unless util.isArray(elems)
+    this.remove(x) for x in list when elems.indexOf(x) < 0
+    this.add(elems)
+
+  has: (elem) -> this.list.indexOf(elem) >= 0
+  watchHas: (elem) -> 
+    v = new Varying(this.has(elem))
+    this._watched.push(elem)
+    this._watchers.push(v)
+    v
+
+  at: undefined
+  watchAt: undefined
+  removeAt: undefined
+  move: undefined
+  moveAt: undefined
+  put: undefined
 
 
 module.exports = { Set }
