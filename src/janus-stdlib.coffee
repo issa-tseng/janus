@@ -11,5 +11,5 @@ module.exports =
     enumAttribute: require('./view/enum-attribute')
     enumAttributeList: require('./view/enum-attribute-list')
 
-    registerWith: (library) -> view.registerWith(library) for _, view of this
+    registerWith: (library) -> view.registerWith(library) for _, view of this when view isnt this.registerWith
 
