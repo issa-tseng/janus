@@ -56,6 +56,6 @@ module.exports = {
   BooleanButtonAttributeEditView,
   registerWith: (library) ->
     library.register(BooleanAttribute, BooleanAttributeEditView, context: 'edit')
-    library.register(BooleanAttribute, BooleanAttributeEditView, context: 'edit', attributes: { style: 'button' })
+    library.register(BooleanAttribute, BooleanButtonAttributeEditView, context: 'edit', attributes: { style: 'button' })
 }
 
