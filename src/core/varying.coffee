@@ -117,7 +117,10 @@ class Varying
   @ly: (x) -> if x?.isVarying is true then x else new Varying(x)
 
 class Varied
-  constructor: (@id, @f_, @stop) ->
+  constructor: (@id, @f_, @_stop) ->
+  stop: ->
+    this.stopped = true # for debugging.
+    this._stop()
 
 identity = (x) -> x
 nothing = {}
@@ -197,12 +200,13 @@ class FlatMappedVarying extends Varying
     # bind to parent if we haven't yet.
     lastRaw = null
     if this._refCount is 0
-      this._parentVaried = this._parent.reactNow (raw) =>
+      this._parentVaried = this._parent.reactNow((raw) =>
         return if raw is lastRaw # early return.
         lastRaw = raw
 
         mapped = this._f.call(null, raw)
-        callback.call(o, mapped) for _, o of this._internalObservers # internal react propagate.
+        o.f_(mapped) for _, o of this._internalObservers # internal react propagate.
+      )
 
     this._refCount += 1
     this._internalObservers[id] = varied # returns Varied.
