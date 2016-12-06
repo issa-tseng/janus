@@ -111,3 +111,17 @@ describe 'collection', ->
       for elem, idx in [ 1, 2, 3 ]
         fl.at(idx).should.equal(elem)
 
+    it 'should booleanify values to prevent double-remove', ->
+      tl = new List([ null, null ])
+      ol = new List([ 0 ])
+      fl = ol.filter((x) -> tl.watchAt(x))
+
+      fl.length.should.equal(0)
+      ol.add(1)
+      fl.length.should.equal(0)
+      tl.put(true, 1)
+      fl.length.should.equal(1)
+      fl.at(0).should.equal(1)
+      tl.put(false, 1)
+      fl.length.should.equal(0)
+
