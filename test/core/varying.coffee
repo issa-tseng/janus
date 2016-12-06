@@ -563,6 +563,20 @@ describe 'Varying', ->
         countObservers(va).should.equal(0)
         countObservers(vb).should.equal(0)
 
+      it 'should bind correctly when reacted multiple times off the root', ->
+        va = new Varying(2)
+        vb = new Varying(2)
+        vf = va.flatMap((x) -> vb.map((y) -> x * y))
+
+        results = []
+        vf.reactNow((z) -> results.push(1, z))
+        vf.reactNow((z) -> results.push(2, z))
+
+        vb.set(4)
+        va.set(3)
+
+        results.should.eql([ 1, 4, 2, 4, 1, 8, 2, 8, 1, 12, 2, 12 ])
+
     describe 'flatMapAll', ->
       it 'should flatten on get', ->
         Varying.flatMapAll(((x, y) -> new Varying(x + y)), new Varying(1), new Varying(2)).get().should.be.equal(3)
