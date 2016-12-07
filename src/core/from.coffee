@@ -108,7 +108,7 @@ matchFinal = match(
 applyMaps = (applicants, maps) ->
   [ first, rest... ] = maps
 
-  first ?= ic.flatMap(identity)
+  first ?= ic.map(identity)
 
   v = match(
     ic.map (f) -> Varying.mapAll.apply(null, (matchFinal(x) for x in applicants).concat([ f ]))

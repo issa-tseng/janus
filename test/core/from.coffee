@@ -251,6 +251,20 @@ describe 'from', ->
 
       result.should.equal('abc')
 
+    it 'should not flatten', -> # gh41
+      { dynamic } = from.default
+
+      result = null
+      v = new Varying('b')
+      from('a').map((x) -> v)
+        .all.point(match(
+          dynamic (x) -> new Varying(x)
+          otherwise ->
+        ))
+        .reactNow((x) -> result = x)
+
+      result.should.equal(v)
+
   describe 'inline flatmap', ->
     it 'should apply a flatMap after point resolution', ->
       { dynamic } = from.default

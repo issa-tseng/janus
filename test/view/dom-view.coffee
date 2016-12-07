@@ -251,7 +251,7 @@ describe 'DomView', ->
       class TestView extends DomView
         @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
         @_template: template(
-          find('.title').text(from.self().map((x) -> pointed = x; v))
+          find('.title').text(from.self().flatMap((x) -> pointed = x; v))
         )
 
       t = new TestView({})
