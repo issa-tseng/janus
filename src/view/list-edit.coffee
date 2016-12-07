@@ -63,8 +63,12 @@ class ListEditItemView extends DomView
 
       # List#move does not emit added/removed so manipulate the dom ourselves.
       parent = li.parent()
-      li.remove()
-      parent.children().eq(dest).before(li)
+      li.detach()
+      children = parent.children()
+      if dest is children.length
+        parent.append(li)
+      else
+        children.eq(dest).before(li)
     dom.children('.janus-list-editItem-moveUp').on('click', moveHandler(-1))
     dom.children('.janus-list-editItem-moveDown').on('click', moveHandler(1))
 

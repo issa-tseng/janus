@@ -109,6 +109,7 @@ describe 'view', ->
       dom = view.artifact()
       view.wireEvents()
 
+      # mid-list item.
       dom.children().eq(2).find('.janus-list-editItem-moveUp').click()
       l.list.should.eql([ 1, 3, 2, 4, 5 ])
 
@@ -117,18 +118,37 @@ describe 'view', ->
       for label, idx in [ 1, 3, 2, 4, 5 ]
         checkEditItem(targets.eq(idx), (inner) -> checkLiteral(inner, label.toString()))
 
+      # move to top.
+      dom.children().eq(1).find('.janus-list-editItem-moveUp').click()
+      l.list.should.eql([ 3, 1, 2, 4, 5 ])
+
+      dom.children().length.should.equal(5)
+      targets = dom.find('> li > .janus-list-editItem')
+      for label, idx in [ 3, 1, 2, 4, 5 ]
+        checkEditItem(targets.eq(idx), (inner) -> checkLiteral(inner, label.toString()))
+
     it 'should move an item down when move down is clicked', ->
       l = new List([ 1, 2, 3, 4, 5 ])
       view = new ListEditView(l, { app: testApp })
       dom = view.artifact()
       view.wireEvents()
 
+      # mid-list item.
       dom.children().eq(2).find('.janus-list-editItem-moveDown').click()
       l.list.should.eql([ 1, 2, 4, 3, 5 ])
 
       dom.children().length.should.equal(5)
       targets = dom.find('> li > .janus-list-editItem')
       for label, idx in [ 1, 2, 4, 3, 5 ]
+        checkEditItem(targets.eq(idx), (inner) -> checkLiteral(inner, label.toString()))
+
+      # move to bottom.
+      dom.children().eq(3).find('.janus-list-editItem-moveDown').click()
+      l.list.should.eql([ 1, 2, 4, 5, 3 ])
+
+      dom.children().length.should.equal(5)
+      targets = dom.find('> li > .janus-list-editItem')
+      for label, idx in [ 1, 2, 4, 5, 3 ]
         checkEditItem(targets.eq(idx), (inner) -> checkLiteral(inner, label.toString()))
 
     it 'should not attempt to move an item if it is at the end', ->
