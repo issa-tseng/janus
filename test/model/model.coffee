@@ -447,6 +447,17 @@ describe 'Model', ->
       v.reactNow(->)
       called.should.equal(true)
 
+    it 'immediately calls handle on the store that handles the request given resolveNow', ->
+      called = false
+      app = { getStore: (x) -> { handle: (-> called = true) } }
+      class TestModel extends Model
+        @attribute 'a', class extends attribute.ReferenceAttribute
+          request: -> new Varying()
+
+      m = new TestModel()
+      v = m.resolveNow('a', app)
+      called.should.equal(true)
+
     it 'gives the request\'s inner value as its own', ->
       value = null
       request = new Varying()
