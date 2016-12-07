@@ -185,6 +185,12 @@ class Model extends Base
         else
           new Varying(value) # wrap for symmetry (because this is a flatMap)
 
+  # Like `#resolve(key, app)`, but calls reactNow on the resulting request on
+  # your behalf.
+  # TODO: this feels a bit cognitively dissonant. stems from the fact that the
+  # work is done in a flatMap, which isn't supposed to have side effects.
+  resolveNow: (key, app) -> this.resolve(key, app).reactNow(->)
+
   # Get a `Varying` object for this entire object. It will emit a change event
   # any time any attribute on the entire object changes. Does not event when
   # nested model attributes change, however.
