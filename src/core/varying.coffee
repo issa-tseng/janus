@@ -206,6 +206,7 @@ class FlatMappedVarying extends Varying
 
         mapped = this._f.call(null, raw)
         o.f_(mapped) for _, o of this._internalObservers # internal react propagate.
+        null
       )
 
     this._refCount += 1
@@ -258,12 +259,14 @@ class ComposedVarying extends FlatMappedVarying
     # listen to all our parents if we must.
     if this._refCount is 0
       this._parentVarieds = for a, idx in this._applicants
-        do (a, idx) => a.reactNow (value) =>
+        do (a, idx) => a.reactNow((value) =>
           # update our arguments list, then trigger internal observers in turn.
           # note that this doesn't happen for the very first call, since internal
           # observers is not updated until the end of this method.
           this._partial[idx] = value
           o.f_(this._f.apply(this._parentVarieds[idx], this._partial)) for _, o of this._internalObservers
+          null
+        )
 
     this._refCount += 1
     this._internalObservers[id] = varied # return Varied.
