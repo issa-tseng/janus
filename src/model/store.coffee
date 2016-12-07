@@ -30,13 +30,7 @@ class Store extends Base
   # Handle a request.
   handle: ->
     handled = this._handle()
-
-    # flashing the lights to let people know a request is going down.
-    if handled is Store.Handled
-      this.emit('requesting', this.request)
-      this.request.emit('requesting', this)
-      # WE HAVE A DEEAAAALLL!!
-
+    this.emit('requesting', this.request) if handled is Store.Handled
     handled
 
   # `handle` return states to let us know whether we were actually capable of
