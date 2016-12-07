@@ -148,7 +148,19 @@ class List extends OrderedCollection
         result.set(this.at(idx))
     )
 
-    this.on('removed', (_, midx) ->
+    this.on('moved', (elem, newIdx, oldIdx) =>
+      tidx = if idx < 0 then this.list.length + idx else idx
+      if tidx is newIdx
+        result.set(elem)
+      else if tidx is oldIdx
+        result.set(this.at(tidx))
+      else if tidx > oldIdx and tidx < newIdx
+        result.set(this.at(tidx))
+      else if tidx < oldIdx and tidx > newIdx
+        result.set(this.at(tidx))
+    )
+
+    this.on('removed', (_, midx) =>
       if (idx >= 0) and (midx <= idx)
         result.set(this.at(idx))
       else if (idx < 0) and (midx >= (this.list.length + idx))

@@ -280,7 +280,11 @@ describe 'List', ->
       l.add(0, 0) # 0, 1, 2, 3, *4, 5
       l.add(6) # 0, 1, 2, 3, *4, 5, 6
       l.removeAt(4) # 0, 1, 2, 3, *5, 6
-      results.should.eql([ undefined, 5, 4, 5 ])
+      l.moveAt(1, 4) # 0, 2, 3, 5, *1, 6
+      l.moveAt(4, 0) # 1, 0, 2, 3, *5, 6
+      l.moveAt(2, 5) # 1, 0, 3, 5, *6, 2
+      l.moveAt(5, 0) # 2, 1, 0, 3, *5, 6
+      results.should.eql([ undefined, 5, 4, 5, 1, 5, 6, 5 ])
 
     it 'should watch the value at a reverse index', ->
       l = new List([ 1, 2, 3, 4 ])
@@ -290,8 +294,13 @@ describe 'List', ->
       l.add(0, 0) # 0, *1, 2, 3, 4, 5
       l.add(1.5, 2) # 0, 1, *1.5, 2, 3, 4, 5
       l.removeAt(0) # 1, *1.5, 2, 3, 4, 5
-      l.removeAt(-1) # *1, *1.5, 2, 3, 4
-      results.should.eql([ undefined, 1, 1.5, 1 ])
+      l.removeAt(-1) # *1, 1.5, 2, 3, 4
+      l.add(0, 0) # 0, *1, 1.5, 2, 3, 4 # this line is really just to be able to fully test move.
+      l.moveAt(1, 3) # 0, *1.5, 2, 1, 3, 4
+      l.moveAt(4, 1) # 0, *3, 1.5, 2, 1, 4
+      l.moveAt(0, 4) # 3, *1.5, 2, 1, 0, 4
+      l.moveAt(5, 0) # 4, *3, 1.5, 2, 1, 0
+      results.should.eql([ undefined, 1, 1.5, 1, 1.5, 3, 1.5, 3 ])
 
     it 'should be able to take a Varying index to watch', ->
       results = []
