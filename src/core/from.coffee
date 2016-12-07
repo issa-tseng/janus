@@ -38,6 +38,11 @@ val = (conjunction, applicants = []) ->
     [ rest..., last ] = applicants
     val(conjunction, conj(rest, internalCases.resolve( inner: last, attr: attr )))
 
+  result.attribute = (attr) ->
+    [ rest..., last ] = applicants
+    f = (obj) -> obj?.attribute?(attr)
+    val(conjunction, conj(rest, internalCases.map( inner: last, f: f )))
+
   result.all = terminus(applicants)
   result.and = conjunction(applicants)
 

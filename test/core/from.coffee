@@ -322,6 +322,22 @@ describe 'from', ->
       calledAttr.should.equal('myattr')
       calledApp.should.equal(myApp)
 
+  describe 'inline attribute', ->
+    it 'should apply as a map after point resolution', ->
+      { dynamic } = from.default
+
+      called = null
+      result = null
+      from('a').attribute('myattr')
+        .all.point(match(
+          dynamic -> new Varying({ attribute: (x) -> called = x; 42 })
+          otherwise ->
+        ))
+        .map(id).reactNow((x) -> result = x)
+
+      called.should.equal('myattr')
+      result.should.equal(42)
+
   describe 'builder', ->
     it 'should accept custom cases as intermediate methods/applicants', ->
       { alpha, beta, gamma } = custom = defcase('org.janusjs.test', 'alpha', 'beta', 'gamma')
