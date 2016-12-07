@@ -108,14 +108,28 @@ matchFinal = match(
 applyMaps = (applicants, maps) ->
   [ first, rest... ] = maps
 
-  first ?= ic.map(identity)
+  # first we need to get a root Varying with which to chain our (flat)Maps onto.
+  # if we have a single applicant we can just use that Varying directly. if we
+  # don't we either use the first (flat)MapAll as a ComposedVarying root, or we
+  # fabricate one based on a sane default.
+  v =
+    if applicants.length is 1
+      # this mutation feels dirty but it's better than duplicating the
+      # map-matcher already extant below.
+      rest.unshift(first) if first?
 
-  v = match(
-    ic.map (f) -> Varying.mapAll.apply(null, (matchFinal(x) for x in applicants).concat([ f ]))
-    ic.flatMap (f) -> Varying.flatMapAll.apply(null, (matchFinal(x) for x in applicants).concat([ f ]))
-    otherwise -> throw 1
-  )(first)
+      matchFinal(applicants[0])
+    else
+      # if nothing is specified, turn the result into an array.
+      first ?= ic.map((args...) -> args)
 
+      match(
+        ic.map (f) -> Varying.mapAll.apply(null, (matchFinal(x) for x in applicants).concat([ f ]))
+        ic.flatMap (f) -> Varying.flatMapAll.apply(null, (matchFinal(x) for x in applicants).concat([ f ]))
+        otherwise -> throw 1
+      )(first)
+
+  # now chain on all our (flat)MapAlls.
   apply = match(
     ic.map (x) -> v.map(x)
     ic.flatMap (x) -> v.flatMap(x)
@@ -124,6 +138,7 @@ applyMaps = (applicants, maps) ->
   (v = apply(m)) for m in rest
   v
 
+# used for .all.plain
 plainMap = match(
   dc.dynamic (x) -> Varying.ly(x)
   dc.varying (x) -> Varying.ly(x)
