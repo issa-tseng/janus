@@ -44,4 +44,5 @@ module.exports = (window ? global)._janus$ ?=
 
   # maybe folks could use these.
   util: util
+  types: require('./util/types')
 
