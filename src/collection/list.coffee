@@ -23,9 +23,9 @@ util = require('../util/util')
 class List extends OrderedCollection
 
   # We take a list of elements, and initialize to empty list if nothing is given.
-  constructor: (list = []) ->
+  constructor: (list = [], options) ->
     # super first so Model stuff and _initialize gets set up before initial add.
-    super({})
+    super({}, options)
 
     # Init our list, and add the items to it.
     this.list = []
