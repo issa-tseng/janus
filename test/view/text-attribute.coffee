@@ -97,7 +97,21 @@ describe 'view', ->
       dom.trigger('change')
       m.get('test').should.equal('xyz')
 
-    it 'renders a textedit for the multiline style', ->
-      dom = (new MultilineTextAttributeEditView(new attribute.TextAttribute(new Model(), 'test'))).artifact()
-      dom.is('textarea').should.equal(true)
+    describe 'multiline', ->
+      it 'renders a textedit for the multiline style', ->
+        dom = (new MultilineTextAttributeEditView(new attribute.TextAttribute(new Model(), 'test'))).artifact()
+        dom.is('textarea').should.equal(true)
+
+      it 'can take a placeholder text via options', ->
+        dom = (new MultilineTextAttributeEditView(new attribute.TextAttribute(new Model(), 'test'), { placeholder: 'Type here' })).artifact()
+        dom.attr('placeholder').should.equal('Type here')
+
+      it 'can take a varying placeholder text via options', ->
+        v = new Varying('abc')
+        dom = (new MultilineTextAttributeEditView(new attribute.TextAttribute(new Model(), 'test'), { placeholder: v })).artifact()
+        dom.attr('placeholder').should.equal('abc')
+
+        v.set('xyz')
+        dom.attr('placeholder').should.equal('xyz')
+
 

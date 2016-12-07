@@ -38,6 +38,9 @@ class TextAttributeEditView extends DomView
 
 class MultilineTextAttributeEditView extends TextAttributeEditView
   @_dom: -> $('<textarea/>')
+  @_template: template(
+    find('textarea').attr('placeholder', from.self().flatMap((view) -> view.options.placeholder ? ''))
+  )
 
 module.exports = {
   TextAttributeEditView,
