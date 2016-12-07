@@ -224,6 +224,31 @@ describe 'from', ->
       from('a').all.flatMap(-> new Varying(3)).reactNow((x) -> result = x)
       result.should.equal(3)
 
+  describe 'direct reaction', ->
+    it 'should return applicants as an array absent an allmapper', ->
+      { dynamic, watch, resolve, definition, varying } = from.default
+      result = null
+
+      v = from('a').and('b').and('c')
+        .all.point(match(
+          dynamic (x) -> new Varying(x)
+          otherwise id
+        )).reactNow((x) -> result = x)
+
+      result.should.eql([ 'a', 'b', 'c' ])
+
+    it 'should return a single applicant as the argument absent an allmapper', ->
+      { dynamic, watch, resolve, definition, varying } = from.default
+      result = null
+
+      v = from('a')
+        .all.point(match(
+          dynamic (x) -> new Varying(x)
+          otherwise id
+        )).reactNow((x) -> result = x)
+
+      result.should.equal('a')
+
   describe 'inline map', ->
     it 'should apply a map after point resolution', ->
       { dynamic } = from.default
