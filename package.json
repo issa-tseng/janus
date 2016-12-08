@@ -3,7 +3,7 @@
   "author": "Clint Tseng <clint@dontexplain.com>",
   "description": "The reference set of code components and build tools for Janus",
   "files": [ "lib" ],
-  "version": "0.2.0",
+  "version": "0.2.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/clint-tseng/janus-stdlib"
@@ -17,7 +17,7 @@
     "test": "make test"
   },
   "dependencies": {
-    "janus": "git://github.com/clint-tseng/janus.git"
+    "janus": "~0.2"
   },
   "devDependencies": {
     "coffee-script": "~1.11",
