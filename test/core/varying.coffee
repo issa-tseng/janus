@@ -438,6 +438,30 @@ describe 'Varying', ->
       ra.should.equal(1)
       rb.should.equal(2)
 
+    it 'should dedupe intermediate results for reactNow', -> # gh40
+      v = new Varying(1)
+      vv = new Varying(0)
+
+      results = []
+      vv.flatMap((x) -> v.map((y) -> y)).map((z) -> z + 1).reactNow((w) -> results.push(w))
+
+      vv.set(2)
+      vv.set(3)
+      v.set(2)
+      results.should.eql([ 2, 3 ])
+
+    it 'should dedupe intermediate results for react', -> # gh40
+      v = new Varying(1)
+      vv = new Varying(0)
+
+      results = []
+      vv.flatMap((x) -> v.map((y) -> y)).map((z) -> z + 1).react((w) -> results.push(w))
+
+      vv.set(2)
+      vv.set(3)
+      v.set(2)
+      results.should.eql([ 3 ])
+
   describe 'side effect management', ->
     it 'should not re-execute orphaned propagations', ->
       v = new Varying()
