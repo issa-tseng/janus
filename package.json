@@ -21,7 +21,7 @@
   },
   "keywords": [ "framework", "server-side", "mvvm", "frp", "rx", "application", "508", "seo" ],
   "dependencies": {
-    "eventemitter2": "~0.4.11"
+    "eventemitter2": "~2.2"
   },
   "devDependencies": {
     "coffee-script": "1.6.2",
