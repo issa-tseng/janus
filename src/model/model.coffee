@@ -5,78 +5,37 @@ from = require('../core/from')
 { match, otherwise } = require('../core/case')
 types = require('../util/types')
 
-{ Base } = require('../core/base')
+{ Null, Struct } = require('./struct')
 { Varying } = require('../core/varying')
 util = require('../util/util')
 
 
-# sentinel value to record a child-nulled value. instantiate a class instance
-# so that it doesn't read as a simple object.
-class NullClass
-Null = new NullClass()
+# util:
+terminate = (x) -> if x.all? then x.all else x # TODO: becoming a common pattern. move to util.
 
-# Use Base to get basic methods.
-class Model extends Base
+class Model extends Struct
   isModel: true
 
   # We take in an attribute bag and optionally some options for this Model.
   # Options are for both framework and implementation use.
   #
-  constructor: (attributes = {}, @options = {}) ->
-    super()
-
-    # Init attribute store so we can bind against it.
-    this.attributes = {}
-
-    # Init various caches.
-    this._attributes = {}
-    this._watches = {}
+  constructor: (attributes = {}, options) ->
     this._resolves = {}
-
-    # If we have a designated shadow parent, set it.
-    this._parent = this.options.parent
-
-    # Allow setup that happens before attribute binding occurs, without
-    # overriding constructor args.
-    this._preinitialize?()
-
-    # Drop in our attributes.
-    this.set(attributes)
-
-    # Allow setup tasks without overriding+passing along constructor args.
-    this._initialize?()
-
-    # Set our binders against those attributes
-    this._bind()
+    super(attributes, options)
+    this._bind() # kick off bindings only after basic init.
 
   # Get an attribute about this model. The key can be a dot-separated path into
-  # a nested plain model. We do not traverse into submodels that have been
-  # inflated.
+  # a nested plain model. We do not traverse into submodels.
   #
   # If we are a shadow copy, we'll delegate to parent if we find nothing.
   #
-  # TODO: bypassAttribute is an ugly hack around an infrecuse.
-  #
   # **Returns** the value of the given key.
-  get: (key, bypassAttribute = false) ->
-    # first try getting self.
-    value = util.deepGet(this.attributes, key)
+  get: (key) ->
+    # see what Struct says; it handles basic attrs and shadowing.
+    value = super(key)
 
-    # otherwise try the shadow parent.
-    unless value?
-      value = this._parent?.get(key)
-
-      if value instanceof Model
-        # if we got a model instance back, we'll want to shadowclone it and
-        # write that clone to self. don't worry, if they never touch it again
-        # it'll look like nothing happened at all.
-        value = this.set(key, value.shadow())
-
-    # collapse shadow-nulled sentinels to null.
-    value = if value is Null then null else value
-
-    # if that fails, check the attribute
-    if !value? and bypassAttribute is false
+    # if that fails, check the attribute.
+    if !value?
       attribute = this.attribute(key)
       value =
         if attribute?
@@ -90,85 +49,11 @@ class Model extends Base
     # drop undef to null
     value ?= null
 
-  # Set an attribute about this model. Takes two forms:
-  #
-  # 1. Two fixed parameters. As with get, the first parameter is a dot-separated
-  #    string key. The second parameter is the value to set.
-  # 2. A hash. It can be deeply nested, but submodels aren't dealt with
-  #    specially.
-  #
-  # Does nothing if the given value is no different from the current.
-  #
-  # **Returns** the value that was set.
-  set: (args...) ->
-    if args.length is 1 and util.isPlainObject(args[0])
-      util.traverse(args[0], (path, value) => this.set(path, value))
-
-    else if args.length is 2 and util.isPlainObject(args[1])
-      obj = {}
-      util.deepSet(obj, args[0])(args[1])
-      this.set(obj)
-
-    else if args.length is 2
-      [ key, value ] = args
-
-      oldValue = util.deepGet(this.attributes, key) # TODO: doesn't account for default etc.
-      return value if oldValue is value
-
-      util.deepSet(this.attributes, key)(if value is Null then null else value)
-      this._emitChange(key, value, oldValue)
-
-      value
-
-  # Clear the value of some attribute. If we are a shadow copy, we'll actually
-  # leave behind a sentinel so that we know not to read into our parent.
-  #
-  # If the value has changed as a result of this operation, a change event will
-  # be issued.
-  #
-  # **Returns** the value that was cleared.
-  unset: (key) ->
-    if this._parent?
-      oldValue = this.get(key)
-      util.deepSet(this.attributes, key)(Null)
-      this._emitChange(key, this.get(key), oldValue) unless oldValue is null
-
-    else
-      oldValue = this.get(key)
-      this._deleteAttr(key)
-
-    oldValue
-
-  # Takes an entire attribute bag, and replaces our own attributes with it.
-  # Will fire the appropriate events.
-  #
-  # **Returns** nothing.
-  setAll: (attrs) ->
-    # first clear off attributes that are about to no longer exist.
-    util.traverseAll(this.attributes, (path, value) => this.unset(path.join('.')) unless util.deepGet(attrs, path)?)
-
-    # now add in the ones we now want.
-    this.set(attrs)
-
-    null
-
-  # Get a `Varying` object for a particular key. This simply creates a new
-  # Varying that points at our attribute.
-  #
-  # **Returns** a `Varying` object against our attribute at `key`.
-  watch: (key) ->
-    this._watches[key] ?= do =>
-      varying = new Varying(this.get(key))
-      this.listenTo(this._parent, "changed:#{key}", => varying.set(this.get(key))) if this._parent?
-      this.listenTo(this, "changed:#{key}", (newValue) -> varying.set(newValue))
-      varying
-
   # Like `#watch(key)`, but if the attribute in question is an unresolved
   # `ReferenceAttribute` then we take the given app object and kick off the
   # appropriate actions. The resulting `Varying` from this call contains
   # wrapped `types.result` cases. The actual property key will be populated
   # with a successful value if it comes.
-  terminate = (x) -> if x.all? then x.all else x # TODO: becoming a common pattern. move to util.
   resolve: (key, app) ->
     this._resolves[key] ?= do =>
       this.watch(key).flatMap (value) =>
@@ -190,15 +75,6 @@ class Model extends Base
   # TODO: this feels a bit cognitively dissonant. stems from the fact that the
   # work is done in a flatMap, which isn't supposed to have side effects.
   resolveNow: (key, app) -> this.resolve(key, app).reactNow(->)
-
-  # Get a `Varying` object for this entire object. It will emit a change event
-  # any time any attribute on the entire object changes. Does not event when
-  # nested model attributes change, however.
-  #
-  # **Returns** a `Varying` object against our whole model.
-  watchAll: ->
-    varying = new Varying(this)
-    this.listenTo(this, 'anyChanged', => varying.set(this, true)) # TODO this is no longer viable
 
   # Class-level storage bucket for attribute schema definition.
   @attributes: ->
@@ -262,7 +138,6 @@ class Model extends Base
 
   # Actually set up our binding.
   # **Returns** nothing.
-  terminate = (x) -> if x.all? then x.all else x
   _bind: ->
     this._binders = {}
     recurse = (obj) =>
@@ -295,161 +170,6 @@ class Model extends Base
     from.default.app (_, self, app) -> if app? then new Varying(app) else from.default.app()
     from.default.self (x, self) -> if util.isFunction(x) then Varying.ly(x(self)) else Varying.ly(self)
   )
-
-  # Revert a particular attribute on this model. After this, the model will
-  # return whatever its parent thinks the attribute should be. If no parent
-  # exists, this function will fail silently. The key can be a dot-separated
-  # path.
-  #
-  # If the value has changed as a result of this operation, a change event will
-  # be issued.
-  #
-  # **Returns** the value that was cleared.
-  revert: (key) ->
-    return unless this._parent?
-    this._deleteAttr(key)
-
-  # Shadow-copies a model. This allows a second copy of the model to function
-  # as its own model instance and keep a separate set of changes, but which
-  # will fall back on the original model if asked about an attribute it doesn't
-  # know about.
-  #
-  # **Returns** a new shadow copy, which is an instance of `Model`.
-  shadow: (klass) -> new (klass ? this.constructor)({}, util.extendNew(this.options, { parent: this }))
-
-  # Checks if we've changed relative to our original.
-  #
-  # **Returns** true if we have been modified.
-  modified: (deep = true) ->
-    return false unless this._parent?
-
-    result = false
-    util.traverse(this.attributes, (path) => result = true if this.attrModified(path, deep))
-    result
-
-  # Checks if one attribute has change relative to our original.
-  #
-  # **Returns** true if the attribute has been modified
-  attrModified: (path, deep) ->
-    return false unless this._parent?
-
-    value = util.deepGet(this.attributes, path)
-    return false if !value? # necessarily we're just falling through
-
-    value = null if value is Null
-
-    isDeep =
-      if !deep?
-        true
-      else if util.isFunction(deep)
-        deep(this, path, value)
-      else
-        deep is true
-
-    attribute = this.attribute(path)
-    transient = attribute? and attribute.transient is true
-
-    if !transient
-      parentValue = this._parent.get(path)
-
-      if value instanceof Model
-        # Check that parentValue != value
-        # If it isn't, check value children.
-        !(parentValue in value.originals()) or (isDeep is true and value.modified(deep))
-      else
-        parentValue isnt value and !(!parentValue? and !value?)
-    else
-      false
-
-  # Watches whether we've changed relative to our original.
-  #
-  # **Returns** Varying[Boolean] indicating modified state.
-  watchModified: (deep) ->
-    isDeep =
-      if !deep?
-        true
-      else if util.isFunction(deep)
-        deep(this)
-      else
-        deep is true
-
-    if isDeep is true
-      # for deep, we have to listen not only to our own state changes, but also
-      # to any models we might contain.
-      this._watchModifiedDeep$ ?= do =>
-        # return if we're already initializing. This is to prevent infinite
-        # recursion; if we don't already have a fully realized watch but we've
-        # started one, this instance's state is already covered.
-        return if this._watchModifiedDeep$init is true
-        this._watchModifiedDeep$init = true
-
-        result = new Varying(this.modified(deep))
-        this.on 'anyChanged', (path) =>
-          if this.attrModified(path, deep)
-            result.set(true)
-          else
-            result.set(this.modified(deep))
-
-        watchModel = (model) =>
-          model.watchModified(deep).react (isChanged) =>
-            if isChanged is true
-              result.set(true)
-            else
-              result.set(this.modified(deep))
-
-        # wait for varying to resolve into a model, then stop watching it.
-        watchVarying = (varying) =>
-          resolveVarying = (model) =>
-            if model instanceof Model
-              this._subvaryings().remove(varying)
-              this._submodels().add(model)
-              varying.off('changed', resolveVarying) # stop reacting.
-          varying.react resolveVarying
-
-        uniqSubmodels = this._submodels().uniq()
-        uniqSubvaryings = this._subvaryings().uniq()
-        watchModel(model) for model in uniqSubmodels.list
-        watchVarying(varying) for varying in uniqSubvaryings.list
-        uniqSubmodels.on('added', (newModel) => watchModel(newModel))
-        uniqSubmodels.on('removed', (oldModel) => this.unlistenTo(oldModel.watchModified(deep)))
-        uniqSubvaryings.on('added', (newVarying) => watchVarying(newVarying))
-
-        result
-
-    else
-      # for shallow, we only care about refs, which we'll reliably get events
-      # for via our own change event.
-      this._watchModified$ ?= do =>
-        result = new Varying(this.modified(deep))
-        this.on 'anyChanged', (path) =>
-          if this.attrModified(path, deep)
-            result.set(true)
-          else
-            result.set(this.modified(deep))
-
-        result
-
-  # Returns the original copy of a model. Returns itself if it's already an
-  # original model.
-  #
-  # **Returns** an instance of `Model`.
-  original: -> this._parent?.original() ? this
-
-  # Returns all shadow parents of a model. Returns an empty array if it's
-  # already an original model.
-  #
-  # **Returns** Array[Model] of shadow parents.
-  originals: ->
-    cur = this
-    (cur = cur._parent) while cur._parent?
-
-  # Merges the current model's changed attributes into its parent's. Fails
-  # silently if it has no parent.
-  #
-  # TODO: should be optionally deep.
-  #
-  # **Returns** nothing.
-  merge: -> this._parent?.set(this.attributes); null
 
   # Returns a `List` of issues with this model. If no issues exist, the `List`
   # will be empty.
@@ -529,50 +249,6 @@ class Model extends Base
   # Shortcut method to serialize a model by the default rules specified by
   # its own constructor.
   serialize: -> this.constructor.serialize(this)
-
-  # Helper used by `revert()` and some paths of `unset()` to actually clear out
-  # a particular key.
-  _deleteAttr: (key) ->
-    oldValue = util.deepDelete(this.attributes, key)
-    newValue = this.get(key)
-    this._emitChange(key, newValue, oldValue) unless newValue is oldValue
-
-    oldValue
-
-  # Helper to generate change events. We emit events for both the actual changed
-  # key along with all its parent nests, which this deals with.
-  _emitChange: (key, newValue, oldValue) ->
-    # split out our path parts if necessary.
-    parts = if util.isArray(key) then key else key.split('.')
-
-    # track all our submodels.
-    this._submodels().remove(oldValue) if oldValue instanceof Model
-    this._submodels().add(newValue) if newValue instanceof Model
-
-    # track all our subvaryings.
-    this._subvaryings().remove(oldValue) if oldValue instanceof Varying
-    this._subvaryings().add(newValue) if newValue instanceof Varying
-
-    # emit helper.
-    emit = (name, partKey) => this.emit("#{name}:#{partKey}", newValue, oldValue, partKey)
-
-    # emit on the direct path part.
-    emit('changed', parts.join('.'))
-
-    # emit on the path parents.
-    while parts.length > 1
-      parts.pop()
-      emit('subKeyChanged', parts.join('.'))
-
-    # emit that something changed at all.
-    this.emit('anyChanged', key, newValue, oldValue) # TODO: why doesn't simply leaving off the namespace work?
-
-    null
-
-  # Returns the submodel and subvarying list for this class. Instantiates lazily when
-  # requested otherwise we get stack overflow.
-  _submodels: -> this._submodels$ ?= new (require('../collection/list').List)()
-  _subvaryings: -> this._subvaryings$ ?= new (require('../collection/list').List)()
 
 
 module.exports = { Model }

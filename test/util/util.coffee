@@ -88,6 +88,12 @@ describe 'Util', ->
     it 'should copy properties from the sources onto a new object', ->
       util.extendNew({ a: 1 }, { b: 2, c: 3 }, { d: 4, e: 5}).should.eql({ a: 1, b: 2, c: 3, d: 4, e: 5 })
 
+  describe 'isEmptyObject', ->
+    it 'should return true only for plain, empty objects', ->
+      util.isEmptyObject(null).should.equal(false)
+      util.isEmptyObject({ test: 1 }).should.equal(false)
+      util.isEmptyObject({}).should.equal(true)
+
   describe 'superclass', ->
     it 'should correctly identify the superclass of a coffeescript class', ->
       class A

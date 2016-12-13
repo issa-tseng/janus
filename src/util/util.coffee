@@ -55,6 +55,12 @@ util =
     util.extend(obj, srcs...)
     obj
 
+  # Check if an object has any k/v pairs at all.
+  isEmptyObject: (obj) ->
+    return false unless obj?
+    (return false) for _ of obj
+    return true
+
   # Get the superclass of a class. Accounts for Coffeescript and Livescript.
   superClass: (klass) ->
     if klass.superclass?
