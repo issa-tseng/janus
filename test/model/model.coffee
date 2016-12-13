@@ -35,136 +35,43 @@ describe 'Model', ->
       new TestModel({ a: 42 })
       result.should.equal(42)
 
-  describe 'attribute', ->
-    describe 'get', ->
-      it 'should be able to get a shallow attribute', ->
-        model = new Model( vivace: 'brix' )
-        model.get('vivace').should.equal('brix')
+  describe 'attribute get', ->
+    it 'should return the default value if defined', ->
+      class TestAttribute extends attribute.Attribute
+        default: -> 'espresso'
 
-      it 'should be able to get a deep attribute', ->
-        model = new Model( cafe: { vivace: 'brix' } )
-        model.get('cafe.vivace').should.equal('brix')
+      class TestModel extends Model
+        @attribute('latte', TestAttribute)
 
-      it 'should return null on nonexistent attributes', ->
-        model = new Model( broad: 'way' )
-        (model.get('vivace') is null).should.be.true
-        (model.get('cafe.vivace') is null).should.be.true
+      m = new TestModel()
+      m.get('latte').should.equal('espresso')
 
-      it 'should return the default value if defined', ->
-        class TestAttribute extends attribute.Attribute
-          default: -> 'espresso'
+      m2 = new TestModel({ latte: 'good' })
+      m2.get('latte').should.equal('good')
 
-        class TestModel extends Model
-          @attribute('latte', TestAttribute)
+    it 'should not write the default value if not specified', ->
+      class TestAttribute extends attribute.Attribute
+        default: -> 'espresso'
 
-        m = new TestModel()
-        m.get('latte').should.equal('espresso')
+      class TestModel extends Model
+        @attribute('latte', TestAttribute)
 
-        m2 = new TestModel({ latte: 'good' })
-        m2.get('latte').should.equal('good')
+      m = new TestModel()
+      m.get('latte').should.equal('espresso')
+      m.serialize().should.eql({})
 
-      it 'should not write the default value if not specified', ->
-        class TestAttribute extends attribute.Attribute
-          default: -> 'espresso'
+    it 'should write the default value if writeDefault is true', ->
+      class TestAttribute extends attribute.Attribute
+        default: -> 'espresso'
+        writeDefault: true
 
-        class TestModel extends Model
-          @attribute('latte', TestAttribute)
+      class TestModel extends Model
+        @attribute('latte', TestAttribute)
 
-        m = new TestModel()
-        m.get('latte').should.equal('espresso')
-        m.serialize().should.eql({})
-
-      it 'should write the default value if writeDefault is true', ->
-        class TestAttribute extends attribute.Attribute
-          default: -> 'espresso'
-          writeDefault: true
-
-        class TestModel extends Model
-          @attribute('latte', TestAttribute)
-
-        m = new TestModel()
-        m.serialize().should.eql({})
-        m.get('latte').should.equal('espresso')
-        m.serialize().should.eql({ latte: 'espresso' })
-
-    describe 'set', ->
-      it 'should be able to set a shallow attribute', ->
-        model = new Model()
-        model.set('colman', 'pool')
-
-        model.attributes.colman.should.equal('pool')
-        model.get('colman').should.equal('pool')
-
-      it 'should be able to set a deep attribute', ->
-        model = new Model()
-        model.set('colman.pool', 'slide')
-
-        model.attributes.colman.pool.should.equal('slide')
-        model.get('colman.pool').should.equal('slide')
-
-      it 'should be able to set a deep attribute bag', ->
-        model = new Model()
-        model.set('colman.pool', { location: 'west seattle', length: { amount: 50, unit: 'meter' } })
-
-        model.get('colman.pool.location').should.equal('west seattle')
-        model.get('colman.pool.length.amount').should.equal(50)
-        model.get('colman.pool.length.unit').should.equal('meter')
-
-      it 'should accept a bag of attributes', ->
-        model = new Model()
-        model.set( the: 'stranger' )
-
-        model.attributes.the.should.equal('stranger')
-
-      it 'should deep write all attributes in a given bag', ->
-        model = new Model( the: { stranger: 'seattle' } )
-        model.set( the: { joule: 'apartments' }, black: 'dog' )
-
-        model.attributes.the.stranger.should.equal('seattle')
-        model.get('the.stranger').should.equal('seattle')
-
-        model.attributes.the.joule.should.equal('apartments')
-        model.get('the.joule').should.equal('apartments')
-
-        model.attributes.black.should.equal('dog')
-        model.get('black').should.equal('dog')
-
-    describe 'unset', ->
-      it 'should be able to unset an attribute', ->
-        model = new Model( cafe: { vivace: 'brix' } )
-        model.unset('cafe.vivace')
-
-        (model.get('cafe.vivace') is null).should.be.true
-
-      it 'should be able to unset an attribute tree', ->
-        model = new Model( cafe: { vivace: 'brix' } )
-        model.unset('cafe')
-
-        (model.get('cafe.vivace') is null).should.be.true
-        (model.get('cafe') is null).should.be.true
-
-    describe 'setAll', ->
-      it 'should set all attributes in the given bag', ->
-        model = new Model()
-        model.setAll( the: { stranger: 'seattle', joule: 'apartments' } )
-
-        model.attributes.the.stranger.should.equal('seattle')
-        model.get('the.stranger').should.equal('seattle')
-
-        model.attributes.the.joule.should.equal('apartments')
-        model.get('the.joule').should.equal('apartments')
-
-      it 'should clear attributes not in the given bag', ->
-        model = new Model( una: 'bella', tazza: { di: 'caffe' } )
-        model.setAll( tazza: { of: 'cafe' } )
-
-        should.not.exist(model.attributes.una)
-        (model.get('una') is null).should.be.true
-        should.not.exist(model.attributes.tazza.di)
-        (model.get('tazza.di') is null).should.be.true
-
-        model.attributes.tazza.of.should.equal('cafe')
-        model.get('tazza.of').should.equal('cafe')
+      m = new TestModel()
+      m.serialize().should.eql({})
+      m.get('latte').should.equal('espresso')
+      m.serialize().should.eql({ latte: 'espresso' })
 
   describe 'binding', ->
     describe 'application', ->
@@ -629,157 +536,7 @@ describe 'Model', ->
       model.valid(1).get().should.equal(false)
       model.valid(2).get().should.equal(false)
 
-  describe 'shadowing', ->
-    describe 'creation', ->
-      it 'should create a new instance of the same model class', ->
-        class TestModel extends Model
-
-        model = new TestModel()
-        shadow = model.shadow()
-
-        shadow.should.not.equal(model)
-        shadow.should.be.an.instanceof(TestModel)
-
-      it 'should return the original of a shadow', ->
-        model = new Model()
-        model.shadow().original().should.equal(model)
-
-      it 'should return the original of a shadow\'s shadow', ->
-        model = new Model()
-        model.shadow().shadow().original().should.equal(model)
-
-      it 'should return all shadow parents of a model', ->
-        a = new Model()
-        b = a.shadow()
-        c = b.shadow()
-
-        originals = c.originals()
-        originals.length.should.equal(2)
-        originals[0].should.equal(b)
-        originals[1].should.equal(a)
-
-      it 'should return an empty array if it is an original asked for parents', ->
-        (new Model()).originals().should.eql([])
-
-      it 'should return itself as the original if it is not a shadow', ->
-        model = new Model()
-        model.original().should.equal(model)
-
-    describe 'attributes', ->
-      it 'should return the parent\'s values', ->
-        model = new Model( test1: 'a' )
-        shadow = model.shadow()
-
-        shadow.get('test1').should.equal('a')
-
-        model.set('test2', 'b')
-        shadow.get('test2').should.equal('b')
-
-      it 'should override the parent\'s values with its own', ->
-        model = new Model( test: 'x' )
-        shadow = model.shadow()
-
-        shadow.get('test').should.equal('x')
-        shadow.set('test', 'y')
-        shadow.get('test').should.equal('y')
-
-        model.get('test').should.equal('x')
-
-      it 'should revert to the parent\'s value on revert()', ->
-        model = new Model( test: 'x' )
-        shadow = model.shadow()
-
-        shadow.set('test', 'y')
-        shadow.get('test').should.equal('y')
-
-        shadow.revert('test')
-        shadow.get('test').should.equal('x')
-
-      it 'should do nothing on revert() if there is no parent', ->
-        model = new Model( test: 'x' )
-        model.revert('test')
-        model.get('test').should.equal('x')
-
-      it 'should return null for values that have been set and unset, even if the parent has values', ->
-        model = new Model( test: 'x' )
-        shadow = model.shadow()
-
-        shadow.set('test', 'y')
-        shadow.get('test').should.equal('y')
-
-        shadow.unset('test')
-        (shadow.get('test') is null).should.equal(true)
-
-        shadow.revert('test')
-        shadow.get('test').should.equal('x')
-
-      it 'should return null for values that have been directly unset, even if the parent has values', ->
-        model = new Model( test: 'x' )
-        shadow = model.shadow()
-
-        shadow.unset('test')
-        (shadow.get('test') is null).should.equal(true)
-
-      it 'should return a shadow submodel if it sees a model', ->
-        submodel = new Model()
-        model = new Model( test: submodel )
-
-        shadow = model.shadow()
-        shadow.get('test').original().should.equal(submodel)
-
-    describe 'events', ->
-      it 'should event when an inherited attribute value changes', ->
-        model = new Model( test: 'x' )
-        shadow = model.shadow()
-
-        evented = false
-        shadow.watch('test').react (value) ->
-          evented = true
-          value.should.equal('y')
-
-        model.set('test', 'y')
-        evented.should.equal(true)
-
-      it 'should not event when an overriden inherited attribute changes', ->
-        model = new Model( test: 'x' )
-        shadow = model.shadow()
-
-        shadow.set('test', 'y')
-
-        evented = false
-        shadow.watch('test').react(-> evented = true)
-
-        model.set('test', 'z')
-        evented.should.equal(false)
-
-    describe 'merging', ->
-      it 'should merge overriden changes up to its parent on merge()', ->
-        model = new Model( test: 'x' )
-        shadow = model.shadow()
-
-        shadow.set('test', 'y')
-        shadow.merge()
-
-        model.get('test').should.equal('y')
-
-      it 'should merge new attributes up to its parent on merge()', ->
-        model = new Model()
-        shadow = model.shadow()
-
-        shadow.set('test', 'x')
-        shadow.merge()
-
-        model.get('test').should.equal('x')
-
-      it 'should clear unset attributes up to its parent on merge()', ->
-        model = new Model( test: 'x' )
-        shadow = model.shadow()
-
-        shadow.unset('test')
-        shadow.merge()
-
-        should.not.exist(model.get('test'))
-
+    ###
     describe 'modification detection', ->
       it 'should return false if a model has no parent', ->
         model = new Model()
@@ -983,4 +740,5 @@ describe 'Model', ->
 
           shadow.get('test').set('a', 'b')
           evented.should.equal(true)
+    ###
 

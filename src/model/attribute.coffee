@@ -1,5 +1,6 @@
 from = require('../core/from')
 Model = require('./model').Model
+Struct = require('./struct').Struct
 Varying = require('../core/varying').Varying
 List = require('../collection/list').List
 
@@ -13,7 +14,7 @@ class Attribute extends Model
   setValue: (value) -> this.model.set(this.key, value)
   unsetValue: -> this.model.unset(this.key)
   getValue: ->
-    value = this.model.get(this.key, true)
+    value = this.model.get(this.key)
     if !value? and this.default?
       value = this.default()
       if this.writeDefault is true
