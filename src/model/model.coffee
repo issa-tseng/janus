@@ -115,7 +115,6 @@ class Model extends Struct
       else if util.superClass(obj)?
         recurse(util.superClass(obj))
 
-    key = key.join('.') if util.isArray(key)
     this._attributes[key] ?= recurse(this.constructor)
 
   # Returns actual instances of every attribute associated with this model.

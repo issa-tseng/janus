@@ -135,9 +135,6 @@ describe 'Util', ->
       util.deepGet({ a: { b: { c: 2 } } }, 'a.b.c').should.equal(2)
       util.deepGet({ a: { b: { c: { d: 3 } } } }, 'a.b.c').should.eql({ d: 3 })
 
-    it 'should work with separate arguments', ->
-      util.deepGet({ a: { b: { c: 2 } } }, 'a', 'b', 'c').should.equal(2)
-
     it 'should work with an array', ->
       util.deepGet({ a: { b: { c: 2 } } }, [ 'a', 'b', 'c' ]).should.equal(2)
 

@@ -69,25 +69,12 @@ util =
       klass.__super__.constructor
 
 
-  # Helper used by `deepGet` and `deepSet` to standardize the path argument.
-  # Accepts `x, y, z`, `'x.y.z'`, and `[x, y, z]`.
-  #
-  # **Returns** an array of string path components.
-  normalizePath: (path) ->
-    if path.length isnt 1
-      path
-    else
-      if util.isString(path[0])
-        path[0].split('.')
-      else if util.isArray(path[0])
-        path[0]
-
   # Gets a deeply nested key from a hash. Falls back to `null` if it can't find
   # the key in question.
   #
   # **Returns** the value in question, or else `null`.
-  deepGet: (obj, path...) ->
-    path = util.normalizePath(path)
+  deepGet: (obj, path) ->
+    path = if util.isArray(path) then path else path.split('.')
 
     idx = 0
     obj = obj[path[idx++]] while obj? and idx < path.length
@@ -97,8 +84,8 @@ util =
   # if it encounters undef keys.
   #
   # **Returns** a function that takes a value and sets the requested key
-  deepSet: (obj, path...) ->
-    path = util.normalizePath(path)
+  deepSet: (obj, path) ->
+    path = if util.isArray(path) then path else path.split('.')
 
     idx = 0
     obj = obj[path[idx++]] ?= {} while (idx + 1) < path.length
@@ -109,8 +96,8 @@ util =
   # path in question.
   #
   # **Returns** the deleted value
-  deepDelete: (obj, path...) ->
-    path = util.normalizePath(path)
+  deepDelete: (obj, path) ->
+    path = if util.isArray(path) then path else path.split('.')
 
     idx = 0
     obj = obj[path[idx++]] while (idx + 1) < path.length and obj?
