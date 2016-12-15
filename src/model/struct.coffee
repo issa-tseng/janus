@@ -28,8 +28,10 @@ class Struct extends Base
     this._attributes = {}
     this._watches = {}
 
-    # If we have a designated shadow parent, set it.
-    this._parent = this.options.parent
+    # If we have a designated shadow parent, set it and track its events.
+    if this.options.parent?
+      this._parent = this.options.parent
+      this.listenTo(this._parent, 'anyChanged', (key, newValue, oldValue) => this._parentChanged(key, newValue, oldValue))
 
     # Allow setup that happens before attribute binding occurs, without
     # overriding constructor args.
@@ -159,7 +161,6 @@ class Struct extends Base
   watch: (key) ->
     this._watches[key] ?= do =>
       varying = new Varying(this.get(key))
-      this.listenTo(this._parent, "changed:#{key}", => varying.set(this.get(key))) if this._parent?
       this.listenTo(this, "changed:#{key}", (newValue) -> varying.set(newValue))
       varying
 
@@ -169,6 +170,14 @@ class Struct extends Base
     this.emit('anyChanged', key, newValue, oldValue) # TODO: figure this out.
 
     null
+
+  # Handles our parent's changes and judiciously vends those events ourselves.
+  _parentChanged: (key, newValue, oldValue) ->
+    ourValue = deepGet(this.attributes, key)
+    return if ourValue? or ourValue is Null # the change doesn't affect us.
+
+    this.emit("changed:#{key}", newValue, oldValue)
+    this.emit('anyChanged', key, newValue, oldValue)
 
 
 module.exports = { Null, Struct }

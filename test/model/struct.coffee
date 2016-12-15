@@ -231,8 +231,8 @@ describe 'Struct', ->
         shadow = struct.shadow()
         shadow.get('test').original().should.equal(substruct)
 
-    describe 'events', ->
-      it 'should event when an inherited attribute value changes', ->
+    describe 'watching', ->
+      it 'should handle when an inherited attribute value changes', ->
         struct = new Struct( test: 'x' )
         shadow = struct.shadow()
 
@@ -244,7 +244,7 @@ describe 'Struct', ->
         struct.set('test', 'y')
         evented.should.equal(true)
 
-      it 'should not event when an overriden inherited attribute changes', ->
+      it 'should not fire when an overriden inherited attribute changes', ->
         struct = new Struct( test: 'x' )
         shadow = struct.shadow()
 
@@ -255,4 +255,26 @@ describe 'Struct', ->
 
         struct.set('test', 'z')
         evented.should.equal(false)
+
+      it 'should handle when a skiplevel parent has changed', -> # gh45
+        s = new Struct( a: 1 )
+        s2 = s.shadow()
+        s3 = s2.shadow()
+
+        results = []
+        s3.watch('a').reactNow((x) -> results.push(x))
+
+        s.set('a', 2)
+        results.should.eql([ 1, 2 ])
+
+      it 'should emit anyChanged when a skiplevel parent has changed', -> # gh45
+        s = new Struct()
+        s2 = s.shadow()
+        s3 = s2.shadow()
+
+        results = []
+        s3.on('anyChanged', (args...) -> results.push(args))
+
+        s.set('a', 1)
+        results.should.eql([ [ 'a', 1, null ] ])
 
