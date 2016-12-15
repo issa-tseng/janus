@@ -70,32 +70,8 @@ class KeyList extends DerivedList
     null
 
   # (flat)mapPairs takes f: (x, y) -> z and returns List[z]
-  mapPairs: (f) -> this.map((key) => Varying.flatMapAll(f, new Varying(key), this.model.watch(key)))
-  flatMapPairs: (f) -> this.flatMap((key) => Varying.flatMapAll(f, new Varying(key), this.model.watch(key)))
-
-  # (flat)mapToStruct takes f: (x, y) -> z and returns Struct with values mapped to z
-  mapToStruct: (f) ->
-    result = new Struct()
-    result.set(key, f(key, this.model.get(key))) for key in this.list
-    result.listenTo(this, 'added', (key) => result.set(key, f(key, this.model.get(key))))
-    result.listenTo(this, 'removed', (key) => result.unset(key))
-    result
-
-  flatMapToStruct: (f, klass = Struct) ->
-    result = new klass()
-    varieds = {}
-    add = (key) =>
-      varieds[key] = this.model.watch(key).flatMap((value) => f(key, value)).reactNow((x) -> result.set(key, x))
-    add(key) for key in this.list
-
-    result.listenTo(this, 'added', add)
-    result.listenTo(this, 'removed', (key) =>
-      varieds[key].stop()
-      delete varieds[key]
-      result.unset(key)
-    )
-    result.on('destroying', -> varied.stop() for _, varied of varieds)
-    result
+  mapPairs: (f) -> this.flatMap((key) => Varying.mapAll(f, new Varying(key), this.struct.watch(key)))
+  flatMapPairs: (f) -> this.flatMap((key) => Varying.flatMapAll(f, new Varying(key), this.struct.watch(key)))
 
 
 Enumeration = {

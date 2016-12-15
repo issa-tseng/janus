@@ -1,5 +1,6 @@
 should = require('should')
 
+{ Varying } = require('../../lib/core/varying')
 { Struct } = require('../../lib/model/struct')
 { KeyList, Enumeration } = require('../../lib/model/enumeration')
 
@@ -134,4 +135,77 @@ describe 'struct enumeration', ->
         kl.length.should.equal(4)
         for val, idx in [ 'a', 'b.c', 'b', 'b.c.e' ]
           kl.at(idx).should.equal(val)
+
+    describe 'k/v mapping', ->
+      describe 'mapPairs', ->
+        it 'should pass k/v pairs into a mapping function', ->
+          s = new Struct( a: 1, b: 2, c: { d: 3 } )
+          kl = new KeyList(s)
+
+          mapped = []
+          kl.mapPairs((k, v) -> mapped.push(k, v))
+          mapped.should.eql([ 'a', 1, 'b', 2, 'c.d', 3 ])
+
+        it 'should result in a list of mapped results', ->
+          s = new Struct( a: 1, b: 2, c: { d: 3 } )
+          kl = new KeyList(s)
+
+          m = kl.mapPairs((k, v) -> "#{k}: #{v}")
+          m.length.should.equal(3)
+          for val, idx in [ 'a: 1', 'b: 2', 'c.d: 3' ]
+            m.at(idx).should.equal(val)
+
+        it 'should not flatten the result', ->
+          s = new Struct( a: 1, b: 2, c: { d: 3 } )
+          kl = new KeyList(s)
+
+          m = kl.mapPairs((k, v) -> new Varying(v))
+          m.length.should.equal(3)
+          for idx in [0..2]
+            m.at(idx).should.be.an.instanceof(Varying)
+
+        it 'should update if the original value changes', ->
+          s = new Struct( a: 1, b: 2, c: { d: 3 } )
+          kl = new KeyList(s)
+          m = kl.mapPairs((k, v) -> "#{k}: #{v}")
+
+          s.set('c.d', 4)
+          m.length.should.equal(3)
+          for val, idx in [ 'a: 1', 'b: 2', 'c.d: 4' ]
+            m.at(idx).should.equal(val)
+
+          s.set('c.e', 8)
+          m.length.should.equal(4)
+          for val, idx in [ 'a: 1', 'b: 2', 'c.d: 4', 'c.e: 8' ]
+            m.at(idx).should.equal(val)
+
+      describe 'flatMapPairs', ->
+        it 'should flatten the result', ->
+          s = new Struct( a: 1, b: 2, c: { d: 3 } )
+          kl = new KeyList(s)
+
+          m = kl.flatMapPairs((k, v) -> new Varying("#{k}: #{v}"))
+          m.length.should.equal(3)
+          for val, idx in [ 'a: 1', 'b: 2', 'c.d: 3' ]
+            m.at(idx).should.equal(val)
+
+        it 'should update if the original value or the inner mapping change', ->
+          s = new Struct( a: 1, b: 2, c: { d: 3 } )
+          kl = new KeyList(s)
+
+          x = new Varying(0)
+          m = kl.flatMapPairs((k, v) -> x.map((y) -> "#{k}: #{v + y}"))
+          m.length.should.equal(3)
+          for val, idx in [ 'a: 1', 'b: 2', 'c.d: 3' ]
+            m.at(idx).should.equal(val)
+
+          x.set(3)
+          m.length.should.equal(3)
+          for val, idx in [ 'a: 4', 'b: 5', 'c.d: 6' ]
+            m.at(idx).should.equal(val)
+
+          s.set('c.e', 8)
+          m.length.should.equal(4)
+          for val, idx in [ 'a: 4', 'b: 5', 'c.d: 6', 'c.e: 11' ]
+            m.at(idx).should.equal(val)
 
