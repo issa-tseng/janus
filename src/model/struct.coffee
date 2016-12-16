@@ -21,11 +21,7 @@ class Struct extends Base
   constructor: (attributes = {}, @options = {}) ->
     super()
 
-    # Init attribute store so we can bind against it.
     this.attributes = {}
-
-    # Init various caches.
-    this._attributes = {}
     this._watches = {}
 
     # If we have a designated shadow parent, set it and track its events.
