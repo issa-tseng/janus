@@ -18,9 +18,9 @@ class Model extends Struct
 
   # We take in an attribute bag and optionally some options for this Model.
   # Options are for both framework and implementation use.
-  #
   constructor: (attributes = {}, options) ->
     this._resolves = {}
+    this._attributes = {}
     super(attributes, options)
     this._bind() # kick off bindings only after basic init.
 
@@ -78,49 +78,39 @@ class Model extends Struct
 
   # Class-level storage bucket for attribute schema definition.
   @attributes: ->
-    if this._attributesAgainst isnt this
-      this._attributesAgainst = this
-      this._attributes = {}
+    if @_attributesAgainst isnt this
+      @_attributesAgainst = this
 
-    this._attributes
+      superClass = util.superClass(this)
+      @_attributes =
+        if superClass.attributes?
+          superClass.attributes().shadow()
+        else
+          new Struct()
+    else
+      @_attributes
 
   # Get all attributes declared on this model, including inherited attributes.
-  # TODO: confusing naming scheme probably
+  # TODO: should be an easier way to extract this structure.
   @allAttributes: ->
-    attrs = {}
-
-    recurse = (obj) =>
-      return unless obj.attributes?
-      recurse(util.superClass(obj)) if util.superClass(obj)?
-      attrs[key] = attr for key, attr of obj.attributes()
-      null
-
-    recurse(this)
-    attrs
+    attrs = @attributes()
+    result = {}
+    (result[attr] = attrs.get(attr)) for attr in attrs.enumerate()
+    result
 
   # Declare an attribute for this model.
-  @attribute: (key, attribute) -> this.attributes()[key] = attribute
+  @attribute: (key, attribute) -> @attributes().set(key,  attribute)
 
   # Get an attribute for this model.
   #
   # **Returns** an `Attribute` object wrapping an attribute for the attribute
   # at the given key.
-  attribute: (key) ->
-    recurse = (obj) =>
-      return unless obj.attributes?
-      result = new (obj.attributes()[key])?(this, key)
-
-      if result?
-        result
-      else if util.superClass(obj)?
-        recurse(util.superClass(obj))
-
-    this._attributes[key] ?= recurse(this.constructor)
+  attribute: (key) -> this._attributes[key] ?= new (@constructor.attributes().get(key))?(this, key)
 
   # Returns actual instances of every attribute associated with this model.
   #
   # **Returns** an array of `Attribute`s.
-  allAttributes: -> this.attribute(key) for key of this.constructor.allAttributes()
+  allAttributes: -> this.attribute(key) for key of @constructor.allAttributes()
 
   # Store our binders
   @binders: ->
