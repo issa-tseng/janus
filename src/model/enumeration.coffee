@@ -81,7 +81,7 @@ Enumeration = {
 
     result = []
     traverser = if include is 'values' then traverse else if include is 'all' then traverseAll
-    scanStruct = (struct) => traverser(struct.attributes, (key) => result.push(key) unless result.indexOf(key) >= 0)
+    scanStruct = (struct) => traverser(struct.attributes, (key) => result.push(key.join('.')) unless result.indexOf(key) >= 0)
     if scope is 'all'
       ptr = struct
       while ptr?
