@@ -186,6 +186,54 @@ class Struct extends Base
   enumeration: (options) -> require('./enumeration').Enumeration.watch(this, options)
   enumerate: (options) -> require('./enumeration').Enumeration.get(this, options)
 
+  # Maps this struct's values onto a new one, with the same key structure. The
+  # mapping functions are passed (key, value) as the arguments.
+  #
+  # **Returns** a new Struct.
+  map: (f) ->
+    result = new DerivedStruct()
+    traverse(this.attributes, (k, v) ->
+      k = k.join('.')
+      result.__set(k, f(k, v))
+    )
+    result.listenTo(this, 'anyChanged', (key, value) =>
+      if value? and value isnt Null
+        result.__set(key, f(key, value))
+      else
+        result._unset(key)
+    )
+    result
+
+  flatMap: (f, klass = DerivedStruct) ->
+    result = new klass()
+    varieds = {}
+    add = (key) =>
+      varieds[key] ?= this.watch(key).flatMap((value) => f(key, value)).reactNow((x) -> result.__set(key, x))
+    traverse(this.attributes, (k) -> add(k.join('.')))
+
+    result.listenTo(this, 'anyChanged', (key, newValue, oldValue) =>
+      if newValue? and !varieds[key]?
+        # check v[k] rather than oldValue to account for an {} becoming an atom.
+        add(key)
+      else if oldValue? and !newValue?
+        for k, varied of varieds when k.indexOf(key) is 0
+          varied.stop()
+          delete varieds[k]
+        result._unset(key)
+    )
+    result.on('destroying', -> varied.stop() for _, varied of varieds)
+    result
+
+class DerivedStruct extends Struct
+  roError = -> throw new Error('this struct is read-only')
+
+  for method in [ '_set', 'setAll', 'unset', 'revert' ]
+    this.prototype["_#{method}"] = this.__super__[method]
+    this.prototype[method] = roError
+
+  set: -> roError
+  shadow: -> this
+
 
 module.exports = { Null, Struct }
 
