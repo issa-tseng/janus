@@ -179,6 +179,13 @@ class Struct extends Base
     this.emit("changed:#{key}", newValue, oldValue)
     this.emit('anyChanged', key, newValue, oldValue)
 
+  # Calls into the Enumeration module to get either a live KeySet or a static
+  # array enumerating the keys of this Struct. The options are passed directly
+  # to Enumeration, but consist of:
+  # * scope: (all|direct) all inherited or only dir
+  enumeration: (options) -> require('./enumeration').Enumeration.watch(this, options)
+  enumerate: (options) -> require('./enumeration').Enumeration.get(this, options)
+
 
 module.exports = { Null, Struct }
 

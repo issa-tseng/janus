@@ -1,6 +1,7 @@
 should = require('should')
 
-Struct = require('../../lib/model/struct').Struct
+{ Struct } = require('../../lib/model/struct')
+{ KeyList } = require('../../lib/model/enumeration')
 
 describe 'Struct', ->
   describe 'core', ->
@@ -277,4 +278,29 @@ describe 'Struct', ->
 
         s.set('a', 1)
         results.should.eql([ [ 'a', 1, null ] ])
+
+  describe 'enumeration', ->
+    it 'should return a KeyList of itself when asked for an enumeration', ->
+      s = new Struct( a: 1, b: 2, c: { d: 3 } )
+      kl = s.enumeration()
+      kl.should.be.an.instanceof(KeyList)
+      kl.list.should.eql([ 'a', 'b', 'c.d' ])
+
+    it 'should pass options along appropriately', ->
+      s = new Struct( a: 1, b: 2, c: { d: 3 } )
+      kl = s.enumeration( scope: 'direct', include: 'all' )
+      kl.scope.should.equal('direct')
+      kl.include.should.equal('all')
+
+    it 'should return an array of keys when asked to enumerate', ->
+      s = new Struct( a: 1, b: 2, c: { d: 3 } )
+      ks = s.enumerate()
+      ks.should.eql([ 'a', 'b', 'c.d' ])
+
+    it 'should pass option to the static enumerator', ->
+      s = new Struct( a: 1, b: 2, c: { d: 3 } )
+      s2 = s.shadow()
+      s2.set( c: { e: 4 }, f: 5 )
+      ks = s.enumerate( scope: 'direct', include: 'all' )
+      ks.should.eql([ 'a', 'b', 'c', 'c.d' ])
 
