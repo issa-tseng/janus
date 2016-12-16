@@ -209,3 +209,45 @@ describe 'struct enumeration', ->
           for val, idx in [ 'a: 4', 'b: 5', 'c.d: 6', 'c.e: 11' ]
             m.at(idx).should.equal(val)
 
+  describe 'module get', ->
+    it 'returns all keys by default', ->
+      s = new Struct( a: 1, b: 2, c: { d: { e: 3 }, f: 4 } )
+      keys = Enumeration.get(s)
+
+      keys.should.eql([ 'a', 'b', 'c.d.e', 'c.f' ])
+
+    it 'returns all branches if include-all', ->
+      s = new Struct( a: 1, b: 2, c: { d: { e: 3 }, f: 4 } )
+      keys = Enumeration.get(s, include: 'all' )
+
+      keys.should.eql([ 'a', 'b', 'c', 'c.d', 'c.d.e', 'c.f' ])
+
+    it 'returns shadow-inherited keys by default', ->
+      s = new Struct( b: 2, c: { d: { e: 3 } } )
+      s2 = s.shadow()
+      s2.set( a: 1, c: { f: 4 })
+      keys = Enumeration.get(s2)
+
+      keys.should.eql([ 'a', 'c.f', 'b', 'c.d.e' ])
+
+    it 'returns only direct keys if scope-direct', ->
+      s = new Struct( b: 2, c: { d: { e: 3 } } )
+      s2 = s.shadow()
+      s2.set( a: 1, c: { f: 4 })
+      keys = Enumeration.get(s2, scope: 'direct' )
+
+      keys.should.eql([ 'a', 'c.f' ])
+
+  describe 'module watch', ->
+    it 'returns a KeyList', ->
+      s = new Struct( a: 1, b: 2, c: { d: { e: 3 }, f: 4 } )
+      kl = Enumeration.watch(s)
+      kl.should.be.an.instanceof(KeyList)
+      kl.struct.should.equal(s)
+
+    it 'passes options through', ->
+      s = new Struct( a: 1, b: 2, c: { d: { e: 3 }, f: 4 } )
+      kl = Enumeration.watch(s, scope: 'direct', include: 'all' )
+      kl.scope.should.equal('direct')
+      kl.include.should.equal('all')
+
