@@ -1,5 +1,6 @@
 should = require('should')
 
+{ Varying } = require('../../lib/core/varying')
 { Struct } = require('../../lib/model/struct')
 { KeyList } = require('../../lib/model/enumeration')
 
@@ -303,4 +304,97 @@ describe 'Struct', ->
       s2.set( c: { e: 4 }, f: 5 )
       ks = s.enumerate( scope: 'direct', include: 'all' )
       ks.should.eql([ 'a', 'b', 'c', 'c.d' ])
+
+  describe 'mapping', ->
+    describe 'map', ->
+      it 'should provide the appropriate k/v arguments to the mapping function', ->
+        called = []
+        s = new Struct( a: 1, b: 2, c: { d: 3 } )
+        s.map((k, v) -> called.push(k, v))
+        called.should.eql([ 'a', 1, 'b', 2, 'c.d', 3 ])
+
+      it 'should return a Struct with the appropriate mapped values', ->
+        s = new Struct( a: 1, b: 2, c: { d: 3 } )
+        s2 = s.map((k, v) -> v + 1)
+        s2.should.be.an.instanceof(Struct)
+        s2.attributes.should.eql({ a: 2, b: 3, c: { d: 4 } })
+
+      it 'should handle added and removed values', ->
+        s = new Struct( a: 1, b: 2, c: { d: 3 } )
+        s2 = s.map((k, v) -> v + 1)
+
+        s.set('c.e.f', 4)
+        s2.attributes.should.eql({ a: 2, b: 3, c: { d: 4, e: { f: 5 } } })
+
+        s.unset('b')
+        s2.attributes.should.eql({ a: 2, c: { d: 4, e: { f: 5 } } })
+
+        s.unset('c.e')
+        s2.attributes.should.eql({ a: 2, c: { d: 4 } })
+
+      it 'should handle changed values', ->
+        s = new Struct( a: 1, b: 2, c: { d: 3 } )
+        s2 = s.map((k, v) -> v + 1)
+
+        s.set('c.d', 4)
+        s2.attributes.should.eql({ a: 2, b: 3, c: { d: 5 } })
+
+        s.set('c', 8)
+        s2.attributes.should.eql({ a: 2, b: 3, c: 9 })
+
+    describe 'flatMap', ->
+      it 'should provide the appropriate k/v arguments to the mapping function', ->
+        called = []
+        s = new Struct( a: 1, b: 2, c: { d: 3 } )
+        s.flatMap((k, v) -> called.push(k, v))
+        called.should.eql([ 'a', 1, 'b', 2, 'c.d', 3 ])
+
+      it 'should return a Struct with the appropriate mapped values', ->
+        s = new Struct( a: 1, b: 2, c: { d: 3 } )
+        c = new Varying(1)
+        s2 = s.flatMap((k, v) -> c.map((cv) -> v + cv))
+        s2.should.be.an.instanceof(Struct)
+        s2.attributes.should.eql({ a: 2, b: 3, c: { d: 4 } })
+
+      it 'should handle added and removed values', ->
+        s = new Struct( a: 1, b: 2, c: { d: 3 } )
+        c = new Varying(1)
+        s2 = s.flatMap((k, v) -> c.map((cv) -> v + cv))
+
+        s.set('c.e.f', 4)
+        s2.attributes.should.eql({ a: 2, b: 3, c: { d: 4, e: { f: 5 } } })
+
+        s.unset('b')
+        s2.attributes.should.eql({ a: 2, c: { d: 4, e: { f: 5 } } })
+
+        s.unset('c.e')
+        s2.attributes.should.eql({ a: 2, c: { d: 4 } })
+
+      it 'should handle changed values', ->
+        s = new Struct( a: 1, b: 2, c: { d: 3 } )
+        c = new Varying(1)
+        s2 = s.flatMap((k, v) -> c.map((cv) -> v + cv))
+
+        c.set(2)
+        s2.attributes.should.eql({ a: 3, b: 4, c: { d: 5 } })
+
+        s.set('c.d', 4)
+        s2.attributes.should.eql({ a: 3, b: 4, c: { d: 6 } })
+
+        c.set(4)
+        s2.attributes.should.eql({ a: 5, b: 6, c: { d: 8 } })
+
+        s.set('c', 8)
+        s2.attributes.should.eql({ a: 5, b: 6, c: 12 })
+
+      it 'should deregister all watches on destruction', ->
+        count = 0
+        s = new Struct( a: 1, b: 2, c: { d: 3 } )
+        c = new Varying(1)
+        s2 = s.flatMap((k, v) -> c.map((cv) -> count += 1; v + cv))
+
+        count.should.equal(3)
+        s2.destroy()
+        s.set('e', 4)
+        count.should.equal(3)
 
