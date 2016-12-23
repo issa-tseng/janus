@@ -9,9 +9,9 @@ class UniqList extends DerivedList
 
     this.counts = []
 
-    this._tryAdd(elem) for elem in parent.list
-    parent.on('added', (elem) => this._tryAdd(elem))
-    parent.on('removed', (elem) => this._tryRemove(elem))
+    this._tryAdd(elem) for elem in this.parent.list
+    this.parent.on('added', (elem) => this._tryAdd(elem))
+    this.parent.on('removed', (elem) => this._tryRemove(elem))
 
   _tryAdd: (elem) ->
     idx = this.list.indexOf(elem)

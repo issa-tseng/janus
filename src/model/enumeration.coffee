@@ -31,7 +31,7 @@ class KeyList extends DerivedList
       scanStruct(this.struct)
 
     # listen for future keys.
-    this.listenTo(struct, 'anyChanged', (key, newValue, oldValue) =>
+    this.listenTo(this.struct, 'anyChanged', (key, newValue, oldValue) =>
       if this.scope is 'direct'
         # TODO: is there a cleverer way to do this?
         ownValue = deepGet(this.struct.attributes, key)
