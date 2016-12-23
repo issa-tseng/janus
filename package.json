@@ -24,7 +24,7 @@
     "eventemitter2": "~2.2"
   },
   "devDependencies": {
-    "coffee-script": "1.6.2",
+    "coffee-script": "1.12.2",
     "mocha": "~3",
     "should": "~11",
     "istanbul": "~0.4"
