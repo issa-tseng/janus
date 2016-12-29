@@ -179,8 +179,8 @@ class Struct extends Base
   # array enumerating the keys of this Struct. The options are passed directly
   # to Enumeration, but consist of:
   # * scope: (all|direct) all inherited or only dir
-  enumeration: (options) -> require('./enumeration').Enumeration.watch(this, options)
-  enumerate: (options) -> require('./enumeration').Enumeration.get(this, options)
+  enumeration: (options) -> require('./enumeration').Enumeration.struct.watch(this, options)
+  enumerate: (options) -> require('./enumeration').Enumeration.struct.get(this, options)
 
   # Maps this struct's values onto a new one, with the same key structure. The
   # mapping functions are passed (key, value) as the arguments.
