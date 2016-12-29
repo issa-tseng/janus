@@ -7,7 +7,7 @@ foldBase = (update) -> (collection) ->
   collection.watchLength().reactNow (length) ->
     for idx in [watched...length]
       do (idx) ->
-        collection.watchAt(idx).reactNow((value) -> result.setValue(update(value, idx, collection)))
+        collection.watchAt(idx).reactNow((value) -> result.set(update(value, idx, collection)))
     watched = length
 
   result

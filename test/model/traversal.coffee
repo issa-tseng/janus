@@ -1,0 +1,192 @@
+should = require('should')
+
+{ Varying } = require('../../lib/core/varying')
+{ Struct } = require('../../lib/model/struct')
+{ Model } = require('../../lib/model/model')
+{ List } = require('../../lib/collection/list')
+attribute = require('../../lib/model/attribute')
+{ sum } = require('../../lib/collection/folds')
+{ Traversal, cases: { recurse, delegate, defer, varying, value, nothing } } = require('../../lib/model/traversal')
+
+describe 'traversal', ->
+  describe 'as list', ->
+    it 'should provide the appropriate basic arguments', ->
+      ss = new Struct( d: 1 )
+      s = new Struct( a: 1, b: 2, c: ss )
+      results = []
+      Traversal.asList(s, (k, v, o) ->
+        if v.isStruct is true
+          recurse(v)
+        else
+          results.push(k, v, o)
+          nothing
+      )
+      results.should.eql([ 'a', 1, s, 'b', 2, s, 'd', 1, ss ])
+
+    it 'should process straight value results as a map', ->
+      s = new Struct( a: 1, b: 2, c: 3 )
+      l = Traversal.asList(s, (k, v) -> value("#{k}#{v}"))
+
+      l.length.should.equal(3)
+      for val, idx in [ 'a1', 'b2', 'c3' ]
+        l.at(idx).should.equal(val)
+
+    it 'should result in undefined when nothing is passed', ->
+      s = new Struct( a: 1, b: 2, c: 3 )
+      l = Traversal.asList(s, (k, v) -> if v < 3 then nothing else value(v))
+
+      l.length.should.equal(3)
+      for val, idx in [ undefined, undefined, 3 ]
+        should(l.at(idx)).equal(val)
+
+    it 'should delegate to another function given delegate', ->
+      s = new Struct( a: 1, b: 2, c: 3 )
+      l = Traversal.asList(s, (k, v) ->
+        if v < 3
+          delegate((k, v) -> if v < 2 then value('x') else value('y'))
+        else
+          value(v)
+      )
+
+      l.length.should.equal(3)
+      for val, idx in [ 'x', 'y', 3 ]
+        l.at(idx).should.equal(val)
+
+    it 'should recurse into subobjects if requested', ->
+      s = new Struct( a: 1, b: 2, c: new Struct( d: 3, e: 4 ) )
+      l = Traversal.asList(s, (k, v) ->
+        if v.isStruct is true
+          recurse(v)
+        else
+          value("#{k}#{v}")
+      )
+
+      l.length.should.equal(3)
+      for val, idx in [ 'a1', 'b2' ]
+        l.at(idx).should.equal(val)
+
+      ll = l.at(2)
+      ll.length.should.equal(2)
+      for val, idx in [ 'd3', 'e4' ]
+        ll.at(idx).should.equal(val)
+
+    it 'should use a varying if passed', ->
+      s = new Struct( a: 1, b: 2, c: 3 )
+      v = new Varying(0)
+      l = Traversal.asList(s, (k, y) -> varying(v.map((x) -> value("#{k}#{y + x}"))))
+
+      l.length.should.equal(3)
+      for val, idx in [ 'a1', 'b2', 'c3' ]
+        l.at(idx).should.equal(val)
+
+      v.set(2)
+      l.length.should.equal(3)
+      for val, idx in [ 'a3', 'b4', 'c5' ]
+        l.at(idx).should.equal(val)
+
+    it 'should delegate permanently to another function if defer is passed', ->
+      s = new Struct( a: 1, b: 2, c: new Struct( d: 3, e: 4 ) )
+      l = Traversal.asList(s, (k, v) ->
+        if v.isStruct is true
+          defer((k, v) ->
+            if v.isStruct is true
+              recurse(v)
+            else
+              value("#{k}#{v}!")
+          )
+        else
+          value("#{k}#{v}")
+      )
+
+      l.length.should.equal(3)
+      for val, idx in [ 'a1', 'b2' ]
+        l.at(idx).should.equal(val)
+
+      ll = l.at(2)
+      ll.length.should.equal(2)
+      for val, idx in [ 'd3!', 'e4!' ]
+        ll.at(idx).should.equal(val)
+
+    it 'should reduce with the given function if given', ->
+      s = new Struct( a: 1, b: 2, c: new Struct( d: 3, e: 4 ) )
+      f = (_, v) ->
+        if v.isStruct is true
+          recurse(v)
+        else
+          value(v)
+      result = Traversal.asList(s, f, null, sum)
+
+      result.should.be.an.instanceof(Varying)
+      result.get().should.equal(10)
+
+    it 'should provide an attribute if available', ->
+      class TestModel extends Model
+        @attribute('b', attribute.BooleanAttribute)
+
+      results = []
+      m = new TestModel( a: 1, b: 2 )
+      Traversal.asList(m, (k, v, o, a) -> results.push(k, a))
+      results.should.eql([ 'a', undefined, 'b', m.attribute('b') ])
+
+    it 'should pass context through each level', ->
+      s = new Struct( a: 1, b: new Struct( c: 2 ), d: 3 )
+      context = { con: 'text' }
+      results = []
+      Traversal.asList(s, ((k, v, _, __, context) ->
+        if v.isStruct is true
+          recurse(v)
+        else
+          results.push(context)
+          nothing
+      ), context)
+
+      results.should.eql([ context, context, context ])
+
+    it 'should accept context as the second case parameter', ->
+      s = new Struct( a: 1, b: new Struct( c: 2 ), d: 3 )
+      context = { z: 0 }
+      results = []
+      Traversal.asList(s, ((k, v, _, __, context) ->
+        if v.isStruct is true
+          recurse(v, z: 1 )
+        else if k is 'd'
+          delegate(((k, v, _, __, context) -> results.push(context); nothing), z: 2 )
+        else
+          results.push(context)
+          nothing
+      ), context)
+
+      results.should.eql([ { z: 0 }, { z: 1 }, { z: 2 } ])
+
+    it 'should work with nested lists', ->
+      s = new Struct( a: 1, b: new List([ 2, 3 ]), d: 4 )
+      l = Traversal.asList(s, (k, v) ->
+        if v.isCollection is true
+          recurse(v)
+        else
+          value("#{k}#{v}")
+      )
+
+      l.length.should.equal(3)
+      l.at(0).should.equal('a1')
+      ll = l.at(1)
+      ll.length.should.equal(2)
+      ll.at(0).should.equal('02', '13')
+      l.at(2).should.equal('d4')
+
+    it 'should work with root lists', ->
+      l = Traversal.asList(new List([ 1, new Struct( a: 2, b: 3 ), 4 ]), (k, v) ->
+        if v.isStruct is true
+          recurse(v)
+        else
+          value("#{k}#{v}")
+      )
+
+      l.length.should.equal(3)
+      l.at(0).should.equal('01')
+      ll = l.at(1)
+      ll.length.should.equal(2)
+      ll.at(0).should.equal('a2')
+      ll.at(1).should.equal('b3')
+      l.at(2).should.equal('24')
+
