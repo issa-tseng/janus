@@ -14,33 +14,7 @@ for k, kase of cases
   do (kase) -> cases2[k] = (x, context) -> kase([ x, context ])
 
 
-# core mechanism:
-
-# TODO: the mechanism of passing state here is far from my favourite. someone
-# please come up with something smarter.
-matcher = match(
-  recurse (into, context, local) -> local.root(into, local.map, context ? local.context, local.reduce)
-  delegate (to, context, local) -> matcher(to(local.key, local.value, local.obj, local.attribute, context ? local.context), extendNew(local, { context }))
-  defer (to, context, local) -> matcher(to(local.key, local.value, local.obj, local.attribute, context ? local.context), extendNew(local, { context, map: to }))
-  varying (v, _, local) -> v.map((x) -> matcher(x, local))
-  value (x) -> x
-  nothing -> undefined
-)
-
-Traversal =
-  asList: (obj, map, context = {}, reduce = identity) ->
-    reduce(
-      obj.enumeration().flatMapPairs((key, value) ->
-        attribute = obj.attribute(key) if obj.isModel is true and obj.isCollection isnt true # this line sucks
-        local = { obj, map, reduce, key, value, attribute, context, root: Traversal.asList }
-        matcher(map(key, value, obj, attribute, context), local)
-      )
-    )
-
-
-# default impl:
-
-# util
+# util:
 get = (obj, k) ->
   if obj.isCollection is true
     obj.at(k)
@@ -51,6 +25,47 @@ isParentValueParent = (obj, k, v) ->
     get(obj._parent, k) is v._parent
   else
     false
+
+
+# core mechanism:
+
+# TODO: the mechanism of passing state here is far from my favourite. someone
+# please come up with something smarter.
+matcher = match(
+  recurse (into, context, local) -> local.root(into, local.map, context ? local.context, local.reduce)
+  delegate (to, context, local) -> matcher(to(local.key, local.value, local.obj, local.attribute, context ? local.context), extendNew(local, { context }))
+  defer (to, context, local) -> matcher(to(local.key, local.value, local.obj, local.attribute, context ? local.context), extendNew(local, { context, map: to }))
+  varying (v, _, local) ->
+    result = v.map((x) -> matcher(x, local))
+    result = result.get() if local.immediate is true
+    result
+  value (x) -> x
+  nothing -> undefined
+)
+
+# TODO: this is all repetitive but also not? but also i don't want to break it
+# into a function maybe because perf?
+Traversal =
+  asList: (obj, map, context = {}, reduce = identity) ->
+    reduce(
+      obj.enumeration().flatMapPairs((key, value) ->
+        attribute = obj.attribute(key) if obj.isModel is true and obj.isCollection isnt true # this line sucks.
+        local = { obj, map, reduce, key, value, attribute, context, root: Traversal.asList }
+        matcher(map(key, value, obj, attribute, context), local)
+      )
+    )
+
+  getArray: (obj, map, context = {}, reduce = identity) ->
+    reduce(
+      for key in obj.enumerate() 
+        value = get(obj, key)
+        attribute = obj.attribute(key) if obj.isModel is true and obj.isCollection isnt true # this line still sucks.
+        local = { obj, map, reduce, key, value, attribute, context, immediate: true, root: Traversal.getArray }
+        matcher(map(key, value, obj, attribute, context), local)
+    )
+
+
+# default impl:
 
 Traversal.default =
   serialize:

@@ -190,3 +190,34 @@ describe 'traversal', ->
       ll.at(1).should.equal('b3')
       l.at(2).should.equal('24')
 
+  describe 'get array', ->
+    # largely relies on the above tests for correctness.
+    it 'should supply the appropriate basic parameters', ->
+      ss = new Struct( d: 1 )
+      s = new Struct( a: 1, b: 2, c: ss )
+      results = []
+      Traversal.getArray(s, (k, v, o) ->
+        if v.isStruct is true
+          recurse(v)
+        else
+          results.push(k, v, o)
+          nothing
+      )
+      results.should.eql([ 'a', 1, s, 'b', 2, s, 'd', 1, ss ])
+
+    it 'should recurse correctly', ->
+      s = new Struct( a: 1, b: new Struct( c: 2, d: 3 ), e: new List([ 4, 5 ]), f: 6 )
+      a = Traversal.getArray(s, (k, v, o) ->
+        if v.isStruct is true
+          recurse(v)
+        else
+          value("#{k}#{v}")
+      )
+      a.should.eql([ 'a1', [ 'c2', 'd3' ], [ '04', '15' ], 'f6' ])
+
+    it 'should handle varying results appropriately', ->
+      vary = new Varying(2)
+      s = new Struct( a: 1, b: 2, c: 3 )
+      a = Traversal.getArray(s, (k, v) -> varying(vary.map((x) -> value(v + x))))
+      a.should.eql([ 3, 4, 5 ])
+
