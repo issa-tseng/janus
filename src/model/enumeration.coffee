@@ -69,31 +69,54 @@ class KeyList extends DerivedList
 
     null
 
-  # (flat)mapPairs takes f: (x, y) -> z and returns List[z]
+  # (flat)mapPairs takes f: (k, v) -> x and returns List[x]
   mapPairs: (f) -> this.flatMap((key) => Varying.mapAll(f, new Varying(key), this.struct.watch(key)))
   flatMapPairs: (f) -> this.flatMap((key) => Varying.flatMapAll(f, new Varying(key), this.struct.watch(key)))
 
+class IndexList extends DerivedList
+  constructor: (@parent) ->
+    super()
 
-Enumeration = {
-  get: (struct, options = {}) ->
-    scope = options.scope ? 'all'
-    include = options.include ? 'values'
+    this._lengthVaried = this.parent.watchLength().reactNow((length) =>
+      ourLength = this.length
+      if length > ourLength
+        this._add(idx) for idx in [ourLength...length]
+      else if length < ourLength
+        this._removeAt(idx - 1) for idx in [ourLength...length] by -1
+    )
 
-    result = []
-    traverser = if include is 'values' then traverse else if include is 'all' then traverseAll
-    scanStruct = (struct) => traverser(struct.attributes, (key) => result.push(key.join('.')) unless result.indexOf(key) >= 0)
-    if scope is 'all'
-      ptr = struct
-      while ptr?
-        scanStruct(ptr)
-        ptr = ptr._parent
-    else if scope is 'direct'
-      scanStruct(struct)
-    result
+  # (flat)mapPairs takes f: (k, v) -> x and returns List[x]
+  mapPairs: (f) -> this.flatMap((idx) => Varying.mapAll(f, new Varying(idx), this.parent.watchAt(idx)))
+  flatMapPairs: (f) -> this.flatMap((idx) => Varying.flatMapAll(f, new Varying(idx), this.parent.watchAt(idx)))
 
-  watch: (struct, options) -> new KeyList(struct, options)
-}
+  destroy: ->
+    this._lengthVaried.stop()
+    super()
+
+Enumeration =
+  struct:
+    get: (struct, options = {}) ->
+      scope = options.scope ? 'all'
+      include = options.include ? 'values'
+
+      result = []
+      traverser = if include is 'values' then traverse else if include is 'all' then traverseAll
+      scanStruct = (struct) => traverser(struct.attributes, (key) => result.push(key.join('.')) unless result.indexOf(key) >= 0)
+      if scope is 'all'
+        ptr = struct
+        while ptr?
+          scanStruct(ptr)
+          ptr = ptr._parent
+      else if scope is 'direct'
+        scanStruct(struct)
+      result
+
+    watch: (struct, options) -> new KeyList(struct, options)
+
+  list:
+    get: (list) -> (idx for idx in [0...list.length])
+    watch: (list) -> new IndexList(list)
 
 
-module.exports = { KeyList, Enumeration }
+module.exports = { KeyList, IndexList, Enumeration }
 

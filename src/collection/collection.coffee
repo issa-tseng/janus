@@ -53,6 +53,11 @@ class Collection extends Model
   # **Returns** a `TakenList`
   take: (x) -> new (require('./taken-list').TakenList)(this, x)
 
+  # Calls into the Enumeration module to get either a live IndexList or a static
+  # array enumerating the indices of this List.
+  enumeration: -> require('./enumeration').Enumeration.list.watch(this)
+  enumerate: -> require('./enumeration').Enumeration.list.get(this)
+
   # See if any element in this list qualifies for the condition.
   any: (f) -> folds.any(new (require('./mapped-list').MappedList)(this, f))
 

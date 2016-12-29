@@ -2,7 +2,8 @@ should = require('should')
 
 { Varying } = require('../../lib/core/varying')
 { Struct } = require('../../lib/model/struct')
-{ KeyList, Enumeration } = require('../../lib/model/enumeration')
+{ List } = require('../../lib/collection/list')
+{ KeyList, IndexList, Enumeration } = require('../../lib/model/enumeration')
 
 describe 'struct enumeration', ->
   describe 'keylist', ->
@@ -209,16 +210,16 @@ describe 'struct enumeration', ->
           for val, idx in [ 'a: 4', 'b: 5', 'c.d: 6', 'c.e: 11' ]
             m.at(idx).should.equal(val)
 
-  describe 'module get', ->
+  describe 'module struct get', ->
     it 'returns all keys by default', ->
       s = new Struct( a: 1, b: 2, c: { d: { e: 3 }, f: 4 } )
-      keys = Enumeration.get(s)
+      keys = Enumeration.struct.get(s)
 
       keys.should.eql([ 'a', 'b', 'c.d.e', 'c.f' ])
 
     it 'returns all branches if include-all', ->
       s = new Struct( a: 1, b: 2, c: { d: { e: 3 }, f: 4 } )
-      keys = Enumeration.get(s, include: 'all' )
+      keys = Enumeration.struct.get(s, include: 'all' )
 
       keys.should.eql([ 'a', 'b', 'c', 'c.d', 'c.d.e', 'c.f' ])
 
@@ -226,7 +227,7 @@ describe 'struct enumeration', ->
       s = new Struct( b: 2, c: { d: { e: 3 } } )
       s2 = s.shadow()
       s2.set( a: 1, c: { f: 4 })
-      keys = Enumeration.get(s2)
+      keys = Enumeration.struct.get(s2)
 
       keys.should.eql([ 'a', 'c.f', 'b', 'c.d.e' ])
 
@@ -234,20 +235,86 @@ describe 'struct enumeration', ->
       s = new Struct( b: 2, c: { d: { e: 3 } } )
       s2 = s.shadow()
       s2.set( a: 1, c: { f: 4 })
-      keys = Enumeration.get(s2, scope: 'direct' )
+      keys = Enumeration.struct.get(s2, scope: 'direct' )
 
       keys.should.eql([ 'a', 'c.f' ])
 
-  describe 'module watch', ->
+  describe 'module struct watch', ->
     it 'returns a KeyList', ->
       s = new Struct( a: 1, b: 2, c: { d: { e: 3 }, f: 4 } )
-      kl = Enumeration.watch(s)
+      kl = Enumeration.struct.watch(s)
       kl.should.be.an.instanceof(KeyList)
       kl.struct.should.equal(s)
 
     it 'passes options through', ->
       s = new Struct( a: 1, b: 2, c: { d: { e: 3 }, f: 4 } )
-      kl = Enumeration.watch(s, scope: 'direct', include: 'all' )
+      kl = Enumeration.struct.watch(s, scope: 'direct', include: 'all' )
       kl.scope.should.equal('direct')
       kl.include.should.equal('all')
+
+  describe 'indexlist', ->
+    it 'should contain increasing sequential index values', ->
+      l = new List(null for _ in [0...10])
+      l2 = new IndexList(l)
+
+      l2.length.should.equal(10)
+      for idx in [0...10]
+        l2.at(idx).should.equal(idx)
+
+    it 'should update to reflect a changing parent list', ->
+      l = new List(null for _ in [0...10])
+      l2 = new IndexList(l)
+
+      l.removeAt(8)
+      l.removeAt(0)
+      l.removeAt(2)
+
+      l2.length.should.equal(7)
+      for idx in [0...7]
+        l2.at(idx).should.equal(idx)
+
+      l.add(null, 0)
+      l.add(null, 2)
+
+      l2.length.should.equal(9)
+      for idx in [0...9]
+        l2.at(idx).should.equal(idx)
+
+    it 'should provide appropriate parameters to mapPairs', ->
+      l = new List([ 4, 8, 15, 16, 23, 42 ])
+      l2 = new IndexList(l)
+
+      results = []
+      l2.mapPairs((k, v) -> results.push(k, v))
+      results.should.eql([ 0, 4, 1, 8, 2, 15, 3, 16, 4, 23, 5, 42 ])
+
+    it 'should provide the appropriate mapped result given mapPairs', ->
+      l = new List([ 4, 8, 15, 16, 23, 42 ])
+      l2 = (new IndexList(l)).mapPairs((k, v) -> k * v)
+
+      l2.length.should.equal(6)
+      for value, idx in [ 0, 8, 30, 48, 92, 210 ]
+        l2.at(idx).should.equal(value)
+
+    it 'should provide the appropriate mapped result given flatMapPairs', ->
+      l = new List([ 4, 8, 15, 16, 23, 42 ])
+      x = new Varying(0)
+      l2 = (new IndexList(l)).flatMapPairs((k, v) -> x.map((y) -> k + v + y))
+
+      l2.length.should.equal(6)
+      for value, idx in [ 4, 9, 17, 19, 27, 47 ]
+        l2.at(idx).should.equal(value)
+
+      x.set(2)
+      l2.length.should.equal(6)
+      for value, idx in [ 6, 11, 19, 21, 29, 49 ]
+        l2.at(idx).should.equal(value)
+
+  describe 'module list get', ->
+    it 'should return a list of the appropriate length with increasing indices', ->
+      Enumeration.list.get(new List(null for _ in [0...10])).should.eql([ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ])
+
+  describe 'module list watch', ->
+    it 'should return an IndexList', ->
+      Enumeration.list.watch(new List()).should.be.an.instanceof(IndexList)
 
