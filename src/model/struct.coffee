@@ -165,6 +165,8 @@ class Struct extends Base
 
   # Helper to generate change events.
   _changed: (key, newValue, oldValue) ->
+    oldValue = null if oldValue is Null
+
     this.emit("changed:#{key}", newValue, oldValue)
     this.emit('anyChanged', key, newValue, oldValue) # TODO: figure this out.
 
