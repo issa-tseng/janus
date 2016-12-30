@@ -251,6 +251,17 @@ describe 'Varying', ->
       i.set(2)
       result.should.equal(2)
 
+    it 'should cease reacting to an inner varying even if it is set to the same value', -> # gh 53
+      va = new Varying(true)
+      vb = new Varying(42)
+      vx = va.flatMap((a) -> if a then vb else 42)
+
+      results = []
+      vx.reactNow((x) -> results.push(x))
+      va.set(false)
+      vb.set(47)
+      results.should.eql([ 42 ])
+
     it 'should cease reacting to an inner varying once it is gone', ->
       v = new Varying()
       f = v.flatten()
