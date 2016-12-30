@@ -58,7 +58,7 @@ describe 'Model', ->
 
       m = new TestModel()
       m.get('latte').should.equal('espresso')
-      m.serialize().should.eql({})
+      m.attributes.should.eql({})
 
     it 'should write the default value if writeDefault is true', ->
       class TestAttribute extends attribute.Attribute
@@ -69,9 +69,9 @@ describe 'Model', ->
         @attribute('latte', TestAttribute)
 
       m = new TestModel()
-      m.serialize().should.eql({})
+      m.attributes.should.eql({})
       m.get('latte').should.equal('espresso')
-      m.serialize().should.eql({ latte: 'espresso' })
+      m.attributes.should.eql({ latte: 'espresso' })
 
   describe 'binding', ->
     describe 'application', ->

@@ -198,47 +198,6 @@ class Model extends Struct
 
     new this(data)
 
-  # TODO: Also not totally sure this is best here.
-  # Returns a serialized representation of the given model.
-  #
-  # **Returns** a serialization-ready plain object with all the relevant
-  # attributes within it.
-  @serialize: (model, opts = {}) ->
-    walkAttrs = (keys, src, target) =>
-      for subKey, value of src
-        thisKey = keys.concat([ subKey ])
-        strKey = thisKey.join('.')
-
-        attribute = model.attribute(strKey)
-
-        result =
-          if value is Null
-            undefined
-          else if attribute? and attribute.serialize?
-            attribute.serialize(opts)
-          else if util.isPlainObject(value)
-            innerResult = target[subKey] ? {}
-            walkAttrs(thisKey, value, innerResult)
-            innerResult
-          else
-            value
-
-        target[subKey] = result
-
-      target
-
-    result =
-      if model._parent?
-        Model.serialize(model._parent, opts)
-      else
-        {}
-    walkAttrs([], model.attributes, result)
-    result
-
-  # Shortcut method to serialize a model by the default rules specified by
-  # its own constructor.
-  serialize: -> this.constructor.serialize(this)
-
 
 module.exports = { Model }
 

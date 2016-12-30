@@ -8,10 +8,10 @@
 # some shuffling to allow two arguments in our cases. TODO: worth it? cleverer way?
 withContext = (name) -> { "#{name}": { unapply: (x, additional) -> if isFunction(x) then x(this.value[0], this.value[1], additional...) else x } }
 
-cases = { recurse, delegate, defer, varying, value, nothing } = defcase('org.janusjs.traversal', (withContext(x) for x in [ 'recurse', 'delegate', 'defer', 'varying', 'value', 'nothing' ])...)
-cases2 = {} # external cases set that wraps two args into an array.
-for k, kase of cases
-  do (kase) -> cases2[k] = (x, context) -> kase([ x, context ])
+matchCases = { recurse, delegate, defer, varying, value, nothing } = defcase('org.janusjs.traversal', (withContext(x) for x in [ 'recurse', 'delegate', 'defer', 'varying', 'value', 'nothing' ])...)
+valueCases = {} # external cases set that wraps two args into an array.
+for k, kase of matchCases
+  do (kase) -> valueCases[k] = (x, context) -> kase([ x, context ])
 
 
 # util:
@@ -63,40 +63,43 @@ Traversal =
 
   # these two inner blocks are rather repetitive but i'm reluctant to pull them into a
   # function for perf reasons.
+  #
+  # n.b. val instead of value because coffeescript scoping is a mess.
   getNatural: (obj, map, context = {}) ->
     result = if obj.isCollection is true then [] else {}
     set = if obj.isCollection is true then ((k, v) -> result[k] = v) else ((k, v) -> deepSet(result, k)(v))
     for key in obj.enumerate()
-      value = get(obj, key)
+      val = get(obj, key)
       attribute = obj.attribute(key) if obj.isModel is true and obj.isCollection isnt true # this line still sucks.
-      local = { obj, map, key, value, attribute, context, immediate: true, root: Traversal.getNatural }
-      set(key, matcher(map(key, value, obj, attribute, context), local))
+      local = { obj, map, key, val, attribute, context, immediate: true, root: Traversal.getNatural }
+      set(key, matcher(map(key, val, obj, attribute, context), local))
     result
 
   getArray: (obj, map, context = {}, reduce = identity) ->
     reduce(
       for key in obj.enumerate() 
-        value = get(obj, key)
+        val = get(obj, key)
         attribute = obj.attribute(key) if obj.isModel is true and obj.isCollection isnt true # yup.
-        local = { obj, map, reduce, key, value, attribute, context, immediate: true, root: Traversal.getArray }
-        matcher(map(key, value, obj, attribute, context), local)
+        local = { obj, map, reduce, key, val, attribute, context, immediate: true, root: Traversal.getArray }
+        matcher(map(key, val, obj, attribute, context), local)
     )
 
 
 # default impl:
+# swap out our matching cases for our value cases for the impl section:
+{ recurse, delegate, defer, varying, value, nothing } = valueCases
 
 Traversal.default =
-  serialize:
-    map: (obj, k, v, attribute, context) ->
-      if attribute?.serialize?
-        value(attribute.serialize())
-      else if v?
-        if v.isCollection is true or v.isStruct is true
-          recurse(v)
-        else
-          value(v)
+  serialize: (k, v, o, attribute, context) ->
+    if attribute?
+      value(attribute.serialize())
+    else if v?
+      if v.isCollection is true or v.isStruct is true
+        recurse(v)
       else
-        nothing()
+        value(v)
+    else
+      nothing
 
   modified:
     map: (obj, k, v, attribute, context) ->
@@ -138,5 +141,5 @@ Traversal.default =
     reduce: (list) -> list.any((x) -> x is true)
 
 
-module.exports = { Traversal, cases: cases2 }
+module.exports = { Traversal, cases: valueCases }
 

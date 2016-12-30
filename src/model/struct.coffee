@@ -10,6 +10,9 @@
 { deepGet, deepSet, deepDelete, extendNew, isArray, isPlainObject, isEmptyObject, traverse, traverseAll } = require('../util/util')
 
 
+# when we do eventually get the traversal module, store it off..
+Traversal$ = null
+
 # sentinel value to record a child-nulled value. instantiate a class instance
 # so that it doesn't read as a simple object.
 class NullClass
@@ -219,6 +222,10 @@ class Struct extends Base
     )
     result.on('destroying', -> varied.stop() for _, varied of varieds)
     result
+
+  serialize: ->
+    Traversal$ ?= require('./traversal').Traversal
+    Traversal$.getNatural(this, Traversal$.default.serialize)
 
 class DerivedStruct extends Struct
   roError = -> throw new Error('this struct is read-only')

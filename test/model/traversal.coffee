@@ -312,3 +312,30 @@ describe 'traversal', ->
 
       o.should.eql({ a: 'a1', b: [ '02', { c: 'c3', d: 'd4' } ], e: { f: 'f5' } })
 
+  describe 'default implementations', ->
+    describe 'serialization', ->
+      it 'should return an object with shallow keys intact', ->
+        o = (new Struct( a: 1, b: 2, c: 3 )).serialize()
+        o.should.eql({ a: 1, b: 2, c: 3 })
+
+      it 'should return an array with values intact', ->
+        a = (new List([ 4, 8, 15, 16, 23, 42 ])).serialize()
+        a.should.eql([ 4, 8, 15, 16, 23, 42 ])
+
+      it 'should handle nested structures appropriately', ->
+        o = (new Struct( a: 1, b: new List([ 2, new Struct( c: 3, d: 4 ) ]), e: new Struct( f: 5 ) )).serialize()
+        o.should.eql({ a: 1, b: [ 2, { c: 3, d: 4 } ], e: { f: 5 } })
+
+      it 'should rely on attribute serialization methods when available', ->
+        class TestModel extends Model
+          @attribute('b', class extends attribute.NumberAttribute
+            serialize: -> "number: #{this.getValue()}"
+          )
+
+          @attribute('c', class extends attribute.Attribute
+            serialize: -> JSON.stringify(this.getValue())
+          )
+
+        o = (new TestModel( a: 1, b: 2, c: [ 3, 4, 5 ] )).serialize()
+        o.should.eql({ a: 1, b: 'number: 2', c: '[3,4,5]' })
+
