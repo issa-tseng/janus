@@ -30,7 +30,7 @@ isParentValueParent = (obj, k, v) ->
 # core mechanism:
 
 # TODO: the mechanism of passing state here is far from my favourite. someone
-# please come up with something smarter.
+# please come up with something smarter/faster/cleaner.
 matcher = match(
   recurse (into, context, local) -> local.root(into, local.map, context ? local.context, local.reduce)
   delegate (to, context, local) -> matcher(to(local.key, local.value, local.obj, local.attribute, context ? local.context), extendNew(local, { context }))
@@ -43,17 +43,23 @@ matcher = match(
   nothing -> undefined
 )
 
-# TODO: this is all repetitive but also not? but also i don't want to break it
-# into a function maybe because perf?
+# the general param should supply: root, obj, map, context, and [reduce if applicable].
+processNode = (general) -> (key, value) ->
+  obj = general.obj
+  attribute = obj.attribute(key) if obj.isModel is true and obj.isCollection isnt true # this line sucks.
+  local = extendNew(general, { key, value, attribute })
+  matcher(general.map(key, value, obj, attribute, general.context), local)
+
 Traversal =
+  asNatural: (obj, map, context = {}) ->
+    general = { obj, map, context, root: Traversal.asNatural }
+    if obj.isCollection is true
+      obj.enumeration().flatMapPairs(processNode(general))
+    else
+      obj.flatMap?(processNode(general))
+
   asList: (obj, map, context = {}, reduce = identity) ->
-    reduce(
-      obj.enumeration().flatMapPairs((key, value) ->
-        attribute = obj.attribute(key) if obj.isModel is true and obj.isCollection isnt true # this line sucks.
-        local = { obj, map, reduce, key, value, attribute, context, root: Traversal.asList }
-        matcher(map(key, value, obj, attribute, context), local)
-      )
-    )
+    reduce(obj.enumeration().flatMapPairs(processNode({ obj, map, context, reduce, root: Traversal.asList })))
 
   getArray: (obj, map, context = {}, reduce = identity) ->
     reduce(

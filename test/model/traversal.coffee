@@ -191,7 +191,7 @@ describe 'traversal', ->
       l.at(2).should.equal('24')
 
   describe 'get array', ->
-    # largely relies on the above tests for correctness.
+    # largely relies on the asList tests for correctness of internal traversal.
     it 'should supply the appropriate basic parameters', ->
       ss = new Struct( d: 1 )
       s = new Struct( a: 1, b: 2, c: ss )
@@ -220,4 +220,56 @@ describe 'traversal', ->
       s = new Struct( a: 1, b: 2, c: 3 )
       a = Traversal.getArray(s, (k, v) -> varying(vary.map((x) -> value(v + x))))
       a.should.eql([ 3, 4, 5 ])
+
+  describe 'as natural', ->
+    # largely relies on the asList tests for correctness of internal traversal.
+    it 'should supply the appropriate parameters', ->
+      results = []
+      l = new List([ 4, 8 ])
+      Traversal.asNatural(l, (k, v, o) ->
+        results.push(k, v, o)
+        nothing
+      )
+
+      class TestModel extends Model
+        @attribute('b', attribute.BooleanAttribute)
+      m = new TestModel( a: 15, b: 16 )
+      Traversal.asNatural(m, (k, v, o, a) ->
+        results.push(k, v, o, a)
+        nothing
+      )
+
+      results.should.eql([ 0, 4, l, 1, 8, l, 'a', 15, m, undefined, 'b', 16, m, m.attribute('b') ])
+
+    it 'should map a list to a list', ->
+      l = Traversal.asNatural(new List([ 2, 4, 6, 8, 10 ]), (k, v) -> value(k + v))
+      l.length.should.equal(5)
+      for val, idx in [ 2, 5, 8, 11, 14 ]
+        l.at(idx).should.equal(val)
+
+    it 'should map a struct to a struct', ->
+      s = Traversal.asNatural(new Struct( a: 1, b: 2, c: 3 ), (k, v) -> value("#{k}#{v}"))
+      s.attributes.should.eql({ a: 'a1', b: 'b2', c: 'c3' })
+
+    it 'should recursively map like types', ->
+      source = new Struct( a: 1, b: new List([ 2, new Struct( c: 3, d: 4 ) ]), e: new Struct( f: 5 ) )
+      s = Traversal.asNatural(source, (k, v) ->
+        if v.isStruct is true
+          recurse(v)
+        else
+          value("#{k}#{v}")
+      )
+
+      s.should.be.an.instanceof(Struct)
+      s.get('a').should.equal('a1')
+      s.get('b').should.be.an.instanceof(List)
+      s.get('e').should.be.an.instanceof(Struct)
+
+      s.get('b').length.should.equal(2)
+      s.get('b').at(0).should.equal('02')
+      s.get('b').at(1).should.be.an.instanceof(Struct)
+
+      s.get('b').at(1).attributes.should.eql({ c: 'c3', d: 'd4' })
+
+      s.get('e').attributes.should.eql({ f: 'f5' })
 
