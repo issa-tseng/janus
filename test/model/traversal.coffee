@@ -273,3 +273,42 @@ describe 'traversal', ->
 
       s.get('e').attributes.should.eql({ f: 'f5' })
 
+  describe 'get natural', ->
+    # largely relies on the asList tests for correctness of internal traversal.
+    it 'should supply the appropriate parameters', ->
+      results = []
+      l = new List([ 4, 8 ])
+      Traversal.getNatural(l, (k, v, o) ->
+        results.push(k, v, o)
+        nothing
+      )
+
+      class TestModel extends Model
+        @attribute('b', attribute.BooleanAttribute)
+      m = new TestModel( a: 15, b: 16 )
+      Traversal.getNatural(m, (k, v, o, a) ->
+        results.push(k, v, o, a)
+        nothing
+      )
+
+      results.should.eql([ 0, 4, l, 1, 8, l, 'a', 15, m, undefined, 'b', 16, m, m.attribute('b') ])
+
+    it 'should map a list to a list', ->
+      a = Traversal.getNatural(new List([ 2, 4, 6, 8, 10 ]), (k, v) -> value(k + v))
+      a.should.eql([ 2, 5, 8, 11, 14 ])
+
+    it 'should map a struct to a struct', ->
+      o = Traversal.getNatural(new Struct( a: 1, b: 2, c: 3 ), (k, v) -> value("#{k}#{v}"))
+      o.should.eql({ a: 'a1', b: 'b2', c: 'c3' })
+
+    it 'should recursively map like types', ->
+      source = new Struct( a: 1, b: new List([ 2, new Struct( c: 3, d: 4 ) ]), e: new Struct( f: 5 ) )
+      o = Traversal.getNatural(source, (k, v) ->
+        if v.isStruct is true
+          recurse(v)
+        else
+          value("#{k}#{v}")
+      )
+
+      o.should.eql({ a: 'a1', b: [ '02', { c: 'c3', d: 'd4' } ], e: { f: 'f5' } })
+

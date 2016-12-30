@@ -1,6 +1,6 @@
 { from } = require('../core/from')
 { defcase, match } = require('../core/case')
-{ identity, isFunction, extendNew } = require('../util/util')
+{ identity, isFunction, extendNew, deepSet } = require('../util/util')
 
 
 # core cases:
@@ -61,11 +61,23 @@ Traversal =
   asList: (obj, map, context = {}, reduce = identity) ->
     reduce(obj.enumeration().flatMapPairs(processNode({ obj, map, context, reduce, root: Traversal.asList })))
 
+  # these two inner blocks are rather repetitive but i'm reluctant to pull them into a
+  # function for perf reasons.
+  getNatural: (obj, map, context = {}) ->
+    result = if obj.isCollection is true then [] else {}
+    set = if obj.isCollection is true then ((k, v) -> result[k] = v) else ((k, v) -> deepSet(result, k)(v))
+    for key in obj.enumerate()
+      value = get(obj, key)
+      attribute = obj.attribute(key) if obj.isModel is true and obj.isCollection isnt true # this line still sucks.
+      local = { obj, map, key, value, attribute, context, immediate: true, root: Traversal.getNatural }
+      set(key, matcher(map(key, value, obj, attribute, context), local))
+    result
+
   getArray: (obj, map, context = {}, reduce = identity) ->
     reduce(
       for key in obj.enumerate() 
         value = get(obj, key)
-        attribute = obj.attribute(key) if obj.isModel is true and obj.isCollection isnt true # this line still sucks.
+        attribute = obj.attribute(key) if obj.isModel is true and obj.isCollection isnt true # yup.
         local = { obj, map, reduce, key, value, attribute, context, immediate: true, root: Traversal.getArray }
         matcher(map(key, value, obj, attribute, context), local)
     )
