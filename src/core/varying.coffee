@@ -148,8 +148,6 @@ class FlatMappedVarying extends Varying
     # an inner flattened value changing.
     ignoreFirst = true
     onValue = (value) ->
-      return if value is lastValue
-
       # don't reflatten if we shouldn't, or if we're already called from the inner.
       if self._flatten is true and this is parentVaried
         lastInnerVaried?.stop() # we're different, so stop the previous inner if it exists.
@@ -158,6 +156,9 @@ class FlatMappedVarying extends Varying
           return # don't run the below, since reactNow will update the value. TODO: i despise non-immediate returns.
         else
           lastInnerVaried = null # don't allow .stop() to be called repeatedly.
+
+      # don't bail until we've unlistened/relistened to the container result.
+      return if value is lastValue
 
       unless immediate is false and ignoreFirst is true
         # we always call onValue immediately; so we don't want to notify if
