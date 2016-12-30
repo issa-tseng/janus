@@ -59,7 +59,7 @@ describe 'Attribute', ->
 
       a = new TestAttribute(m, 'default_test')
       a.getValue().should.equal(42)
-      m.serialize().should.eql({})
+      m.attributes.should.eql({})
 
     it 'writes the default value if writeDefault is true', ->
       m = new Model()
@@ -68,9 +68,9 @@ describe 'Attribute', ->
         writeDefault: true
 
       a = new TestAttribute(m, 'default_test')
-      m.serialize().should.eql({})
+      m.attributes.should.eql({})
       a.getValue().should.equal(42)
-      m.serialize().should.eql({ default_test: 42 })
+      m.attributes.should.eql({ default_test: 42 })
 
   describe 'serialization', ->
     it 'just returns the data by default on deserialization', ->
