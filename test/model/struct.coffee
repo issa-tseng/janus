@@ -280,6 +280,16 @@ describe 'Struct', ->
         s.set('a', 1)
         results.should.eql([ [ 'a', 1, null ] ])
 
+      it 'should output null rather than NullClass upon change', -> # gh 54
+        s = new Struct( a: 0 )
+        s2 = s.shadow()
+
+        results = []
+        s2.on('anyChanged', (key, newValue, oldValue) -> results.push(newValue, oldValue))
+        s2.unset('a')
+        s2.set('a', 1)
+        results.should.eql([ null, 0, 1, null ])
+
   describe 'enumeration', ->
     it 'should return a KeyList of itself when asked for an enumeration', ->
       s = new Struct( a: 1, b: 2, c: { d: 3 } )
