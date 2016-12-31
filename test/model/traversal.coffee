@@ -510,3 +510,114 @@ describe 'traversal', ->
         l2.put(2, 1)
         result.should.equal(true)
 
+    describe 'diff', ->
+      it 'should consider unlike objects eternally different', ->
+        (new List()).watchDiff(new Struct()).get().should.equal(true)
+        (new Struct()).watchDiff(new List()).get().should.equal(true)
+        (new Struct()).watchDiff(true).get().should.equal(true)
+        (new Struct()).watchDiff().get().should.equal(true)
+
+      it 'should diff shallow values in structs', ->
+        sa = new Struct( a: 1, b: 2, c: { d: 3 } )
+        sb = new Struct( a: 1, b: 2, c: { d: 3 } )
+
+        result = null
+        sa.watchDiff(sb).reactNow((x) -> result = x)
+
+        result.should.equal(false)
+        sa.set('b', 3)
+        result.should.equal(true)
+        sb.set('b', 3)
+        result.should.equal(false)
+        sb.unset('c')
+        result.should.equal(true)
+        sb.set('c', { d: 3 })
+        result.should.equal(false)
+
+      it 'should diff shallow values in lists', ->
+        la = new List([ 1, 2, 3, 4, 5 ])
+        lb = new List([ 1, 2, 3, 4, 5 ])
+
+        result = null
+        la.watchDiff(lb).reactNow((x) -> result = x)
+
+        result.should.equal(false)
+        la.add(6)
+        result.should.equal(true)
+        lb.add(6)
+        result.should.equal(false)
+        la.removeAt(0)
+        result.should.equal(true)
+        lb.putAll([ 2, 3, 4, 5, 6 ])
+        result.should.equal(false)
+
+      it 'should diff structs nested in structs correctly', ->
+        sa = new Struct( a: 1, b: 2, c: new Struct( d: 3 ) )
+        sb = new Struct( a: 1, b: 2, c: new Struct( d: 3 ) )
+
+        result = null
+        sa.watchDiff(sb).reactNow((x) -> result = x)
+
+        result.should.equal(false)
+        sb.set('c', new Struct( d: 3 ))
+        result.should.equal(false)
+        sb.get('c').set('e', 4)
+        result.should.equal(true)
+        sa.get('c').set('e', 4)
+        result.should.equal(false)
+        sa.unset('c')
+        result.should.equal(true)
+
+      it 'should diff lists nested in structs correctly', ->
+        sa = new Struct( a: 1, b: 2, c: new List([ 3, 4 ]) )
+        sb = new Struct( a: 1, b: 2, c: new List([ 3, 4 ]) )
+
+        result = null
+        sa.watchDiff(sb).reactNow((x) -> result = x)
+
+        result.should.equal(false)
+        sb.set('c', new List([ 3, 4 ]))
+        result.should.equal(false)
+        sb.get('c').add(5)
+        result.should.equal(true)
+        sa.get('c').add(5)
+        result.should.equal(false)
+        sa.get('c').put(0, 0)
+        result.should.equal(true)
+        sa.unset('c')
+        result.should.equal(true)
+
+      it 'should diff lists nested in lists correctly', ->
+        la = new List([ 1, new List([ 2, 3 ]), 4 ])
+        lb = new List([ 1, new List([ 2, 3 ]), 4 ])
+
+        result = null
+        la.watchDiff(lb).reactNow((x) -> result = x)
+
+        result.should.equal(false)
+        la.at(1).add(0)
+        result.should.equal(true)
+        lb.at(1).add(0)
+        result.should.equal(false)
+        lb.put(new List([ 2, 3, 0 ]), 1)
+        result.should.equal(false)
+        la.removeAt(1)
+        result.should.equal(true)
+
+      it 'should diff structs nested in lists correctly', ->
+        la = new List([ 1, new Struct( a: 2, b: 3 ), 4 ])
+        lb = new List([ 1, new Struct( a: 2, b: 3 ), 4 ])
+
+        result = null
+        la.watchDiff(lb).reactNow((x) -> result = x)
+
+        result.should.equal(false)
+        la.at(1).set( c: 4 )
+        result.should.equal(true)
+        lb.at(1).set( c: 4 )
+        result.should.equal(false)
+        lb.put(new Struct( a: 2, b: 3, c: 4 ), 1)
+        result.should.equal(false)
+        la.removeAt(1)
+        result.should.equal(true)
+
