@@ -315,6 +315,15 @@ describe 'Struct', ->
       ks = s.enumerate( scope: 'direct', include: 'all' )
       ks.should.eql([ 'a', 'b', 'c', 'c.d' ])
 
+    it 'should allow the length to be watched', ->
+      results = []
+      s = new Struct( a: 1, b: 2 )
+      s.watchLength().reactNow((x) -> results.push(x))
+
+      s.set('c', 3)
+      s.unset('b')
+      results.should.eql([ 2, 3, 2 ])
+
   describe 'mapping', ->
     describe 'map', ->
       it 'should provide the appropriate k/v arguments to the mapping function', ->
