@@ -110,10 +110,10 @@ Traversal.default =
       else
         varying(watch(obj._parent, k).map((vb) ->
           if va?.isEnumerable is true
-            if vb is va._parent
-              vla = if va.isCollection is true then va.watchLength() else va.enumeration().watchLength()
-              vlb = if vb.isCollection is true then vb.watchLength() else vb.enumeration().watchLength()
-              varying(Varying.mapAll(vla, vlb, (la, lb) -> if la isnt lb then value(true) else recurse(va)))
+            if vb is va._parent # reject unless our parent's value here is our value's direct parent.
+              varying(Varying.mapAll(va.watchLength(), vb.watchLength(), (la, lb) ->
+                if la isnt lb then value(true) else recurse(va)
+              ))
             else
               value(true)
           else

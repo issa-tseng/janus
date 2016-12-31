@@ -188,6 +188,9 @@ class Struct extends Base
   enumeration: (options) -> require('./enumeration').Enumeration.struct.watch(this, options)
   enumerate: (options) -> require('./enumeration').Enumeration.struct.get(this, options)
 
+  # Gets the number of k/v pairs in this Struct. Depends on enumeration.
+  watchLength: -> this.watchLength$ ?= this.enumeration().watchLength()
+
   # Maps this struct's values onto a new one, with the same key structure. The
   # mapping functions are passed (key, value) as the arguments.
   #
@@ -206,6 +209,10 @@ class Struct extends Base
     )
     result
 
+  # Flatmaps this struct's values onto a new one, with the same key structure.
+  # The mapping functions are passed (key, value) as the arguments.
+  #
+  # **Returns** a new Struct.
   flatMap: (f, klass = DerivedStruct) ->
     result = new klass()
     varieds = {}
@@ -233,7 +240,7 @@ class Struct extends Base
   watchModified: ->
     if this._parent?
       # TODO: i don't like that we have to duplicate this code from traversal.coffee.
-      Varying.flatMapAll(this.enumeration().watchLength(), this._parent.enumeration().watchLength(), (la, lb) =>
+      Varying.flatMapAll(this.watchLength(), this._parent.watchLength(), (la, lb) =>
         if la isnt lb
           true
         else
