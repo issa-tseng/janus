@@ -9,6 +9,7 @@ folds = require('./folds')
 # A `Collection` provides `add` and `remove` events for every element that is
 # added or removed from the list.
 class Collection extends Model
+  isEnumerable: true
   isCollection: true
 
   # Create a new FilteredList based on this list, with the member check
@@ -59,7 +60,7 @@ class Collection extends Model
   enumerate: -> require('../model/enumeration').Enumeration.list.get(this)
 
   # See if any element in this list qualifies for the condition.
-  any: (f) -> folds.any(new (require('./mapped-list').MappedList)(this, f))
+  any: (f) -> folds.any(new (require('./mapped-list').FlatMappedList)(this, f))
 
   # fold left across the list.
   fold: (memo, f) -> folds.fold(this, memo, f)

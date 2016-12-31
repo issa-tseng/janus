@@ -1,4 +1,4 @@
-{ from } = require('../core/from')
+{ Varying } = require('../core/varying')
 { defcase, match } = require('../core/case')
 { identity, isFunction, extendNew, deepSet } = require('../util/util')
 
@@ -20,11 +20,11 @@ get = (obj, k) ->
     obj.at(k)
   else if obj.isStruct is true
     obj.get(k)
-isParentValueParent = (obj, k, v) ->
-  if obj._parent?
-    get(obj._parent, k) is v._parent
-  else
-    false
+watch = (obj, k) ->
+  if obj.isCollection is true
+    obj.watchAt(k)
+  else if obj.isStruct is true
+    obj.watch(k)
 
 
 # core mechanism:
@@ -36,7 +36,9 @@ matcher = match(
   delegate (to, context, local) -> matcher(to(local.key, local.value, local.obj, local.attribute, context ? local.context), extendNew(local, { context }))
   defer (to, context, local) -> matcher(to(local.key, local.value, local.obj, local.attribute, context ? local.context), extendNew(local, { context, map: to }))
   varying (v, _, local) ->
-    result = v.map((x) -> matcher(x, local))
+    # we can indiscriminately flatMap because the only valid final values here
+    # are case instances anyway, so we can't squash anything we oughtn't.
+    result = v.flatMap((x) -> matcher(x, local))
     result = result.get() if local.immediate is true
     result
   value (x) -> x
@@ -94,7 +96,7 @@ Traversal.default =
     if attribute?
       value(attribute.serialize())
     else if v?
-      if v.isCollection is true or v.isStruct is true
+      if v.isEnumerable is true
         recurse(v)
       else
         value(v)
@@ -102,23 +104,22 @@ Traversal.default =
       nothing
 
   modified:
-    map: (obj, k, v, attribute, context) ->
+    map: (k, va, obj, attribute, context) ->
       if !obj._parent?
         value(false)
-      else if v?.isStruct is true
-        if isParentValueParent(obj, k, v) then recurse(v) else value(true)
-      else if v?.isCollection is true
-        if isParentValueParent(obj, k, v)
-          varying(from(v.watchLength()).and(v._parent.watchLength()).all.plain().map((la, lb) ->
-            if la isnt lb then value(true) else recurse(v)
-          ))
-        else
-          value(true)
-      else if v?.isVarying is true
-        varying(v.map(Traversal.default.modified.map))
       else
-        value(obj._parent.get(k) isnt v)
-    reduce: (list) -> list.any((x) -> x is true)
+        varying(watch(obj._parent, k).map((vb) ->
+          if va?.isEnumerable is true
+            if vb is va._parent
+              vla = if va.isCollection is true then va.watchLength() else va.enumeration().watchLength()
+              vlb = if vb.isCollection is true then vb.watchLength() else vb.enumeration().watchLength()
+              varying(Varying.mapAll(vla, vlb, (la, lb) -> if la isnt lb then value(true) else recurse(va)))
+            else
+              value(true)
+          else
+            value(va isnt vb)
+        ))
+    reduce: (list) -> list.any(identity)
 
   diff:
     map: (obj, k, va, attribute, { other }) ->
