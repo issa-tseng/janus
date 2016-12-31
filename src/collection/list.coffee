@@ -275,6 +275,19 @@ class List extends OrderedCollection
     else
       new Varying(false)
 
+  watchDiff: (other) ->
+    if other?.isCollection is true
+      # TODO: still awful.
+      Varying.flatMapAll(this.watchLength(), other.watchLength(), (la, lb) =>
+        if la isnt lb
+          true
+        else
+          Traversal$ ?= require('./traversal').Traversal
+          Traversal$.asList(this, Traversal$.default.diff.map, { other }, Traversal$.default.diff.reduce)
+      )
+    else
+      new Varying(true)
+
 class DerivedList extends List
   for method in [ 'add', 'remove', 'removeAt', 'removeAll', 'put', 'putAll', 'move', 'moveAt' ]
     this.prototype["_#{method}"] = this.__super__[method]

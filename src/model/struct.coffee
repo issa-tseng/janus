@@ -260,6 +260,19 @@ class Struct extends Base
     else
       new Varying(false)
 
+  watchDiff: (other) ->
+    if other? and other.isStruct is true and other.isCollection isnt true
+      # TODO: this still sucks.
+      Varying.flatMapAll(this.watchLength(), other.watchLength(), (la, lb) =>
+        if la isnt lb
+          true
+        else
+          Traversal$ ?= require('./traversal').Traversal
+          Traversal$.asList(this, Traversal$.default.diff.map, { other }, Traversal$.default.diff.reduce)
+      )
+    else
+      new Varying(true)
+
 
 class DerivedStruct extends Struct
   roError = -> throw new Error('this struct is read-only')
