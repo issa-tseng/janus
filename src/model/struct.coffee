@@ -88,6 +88,7 @@ class Struct extends Base
     return value if oldValue is value
 
     deepSet(this.attributes, key)(value)
+    key = key.join('.') if isArray(key)
     this._changed(key, value, oldValue)
 
     value
@@ -168,8 +169,17 @@ class Struct extends Base
   _changed: (key, newValue, oldValue) ->
     oldValue = null if oldValue is Null
 
+    # emit events for leaf nodes that no longer exist:
+    if isPlainObject(oldValue) and !newValue?
+      traverse(oldValue, (path, value) =>
+        subkey = "#{key}.#{path.join('.')}"
+        this.emit("changed:#{subkey}", null, value)
+        this.emit('anyChanged', subkey, null, value)
+      )
+
+    # now emit direct events:
     this.emit("changed:#{key}", newValue, oldValue)
-    this.emit('anyChanged', key, newValue, oldValue) # TODO: figure this out.
+    this.emit('anyChanged', key, newValue, oldValue)
 
     null
 

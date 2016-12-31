@@ -58,8 +58,11 @@ class KeyList extends DerivedList
       this._add(key)
 
   _removeKey: (key) ->
+    idx = this.list.indexOf(key)
+    return unless idx >= 0
+
     delete this._trackedKeys[key]
-    this._removeAt(this.list.indexOf(key))
+    this._removeAt(idx)
 
     if this.include is 'all'
       # prune child branches.

@@ -280,7 +280,7 @@ describe 'Struct', ->
         s.set('a', 1)
         results.should.eql([ [ 'a', 1, null ] ])
 
-      it 'should output null rather than NullClass upon change', -> # gh 54
+      it 'should output null rather than NullClass upon change', -> # gh54
         s = new Struct( a: 0 )
         s2 = s.shadow()
 
@@ -289,6 +289,14 @@ describe 'Struct', ->
         s2.unset('a')
         s2.set('a', 1)
         results.should.eql([ null, 0, 1, null ])
+
+      it 'should update leaves correctly when a branch is removed', ->
+        s = new Struct( a: 1, b: { c: 2 })
+
+        results = []
+        s.watch('b.c').reactNow((x) -> results.push(x))
+        s.unset('b')
+        results.should.eql([ 2, null ])
 
   describe 'enumeration', ->
     it 'should return a KeyList of itself when asked for an enumeration', ->

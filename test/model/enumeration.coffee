@@ -132,7 +132,6 @@ describe 'struct enumeration', ->
           kl.at(idx).should.equal(val)
 
         s.unset('b.c.f') # check that it _does_ prune what no longer has branches.
-        console.log(kl.list)
         kl.length.should.equal(4)
         for val, idx in [ 'a', 'b.c', 'b', 'b.c.e' ]
           kl.at(idx).should.equal(val)
