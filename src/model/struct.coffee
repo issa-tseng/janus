@@ -19,6 +19,7 @@ class NullClass
 Null = new NullClass()
 
 class Struct extends Base
+  isEnumerable: true
   isStruct: true
 
   constructor: (attributes = {}, @options = {}) ->
@@ -228,6 +229,20 @@ class Struct extends Base
   serialize: ->
     Traversal$ ?= require('./traversal').Traversal
     Traversal$.getNatural(this, Traversal$.default.serialize)
+
+  watchModified: ->
+    if this._parent?
+      # TODO: i don't like that we have to duplicate this code from traversal.coffee.
+      Varying.flatMapAll(this.enumeration().watchLength(), this._parent.enumeration().watchLength(), (la, lb) =>
+        if la isnt lb
+          true
+        else
+          Traversal$ ?= require('./traversal').Traversal
+          Traversal$.asList(this, Traversal$.default.modified.map, null, Traversal$.default.modified.reduce)
+      )
+    else
+      new Varying(false)
+
 
 class DerivedStruct extends Struct
   roError = -> throw new Error('this struct is read-only')

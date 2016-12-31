@@ -8,6 +8,15 @@ attribute = require('../../lib/model/attribute')
 { sum } = require('../../lib/collection/folds')
 { Traversal, cases: { recurse, delegate, defer, varying, value, nothing } } = require('../../lib/model/traversal')
 
+# util
+shadowWith = (s, obj) ->
+  s2 = s.shadow()
+  s2.set(obj)
+  s2
+
+# TODO: ensure that updates to source data propagates as expected.
+# (it really ought to given we're built on top of enumeration, in which this is tested).
+
 describe 'traversal', ->
   describe 'as list', ->
     it 'should provide the appropriate basic arguments', ->
@@ -338,4 +347,166 @@ describe 'traversal', ->
 
         o = (new TestModel( a: 1, b: 2, c: [ 3, 4, 5 ] )).serialize()
         o.should.eql({ a: 1, b: 'number: 2', c: '[3,4,5]' })
+
+    describe 'modification detection', ->
+      it 'should check primitive values on a struct appropriately', ->
+        s = new Struct( a: 1, b: 2 )
+
+        shadowWith(s, {}).watchModified().get().should.equal(false)
+        shadowWith(s, { b: 2 }).watchModified().get().should.equal(false)
+        shadowWith(s, { c: 3 }).watchModified().get().should.equal(true)
+        shadowWith(s, { b: 3 }).watchModified().get().should.equal(true)
+        s.watchModified().get().should.equal(false)
+
+      it 'should handle key addition/removal appropriately', ->
+        s = new Struct( a: 1, b: 2 )
+        s2 = s.shadow()
+
+        result = null
+        s2.watchModified().reactNow((x) -> result = x)
+
+        s2.set('c', 3)
+        result.should.equal(true)
+        s2.unset('c')
+        result.should.equal(false)
+
+        s2.unset('b')
+        result.should.equal(true) # !!! also this
+        s2.set('b', 2)
+        result.should.equal(false)
+
+      it 'should diff specifically against the direct parent', ->
+        s = new Struct( a: 1, b: 2 )
+        s2 = shadowWith(s, a: 2)
+        s3 = s2.shadow()
+        s3.watchModified().get().should.equal(false)
+
+      it 'should detect changes to the original struct', ->
+        s = new Struct( a: 1, b: 2 )
+        s2 = s.shadow()
+
+        result = null
+        s2.watchModified().reactNow((x) -> result = x)
+
+        s2.set( b: 2 )
+        result.should.equal(false)
+        s.set( b: 3 )
+        result.should.equal(true)
+
+      it 'should diff nested structs correctly', ->
+        s = new Struct( a: 1, b: new Struct( c: 2, d: 3 ) )
+        s2 = s.shadow()
+
+        result = null
+        s2.watchModified().reactNow((x) -> result = x)
+
+        result.should.equal(false)
+        s2.get('b').set('d', 1)
+        result.should.equal(true)
+        s2.get('b').unset('d')
+        result.should.equal(true)
+        s2.get('b').set('d', 3)
+        result.should.equal(false)
+
+        s2.set('b', 4 )
+        result.should.equal(true)
+
+      it 'should reject non-direct parents outright', ->
+        s = new Struct( a: 1, b: new Struct( c: 2, d: 3 ), e: new List() )
+        s2 = s.shadow()
+
+        result = null
+        s2.watchModified().reactNow((x) -> result = x)
+
+        result.should.equal(false)
+        s2.set('b', s2.get('b').shadow())
+        result.should.equal(true)
+        s2.set('b', s.get('b').shadow())
+        result.should.equal(false)
+
+        s2.set('e', s2.get('e').shadow())
+        result.should.equal(true)
+        s2.set('e', s.get('e').shadow())
+        result.should.equal(false)
+
+      it 'should diff nested lists correctly', ->
+        s = new Struct( a: 1, b: new List([ 2, 3, 4 ]) )
+        s2 = s.shadow()
+
+        result = null
+        s2.watchModified().reactNow((x) -> result = x)
+
+        result.should.equal(false)
+        s2.get('b').add(5)
+        result.should.equal(true)
+        s2.get('b').remove(5)
+        result.should.equal(false)
+        s2.get('b').put(3, 0)
+        result.should.equal(true)
+        s2.get('b').put(2, 0)
+        result.should.equal(false)
+
+      it 'should diff toplevel lists correctly', ->
+        l = new List([ 4, 8, 15, 16, 23, 42 ])
+        l2 = l.shadow()
+
+        result = null
+        l2.watchModified().reactNow((x) -> result = x)
+
+        result.should.equal(false)
+        l2.add(64)
+        result.should.equal(true)
+        l2.remove(64)
+        result.should.equal(false)
+        l2.put(8, 0)
+        result.should.equal(true)
+        l2.put(4, 0)
+        result.should.equal(false)
+
+      it 'should detect changes to the original list', ->
+        l = new List([ 1, 2, 3 ])
+        l2 = l.shadow()
+
+        result = null
+        l2.watchModified().reactNow((x) -> result = x)
+
+        result.should.equal(false)
+        l.put(2, 0)
+        result.should.equal(true)
+
+      it 'should diff structs nested in lists correctly', ->
+        l = new List([ 1, new Struct( a: 2, b: 3 ), 4 ])
+        l2 = l.shadow()
+
+        result = null
+        l2.watchModified().reactNow((x) -> result = x)
+
+        result.should.equal(false)
+        l2.at(1).set('b', 2)
+        result.should.equal(true)
+        l2.at(1).unset('b')
+        result.should.equal(true)
+        l2.at(1).set('b', 3)
+        result.should.equal(false)
+        l.at(1).set('b', 0)
+        result.should.equal(true)
+        l2.put(2, 1)
+        result.should.equal(true)
+
+      it 'should diff lists nested in lists correctly', ->
+        l = new List([ 1, new List([ 2, 3 ]), 4 ])
+        l2 = l.shadow()
+
+        result = null
+        l2.watchModified().reactNow((x) -> result = x)
+
+        result.should.equal(false)
+        l2.at(1).add(5)
+        result.should.equal(true)
+        l2.at(1).remove(5)
+        result.should.equal(false)
+        l.at(1).put(0, 0)
+        result.should.equal(true)
+        l2.put(2, 1)
+        result.should.equal(true)
 

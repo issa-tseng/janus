@@ -19,6 +19,9 @@ Model = require('../model/model').Model
 util = require('../util/util')
 
 
+# when we do eventually get the traversal module, store it off..
+Traversal$ = null
+
 # We derive off of Model so that we have free access to attributes.
 class List extends OrderedCollection
 
@@ -39,7 +42,6 @@ class List extends OrderedCollection
   add: (elems, idx = this.list.length) ->
     # Normalize the argument to an array, then dump in our items.
     elems = [ elems ] unless util.isArray(elems)
-    elems = this._processElements(elems)
     if idx is this.list.length and elems.length is 1
       this.list.push(elems[0]) # for perf. matters a lot in big batches.
     else
@@ -200,7 +202,6 @@ class List extends OrderedCollection
       delete this.list[idx]
 
     # Actually process and splice in the elements.
-    list = this._processElements(list)
     removed = this.list.splice(idx, list.length, list...)
 
     # Event on removals
@@ -229,7 +230,7 @@ class List extends OrderedCollection
       if oldIdx >= 0
         this.move(elem, i)
       else
-        this.add(this._processElements([ elem ])[0], i)
+        this.add(elem, i)
 
     # return the list that was set.
     list
@@ -244,107 +245,12 @@ class List extends OrderedCollection
   shadow: ->
     newArray =
       for item in this.list
-        if item?.isModel is true
+        if item?.isEnumerable is true
           item.shadow()
         else
           item
 
     new this.constructor(newArray, { parent: this })
-
-  # Check if our list has changed relative to its shadow parent.
-  #
-  # **Returns** true if we have been modified.
-  modified: (deep) ->
-    return false unless this._parent?
-    return true if this._parent.list.length isnt this.list.length
-
-    isDeep =
-      if !deep?
-        true
-      else if util.isFunction(deep)
-        deep(this)
-      else
-        deep is true
-
-    for value, i in this.list
-      parentValue = this._parent.list[i]
-
-      if value instanceof Model
-        return true unless parentValue in value.originals()
-        return true if isDeep is true and value.modified(deep)
-      else
-        return true if parentValue isnt value and !(!parentValue? and !value?)
-
-    return false
-
-  # Watches whether our List has changed relative to our original.
-  #
-  # **Returns** Varying[Boolean] indicating modified state.
-  watchModified: (deep) ->
-    return new Varying(false) unless this._parent?
-
-    isDeep =
-      if !deep?
-        true
-      else if util.isFunction(deep)
-        deep(this)
-      else
-        deep is true
-
-    if isDeep is true
-      this._watchModifiedDeep$ ?= do =>
-        result = new Varying(this.modified(deep))
-
-        react = => result.set(this.modified(deep))
-
-        this.on('added', react)
-        this.on('removed', react)
-        this.on('moved', react)
-
-        watching = {}
-        watchModel = (model) =>
-          watching[model._id] = model.watchModified(deep).react((isChanged) ->
-            if isChanged is true
-              result.set(true)
-            else
-              react()
-          )
-
-        uniqSubmodels = this.filter((elem) -> elem instanceof Model).uniq()
-        watchModel(model) for model in uniqSubmodels.list
-        uniqSubmodels.on('added', (newModel) -> watchModel(newModel))
-        uniqSubmodels.on('removed', (oldModel) -> watching[oldModel._id]?.stop?())
-
-        result
-
-    else
-      this._watchModified$ ?= do =>
-        result = new Varying(this.modified(deep))
-
-        react = =>
-          if this.list.length isnt this._parent.list.length
-            result.set(true)
-          else
-            result.set(this.modified(deep))
-
-        this.on('added', react)
-        this.on('removed', react)
-
-        result
-
-  # Handles elements as they're added. Returns possibly the same array of
-  # possibly the same elements, to be added.
-  #
-  # **Returns** Array[obj] of objects to be added.
-  _processElements: (elems) ->
-    for elem in elems
-      if this._parent?
-        if elem?.isModel is true
-          elem.shadow()
-        else
-          elem
-      else
-        elem
 
   @deserialize: (data) ->
     items =
@@ -355,12 +261,19 @@ class List extends OrderedCollection
 
     new this(items)
 
-  @serialize: (list) ->
-    for child in list.list
-      if child?.serialize?
-        child.serialize()
-      else
-        child
+  watchModified: ->
+    if this._parent?
+      # TODO: i don't like that we have to duplicate this code from traversal.coffee,
+      # AND from struct.coffee with a very minor delta.
+      Varying.flatMapAll(this.watchLength(), this._parent.watchLength(), (la, lb) =>
+        if la isnt lb
+          true
+        else
+          Traversal$ ?= require('../model/traversal').Traversal
+          Traversal$.asList(this, Traversal$.default.modified.map, null, Traversal$.default.modified.reduce)
+      )
+    else
+      new Varying(false)
 
 class DerivedList extends List
   for method in [ 'add', 'remove', 'removeAt', 'removeAll', 'put', 'putAll', 'move', 'moveAt' ]
