@@ -92,7 +92,7 @@ Traversal =
 { recurse, delegate, defer, varying, value, nothing } = valueCases
 
 Traversal.default =
-  serialize: (k, v, o, attribute, context) ->
+  serialize: (k, v, _, attribute) ->
     if attribute?
       value(attribute.serialize())
     else if v?
@@ -104,7 +104,7 @@ Traversal.default =
       nothing
 
   modified:
-    map: (k, va, obj, attribute, context) ->
+    map: (k, va, obj) ->
       if !obj._parent?
         value(false)
       else
@@ -122,24 +122,21 @@ Traversal.default =
     reduce: (list) -> list.any(identity)
 
   diff:
-    map: (obj, k, va, attribute, { other }) ->
-      vb = if other? then get(other, k) else null
-      if !va? and !vb?
-        value(false)
-      else if va? and vb?
-        if va.isCollection is true and vb.isCollection is true
-          varying(from(va.watchLength()).and(vb.watchLength()).all.plain().map((la, lb) ->
-            if la isnt lb then value(true) else recurse(va, other: vb )
-          ))
-        else if va.isStruct is true and vb.isStruct is true
-          varying(from(va.enumeration().watchLength()).and(vb.enumeration().watchLength()).all.plain().map((la, lb) ->
-            if la isnt lb then value(true) else recurse(va, other: vb )
-          ))
+    map: (k, va, obj, attribute, { other }) ->
+      varying(watch(other, k).map((vb) ->
+        if !va? and !vb?
+          value(false)
+        else if va? and vb?
+          if (va.isEnumerable is true and vb.isEnumerable is true) and (va.isCollection is vb.isCollection)
+            varying(Varying.mapAll(va.watchLength(), vb.watchLength(), (la, lb) ->
+              if la isnt lb then value(true) else recurse(va, other: vb )
+            ))
+          else
+            value(va isnt vb)
         else
-          value(va is vb)
-      else
-        value(true)
-    reduce: (list) -> list.any((x) -> x is true)
+          value(true)
+      ))
+    reduce: (list) -> list.any(identity)
 
 
 module.exports = { Traversal, cases: valueCases }
