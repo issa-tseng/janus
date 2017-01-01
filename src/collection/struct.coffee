@@ -5,21 +5,17 @@
 # many internal uses for Struct that don't also want shadowing, and separating
 # that concern results in harder to read, less performant code anyway.
 
-{ Base } = require('../core/base')
+{ Enumerable } = require('./collection')
 { Varying } = require('../core/varying')
 { deepGet, deepSet, deepDelete, extendNew, isArray, isPlainObject, isEmptyObject, traverse, traverseAll } = require('../util/util')
 
-
-# when we do eventually get the traversal module, store it off..
-Traversal$ = null
 
 # sentinel value to record a child-nulled value. instantiate a class instance
 # so that it doesn't read as a simple object.
 class NullClass
 Null = new NullClass()
 
-class Struct extends Base
-  isEnumerable: true
+class Struct extends Enumerable
   isStruct: true
 
   constructor: (attributes = {}, @options = {}) ->
@@ -55,7 +51,7 @@ class Struct extends Base
     # Struct, we'll want to shadowclone it before returning.
     if !value? and this._parent?
       value = this._parent.get(key)
-      if value?.isStruct is true
+      if value?.isEnumerable is true
         value = this.set(key, value.shadow())
 
     if value is Null then null else value
@@ -191,21 +187,11 @@ class Struct extends Base
     this.emit("changed:#{key}", newValue, oldValue)
     this.emit('anyChanged', key, newValue, oldValue)
 
-  # Calls into the Enumeration module to get either a live KeySet or a static
-  # array enumerating the keys of this Struct. The options are passed directly
-  # to Enumeration, but consist of:
-  # * scope: (all|direct) all inherited or only dir
-  enumeration: (options) -> require('./enumeration').Enumeration.struct.watch(this, options)
-  enumerate: (options) -> require('./enumeration').Enumeration.struct.get(this, options)
-
-  # Gets the number of k/v pairs in this Struct. Depends on enumeration.
-  watchLength: -> this.watchLength$ ?= this.enumeration().watchLength()
-
   # Maps this struct's values onto a new one, with the same key structure. The
   # mapping functions are passed (key, value) as the arguments.
   #
   # **Returns** a new Struct.
-  map: (f) ->
+  mapPairs: (f) ->
     result = new DerivedStruct()
     traverse(this.attributes, (k, v) ->
       k = k.join('.')
@@ -223,7 +209,7 @@ class Struct extends Base
   # The mapping functions are passed (key, value) as the arguments.
   #
   # **Returns** a new Struct.
-  flatMap: (f, klass = DerivedStruct) ->
+  flatMapPairs: (f, klass = DerivedStruct) ->
     result = new klass()
     varieds = {}
     add = (key) =>
@@ -243,35 +229,8 @@ class Struct extends Base
     result.on('destroying', -> varied.stop() for _, varied of varieds)
     result
 
-  serialize: ->
-    Traversal$ ?= require('./traversal').Traversal
-    Traversal$.getNatural(this, Traversal$.default.serialize)
-
-  watchModified: ->
-    if this._parent?
-      # TODO: i don't like that we have to duplicate this code from traversal.coffee.
-      Varying.flatMapAll(this.watchLength(), this._parent.watchLength(), (la, lb) =>
-        if la isnt lb
-          true
-        else
-          Traversal$ ?= require('./traversal').Traversal
-          Traversal$.asList(this, Traversal$.default.modified.map, null, Traversal$.default.modified.reduce)
-      )
-    else
-      new Varying(false)
-
-  watchDiff: (other) ->
-    if other? and other.isStruct is true and other.isCollection isnt true
-      # TODO: this still sucks.
-      Varying.flatMapAll(this.watchLength(), other.watchLength(), (la, lb) =>
-        if la isnt lb
-          true
-        else
-          Traversal$ ?= require('./traversal').Traversal
-          Traversal$.asList(this, Traversal$.default.diff.map, { other }, Traversal$.default.diff.reduce)
-      )
-    else
-      new Varying(true)
+  # Gets the number of k/v pairs in this Struct. Depends on enumeration.
+  watchLength: -> this.watchLength$ ?= this.enumeration().watchLength()
 
 
 class DerivedStruct extends Struct

@@ -1,5 +1,5 @@
-{ List, DerivedList } = require('./list')
-Varying = require('../core/varying').Varying
+{ List, DerivedList } = require('../list')
+Varying = require('../../core/varying').Varying
 
 
 class MappedList extends DerivedList

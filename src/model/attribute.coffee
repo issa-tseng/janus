@@ -1,8 +1,8 @@
 from = require('../core/from')
-Model = require('./model').Model
-Struct = require('./struct').Struct
-Varying = require('../core/varying').Varying
-List = require('../collection/list').List
+{ Model } = require('./model')
+{ Struct } = require('../collection/struct')
+{ Varying } = require('../core/varying')
+{ List } = require('../collection/list')
 
 
 # This derivation theoretically means that `Attributes` can contain schemas,

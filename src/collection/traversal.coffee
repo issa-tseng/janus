@@ -14,19 +14,6 @@ for k, kase of matchCases
   do (kase) -> valueCases[k] = (x, context) -> kase([ x, context ])
 
 
-# util:
-get = (obj, k) ->
-  if obj.isCollection is true
-    obj.at(k)
-  else if obj.isStruct is true
-    obj.get(k)
-watch = (obj, k) ->
-  if obj.isCollection is true
-    obj.watchAt(k)
-  else if obj.isStruct is true
-    obj.watch(k)
-
-
 # core mechanism:
 
 # TODO: the mechanism of passing state here is far from my favourite. someone
@@ -48,17 +35,14 @@ matcher = match(
 # the general param should supply: root, obj, map, context, and [reduce if applicable].
 processNode = (general) -> (key, value) ->
   obj = general.obj
-  attribute = obj.attribute(key) if obj.isModel is true and obj.isCollection isnt true # this line sucks.
+  attribute = obj.attribute(key) if obj.isModel is true
   local = extendNew(general, { key, value, attribute })
   matcher(general.map(key, value, obj, attribute, general.context), local)
 
 Traversal =
   asNatural: (obj, map, context = {}) ->
     general = { obj, map, context, root: Traversal.asNatural }
-    if obj.isCollection is true
-      obj.enumeration().flatMapPairs(processNode(general))
-    else
-      obj.flatMap?(processNode(general))
+    obj.flatMapPairs(processNode(general)) if obj.isEnumerable is true
 
   asList: (obj, map, context = {}, reduce = identity) ->
     reduce(obj.enumeration().flatMapPairs(processNode({ obj, map, context, reduce, root: Traversal.asList })))
@@ -71,8 +55,8 @@ Traversal =
     result = if obj.isCollection is true then [] else {}
     set = if obj.isCollection is true then ((k, v) -> result[k] = v) else ((k, v) -> deepSet(result, k)(v))
     for key in obj.enumerate()
-      val = get(obj, key)
-      attribute = obj.attribute(key) if obj.isModel is true and obj.isCollection isnt true # this line still sucks.
+      val = obj.get(key)
+      attribute = obj.attribute(key) if obj.isModel is true
       local = { obj, map, key, val, attribute, context, immediate: true, root: Traversal.getNatural }
       set(key, matcher(map(key, val, obj, attribute, context), local))
     result
@@ -80,8 +64,8 @@ Traversal =
   getArray: (obj, map, context = {}, reduce = identity) ->
     reduce(
       for key in obj.enumerate() 
-        val = get(obj, key)
-        attribute = obj.attribute(key) if obj.isModel is true and obj.isCollection isnt true # yup.
+        val = obj.get(key)
+        attribute = obj.attribute(key) if obj.isModel is true
         local = { obj, map, reduce, key, val, attribute, context, immediate: true, root: Traversal.getArray }
         matcher(map(key, val, obj, attribute, context), local)
     )
@@ -103,12 +87,13 @@ Traversal.default =
     else
       nothing
 
+  # TODO: do we even want this? it's such a weird and specific test in some ways.
   modified:
     map: (k, va, obj) ->
       if !obj._parent?
         value(false)
       else
-        varying(watch(obj._parent, k).map((vb) ->
+        varying(obj._parent.watch(k).map((vb) ->
           if va?.isEnumerable is true
             if vb is va._parent # reject unless our parent's value here is our value's direct parent.
               varying(Varying.mapAll(va.watchLength(), vb.watchLength(), (la, lb) ->
@@ -123,7 +108,7 @@ Traversal.default =
 
   diff:
     map: (k, va, obj, attribute, { other }) ->
-      varying(watch(other, k).map((vb) ->
+      varying(other.watch(k).map((vb) ->
         if !va? and !vb?
           value(false)
         else if va? and vb?
@@ -138,6 +123,8 @@ Traversal.default =
       ))
     reduce: (list) -> list.any(identity)
 
+Traversal.cases = valueCases
 
-module.exports = { Traversal, cases: valueCases }
+
+module.exports = { Traversal }
 

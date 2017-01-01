@@ -1,7 +1,7 @@
 should = require('should')
 
-{ Varying } = require('../../lib/core/varying')
-{ List } = require('../../lib/collection/list')
+{ Varying } = require('../../../lib/core/varying')
+{ List } = require('../../../lib/collection/list')
 
 describe 'collection', ->
   describe 'mapped list', ->

@@ -12,23 +12,21 @@
 # - `removedFrom`: `(collection, idx)` this collection and the member's
 #   position.
 
-Base = require('../core/base').Base
-Varying = require('../core/varying').Varying
-OrderedCollection = require('./collection').OrderedCollection
-Model = require('../model/model').Model
+{ Varying } = require('../core/varying')
+{ OrderedCollection } = require('./collection')
 util = require('../util/util')
 
 
-# when we do eventually get the traversal module, store it off..
-Traversal$ = null
-
 # We derive off of Model so that we have free access to attributes.
 class List extends OrderedCollection
+  isList: true
 
   # We take a list of elements, and initialize to empty list if nothing is given.
   constructor: (list = [], options) ->
     # super first so Model stuff and _initialize gets set up before initial add.
+    this._parent = options.parent if options?.parent?
     super({}, options)
+    this._initialize?()
 
     # Init our list, and add the items to it.
     this.list = []
@@ -128,14 +126,16 @@ class List extends OrderedCollection
       elem
 
   # Get an element from this collection by index.
-  at: (idx) ->
+  _at = (idx) ->
     if idx >= 0
       this.list[idx]
     else
       this.list[this.list.length + idx]
+  at: _at
+  get: _at
 
   # Watch an element from this collection by index.
-  watchAt: (idx) ->
+  _watchAt = (idx) ->
     if idx?.isVarying is true
       return idx.flatMap((tidx) => this.watchAt(tidx))
 
@@ -170,6 +170,8 @@ class List extends OrderedCollection
     )
 
     result
+  watchAt: _watchAt
+  watch: _watchAt
 
   # Provide something that looks like a normal length getter:
   Object.defineProperty(@prototype, 'length', get: -> this.list.length)
@@ -215,6 +217,7 @@ class List extends OrderedCollection
       elem?.emit?('addedTo', this, idx + subidx)
 
     removed
+  set: (idx, item) -> this.put([ item ], idx)
 
   # Somewhat smartly resets the entire list to a new one. Does a merge of the
   # two such that adds/removes are limited.
@@ -254,44 +257,26 @@ class List extends OrderedCollection
 
   @deserialize: (data) ->
     items =
-      if this.modelClass? and (this.modelClass.prototype.isModel is true or this.modelClass.prototype.isCollection is true)
+      if this.modelClass? and util.isFunction(this.modelClass.prototype.deserialize)
         this.modelClass.deserialize(datum) for datum in data
       else
         data.slice()
 
     new this(items)
 
-  watchModified: ->
-    if this._parent?
-      # TODO: i don't like that we have to duplicate this code from traversal.coffee,
-      # AND from struct.coffee with a very minor delta.
-      Varying.flatMapAll(this.watchLength(), this._parent.watchLength(), (la, lb) =>
-        if la isnt lb
-          true
-        else
-          Traversal$ ?= require('../model/traversal').Traversal
-          Traversal$.asList(this, Traversal$.default.modified.map, null, Traversal$.default.modified.reduce)
-      )
-    else
-      new Varying(false)
-
-  watchDiff: (other) ->
-    if other?.isCollection is true
-      # TODO: still awful.
-      Varying.flatMapAll(this.watchLength(), other.watchLength(), (la, lb) =>
-        if la isnt lb
-          true
-        else
-          Traversal$ ?= require('./traversal').Traversal
-          Traversal$.asList(this, Traversal$.default.diff.map, { other }, Traversal$.default.diff.reduce)
-      )
-    else
-      new Varying(true)
-
 class DerivedList extends List
+  constructor: ->
+    # still call Base to set up important things, but skip List constructor as
+    # it tries to add the initial items.
+    OrderedCollection.call(this)
+    this.list = []
+    this._initialize?()
+
+  roError = -> throw new Error('this list is read-only')
+
   for method in [ 'add', 'remove', 'removeAt', 'removeAll', 'put', 'putAll', 'move', 'moveAt' ]
     this.prototype["_#{method}"] = this.__super__[method]
-    this.prototype[method] = (->)
+    this.prototype[method] = roError
 
   shadow: -> this
 

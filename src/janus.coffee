@@ -14,18 +14,24 @@ module.exports = (window ? global)._janus$ ?=
   otherwise: kase.otherwise
   from: require('./core/from')
 
-  # model functionality.
+  # collection functionality.
   Base: require('./core/base').Base
+
+  Struct: require('./collection/struct').Struct
+  List: require('./collection/list').List
+  Set: require('./collection/set').Set
+
+  Traversal: require('./collection/traversal').Traversal
+
+  Enumerable: collection.Enumerable
+  Collection: collection.Collection
+  OrderedCollection: collection.OrderedCollection
+
+  # model functionality.
   Model: require('./model/model').Model
   attribute: require('./model/attribute')
   Issue: require('./model/issue').Issue
   store: require('./model/store')
-
-  # collection functionality.
-  List: require('./collection/list').List
-  Set: require('./collection/set').Set
-  Collection: collection.Collection
-  OrderedCollection: collection.OrderedCollection
 
   # view and templating functionality.
   View: require('./view/view').View

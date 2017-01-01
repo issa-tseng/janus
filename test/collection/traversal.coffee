@@ -1,12 +1,13 @@
 should = require('should')
 
 { Varying } = require('../../lib/core/varying')
-{ Struct } = require('../../lib/model/struct')
+{ Struct } = require('../../lib/collection/struct')
 { Model } = require('../../lib/model/model')
 { List } = require('../../lib/collection/list')
 attribute = require('../../lib/model/attribute')
 { sum } = require('../../lib/collection/folds')
-{ Traversal, cases: { recurse, delegate, defer, varying, value, nothing } } = require('../../lib/model/traversal')
+{ Traversal } = require('../../lib/collection/traversal')
+{ recurse, delegate, defer, varying, value, nothing } = Traversal.cases
 
 # util
 shadowWith = (s, obj) ->
@@ -217,7 +218,7 @@ describe 'traversal', ->
     it 'should recurse correctly', ->
       s = new Struct( a: 1, b: new Struct( c: 2, d: 3 ), e: new List([ 4, 5 ]), f: 6 )
       a = Traversal.getArray(s, (k, v, o) ->
-        if v.isStruct is true
+        if v.isEnumerable is true
           recurse(v)
         else
           value("#{k}#{v}")
@@ -263,7 +264,7 @@ describe 'traversal', ->
     it 'should recursively map like types', ->
       source = new Struct( a: 1, b: new List([ 2, new Struct( c: 3, d: 4 ) ]), e: new Struct( f: 5 ) )
       s = Traversal.asNatural(source, (k, v) ->
-        if v.isStruct is true
+        if v.isEnumerable is true
           recurse(v)
         else
           value("#{k}#{v}")
@@ -313,7 +314,7 @@ describe 'traversal', ->
     it 'should recursively map like types', ->
       source = new Struct( a: 1, b: new List([ 2, new Struct( c: 3, d: 4 ) ]), e: new Struct( f: 5 ) )
       o = Traversal.getNatural(source, (k, v) ->
-        if v.isStruct is true
+        if v.isEnumerable is true
           recurse(v)
         else
           value("#{k}#{v}")

@@ -1,9 +1,9 @@
 should = require('should')
 
 { Varying } = require('../../lib/core/varying')
-{ Struct } = require('../../lib/model/struct')
+{ Struct } = require('../../lib/collection/struct')
 { List } = require('../../lib/collection/list')
-{ KeyList, IndexList, Enumeration } = require('../../lib/model/enumeration')
+{ KeyList, IndexList, Enumeration } = require('../../lib/collection/enumeration')
 
 describe 'struct enumeration', ->
   describe 'keylist', ->

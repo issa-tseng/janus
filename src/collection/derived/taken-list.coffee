@@ -1,8 +1,8 @@
 # in which liam neeson comes and beats in your face until you return the
 # correct data structure.
 
-DerivedList = require('./list').DerivedList
-Varying = require('../core/varying').Varying
+DerivedList = require('../list').DerivedList
+Varying = require('../../core/varying').Varying
 
 
 class TakenList extends DerivedList

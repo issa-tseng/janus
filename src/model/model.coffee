@@ -5,7 +5,7 @@ from = require('../core/from')
 { match, otherwise } = require('../core/case')
 types = require('../util/types')
 
-{ Null, Struct } = require('./struct')
+{ Null, Struct } = require('../collection/struct')
 { Varying } = require('../core/varying')
 util = require('../util/util')
 
@@ -168,7 +168,7 @@ class Model extends Struct
     this.issues$ ?= do =>
       issueList = (attr.issues() for attr in this.allAttributes() when attr.issues?)
       issueList.unshift(this._issues()) if this._issues?
-      (new (require('../collection/catted-list').CattedList)(issueList)).filter((issue) -> issue.active)
+      (new (require('../collection/derived/catted-list').CattedList)(issueList)).filter((issue) -> issue.active)
 
   # To specify model-level validation for this model, declare a `_issues()`
   # method:

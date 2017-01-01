@@ -1,5 +1,5 @@
-{ List, DerivedList } = require('./list')
-util = require('../util/util')
+{ List, DerivedList } = require('../list')
+util = require('../../util/util')
 
 
 class FlattenedList extends DerivedList

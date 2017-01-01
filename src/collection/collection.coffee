@@ -2,65 +2,100 @@
 # mostly to express behavioral characteristics that a `View` can count on
 # so that we can easily register against these collections.
 
-Model = require('../model/model').Model
+{ Base } = require('../core/base')
+{ Varying } = require('../core/varying')
+{ Traversal } = require('./traversal')
 folds = require('./folds')
 
 
+# cache this circularly referenced module once we fetch it:
+Enumeration$ = null
+
+# The base for all data structures. Provides basic enumeration functions around
+# keys/indices, and all classes implementing Enumerable are expected to also
+# provide:
+# * get: (key) -> value
+# * set: (key, value) -> void
+# * watch: (key) -> Varying[value]
+# * shadow: -> Enumerable
+# * mapPairs: ((key, value) -> T) -> [T]
+# * flatMapPairs: ((key, value) -> Varying?[T]) -> [T]
+class Enumerable extends Base
+  isEnumerable: true
+
+  # Calls into the Enumeration module to get either a live KeySet or a static
+  # array enumerating the keys of this Struct or List. The options are passed
+  # directly to Enumeration and only matter for Structs, but consist of:
+  # * scope: (all|direct) all inherited or only dir
+  enumeration: (options) -> (Enumeration$ ?= require('./enumeration').Enumeration).watch(this, options)
+  enumerate: (options) -> (Enumeration$ ?= require('./enumeration').Enumeration).get(this, options)
+
+  serialize: ->
+    Traversal.getNatural(this, Traversal.default.serialize)
+
+  watchModified: ->
+    if this._parent?
+      # TODO: i don't like that we have to duplicate this code from traversal.coffee,
+      Varying.flatMapAll(this.watchLength(), this._parent.watchLength(), (la, lb) =>
+        if la isnt lb
+          true
+        else
+          Traversal.asList(this, Traversal.default.modified.map, null, Traversal.default.modified.reduce)
+      )
+    else
+      new Varying(false)
+
+  watchDiff: (other) ->
+    if other?.isEnumerable is true and other.isCollection is this.isCollection
+      # TODO: still awful.
+      Varying.flatMapAll(this.watchLength(), other.watchLength(), (la, lb) =>
+        if la isnt lb
+          true
+        else
+          Traversal.asList(this, Traversal.default.diff.map, { other }, Traversal.default.diff.reduce)
+      )
+    else
+      new Varying(true)
+
 # A `Collection` provides `add` and `remove` events for every element that is
 # added or removed from the list.
-class Collection extends Model
-  isEnumerable: true
+class Collection extends Enumerable
   isCollection: true
 
   # Create a new FilteredList based on this list, with the member check
   # function `f`.
   #
   # **Returns** a `FilteredList`
-  filter: (f) -> new (require('./filtered-list').FilteredList)(this, f)
+  filter: (f) -> new (require('./derived/filtered-list').FilteredList)(this, f)
 
   # Create a new mapped List based on this list, with the mapping function `f`.
   #
   # **Returns** a `MappedList`
-  map: (f) -> new (require('./mapped-list').MappedList)(this, f)
+  map: (f) -> new (require('./derived/mapped-list').MappedList)(this, f)
 
   # Create a new mapped List based on this list, with the mapping function `f`.
   # Due to the flatMap, `f` may return a `Varying` that changes, which will in
   # turn change the value in the resulting list.
   #
   # **Returns** a `MappedList`
-  flatMap: (f) -> new (require('./mapped-list').FlatMappedList)(this, f)
+  flatMap: (f) -> new (require('./derived/mapped-list').FlatMappedList)(this, f)
 
-  # Create a new concatenated List based on this List, along with the other
-  # Lists provided in the call. Can be passed in either as an arg list of Lists
-  # or as an array of Lists.
-  #
-  # **Returns** a `CattedList`
-  concat: (lists...) ->
-    new (require('./catted-list').CattedList)([ this ].concat(lists))
+  # Rely on enumeration to give us mapPairs and flatMapPairs:
+  mapPairs: (f) -> this.enumeration().mapPairs(f)
+  flatMapPairs: (f) -> this.enumeration().flatMapPairs(f)
 
   # Create a new FlattenedList based on this List.
   #
   # **Returns** a `FlattenedList`
-  flatten: -> new (require('./flattened-list').FlattenedList)(this)
+  flatten: -> new (require('./derived/flattened-list').FlattenedList)(this)
 
   # Create a new UniqList based on this List.
   #
   # **Returns** a `UniqList`
-  uniq: -> new (require('./uniq-list').UniqList)(this)
-
-  # Create a list that always takes the first x elements of this collection,
-  # where x may be a number or a Varying[Int].
-  #
-  # **Returns** a `TakenList`
-  take: (x) -> new (require('./taken-list').TakenList)(this, x)
-
-  # Calls into the Enumeration module to get either a live IndexList or a static
-  # array enumerating the indices of this List.
-  enumeration: -> require('../model/enumeration').Enumeration.list.watch(this)
-  enumerate: -> require('../model/enumeration').Enumeration.list.get(this)
+  uniq: -> new (require('./derived/uniq-list').UniqList)(this)
 
   # See if any element in this list qualifies for the condition.
-  any: (f) -> folds.any(new (require('./mapped-list').FlatMappedList)(this, f))
+  any: (f) -> folds.any(new (require('./derived/mapped-list').FlatMappedList)(this, f))
 
   # fold left across the list.
   fold: (memo, f) -> folds.fold(this, memo, f)
@@ -80,14 +115,29 @@ class Collection extends Model
   # get the sum of this list.
   sum: -> folds.sum(this)
 
-  # get the strings of this list joined by some string.
-  join: (joiner) -> folds.join(this, joiner)
-
 
 # An `OrderedCollection` provides `add` and `remove` events for every element
 # that is added or removed from the list, along with a positional argument.
 class OrderedCollection extends Collection
+  isOrderedCollection: true
+
+  # Create a list that always takes the first x elements of this collection,
+  # where x may be a number or a Varying[Int].
+  #
+  # **Returns** a `TakenList`
+  take: (x) -> new (require('./derived/taken-list').TakenList)(this, x)
+
+  # Create a new concatenated List based on this List, along with the other
+  # Lists provided in the call. Can be passed in either as an arg list of Lists
+  # or as an array of Lists.
+  #
+  # **Returns** a `CattedList`
+  concat: (lists...) ->
+    new (require('./derived/catted-list').CattedList)([ this ].concat(lists))
+
+  # get the strings of this list joined by some string.
+  join: (joiner) -> folds.join(this, joiner)
 
 
-module.exports = { Collection, OrderedCollection }
+module.exports = { Enumerable, Collection, OrderedCollection }
 
