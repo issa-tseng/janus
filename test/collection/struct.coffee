@@ -1,8 +1,8 @@
 should = require('should')
 
 { Varying } = require('../../lib/core/varying')
-{ Struct } = require('../../lib/model/struct')
-{ KeyList } = require('../../lib/model/enumeration')
+{ Struct } = require('../../lib/collection/struct')
+{ KeyList } = require('../../lib/collection/enumeration')
 
 describe 'Struct', ->
   describe 'core', ->
@@ -333,22 +333,22 @@ describe 'Struct', ->
       results.should.eql([ 2, 3, 2 ])
 
   describe 'mapping', ->
-    describe 'map', ->
+    describe 'mapPairs', ->
       it 'should provide the appropriate k/v arguments to the mapping function', ->
         called = []
         s = new Struct( a: 1, b: 2, c: { d: 3 } )
-        s.map((k, v) -> called.push(k, v))
+        s.mapPairs((k, v) -> called.push(k, v))
         called.should.eql([ 'a', 1, 'b', 2, 'c.d', 3 ])
 
       it 'should return a Struct with the appropriate mapped values', ->
         s = new Struct( a: 1, b: 2, c: { d: 3 } )
-        s2 = s.map((k, v) -> v + 1)
+        s2 = s.mapPairs((k, v) -> v + 1)
         s2.should.be.an.instanceof(Struct)
         s2.attributes.should.eql({ a: 2, b: 3, c: { d: 4 } })
 
       it 'should handle added and removed values', ->
         s = new Struct( a: 1, b: 2, c: { d: 3 } )
-        s2 = s.map((k, v) -> v + 1)
+        s2 = s.mapPairs((k, v) -> v + 1)
 
         s.set('c.e.f', 4)
         s2.attributes.should.eql({ a: 2, b: 3, c: { d: 4, e: { f: 5 } } })
@@ -361,7 +361,7 @@ describe 'Struct', ->
 
       it 'should handle changed values', ->
         s = new Struct( a: 1, b: 2, c: { d: 3 } )
-        s2 = s.map((k, v) -> v + 1)
+        s2 = s.mapPairs((k, v) -> v + 1)
 
         s.set('c.d', 4)
         s2.attributes.should.eql({ a: 2, b: 3, c: { d: 5 } })
@@ -369,24 +369,24 @@ describe 'Struct', ->
         s.set('c', 8)
         s2.attributes.should.eql({ a: 2, b: 3, c: 9 })
 
-    describe 'flatMap', ->
+    describe 'flatMapPairs', ->
       it 'should provide the appropriate k/v arguments to the mapping function', ->
         called = []
         s = new Struct( a: 1, b: 2, c: { d: 3 } )
-        s.flatMap((k, v) -> called.push(k, v))
+        s.flatMapPairs((k, v) -> called.push(k, v))
         called.should.eql([ 'a', 1, 'b', 2, 'c.d', 3 ])
 
       it 'should return a Struct with the appropriate mapped values', ->
         s = new Struct( a: 1, b: 2, c: { d: 3 } )
         c = new Varying(1)
-        s2 = s.flatMap((k, v) -> c.map((cv) -> v + cv))
+        s2 = s.flatMapPairs((k, v) -> c.map((cv) -> v + cv))
         s2.should.be.an.instanceof(Struct)
         s2.attributes.should.eql({ a: 2, b: 3, c: { d: 4 } })
 
       it 'should handle added and removed values', ->
         s = new Struct( a: 1, b: 2, c: { d: 3 } )
         c = new Varying(1)
-        s2 = s.flatMap((k, v) -> c.map((cv) -> v + cv))
+        s2 = s.flatMapPairs((k, v) -> c.map((cv) -> v + cv))
 
         s.set('c.e.f', 4)
         s2.attributes.should.eql({ a: 2, b: 3, c: { d: 4, e: { f: 5 } } })
@@ -400,7 +400,7 @@ describe 'Struct', ->
       it 'should handle changed values', ->
         s = new Struct( a: 1, b: 2, c: { d: 3 } )
         c = new Varying(1)
-        s2 = s.flatMap((k, v) -> c.map((cv) -> v + cv))
+        s2 = s.flatMapPairs((k, v) -> c.map((cv) -> v + cv))
 
         c.set(2)
         s2.attributes.should.eql({ a: 3, b: 4, c: { d: 5 } })
@@ -418,7 +418,7 @@ describe 'Struct', ->
         count = 0
         s = new Struct( a: 1, b: 2, c: { d: 3 } )
         c = new Varying(1)
-        s2 = s.flatMap((k, v) -> c.map((cv) -> count += 1; v + cv))
+        s2 = s.flatMapPairs((k, v) -> c.map((cv) -> count += 1; v + cv))
 
         count.should.equal(3)
         s2.destroy()

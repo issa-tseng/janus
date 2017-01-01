@@ -1,9 +1,9 @@
 should = require('should')
 
-Model = require('../../lib/model/model').Model
+Model = require('../../../lib/model/model').Model
 
-Varying = require('../../lib/core/varying').Varying
-{ List } = require('../../lib/collection/list')
+Varying = require('../../../lib/core/varying').Varying
+{ List } = require('../../../lib/collection/list')
 
 describe 'collection', ->
   describe 'filtered list', ->

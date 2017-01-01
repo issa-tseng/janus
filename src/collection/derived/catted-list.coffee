@@ -1,5 +1,5 @@
-DerivedList = require('./list').DerivedList
-util = require('../util/util')
+DerivedList = require('../list').DerivedList
+util = require('../../util/util')
 
 
 class CattedList extends DerivedList

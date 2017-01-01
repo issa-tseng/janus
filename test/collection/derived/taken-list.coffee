@@ -1,8 +1,8 @@
 should = require('should')
 
-{ Varying } = require('../../lib/core/varying')
-{ Model } = require('../../lib/model/model')
-{ List } = require('../../lib/collection/list')
+{ Varying } = require('../../../lib/core/varying')
+{ Model } = require('../../../lib/model/model')
+{ List } = require('../../../lib/collection/list')
 
 describe 'collection', ->
   describe 'taken list', ->

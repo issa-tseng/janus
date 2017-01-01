@@ -1,5 +1,5 @@
-{ List, DerivedList } = require('./list')
-Varying = require('../core/varying').Varying
+{ List, DerivedList } = require('../list')
+Varying = require('../../core/varying').Varying
 
 
 # A read-only view into a proper `List` that filters out nonqualifying

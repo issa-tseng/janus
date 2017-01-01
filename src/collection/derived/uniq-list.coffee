@@ -1,4 +1,4 @@
-DerivedList = require('./list').DerivedList
+DerivedList = require('../list').DerivedList
 
 
 # A read-only view into a proper `List` that only allows unique values from

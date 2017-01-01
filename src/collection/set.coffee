@@ -5,8 +5,8 @@
 # No guaranteed ordering semantic is provided. As such, #move and #moveAt are
 # unavailable.
 
-Varying = require('../core/varying').Varying
-List = require('./list').List
+{ Varying } = require('../core/varying')
+{ List } = require('./list')
 util = require('../util/util')
 
 # TODO: by derivation this inheritance implies Set: OrderedCollection which is

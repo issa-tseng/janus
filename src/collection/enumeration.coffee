@@ -96,7 +96,12 @@ class IndexList extends DerivedList
     this._lengthVaried.stop()
     super()
 
+_dynamic = (f) -> (obj, options) ->
+  Enumeration[if obj.isCollection is true then 'list' else if obj.isStruct is true then 'struct'][f](obj, options)
 Enumeration =
+  get: _dynamic('get')
+  watch: _dynamic('watch')
+
   struct:
     get: (struct, options = {}) ->
       scope = options.scope ? 'all'

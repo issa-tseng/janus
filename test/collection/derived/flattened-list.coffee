@@ -1,7 +1,7 @@
 should = require('should')
 
-Model = require('../../lib/model/model').Model
-{ List } = require('../../lib/collection/list')
+Model = require('../../../lib/model/model').Model
+{ List } = require('../../../lib/collection/list')
 
 describe 'collection', ->
   describe 'flattened list', ->
