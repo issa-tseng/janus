@@ -92,6 +92,51 @@ describe 'Varying', ->
       v.set(3)
       runCount.should.equal(2)
 
+  describe 'refCount', ->
+    it 'should return a Varying with the number of reactions', ->
+      v = new Varying(true)
+      v.reactNow(->)
+      v.react(->)
+
+      result = v.refCount()
+      result.get().should.equal(2)
+
+    it 'should update as the refcount changes', ->
+      v = new Varying(true)
+
+      results = []
+      v.refCount().reactNow((x) -> results.push(x))
+
+      v.reactNow(-> this.stop())
+      v.react()
+      results.should.eql([ 0, 1, 0, 1 ])
+
+    it 'should account for chained references', ->
+      v = new Varying(true)
+      v.map((x) -> !x).reactNow(->)
+      v.refCount().get().should.equal(1)
+
+    it 'should work on (flat)mapped varyings', ->
+      v = new Varying(true)
+      vv = v.flatMap((x) -> !x)
+
+      results = []
+      vv.refCount().reactNow((x) -> results.push(x))
+
+      vv.react(->)
+      vv.reactNow(-> this.stop())
+      results.should.eql([ 0, 1, 2, 1 ])
+
+    it 'should work on composed varyings', ->
+      v = Varying.mapAll((->), new Varying(1), new Varying(2), new Varying(3))
+
+      results = []
+      v.refCount().reactNow((x) -> results.push(x))
+
+      v.react(->)
+      v.reactNow(-> this.stop())
+      results.should.eql([ 0, 1, 2, 1 ])
+
   describe 'map', ->
     it 'should return a MappedVarying when map is called', ->
       (new Varying()).map().should.be.an.instanceof(MappedVarying)

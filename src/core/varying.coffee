@@ -40,6 +40,7 @@ class Varying
   constructor: (value) ->
     this.set(value) # immediately set our internal value.
     this._observers = {} # track our observers so we can notify on change.
+    this._refCount = 0
 
     this._generation = 0 # keeps track of which propagation cycle we're on.
 
@@ -56,7 +57,14 @@ class Varying
   # (Varying v, Varied w) => v a -> (a -> ()) -> w
   react: (f_) ->
     id = uniqueId()
-    this._observers[id] = new Varied(id, f_, => delete this._observers[id])
+    this._refCount += 1
+    this.refCount$?.set(this._refCount)
+
+    this._observers[id] = new Varied(id, f_, =>
+      delete this._observers[id]
+      this._refCount -= 1
+      this.refCount$?.set(this._refCount)
+    )
 
   # (Varying v, Varied w) => v a -> (a -> ()) -> w
   reactNow: (f_) ->
@@ -80,6 +88,9 @@ class Varying
 
   # (Varying v) => v a -> a
   get: -> this._value
+
+  # (Varying v, Int b) => v a -> v b
+  refCount: -> this.refCount$ ?= new Varying(this._refCount)
 
   # we have two very similar behaviours, `pure` and `flatMapAll`, that differ only
   # in a parameter passed to the returned class. so we implement it once and
@@ -193,6 +204,7 @@ class FlatMappedVarying extends Varying
     id = uniqueId()
     varied = new Varied(id, callback, =>
       this._refCount -= 1
+      this.refCount$?.set(this._refCount)
       delete this._internalObservers[id]
 
       this._parentVaried.stop() if this._refCount is 0
@@ -207,6 +219,7 @@ class FlatMappedVarying extends Varying
       )
 
     this._refCount += 1
+    this.refCount$?.set(this._refCount)
     this._internalObservers[id] = varied # returns Varied.
 
   _immediate: -> this._f.call(null, this._parent.get()) # essentially get() w/out flatten.
@@ -248,6 +261,7 @@ class ComposedVarying extends FlatMappedVarying
     id = uniqueId()
     varied = new Varied(id, callback, =>
       this._refCount -= 1
+      this.refCount$?.set(this._refCount)
       delete this._internalObservers[id]
 
       v.stop() for v in this._parentVarieds if this._refCount is 0
@@ -266,6 +280,7 @@ class ComposedVarying extends FlatMappedVarying
         )
 
     this._refCount += 1
+    this.refCount$?.set(this._refCount)
     this._internalObservers[id] = varied # return Varied.
 
   _immediate: -> this._f.apply(null, (a.get() for a in this._applicants))
