@@ -122,6 +122,8 @@ class Varying
   # (Varying v) => v a -> v b -> (a -> b -> v c) -> v c
   @flatMapAll: _pure(true)
 
+  @managed: (resources..., computation) -> new ManagedVarying(resources, computation)
+
   # convenience constructor to ensure a Varying. wraps nonVaryings, and returns
   # Varyings given to it.
   # (Varying v) => a -> v a
@@ -284,6 +286,30 @@ class ComposedVarying extends FlatMappedVarying
     this._internalObservers[id] = varied # return Varied.
 
   _immediate: -> this._f.apply(null, (a.get() for a in this._applicants))
+
+class ManagedVarying extends FlatMappedVarying
+  constructor: (@_resources, @_computation) ->
+    super(new Varying())
+
+    this._awake = false
+    resources = null
+    this.refCount().react((count) =>
+      if count > 0 and this._awake is false
+        this._awake = true
+        resources = (f() for f in this._resources)
+        this._parent.set(this._computation.apply(null, resources))
+      else if count is 0 and this._awake is true
+        this._awake = false
+        resource.destroy() for resource in resources
+    )
+
+  get: ->
+    if this._awake is true
+      super()
+    else
+      result = null
+      this.reactNow((x) -> result = x; this.stop()) # kind of gross? but maybe not?
+      result
 
 
 module.exports = { Varying, Varied, FlatMappedVarying, FlattenedVarying, MappedVarying, ComposedVarying }
