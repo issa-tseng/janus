@@ -739,3 +739,69 @@ describe 'Varying', ->
         vz.set(4)
         result.should.equal(5)
 
+  describe 'managed resources', ->
+    it 'should call each resource generator and pass them to the computation generator upon react', ->
+      results = null
+      v = Varying.managed((-> 1), (-> 2), (-> 3), (xs...) -> results = xs)
+      should(results).equal(null)
+      v.react(->)
+      results.should.eql([ 1, 2, 3 ])
+
+    it 'should use the result of the computation generator as its own result', ->
+      vi = new Varying(0)
+      v = Varying.managed(-> vi)
+
+      results = []
+      vd = v.reactNow((x) -> results.push(x))
+      vi.set(2)
+      vi.set(4)
+      results.should.eql([ 0, 2, 4 ])
+
+    it 'should not create resources if they already exist', ->
+      count = 0
+      track = (f) -> -> count++; f()
+      v = Varying.managed(track(-> 1), track(-> 2), (x, y) -> new Varying(x + y))
+      count.should.equal(0)
+      v.reactNow(->)
+      count.should.equal(2)
+      v.reactNow(->)
+      count.should.equal(2)
+
+    it 'should destroy resources if no longer needed', ->
+      destroyed = 0
+      destructible = -> { destroy: -> destroyed++ }
+      v = Varying.managed(destructible, destructible, -> new Varying())
+      destroyed.should.equal(0)
+      vda = v.reactNow(->)
+      vdb = v.reactNow(->)
+      destroyed.should.equal(0)
+      vda.stop()
+      destroyed.should.equal(0)
+      vdb.stop()
+      destroyed.should.equal(2)
+
+    it 'should recreate resources when needed again', ->
+      count = 0
+      track = (f) -> -> count++; { valueOf: f, destroy: (->) }
+      v = Varying.managed(track(-> 1), track(-> 2), (x, y) -> new Varying(x + y))
+      vda = v.reactNow(->)
+      vdb = v.reactNow(->)
+      count.should.equal(2)
+      vda.stop()
+      vdb.stop()
+      count.should.equal(2)
+      v.reactNow(->)
+      count.should.equal(4)
+
+    it 'should get value from active managed varyings', ->
+      v = Varying.managed((-> 1), (-> 2), (-> 3), (x, y, z) -> new Varying(x + y + z))
+      v.reactNow(->)
+      v.get().should.equal(6)
+
+    it 'should get value from dormant managed varyings, and clean up', ->
+      destroyed = 0
+      destructible = (f) -> -> { valueOf: f, destroy: -> destroyed++ }
+      v = Varying.managed(destructible(-> 1), destructible(-> 2), (x, y) -> new Varying(x + y))
+      v.get().should.equal(3)
+      destroyed.should.equal(2)
+

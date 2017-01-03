@@ -230,7 +230,7 @@ class Struct extends Enumerable
     result
 
   # Gets the number of k/v pairs in this Struct. Depends on enumeration.
-  watchLength: -> this.watchLength$ ?= this.enumeration().watchLength()
+  watchLength: -> this.watchLength$ ?= Varying.managed((=> this.enumeration()), (it) -> it.watchLength())
 
 
 class DerivedStruct extends Struct
