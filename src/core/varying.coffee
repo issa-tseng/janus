@@ -141,8 +141,8 @@ nothing = {}
 class FlatMappedVarying extends Varying
   constructor: (@_parent, @_f = identity, @_flatten = true) ->
     this._observers = {}
-    this._internalObservers = {}
     this._refCount = 0
+    this._value = nothing
 
   _react = (self, callback, immediate) ->
     # create the consumer Varied that will be returned.
@@ -154,6 +154,7 @@ class FlatMappedVarying extends Varying
       if self._refCount is 0
         self._lastInnerVaried?.stop()
         self._parentVaried.stop()
+        self._value = nothing
       self.refCount$?.set(self._refCount)
     )
 
@@ -171,8 +172,8 @@ class FlatMappedVarying extends Varying
           self._lastInnerVaried = null
 
       # don't bail until we've unlistened/relistened to the container result.
-      return if value is self._lastValue
-      self._lastValue = value
+      return if value is self._value
+      self._value = value
 
       unless immediate is false and ignoreFirst is true
         # we always call onValue immediately; so we don't want to notify if
@@ -183,7 +184,6 @@ class FlatMappedVarying extends Varying
       null
 
     if self._refCount is 0
-      self._lastValue = nothing
       self._lastInnerVaried = null
       self._generation = 0
       self._parentVaried = self._bind(onValue) 
@@ -197,10 +197,10 @@ class FlatMappedVarying extends Varying
     # the only cases we can ignore the initial value are nonflat nonimmediates,
     # or if someone has already fired our bound listener within refcount.
     if (self._generation is initialGeneration) and (self._flatten is true or immediate is true)
-      if self._lastValue is nothing
+      if self._value is nothing
         onValue.call(self._parentVaried, self._immediate())
       else
-        callback.call(varied, self._lastValue)
+        callback.call(varied, self._value)
 
     ignoreFirst = false
     varied
@@ -221,7 +221,11 @@ class FlatMappedVarying extends Varying
   _bind: (callback) -> this._parent.react((raw) => callback.call(this._parentVaried, this._f.call(null, raw)))
 
   # used internally; essentially get() w/out flatten.
-  _immediate: -> this._f.call(null, this._parent.get())
+  _immediate: ->
+    if this._value is nothing
+      this._f.call(null, this._parent.get())
+    else
+      this._value
 
   # can't set a derived varying.
   set: null
@@ -249,6 +253,7 @@ class ComposedVarying extends FlatMappedVarying
   constructor: (@_applicants, @_f = identity, @_flatten = false) ->
     this._observers = {}
     this._refCount = 0
+    this._value = nothing
 
     this._partial = [] # track the current mapping arguments.
     this._parentVarieds = [] # track our observers watching for mapping arguments.
@@ -271,7 +276,11 @@ class ComposedVarying extends FlatMappedVarying
     allBound = true
     new Varied(uniqueId(), null, => v.stop() for v in this._parentVarieds)
 
-  _immediate: -> this._f.apply(null, (a.get() for a in this._applicants))
+  _immediate: ->
+    if this._value is nothing
+      this._f.apply(null, (a.get() for a in this._applicants))
+    else
+      this._value
 
 class ManagedVarying extends FlatMappedVarying
   constructor: (@_resources, @_computation) ->
