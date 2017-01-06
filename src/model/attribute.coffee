@@ -77,7 +77,13 @@ class ReferenceAttribute extends Attribute
   resolver: ->
     from.varying(new Varying(this.request()))
       .and.app()
-      .all.flatMap((request, app) -> app.getStore(request).handle(); request)
+      .all.flatMap((request, app) ->
+        Varying.managed((->
+          store = app.getStore(request)
+          store.handle()
+          store
+        ), (-> request))
+      )
 
   @contains: Model
   @deserialize: (data) -> this.contains.deserialize(data)

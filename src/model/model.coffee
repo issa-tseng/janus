@@ -19,7 +19,6 @@ class Model extends Struct
   # We take in an attribute bag and optionally some options for this Model.
   # Options are for both framework and implementation use.
   constructor: (attributes = {}, options) ->
-    this._resolves = {}
     this._attributes = {}
     super(attributes, options)
     this._bind() # kick off bindings only after basic init.
@@ -55,26 +54,32 @@ class Model extends Struct
   # wrapped `types.result` cases. The actual property key will be populated
   # with a successful value if it comes.
   resolve: (key, app) ->
-    this._resolves[key] ?= do =>
-      this.watch(key).flatMap (value) =>
-        if !value? and (attribute = this.attribute(key)).isReference is true
-          # point the attribute's resolver definition with an app and count
-          # on it to fire off the request. but listen to the result and set
-          # the concret value if we get one.
-          result = terminate(attribute.resolver())
-            .point((x) => this.constructor._point(x, this, app))
-            .map((x) => x?.mapSuccess((y) -> attribute.constructor.deserialize(y)) ? x)
+    if !this.get(key)? and (attribute = this.attribute(key)).isReference is true
+      result = new Varying(terminate(attribute.resolver())
+        .point((x) => this.constructor._point(x, this, app))
+        .map((x) => x?.mapSuccess((y) -> attribute.constructor.deserialize(y)) ? x)
+      ).flatten()
 
-          result.reactNow((x) => types.result.success.match(x, (y) => this.set(key, y)))
-          result
-        else
-          new Varying(value) # wrap for symmetry (because this is a flatMap)
+      # snoop on the result if someone else reacts on it, and set successful
+      # values to the attribute.
+      varied = null
+      result.refCount().react((count) =>
+        if count is 1
+          if varied?
+            varied.stop()
+            varied = null
+          else
+            varied = result.reactNow((x) => types.result.success.match(x, (y) => this.set(key, y)))
+      )
+
+      result
+    else
+      this.watch(key)
 
   # Like `#resolve(key, app)`, but calls reactNow on the resulting request on
   # your behalf.
-  # TODO: this feels a bit cognitively dissonant. stems from the fact that the
-  # work is done in a flatMap, which isn't supposed to have side effects.
-  resolveNow: (key, app) -> this.resolve(key, app).reactNow(->)
+  # TODO: probably makes more sense for this to match complete state.
+  resolveNow: (key, app) -> this.resolve(key, app).reactNow((x) -> this.stop() if types.result.success.match(x))
 
   # Class-level storage bucket for attribute schema definition.
   @attributes: ->
