@@ -365,10 +365,10 @@ describe 'Model', ->
       v = m.resolve('a', app)
       vda = v.reactNow(->)
       vdb = v.reactNow(->)
-      destroyed.should.equal(1) # 1 rather than 0 because the immediate copy is instadestroyed.
+      destroyed.should.equal(0)
       vda.stop()
       vdb.stop()
-      destroyed.should.equal(2)
+      destroyed.should.equal(1)
 
     it 'immediately calls handle on the store that handles the request given resolveNow', ->
       called = false
