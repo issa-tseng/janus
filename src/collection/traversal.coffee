@@ -124,7 +124,7 @@ Traversal.default =
     map: (k, va, obj, attribute, { other }) ->
       varying(other.watch(k).map((vb) ->
         if va? and vb?
-          if (obj?.isEnumerable is true and other?.isEnumerable is true) and (obj.isCollection is other.isCollection)
+          if (va?.isEnumerable is true and vb?.isEnumerable is true) and (va.isCollection is vb.isCollection)
             recurse(va, { other: vb })
           else
             value(va isnt vb)
