@@ -30,32 +30,10 @@ class Enumerable extends Base
   enumeration: (options) -> (Enumeration$ ?= require('./enumeration').Enumeration).watch(this, options)
   enumerate: (options) -> (Enumeration$ ?= require('./enumeration').Enumeration).get(this, options)
 
-  serialize: ->
-    Traversal.getNatural(this, Traversal.default.serialize)
+  serialize: -> Traversal.getNatural(this, Traversal.default.serialize)
 
-  watchModified: ->
-    if this._parent?
-      # TODO: i don't like that we have to duplicate this code from traversal.coffee,
-      Varying.flatMapAll(this.watchLength(), this._parent.watchLength(), (la, lb) =>
-        if la isnt lb
-          true
-        else
-          Traversal.asList(this, Traversal.default.modified.map, null, Traversal.default.modified.reduce)
-      )
-    else
-      new Varying(false)
-
-  watchDiff: (other) ->
-    if other?.isEnumerable is true and other.isCollection is this.isCollection
-      # TODO: still awful.
-      Varying.flatMapAll(this.watchLength(), other.watchLength(), (la, lb) =>
-        if la isnt lb
-          true
-        else
-          Traversal.asList(this, Traversal.default.diff.map, { other }, Traversal.default.diff.reduce)
-      )
-    else
-      new Varying(true)
+  watchModified: -> if this._parent? then this.watchDiff(this._parent) else new Varying(false)
+  watchDiff: (other) -> Traversal.asList(this, Traversal.default.diff, { other })
 
 # A `Collection` provides `add` and `remove` events for every element that is
 # added or removed from the list.
