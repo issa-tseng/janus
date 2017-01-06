@@ -330,7 +330,7 @@ describe 'Model', ->
     it 'should point the reference request from the store library given an app', ->
       ourRequest = new Varying()
       givenRequest = null
-      app = { getStore: ((x) -> givenRequest = x; { handle: (->) }) }
+      app = { getStore: ((x) -> givenRequest = x; { handle: (->), destroy: (->) }) }
       class TestModel extends Model
         @attribute 'a', class extends attribute.ReferenceAttribute
           request: -> ourRequest
@@ -343,7 +343,7 @@ describe 'Model', ->
 
     it 'calls handle on the store that handles the request', ->
       called = false
-      app = { getStore: (x) -> { handle: (-> called = true) } }
+      app = { getStore: (x) -> { handle: (-> called = true), destroy: (->) } }
       class TestModel extends Model
         @attribute 'a', class extends attribute.ReferenceAttribute
           request: -> new Varying()
@@ -354,21 +354,37 @@ describe 'Model', ->
       v.reactNow(->)
       called.should.equal(true)
 
-    it 'immediately calls handle on the store that handles the request given resolveNow', ->
-      called = false
-      app = { getStore: (x) -> { handle: (-> called = true) } }
+    it 'destroys the store if the refcount drops to zero', ->
+      destroyed = 0
+      app = { getStore: -> { handle: (->), destroy: (-> destroyed++) } }
       class TestModel extends Model
         @attribute 'a', class extends attribute.ReferenceAttribute
           request: -> new Varying()
 
       m = new TestModel()
-      v = m.resolveNow('a', app)
+      v = m.resolve('a', app)
+      vda = v.reactNow(->)
+      vdb = v.reactNow(->)
+      destroyed.should.equal(1) # 1 rather than 0 because the immediate copy is instadestroyed.
+      vda.stop()
+      vdb.stop()
+      destroyed.should.equal(2)
+
+    it 'immediately calls handle on the store that handles the request given resolveNow', ->
+      called = false
+      app = { getStore: (x) -> { handle: (-> called = true), destroy: (->) } }
+      class TestModel extends Model
+        @attribute 'a', class extends attribute.ReferenceAttribute
+          request: -> new Varying()
+
+      m = new TestModel()
+      m.resolveNow('a', app)
       called.should.equal(true)
 
     it 'gives the request\'s inner value as its own', ->
       value = null
       request = new Varying()
-      app = { getStore: (x) -> { handle: (->) } }
+      app = { getStore: (x) -> { handle: (->), destroy: (->) } }
       class TestModel extends Model
         @attribute 'a', class extends attribute.ReferenceAttribute
           request: -> request
@@ -382,13 +398,14 @@ describe 'Model', ->
       value.value.should.equal(26)
 
       request.set(types.result.success())
-      value.should.be.an.instanceof(Model)
+      value.should.equal('success')
+      value.value.should.be.an.instanceof(Model)
 
     it 'deserializes with the attribute\'s declared contained class deserializer', ->
       called = false
       value = null
       request = new Varying()
-      app = { getStore: (x) -> { handle: (->) } }
+      app = { getStore: (x) -> { handle: (->), destroy: (->) } }
       class TestInner extends Model
         @deserialize: (data) ->
           called = true
@@ -403,11 +420,12 @@ describe 'Model', ->
 
       request.set(types.result.success({ a: 42 }))
       called.should.equal(true)
-      value.get('a').should.equal(42)
+      value.should.equal('success')
+      value.value.get('a').should.equal(42)
 
     it 'resolves correctly when given a value in handle()', ->
       value = null
-      app = { getStore: (x) -> { handle: -> x.set(types.result.success({ a: 42 })) } }
+      app = { getStore: (x) -> { handle: (-> x.set(types.result.success({ a: 42 }))), destroy: (->) } }
       class TestModel extends Model
         @attribute 'a', class extends attribute.ReferenceAttribute
           request: -> new Varying()
@@ -420,7 +438,7 @@ describe 'Model', ->
     it 'sets a successful value concretely if found', ->
       value = null
       request = new Varying()
-      app = { getStore: (x) -> { handle: (->) } }
+      app = { getStore: (x) -> { handle: (->), destroy: (->) } }
       class TestModel extends Model
         @attribute 'a', class extends attribute.ReferenceAttribute
           request: -> request
