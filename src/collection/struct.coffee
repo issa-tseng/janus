@@ -232,6 +232,12 @@ class Struct extends Enumerable
   # Gets the number of k/v pairs in this Struct. Depends on enumeration.
   watchLength: -> this.watchLength$ ?= Varying.managed((=> this.enumeration()), (it) -> it.watchLength())
 
+  # Takes in a data hash and populates a new Struct with its data.
+  #
+  # **Returns** a `Struct` or subclass of `Struct`, depending on invocation, with
+  # the data populated.
+  @deserialize: (data) -> new this(data)
+
 
 class DerivedStruct extends Struct
   roError = -> throw new Error('this struct is read-only')
