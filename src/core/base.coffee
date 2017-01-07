@@ -26,6 +26,9 @@ class Base extends EventEmitter
     # Assign ourselves a globally-within-Janus unique id.
     this._id = util.uniqueId()
 
+    # Assume we have one dependency on this resource by default.
+    this._refCount = 1
+
     # **Returns** nothing.
     null
 
@@ -49,9 +52,10 @@ class Base extends EventEmitter
   #
   # **Returns** self.
   destroy: ->
-    this.emit('destroying')
-    target?.off?(event, handler) for { 0: target, 1: event, 2: handler } in this._outwardListeners
-    this.removeAllListeners()
+    if (this._refCount -= 1) is 0
+      this.emit('destroying')
+      target?.off?(event, handler) for { 0: target, 1: event, 2: handler } in this._outwardListeners
+      this.removeAllListeners()
 
   # Quick shortcut for expressing that this object's existence depends purely on
   # another, so it should self-destruct if the other does.
@@ -60,6 +64,26 @@ class Base extends EventEmitter
   #
   # **Returns** self.
   destroyWith: (other) -> this.listenTo(other, 'destroying', => this.destroy())
+
+  # Increase the number of dependencies on this resource, which delays destruction.
+  #
+  # **Returns** self.
+  tap: ->
+    this._refCount += 1
+    this
+
+  # Creates a function which when called will always vend a resource as expressed
+  # by f; but as long as the previously vended resource is still live, will vend
+  # that one.
+  @managed: (f) ->
+    resource = null
+    ->
+      if resource?
+        resource.tap()
+      else
+        resource = f.call(this)
+        resource.on('destroying', -> resource = null)
+        resource
 
 
 module.exports = { Base }
