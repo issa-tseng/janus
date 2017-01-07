@@ -27,8 +27,13 @@ class Enumerable extends Base
   # array enumerating the keys of this Struct or List. The options are passed
   # directly to Enumeration and only matter for Structs, but consist of:
   # * scope: (all|direct) all inherited or only dir
-  enumeration: (options) -> (Enumeration$ ?= require('./enumeration').Enumeration).watch(this, options)
   enumerate: (options) -> (Enumeration$ ?= require('./enumeration').Enumeration).get(this, options)
+  enumeration: (options) ->
+    Enumeration$ ?= require('./enumeration').Enumeration
+    if options?
+      Enumeration$.watch(this, options)
+    else
+      (this.enumeration$ ?= Base.managed(=> Enumeration$.watch(this)))()
 
   serialize: -> Traversal.getNatural(this, Traversal.default.serialize)
 
