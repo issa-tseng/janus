@@ -44,6 +44,24 @@ describe 'case', ->
         success().decorated.should.be.true
         fail.should.be.a.Function
 
+      it 'should take a namespace as its first parameter and remember it', ->
+        { success, fail } = defcase('org.janusjs.test', 'success', 'fail' )
+        success.namespace.should.equal('org.janusjs.test')
+
+      it 'should take decorations attached to the namespace and apply them', ->
+        { success, fail } = defcase( 'org.janusjs.test': { decoration: 42 }, 'success', 'fail' )
+        success().decoration.should.equal(42)
+
+      it 'should let case decorations override namespace decorations', ->
+        { success, fail } = defcase( 'org.janusjs.test': { decoration: 42 }, 'success', fail: { decoration: 13 } )
+        success.namespace.should.equal('org.janusjs.test')
+        success().decoration.should.equal(42)
+        fail().decoration.should.equal(13)
+
+      it 'should let set decorations override default decorations', ->
+        { success, fail } = defcase( 'org.janusjs.test': { toString: -> 'hi' }, 'success', 'fail')
+        success().toString().should.equal('hi')
+
     describe 'instance', ->
       it 'should map values to the same type', ->
         { test } = defcase('org.janusjs.test', 'test')
@@ -105,6 +123,12 @@ describe 'case', ->
         { success, fail } = defcase('org.janusjs.test', 'success', 'fail')
         success.match(success(1)).should.equal(true)
         fail.match(success(1)).should.equal(false)
+
+      it 'uses unapply as appropriate', ->
+        { success, fail } = defcase('org.janusjs.test': { arity: 2 }, 'success', 'fail')
+        results = []
+        success.match(success(1, 2), (x, y) -> results.push(x, y))
+        results.should.eql([ 1, 2 ])
 
     describe 'initialization', ->
       it 'should return a function', ->
@@ -272,4 +296,40 @@ describe 'case', ->
         )
 
         m(fail('test')).should.equal('fail')
+
+      it 'should allow 2-arity cases', ->
+        results = []
+        { success, fail } = defcase('org.janusjs.test', success: { arity: 2 }, 'fail')
+        m = match(
+          success (x, y) -> results.push(x, y)
+          fail (x, y) -> results.push(x, y)
+        )
+
+        m(success(7, 11))
+        m(fail(13, 17))
+        results.should.eql([ 7, 11, 13, undefined ])
+
+      it 'should allow 3-arity cases', ->
+        results = []
+        { success, fail } = defcase('org.janusjs.test', success: { arity: 3 }, 'fail')
+        m = match(
+          success (x, y, z) -> results.push(x, y, z)
+          fail (x, y, z) -> results.push(x, y, z)
+        )
+
+        m(success(7, 11, 13))
+        m(fail(17, 19, 23))
+        results.should.eql([ 7, 11, 13, 17, undefined, undefined ])
+
+      it 'should allow additional params for multi-arity cases', ->
+        results = []
+        { success, fail } = defcase('org.janusjs.test', success: { arity: 3 }, fail: { arity: 2 })
+        m = match(
+          success (x, y, z, w) -> results.push(x, y, z, w)
+          fail (x, y, z, w) -> results.push(x, y, z, w)
+        )
+
+        m(success(7, 11, 13), 17)
+        m(fail(19, 23, 27), 31)
+        results.should.eql([ 7, 11, 13, 17, 19, 23, 31, undefined ])
 

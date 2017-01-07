@@ -1,17 +1,8 @@
 { Varying } = require('../core/varying')
-{ defcase, match, otherwise } = require('../core/case')
 { identity, isFunction, extendNew, deepSet } = require('../util/util')
 
-
-# core cases:
-
-# some shuffling to allow two arguments in our cases. TODO: worth it? cleverer way?
-withContext = (name) -> { "#{name}": { unapply: (x, additional) -> if isFunction(x) then x(this.value[0], this.value[1], additional...) else x } }
-
-matchCases = { recurse, delegate, defer, varying, value, nothing } = defcase('org.janusjs.traversal', (withContext(x) for x in [ 'recurse', 'delegate', 'defer', 'varying', 'value', 'nothing' ])...)
-valueCases = {} # external cases set that wraps two args into an array.
-for k, kase of matchCases
-  do (kase) -> valueCases[k] = (x, context) -> kase([ x, context ])
+{ match, otherwise } = require('../core/case')
+{ recurse, delegate, defer, varying, value, nothing } = require('../util/types').traversal
 
 
 # core mechanism:
@@ -97,9 +88,6 @@ Traversal =
 
 
 # default impl:
-# swap out our matching cases for our value cases for the impl section:
-{ recurse, delegate, defer, varying, value, nothing } = valueCases
-
 Traversal.default =
   serialize:
     map: (k, v, _, attribute) ->
@@ -132,8 +120,6 @@ Traversal.default =
           value(va? or vb?)
       ))
     reduce: (list) -> list.any(identity)
-
-Traversal.cases = valueCases
 
 
 module.exports = { Traversal }
