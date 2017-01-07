@@ -190,7 +190,6 @@ class Model extends Struct
       .watchLength()
         .map((length) -> length is 0)
 
-  # TODO: I'm not really sure if this is best here.
   # Takes in a data hash and relies upon attribute definition to provide a sane
   # default deserialization methodology.
   #

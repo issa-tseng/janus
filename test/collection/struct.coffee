@@ -425,3 +425,12 @@ describe 'Struct', ->
         s.set('e', 4)
         count.should.equal(3)
 
+  describe 'deserialize', ->
+    it 'should populate the result with the appropriate data', ->
+      result = Struct.deserialize( a: 1, b: 2, c: { d: 3 } )
+      result.attributes.should.eql({ a: 1, b: 2, c: { d: 3 } })
+
+    it 'should create an instance of a subclass if called from it', ->
+      class MyStruct extends Struct
+      MyStruct.deserialize({}).should.be.an.instanceof(MyStruct)
+
