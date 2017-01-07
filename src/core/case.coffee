@@ -40,6 +40,15 @@ otherwise.type = 'otherwise'
 defcase = (namespace, inTypes...) ->
   set = {}
 
+  # allow the namespace to be a k/v pair offering default properties for all cases.
+  setProps = {}
+  if isPlainObject(namespace)
+    obj = namespace
+    for k, v of obj
+      namespace = k
+      setProps = v
+
+
   # allow for a bare string or a k/v pair, or many k/v pairs.
   # flatten/normalize to obj here.
   types = {}
@@ -53,16 +62,30 @@ defcase = (namespace, inTypes...) ->
   for type, caseProps of types
     do (type, caseProps) ->
       # the per-case properties we're going to decorate on.
-      props =
+      defaultProps = {
+        arity: 1
         map: (f) -> kase(f(this.value))
-        unapply: (x, additional) -> if isFunction(x) then x(this.value, additional...) else x
         toString: -> "#{this}: #{this.value}"
+        unapply: (x, additional) ->
+          if isFunction(x)
+            if this.arity is 1
+              x(this.value, additional...)
+            else if this.arity is 2
+              x(this.value, this.value2, additional...)
+            else if this.arity is 3
+              x(this.value, this.value2, this.value3, additional...)
+          else
+            x
+      }
+      props = extendNew(defaultProps, setProps, caseProps)
 
       # make the wrapper.
-      kase = (value) ->
+      kase = (x, y, z) ->
         instance = new String('' + type)
         instance.type = type
-        instance.value = value
+        instance.value = x
+        instance.value2 = y if props.arity >= 2
+        instance.value3 = z if props.arity >= 3
 
         # decorate set-based methods:
         for fType of types
@@ -78,7 +101,7 @@ defcase = (namespace, inTypes...) ->
 
         # decorate the rest:
         instance.case = kase
-        instance[prop] = val for prop, val of extendNew(props, caseProps)
+        instance[prop] = val for prop, val of props
 
         # return the instance.
         instance
@@ -92,7 +115,7 @@ defcase = (namespace, inTypes...) ->
       # decorate direct matcher.
       kase.match = (x, f_) ->
         matches = x?.type is type
-        if isFunction(f_) then (f_(x.value) if matches) else matches
+        if isFunction(f_) then (unapply(x, f_, []) if matches) else matches
 
       # add the wrapper.
       set[type] = kase
