@@ -23,7 +23,7 @@
 # So, we have this heavier, more featureful version, because hey we're already
 # out of simplicity-land so why not?
 
-{ extendNew, capitalize, isPlainObject, isFunction } = require('../util/util')
+{ extendNew, capitalize, isPlainObject, isFunction, isArray } = require('../util/util')
 
 
 # otherwise is a case that like the others can be referenced by string or used
@@ -48,15 +48,33 @@ defcase = (namespace, inTypes...) ->
       namespace = k
       setProps = v
 
-
   # allow for a bare string or a k/v pair, or many k/v pairs.
   # flatten/normalize to obj here.
   types = {}
-  for type in inTypes
-    if isPlainObject(type)
-      types[k] = v for k, v of type
-    else
-      types[type] = {}
+  process = (params) ->
+    for type in params
+      if isPlainObject(type)
+        for k, v of type
+          if isArray(v)
+            types[k] = { children: v }
+          else
+            types[k] = v
+          process(types[k].children) if types[k].children?
+      else
+        types[type] = {}
+  process(inTypes)
+
+  # massage the children to be just string arrays.
+  # TODO: this is ugly; also the weird variable name iterProps is because
+  # coffeescript scoping is super broken.
+  for _, iterProps of types when iterProps.children?
+    results = []
+    for child in iterProps.children
+      if isPlainObject(child)
+        results.push(k) for k of child
+      else
+        results.push(child)
+    iterProps.children = results
 
   # process all.
   for type, caseProps of types
@@ -114,8 +132,18 @@ defcase = (namespace, inTypes...) ->
 
       # decorate direct matcher.
       kase.match = (x, f_) ->
-        matches = x?.type is type
+        xtype = x?.type
+        matches = (xtype is type) or (kase._allChildren[xtype] is true)
         if isFunction(f_) then (unapply(x, f_, []) if matches) else matches
+
+      # precompute all children for matching later.
+      kase._allChildren = {}
+      add = (type) ->
+        if (children = types[type].children)?
+          for child in children
+            add(child)
+            kase._allChildren[child] = true
+      add(type)
 
       # add the wrapper.
       set[type] = kase
@@ -154,6 +182,7 @@ match = (args...) ->
     else
       throw new Error("found a case of some other set!") unless kase.namespace is namespace
       seen[kase.type] = true
+      (seen[child] = true) for child of kase._allChildren if kase._allChildren?
 
     i += if x.case? then 1 else 2
 
@@ -173,10 +202,15 @@ match = (args...) ->
         handler = args[i + 1]
 
       # always process if otherwise.
-      return unapply(target, handler, additional, false) if kase.type is 'otherwise'
+      if kase.type is 'otherwise'
+        return unapply(target, handler, additional, false)
 
-      # process if a match if not. TODO: checking set ref against set ref breaks npm-agnosticity.
-      return unapply(target, handler, additional) if kase.type.valueOf() is target?.valueOf() and (target?.case ? target)?.namespace is namespace
+      # process if a match if it is in the same namespace and a direct match, or
+      # a child of the given matcher case.
+      if (target?.case ? target)?.namespace is namespace
+        targetName = target?.valueOf()
+        if (kase.type.valueOf() is targetName) or (kase._allChildren[targetName] is true)
+          return unapply(target, handler, additional)
 
       i += if x.case? then 1 else 2
 
