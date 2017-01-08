@@ -62,6 +62,26 @@ describe 'case', ->
         { success, fail } = defcase( 'org.janusjs.test': { toString: -> 'hi' }, 'success', 'fail')
         success().toString().should.equal('hi')
 
+      it 'should read child cases from direct arrays', ->
+        { nothing, something, onething, twothings } = defcase('org.janusjs.test', 'nothing', something: [ 'onething', 'twothings' ])
+        onething().should.equal('onething')
+        twothings().should.equal('twothings')
+
+      it 'should read child cases from prop definition', ->
+        { nothing, something, onething, twothings } = defcase('org.janusjs.test', 'nothing', something: { children: [ 'onething', 'twothings' ] })
+        onething().should.equal('onething')
+        twothings().should.equal('twothings')
+
+      it 'should read twice-nested child cases', ->
+        cases = defcase('org.janusjs.test', 'nothing', something: [ onething: [ 'redfish', 'bluefish' ], twothings: { children: [ 'pairfish' ] } ] )
+        for x in [ 'nothing', 'something', 'onething', 'redfish', 'bluefish', 'twothings', 'pairfish' ]
+          cases[x]().should.equal(x)
+
+      it 'should decorate child cases appropriately', ->
+        { nesteda, nestedb } = defcase('org.janusjs.test', 'topa': [ nesteda: { decoration: 3, children: [ nestedb: { decoration: 89 } ] } ] )
+        nesteda().decoration.should.equal(3)
+        nestedb().decoration.should.equal(89)
+
     describe 'instance', ->
       it 'should map values to the same type', ->
         { test } = defcase('org.janusjs.test', 'test')
@@ -129,6 +149,13 @@ describe 'case', ->
         results = []
         success.match(success(1, 2), (x, y) -> results.push(x, y))
         results.should.eql([ 1, 2 ])
+
+      it 'matches child cases', ->
+        { pending, complete, success, fail } = defcase('org.janusjs.test', 'pending', 'complete': [ 'success', 'fail' ])
+
+        complete.match(success()).should.equal(true)
+        complete.match(fail()).should.equal(true)
+        complete.match(complete()).should.equal(true)
 
     describe 'initialization', ->
       it 'should return a function', ->
@@ -218,6 +245,27 @@ describe 'case', ->
           success -> 1
           otherwise -> 2
         )(success2()).should.equal(2)
+
+    describe 'hierarchy', ->
+      it 'should consider child types seen if it has seen the parent', ->
+        { pending, complete, success, fail } = defcase('org.janusjs.test', 'pending', 'complete': [ 'success', 'fail' ])
+
+        (->
+          match(
+            pending, 1
+            complete, 2
+          )
+        ).should.not.throw()
+
+      it 'should match against the parent case if found', ->
+        { pending, complete, success, fail } = defcase('org.janusjs.test', 'pending', 'complete': [ 'success', 'fail' ])
+        m = match(
+          pending -> 12
+          complete -> 24
+        )
+        m(success()).should.equal(24)
+        m(fail()).should.equal(24)
+        m(complete()).should.equal(24)
 
     describe 'unapplying', ->
       it 'should call my result handler with the inner value', ->
