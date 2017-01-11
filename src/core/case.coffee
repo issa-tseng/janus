@@ -179,6 +179,7 @@ match = (args...) ->
 
     if kase.type is 'otherwise'
       hasOtherwise = true
+      break
     else
       throw new Error("found a case of some other set!") unless kase.namespace is namespace
       seen[kase.type] = true
