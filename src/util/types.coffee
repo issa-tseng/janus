@@ -3,7 +3,7 @@
 
 
 types =
-  result: defcase('org.janusjs.util.result', 'init', 'pending', 'progress', 'success', 'failure')
+  result: defcase('org.janusjs.util.result', 'init', 'pending', 'progress', 'complete': [ 'success', 'failure' ])
   error: defcase('org.janusjs.util.error', 'denied', 'not_authorized', 'not_found', 'invalid', 'internal')
 
   handling: defcase('org.janusjs.store.handling', 'handled', 'unhandled')

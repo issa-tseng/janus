@@ -3,7 +3,7 @@
 types = require('../util/types')
 { Base } = require('../core/base')
 { Model } = require('../model/model')
-{ List } = require('../collection/list')
+{ Struct } = require('../collection/struct')
 { Varying } = require('../core/varying')
 
 
@@ -16,6 +16,8 @@ class Request extends Varying
 
   type: types.operation.fetch()
   signature: ->
+  invalidates: undefined
+  expires: undefined
 
 # `Store`s handle requests. An instance of a store is initialized for each request
 # to be handled, but handling doesn't occur until `handle()` is called. If you
@@ -73,73 +75,58 @@ class MemoryCacheStore extends Store
   # we take no request or options.
   constructor: ->
     super()
-
-  _cache: -> this._cache$ ?= {}
-  _invalidates: -> this._invalidates$ ?= new List()
+    this._cache = new Struct()
 
   handle: (request) ->
     signature = request.signature()
 
     if types.operation.mutate.match(request.type)
-      # mutation query.
-      # first, check if the handling of this request means something existing
-      # must invalidate.
-      for cached in this._invalidates().list.slice() when cached.invalidate(request)
-        delete this._cache()[cached.signature()]
-        this._invalidates().remove(cached)
-
+      # we're mutating, so we may have to invalidate existing objects.
+      for key in this._cache.enumerate() when this._cache.get(key).invalidate?(request) is true
+        this._cache.unset(key)
 
     if signature?
-      # we have a signature to work with; cool.
-
       if types.operation.fetch.match(request.type)
-        hit = this._cache()[signature]
+        hit = this._cache.get(signature)
         if hit?
-          # cache hit. bind against whichever request we already have that
-          # looks identical.
-          # HACK: temp fix for race condition.
-          setTimeout((->request.set(hit)), 0) unless hit is request
+          # cache hit; have our request mirror the hit and we're good.
+          request.bind(hit) unless request is hit
           types.handling.handled()
 
         else
-          # cache miss, but a fetch query. store away our result.
-          this._cache()[signature] = request
+          # cache miss, but a fetch query, so store away our result. set up expiry if relevant.
+          this._cache.set(signature, request)
 
-          # if the request indicates that its cache can expire, expire after
-          # that many seconds.
           if request.expires?
             after = if isFunction(request.expires) then request.expires() else request.expires
-            setTimeout((=> delete this._cache()[signature]), after * 1000) if isNumber(after)
-
-          # if the request indicates that its cache can invalidate, add it to
-          # the registration pool of checkers.
-          if request.invalidate?
-            this._invalidates().add(request)
+            setTimeout((=> this._cache.unset(signature)), after * 1000) if isNumber(after)
 
           types.handling.unhandled()
 
       else if types.operation.mutate.match(request.type)
-        # clear out our cache and set the result only if we succeed. otherwise,
-        # leave it clear.
-        delete this._cache()[signature]
+        # where invalidate() is more for weird cases, we always assume mutating an object
+        # should invalidate its corresponding cache.
+        this._cache.unset(signature)
 
         # we allow requests to request not to saveback to the cache in case the
         # server doesn't give us a full response.
+        # TODO: not at all happy with the listening strategy here.
         if request.cacheResult isnt false and !types.operation.delete.match(request.type)
-          request.react((result) => this._cache()[signature] = result if types.result.success.match(state))
+          cache = this._cache
+          request.react((result) ->
+            cache.set(signature, request) if types.result.success.match(result)
+            this.stop() if types.result.complete.match(result)
+          )
 
         types.handling.unhandled()
 
       else
-        # delete query, or some unknown query type. clear cache and bail.
-        delete this._cache()[signature]
+        # not sure what this is!
+        this._cache.unset(signature)
         types.handling.unhandled()
 
     else
-      # don't do anything if the object doesn't correctly generate signatures.
-      # then again, why are you including a caching layer if you're not going to
-      # handle it?
-
+      # if we have no signature, we can never do anything useful for caching.
       types.handling.unhandled()
 
 class OnPageCacheStore extends Store
