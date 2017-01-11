@@ -2,6 +2,85 @@ should = require('should')
 { Base } = require('../../lib/core/base')
 
 describe 'base', ->
+  describe 'events', ->
+    it 'should listen to another object', ->
+      a = new Base()
+      b = new Base()
+
+      called = null
+      a.listenTo(b, 'testevent', (x) -> called = x)
+      b.emit('testevent', 3)
+      called.should.equal(3)
+
+    it 'should unlisten to all events of another object', ->
+      a = new Base()
+      b = new Base()
+
+      called = null
+      a.listenTo(b, 'testevent1', (x) -> called = x)
+      a.listenTo(b, 'testevent2', (x) -> called = x)
+      a.listenTo(b, 'testevent3', (x) -> called = x)
+
+      b.emit('testevent3', 3)
+      called.should.equal(3)
+
+      a.unlistenTo(b)
+
+      b.emit('testevent1', 42)
+      b.emit('testevent2', 42)
+      b.emit('testevent3', 42)
+      called.should.equal(3)
+
+  describe 'lifecycle', ->
+    it 'should emit a destroying event upon destruction', ->
+      called = false
+      b = new Base()
+      b.on('destroying', -> called = true)
+      b.destroy()
+      called.should.equal(true)
+
+    it 'should remove all incoming listeners upon destruction', ->
+      a = new Base()
+      b = new Base()
+
+      called = null
+      a.listenTo(b, 'testevent1', (x) -> called = x)
+      a.listenTo(b, 'testevent2', (x) -> called = x)
+      a.listenTo(b, 'testevent3', (x) -> called = x)
+
+      b.destroy()
+
+      b.emit('testevent1', 42)
+      b.emit('testevent2', 42)
+      b.emit('testevent3', 42)
+      should(called).equal(null)
+
+    it 'should remove all outbound listeners upon destruction', ->
+      a = new Base()
+      b = new Base()
+
+      called = null
+      a.listenTo(b, 'testevent1', (x) -> called = x)
+      a.listenTo(b, 'testevent2', (x) -> called = x)
+      a.listenTo(b, 'testevent3', (x) -> called = x)
+
+      a.destroy()
+
+      b.emit('testevent1', 42)
+      b.emit('testevent2', 42)
+      b.emit('testevent3', 42)
+      should(called).equal(null)
+
+    it 'should destroy as appropriate when bound with destroyWith', ->
+      a = new Base()
+      b = new Base()
+
+      called = false
+      a.destroyWith(b)
+      a.on('destroying', -> called = true)
+      b.destroy()
+      called.should.equal(true)
+
   describe 'managed', ->
     it 'should create the resource in question when called', ->
       r = { on: (->) }
