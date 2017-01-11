@@ -7,7 +7,7 @@ Janus is different from other FRP frameworks in two predominant ways: it is mean
 
 Of note should be the [Janus Standard Library](https://github.com/clint-tseng/janus-stdlib), which contains useful default implementations of core Janus components, and the [Janus Samples](https://github.com/clint-tseng/janus-samples) repository, which contains a growing library of illustrative Janus projects.
 
-Janus is current undergoing significant refitting. Now that we're up to `0.2`, the library is beginning to stabilize and many parts should be ready for general use. Authors are cautioned to avoid more-advanced `Model` features such as shadowing and change-tracking, and these are due for overhaul in `0.3`, as well as the Collection folds, as those will need considerable thinking in `0.4` to account for performance issues.
+Janus is nearing API stabilization. Some minor calls are still shifting around, but at this point the big conceptual changes are over with and new versions should necessitate only minor find-and-replace operations. Please see the below roadmap for further details. Authors are still cautioned to avoid using Collection folds until the completion of `0.4`.
 
 [![Build Status](https://img.shields.io/travis/clint-tseng/janus.svg)](http://travis-ci.org/clint-tseng/janus) [![NPM version](https://img.shields.io/npm/v/janus.svg)](https://www.npmjs.com/package/janus)
 
@@ -24,8 +24,8 @@ Janus is comprised of some core abstractions that are independently useful, but 
     * The **mutators** are concrete operations that map `Varying`-wrapped values onto DOM state in various ways: class names, textual contents, style properties, and wholesale rendering of subviews are accomplished through mutators. Each mutator declaration represents precisely one binding.
     * **Templates** group mutators together into view components. Traditionally, each template has a one-to-one relationship with the DOM fragment it manages. Effort is made to make templates easily composable, such that oft-reused sets of bindings may be easily recomposed, without complicated inheritance trees to manage.
 * The **view system** has at its core the `DomView`, which wraps and manages the lifecycle of templates and their associated DOM fragments, as well as their binding to a `Model` object. The more-generic `View` sheds any DOM-based assumptions, allowing for alternative view artifact types.
-* **Models** are bundles of `Varying`s into useful object abstractions resembling traditional model objects. The primary difference is that while an object's properties may be trivially set imperatively with `#set(key, value)`, use of `#get(key)` is highly discouraged -- instead, `#watch(key)` is the standard practice, which returns a `Varying`. Models also contain many useful mechanisms for declaring behaviour on particular properties, such as serialization strategies or validation conditions. **Model is due for a major overhaul in version 0.3.**
-* **Collections** are similar to models in that they resemble a fairly standard collections library, but with a dedication to facilities that enable the use of `Varying` and functional approaches rather than imperative operations that are time-sensitive. For instance, given collection `a`, we can derive collection `b = a.map((x) -> x + 1)` as expected, but updates to collection `a` will be result in recalculation and update of collection `b`. **Collection is due for a major overhaul in version 0.4**.
+* **Collections** are a set of data structures that resemble a fairly standard collections library, but with a dedication to facilities that enable the use of `Varying` and functional approaches rather than imperative operations that are time-sensitive. For instance, given collection `a`, we can derive collection `b = a.map((x) -> x + 1)` as expected, but updates to collection `a` will be result in recalculation and update of collection `b`. The primary data structures are `Struct` and `List`.
+* **Models** are `Structs` augmented with sematic behaviours to resemble traditional model objects. As with collections, while a model object's properties may be trivially set imperatively with `#set(key, value)`, use of `#get(key)` is highly discouraged -- instead, `#watch(key)` is the standard practice, which returns a `Varying`. Models contain many useful mechanisms for declaring behaviour on particular properties, such as serialization strategies or validation conditions.
 * The remaining components in Janus fill in various gaps that manage application lifecycle at a broader level than the above systems, and tie the resulting application to its host framework.
     * To be written after reconsideration of `0.5`.
 
@@ -36,13 +36,6 @@ Roadmap
 
 There remain three major blocs of work to be accomplished before a `1.x` release can be considered:
 
-* `0.3` will be the great unbundling of `Model`:
-    * The meanest, smallest kernel of the model system will become the `Struct`, which is purely a collection of `Varying` objects addressed by property keys.
-    * All follow-on behaviour that `Model` currently supports become either increasingly powerful subclasses, or extension behaviour that may be plugged in to `Model`: shadow copying, attribute behaviour, property binding, validation, serialization, and change tracking.
-    * Enumerability (hashes whose k/v pairs may be mapped) likely goes here, possibly to support serialization and change tracking, which will probably be unbound from inside `Model`.
-    * Serialization/change tracking mechanisms for collections will also be considered in this rev; no tests will be written for either in the meantime. Change tracking is likely to be unbound from shadowing.
-    * The `Request` and `Store` abstractions, which were updated in `0.2`, will be audited for further finalization.
-    * `0.3` will require **minor code changes** -- all the final features are superset and all concepts remain identical, but things will be cleaned up internally and possibly minorly moved about. As noted above, authors are cautioned to avoid shadow and change tracking features in the meantime.
 * `0.4` will be a refactoring of `Collection`:
     * For the most part, the external collection API is entirely satisfactory, in that it resembles a standard collection API. But it merits a revisit.
     * Everything is eagerly-evaluated, which simplifies a lot of operations, but probably shouldn't be the only option.
@@ -55,6 +48,28 @@ There remain three major blocs of work to be accomplished before a `1.x` release
 Major Changelog
 ---------------
 
+### [0.3](https://github.com/clint-tseng/janus/compare/0.2...0.3)
+
+Focused on two major areas: unbundling and formalizing models as data structures and enumeration/traversal of data structures; and resource lifecycle management. Also improved request/store handling, updated dependencies, and improved test coverage overall.
+
+* Unbundled `Model` into `Struct` and `Model`, and moved `Struct` into the `collections` package.
+    * `Struct` gets all core functionality around key/value storage, basic (de)serialization, and shadowing.
+    * `Model` derives from `Struct`; it retains attribute definition, issue tracking, attribute binding, request resolution, and more-advanced (de)serialization features.
+* `Struct`, now more of a data structure, derives from the new `Enumerable` trait along with `List`. Enumerability covers the following basic features:
+    * Static enumeration via `enumerate` and live enumeration via `enumeration`, which provide all keys (string keys in the case of `Struct` and integer indices in the case of `List`) as either an `Array` or `List`, respectively. Live enumerations then provide `mapPairs` and `flatMapPairs`, which provide `(k, v)` arguments to a mapping function.
+    * Serialization via traversal (see below) on a static enumeration.
+    * Diff tracking via traversal (ditto), which tracks differences between arbitrary data structures and provides a `Varying[Boolean]` signalling as such. Modification tracking is now just diff tracking against an object's shadow parent.
+* `Traversal` provides a principled way to recursively walk a data structure tree and map the result onto a like-structured result or into a reducible `List`. Default serialization and default diff tracking are implemented in terms of `Traversal`, such that their behaviour can easily be overridden piecemeal deep into a structure.
+* Resource management becomes much more automatic and memory-safe:
+    * `Varying` gets `refCount`, enabling resources or processing to be spun up and down as necessary.
+    * `Varying` also gets `managed`, in the case that a `Varying` return value depends on intermediate calculated `Base` objects. With `managed`, the intermediate resources are automatically generated when the `Varying` is actually active, and destroyed when it is not.
+    * `Base` gets a similar `managed`, but instead of managing intermediate resources is concerned with being able to share read-only computed resources like `Enumeration`s. Methods like `.enumerate()` can depend on `Base.managed` to vend one shared resource that is spun up or down as needed and destroyed.
+    * The request handling code is upgraded to use these new features.
+* `Varying` got a huge internal refactor to cut down significantly on memory and processing usage, and eliminate classes of race condition bugs that became a big problem with the addition of `refCount`.
+* `Request` and `Store` get upgraded with better handling, new and more consistent APIs, and full test coverage.
+* The casing system was upgraded with global attributes, case arity, and case subclassing.
+
+
 ### [0.2](https://github.com/clint-tseng/janus/compare/0.1...0.2)
 
 Completely overhauled and rewrote the `Varying` abstraction, as well as much of the templating, view, model, and collections systems that were too tightly-bound to `Varying` to escape rewrite. Introduced `case` and `from` as vital core abstractions. Also dramatically increased test coverage, streamlined and removed a bunch of fluff components, and other miscellenia.
@@ -65,8 +80,6 @@ Completely overhauled and rewrote the `Varying` abstraction, as well as much of 
 * `Mutator` and `Template` are ground-up reconsiderations of how to bundle template-like behaviour.
 * `View` and `Model` are impacted insofar as their interfaces to the above are concerned.
 * Alongside this release is the new [`janus-stdlib`](https://github.com/clint-tseng/janus-stdlib), which contains a slew of very useful default View implementations for the objects in the library.
-
-`0.2` is strictly **not backwards compatible**, as it represents a major formalization effort that can impact the behaviour of code that was loose but would function in `0.1`. Please see the note in the introduction about the state of the library given `0.2`.
 
 ### 0.1
 
