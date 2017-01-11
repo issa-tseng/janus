@@ -78,8 +78,7 @@ class Model extends Struct
 
   # Like `#resolve(key, app)`, but calls reactNow on the resulting request on
   # your behalf.
-  # TODO: probably makes more sense for this to match complete state.
-  resolveNow: (key, app) -> this.resolve(key, app).reactNow((x) -> this.stop() if types.result.success.match(x))
+  resolveNow: (key, app) -> this.resolve(key, app).reactNow((x) -> this.stop() if types.result.complete.match(x))
 
   # Class-level storage bucket for attribute schema definition.
   @attributes: ->

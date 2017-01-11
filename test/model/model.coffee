@@ -381,6 +381,19 @@ describe 'Model', ->
       m.resolveNow('a', app)
       called.should.equal(true)
 
+    it 'relinquishes its hold on the resolveNow`d request if it reaches completion', ->
+      called = false
+      request = null
+      app = { getStore: (x) -> { handle: (-> request = x), destroy: (-> called = true) } }
+      class TestModel extends Model
+        @attribute 'a', class extends attribute.ReferenceAttribute
+          request: -> new Varying()
+
+      m = new TestModel()
+      m.resolveNow('a', app)
+      request.set(types.result.failure(47))
+      called.should.equal(true)
+
     it 'gives the request\'s inner value as its own', ->
       value = null
       request = new Varying()
