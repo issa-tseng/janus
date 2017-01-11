@@ -92,6 +92,14 @@ class Varying
   # (Varying v, Int b) => v a -> v b
   refCount: -> this.refCount$ ?= new Varying(this._refCount)
 
+  # forever binds this varying to the value of another.
+  # TODO: is this absolutely awful? maybe.
+  # TODO: this is confusingly named next to _bind, as they are not related, but
+  #       _bind is internal so we'll ignore it for now.
+  bind: (other) ->
+    (this[k] = v) for k, v of FlatMappedVarying.prototype
+    FlatMappedVarying.call(this, other)
+
   # we have two very similar behaviours, `pure` and `flatMapAll`, that differ only
   # in a parameter passed to the returned class. so we implement it once and
   # partially apply with that difference immedatiely.
@@ -144,7 +152,9 @@ class FlatMappedVarying extends Varying
     this._refCount = 0
     this._value = nothing
 
-  _react = (self, callback, immediate) ->
+  _react: (callback, immediate) ->
+    self = this
+
     # create the consumer Varied that will be returned.
     id = uniqueId()
     self._observers[id] = varied = new Varied(id, callback, ->
@@ -211,8 +221,8 @@ class FlatMappedVarying extends Varying
   # the default implementation and parameterize react to handle it internally if
   # necessary.
   # TODO: there is an open question as to whether reactNow should be the only api.
-  react: (f_) -> _react(this, f_, false)
-  reactNow: (f_) -> _react(this, f_, true)
+  react: (f_) -> this._react(f_, false)
+  reactNow: (f_) -> this._react(f_, true)
 
   # actually listens to the parent(s) and returns the Varied that represents it.
   #
@@ -228,7 +238,8 @@ class FlatMappedVarying extends Varying
       this._value
 
   # can't set a derived varying.
-  set: null
+  set: undefined
+  bind: undefined
 
   # gets immediate, then flattens if we should.
   get: ->
