@@ -93,3 +93,254 @@ describe 'one-of store', ->
     store.handle()
     alarm.should.equal(false)
 
+describe 'memory cache', ->
+  describe 'fetching', ->
+    it 'should return unhandled and not cache if no signature is given', ->
+      store = new MemoryCacheStore()
+
+      ra = new Request()
+      handling.unhandled.match(store.handle(ra)).should.equal(true)
+
+      rb = new Request()
+      handling.unhandled.match(store.handle(rb)).should.equal(true)
+
+      ra.set(23)
+      rb.get().should.not.equal(23)
+
+    it 'should cache and bind like-signatured fetch requests', ->
+      class TestRequest extends Request
+        constructor: (@sig) -> super()
+        signature: -> this.sig
+
+      store = new MemoryCacheStore()
+
+      ra = new TestRequest('aaa')
+      handling.unhandled.match(store.handle(ra)).should.equal(true)
+
+      rb = new TestRequest('aaa')
+      handling.handled.match(store.handle(rb)).should.equal(true)
+
+      ra.set(777)
+      rb.get().should.equal(777)
+
+    it 'should discriminate against differently-signatured requests', ->
+      class TestRequest extends Request
+        constructor: (@sig) -> super()
+        signature: -> this.sig
+
+      store = new MemoryCacheStore()
+
+      ra = new TestRequest('aaa')
+      handling.unhandled.match(store.handle(ra)).should.equal(true)
+
+      rb = new TestRequest('bbb')
+      handling.unhandled.match(store.handle(rb)).should.equal(true)
+
+      ra.set(787)
+      rb.get().should.not.equal(787)
+
+    it 'should expire the request if specified (as a function)', (stop) ->
+      class ExpiringRequest extends Request
+        constructor: (@sig) -> super()
+        signature: -> this.sig
+        expires: -> 0
+      class TestRequest extends Request
+        constructor: (@sig) -> super()
+        signature: -> this.sig
+
+      store = new MemoryCacheStore()
+
+      ra = new ExpiringRequest('aaa')
+      handling.unhandled.match(store.handle(ra)).should.equal(true)
+
+      rb = new TestRequest('aaa')
+      handling.handled.match(store.handle(rb)).should.equal(true)
+
+      setTimeout((->
+        rc = new TestRequest('aaa')
+        handling.unhandled.match(store.handle(rc)).should.equal(true)
+
+        ra.set(787)
+        rc.get().should.not.equal(787)
+
+        stop()
+      ), 0)
+
+    it 'should expire the request if specified (as a literal)', (stop) ->
+      class ExpiringRequest extends Request
+        constructor: (@sig) -> super()
+        signature: -> this.sig
+        expires: 0
+      class TestRequest extends Request
+        constructor: (@sig) -> super()
+        signature: -> this.sig
+
+      store = new MemoryCacheStore()
+
+      ra = new ExpiringRequest('aaa')
+      handling.unhandled.match(store.handle(ra)).should.equal(true)
+
+      rb = new TestRequest('aaa')
+      handling.handled.match(store.handle(rb)).should.equal(true)
+
+      setTimeout((->
+        rc = new TestRequest('aaa')
+        handling.unhandled.match(store.handle(rc)).should.equal(true)
+
+        ra.set(787)
+        rc.get().should.not.equal(787)
+
+        stop()
+      ), 0)
+
+  describe 'mutation', ->
+    it 'should automatically expire the cache upon any mutation request type', ->
+      class TestRequest extends Request
+        constructor: (@sig, @type) -> super()
+        signature: -> this.sig
+
+      for type in [ operation.create(), operation.update(), operation.delete() ]
+        store = new MemoryCacheStore()
+
+        ra = new TestRequest('aaa', operation.fetch())
+        store.handle(ra)
+
+        handling.handled.match(store.handle(new TestRequest('aaa', operation.fetch()))).should.equal(true)
+
+        rb = new TestRequest('aaa', type)
+        handling.unhandled.match(store.handle(rb)).should.equal(true)
+
+        handling.unhandled.match(store.handle(new TestRequest('aaa', operation.fetch()))).should.equal(true)
+
+    it 'should attempt to tap into successful returned results for create and update', ->
+      class TestRequest extends Request
+        constructor: (@sig, @type) -> super()
+        signature: -> this.sig
+
+      for type in [ operation.create(), operation.update() ]
+        store = new MemoryCacheStore()
+
+        ra = new TestRequest('aaa', type)
+        handling.unhandled.match(store.handle(ra)).should.equal(true)
+
+        ra.set(types.result.success(42))
+
+        rb = new TestRequest('aaa', operation.fetch())
+        handling.handled.match(store.handle(rb)).should.equal(true)
+        rb.get().value.should.equal(42)
+
+    it 'should not attempt to tap into returned results if cacheResult is false', ->
+      class TestRequest extends Request
+        constructor: (@sig, @type) -> super()
+        signature: -> this.sig
+        cacheResult: false
+
+      store = new MemoryCacheStore()
+
+      ra = new TestRequest('aaa', operation.update())
+      handling.unhandled.match(store.handle(ra)).should.equal(true)
+
+      ra.set(types.result.success(42))
+
+      rb = new TestRequest('aaa', operation.fetch())
+      handling.unhandled.match(store.handle(rb)).should.equal(true)
+
+    it 'should not attempt to tap into returned results for delete requests', ->
+      class TestRequest extends Request
+        constructor: (@sig, @type) -> super()
+        signature: -> this.sig
+
+      store = new MemoryCacheStore()
+
+      ra = new TestRequest('aaa', operation.delete())
+      handling.unhandled.match(store.handle(ra)).should.equal(true)
+
+      ra.set(types.result.success(42))
+
+      rb = new TestRequest('aaa', operation.fetch())
+      handling.unhandled.match(store.handle(rb)).should.equal(true)
+
+    it 'should not accept the mutated result if it was not successful', ->
+      class TestRequest extends Request
+        constructor: (@sig, @type) -> super()
+        signature: -> this.sig
+
+      store = new MemoryCacheStore()
+
+      ra = new TestRequest('aaa', operation.update())
+      handling.unhandled.match(store.handle(ra)).should.equal(true)
+
+      ra.set(types.result.failure(42))
+
+      rb = new TestRequest('aaa', operation.fetch())
+      handling.unhandled.match(store.handle(rb)).should.equal(true)
+
+    it 'should stop tapping into mutation requests once they complete once', ->
+      class TestRequest extends Request
+        constructor: (@sig, @type) -> super()
+        signature: -> this.sig
+
+      store = new MemoryCacheStore()
+
+      ra = new TestRequest('aaa', operation.update())
+      handling.unhandled.match(store.handle(ra)).should.equal(true)
+
+      ra.set(types.result.failure(42))
+
+      rb = new TestRequest('aaa', operation.fetch())
+      handling.unhandled.match(store.handle(rb)).should.equal(true)
+
+      ra.set(types.result.success(42))
+      store.handle(rb)
+      should(rb.get().value).not.equal(42)
+
+  it 'should uncache and not handle if it gets an unknown operation type', ->
+    class TestRequest extends Request
+      constructor: (@sig, @type) -> super()
+      signature: -> this.sig
+
+    store = new MemoryCacheStore()
+    ra = new TestRequest('aaa', operation.fetch())
+    store.handle(ra)
+
+    rb = new TestRequest('aaa', 'hello!')
+    handling.unhandled.match(store.handle(rb)).should.equal(true)
+
+    handling.unhandled.match(store.handle(new TestRequest('aaa', operation.fetch()))).should.equal(true)
+
+  describe 'manual invalidate', ->
+    it 'should call existing requests invalidate method with the request in question', ->
+      result = null
+      class TestRequest extends Request
+        constructor: (@sig, @type) -> super()
+        signature: -> this.sig
+        invalidate: (req) -> result = req
+
+      store = new MemoryCacheStore()
+      ra = new TestRequest('aaa', operation.fetch())
+      store.handle(ra)
+
+      rb = new TestRequest('bbb', operation.update())
+      store.handle(rb)
+
+      result.should.equal(rb)
+
+    it 'should look over existing cached requests and invalidate them if they say so', ->
+      class TestRequest extends Request
+        constructor: (@sig, @type, @_inv) -> super()
+        signature: -> this.sig
+        invalidate: -> this._inv
+
+      store = new MemoryCacheStore()
+      ra = new TestRequest('aaa', operation.fetch(), true)
+      store.handle(ra)
+
+      rb = new TestRequest('bbb', operation.fetch(), false)
+      store.handle(rb)
+
+      rc = new TestRequest('ccc', operation.update(), null)
+      store.handle(rc)
+
+      handling.unhandled.match(store.handle(new TestRequest('aaa', operation.fetch(), null))).should.equal(true)
+      handling.handled.match(store.handle(new TestRequest('bbb', operation.fetch(), null))).should.equal(true)
+
