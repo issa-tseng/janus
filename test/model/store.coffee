@@ -344,3 +344,47 @@ describe 'memory cache', ->
       handling.unhandled.match(store.handle(new TestRequest('aaa', operation.fetch(), null))).should.equal(true)
       handling.handled.match(store.handle(new TestRequest('bbb', operation.fetch(), null))).should.equal(true)
 
+describe 'on-page cache store', ->
+  it 'should passthrough unhandled signatureless requests', ->
+    store = new OnPageCacheStore()
+    handling.unhandled.match(store.handle(new Request())).should.equal(true)
+
+  it 'should bail out if the data dom node could not be found', ->
+    class TestStore extends OnPageCacheStore
+      _dom: -> { find: -> [] }
+    class TestRequest extends Request
+      constructor: (@sig) -> super()
+      signature: -> this.sig
+
+    store = new TestStore()
+    handling.unhandled.match(store.handle(new TestRequest('aaa'))).should.equal(true)
+
+  it 'should respond with the contents of the data dom node if found', ->
+    selector = null
+    class TestStore extends OnPageCacheStore
+      _dom: -> { find: (x) -> selector = x; { length: 1, text: -> 'test' } }
+    class TestRequest extends Request
+      constructor: (@sig) -> super()
+      signature: -> this.sig
+
+    store = new TestStore()
+    r = new TestRequest('aaa')
+
+    handling.handled.match(store.handle(r)).should.equal(true)
+    selector.should.equal('> #aaa')
+    r.get().value.should.equal('test')
+
+  it 'should remove the dom node and not handle if given a mutation request', ->
+    called = null
+    class TestStore extends OnPageCacheStore
+      _dom: -> { find: -> { length: 1, remove: -> called = true } }
+    class TestRequest extends Request
+      constructor: (@sig, @type) -> super()
+      signature: -> this.sig
+
+    store = new TestStore()
+    r = new TestRequest('aaa')
+
+    handling.unhandled.match(store.handle(r)).should.equal(true)
+    called.should.equal(true)
+
