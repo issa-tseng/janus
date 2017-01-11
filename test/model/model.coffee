@@ -567,209 +567,22 @@ describe 'Model', ->
       model.valid(1).get().should.equal(false)
       model.valid(2).get().should.equal(false)
 
-    ###
-    describe 'modification detection', ->
-      it 'should return false if a model has no parent', ->
-        model = new Model()
-        model.modified().should.equal(false)
-        model.attrModified('test').should.equal(false)
+  describe 'deserialization', ->
+    it 'should store the given data into the correct places', ->
+      Model.deserialize( a: { b: 1, c: 2 }, d: 3 ).attributes.should.eql({ a: { b: 1, c: 2 }, d: 3 })
 
-      describe 'attribute', ->
-        it 'should return whether an attribute has changed', ->
-          model = new Model( test: 'x', test2: 'y' )
-          shadow = model.shadow()
+    it 'should rely on provided attributes to deserialize if given', ->
+      class TestModel extends Model
+        @attribute 'a', class extends attribute.Attribute
+          @deserialize: (x) -> "a#{x}"
 
-          shadow.set('test', 'z')
-          shadow.attrModified('test').should.equal(true)
-          shadow.attrModified('test2').should.equal(false)
+        @attribute 'b.c', class extends attribute.Attribute
+          @deserialize: (x) -> "bc#{x}"
 
-        it 'should handle unset values correctly', ->
-          model = new Model( test: 'x' )
-          shadow = model.shadow()
+        @attribute('b.d', attribute.Attribute)
 
-          shadow.unset('test')
-          shadow.attrModified('test').should.equal(true)
+        @attribute 'x', class extends attribute.Attribute
+          @deserialize: (x) -> "x#{x}"
 
-          shadow.unset('test2')
-          shadow.attrModified('test2').should.equal(false)
-
-        it 'should handle newly set attributes correctly', ->
-          model = new Model()
-          shadow = model.shadow()
-
-          shadow.set('test', new Model())
-          shadow.attrModified('test').should.equal(true)
-
-        it 'should ignore transient attributes', ->
-          class TestModel extends Model
-            @attribute 'test', class extends attribute.Attribute
-              transient: true
-
-          model = new TestModel( test: 'x' )
-          shadow = model.shadow()
-
-          shadow.set('test', 'y')
-          shadow.attrModified('test').should.equal(false)
-
-        it 'should compare model modified on deep compare', ->
-          model = new Model( test: new Model() )
-          shadow = model.shadow()
-
-          shadow.get('test').set('test2', 'x')
-          shadow.attrModified('test', true).should.equal(true)
-
-        it 'should call a function to determine deepness with the right params', ->
-          model = new Model( test: new Model() )
-          shadow = model.shadow()
-
-          nested = new Model()
-          shadow.set('test', nested)
-
-          called = false
-          isDeep = (obj, path, val) ->
-            obj.should.equal(shadow)
-            path.should.equal('test')
-            val.should.equal(nested)
-            called = true
-
-          shadow.attrModified('test', isDeep)
-          called.should.equal(true)
-
-        it 'should use the result of the function to determine deepness', ->
-          model = new Model( test: new Model() )
-          shadow = model.shadow()
-
-          shadow.get('test').set('x', 'y')
-
-          shadow.attrModified('test', -> true).should.equal(true)
-          shadow.attrModified('test', -> false).should.equal(false)
-
-        it 'should pass the function through if deep', ->
-          model = new Model( test: new Model( test2: 'x' ) )
-          shadow = model.shadow()
-
-          shadow.get('test').set('test2', 'y')
-
-          called = 0
-          isDeep = -> called += 1; true
-          shadow.attrModified('test', isDeep)
-
-          called.should.equal(2)
-
-      describe 'model', ->
-        it 'should return whether any attributes have changed', ->
-          model = new Model( test: 'x' )
-          shadow = model.shadow()
-
-          shadow.modified().should.equal(false)
-
-          shadow.set('test2', 'y')
-          shadow.modified().should.equal(true)
-
-      describe 'watch shallow', ->
-        it 'should vary depending on the modified state', ->
-          model = new Model()
-          shadow = model.shadow()
-
-          expected = [ false, true, false ]
-          shadow.watchModified(false).reactNow((isModified) -> isModified.should.equal(expected.shift()))
-
-          shadow.set('test', 'x')
-          shadow.unset('test')
-
-          expected.length.should.equal(0)
-
-        it 'should watch nested models shallowly', ->
-          model = new Model( test: new Model() )
-          shadow = model.shadow()
-
-          evented = false
-          shadow.watchModified(false).reactNow((value) -> evented = true if value is true)
-
-          shadow.get('test').set('test2', 'x')
-          evented.should.equal(false)
-
-        it 'should watch shallowly if a falsy function is provided', ->
-          model = new Model( test: new Model() )
-          shadow = model.shadow()
-
-          evented = false
-          shadow.watchModified(-> false).reactNow((value) -> evented = true if value is true)
-
-          shadow.get('test').set('test2', 'x')
-          evented.should.equal(false)
-
-      describe 'watch deep', ->
-        it 'should vary depending on own modified state', ->
-          model = new Model()
-          shadow = model.shadow()
-
-          expected = [ false, true, false ]
-          shadow.watchModified().reactNow((isModified) -> isModified.should.equal(expected.shift()))
-
-          shadow.set('test', 'x')
-          shadow.unset('test')
-
-          expected.length.should.equal(0)
-
-        it 'should vary depending on submodel state', ->
-          model = new Model( test: new Model() )
-          shadow = model.shadow()
-
-          expected = [ false, true, false ]
-          shadow.watchModified().reactNow((isModified) -> isModified.should.equal(expected.shift()))
-
-          shadow.get('test').set('test2', 'x')
-          shadow.get('test').revert('test2')
-
-        it 'should vary depending on new submodel state', ->
-          model = new Model()
-          shadow = model.shadow()
-
-          evented = false
-          shadow.watchModified().reactNow((isModified) -> evented = true if isModified)
-
-          model.set('test', new Model())
-          evented.should.equal(false)
-
-          shadow.get('test').set('test2', 'x')
-          evented.should.equal(true)
-
-        it 'should not vary depending on discarded submodel state', ->
-          model = new Model( test: new Model() )
-          shadow = model.shadow()
-
-          expected = [ false, true, false ]
-          shadow.watchModified().reactNow((isModified) -> isModified.should.equal(expected.shift()))
-
-          submodel = shadow.get('test')
-          submodel.set('test2', 'x')
-          shadow.unset('test')
-
-          submodel.set('test3', 'y')
-
-        it 'should watch deeply if a truish function is provided', ->
-          model = new Model( test: new Model() )
-          shadow = model.shadow()
-
-          evented = false
-          shadow.watchModified(-> true).reactNow((value) -> evented = true if value is true)
-
-          shadow.get('test').set('test2', 'x')
-          evented.should.equal(true)
-
-        it 'should pass through the deepness function', ->
-          nested = new Model( test2: new Model() )
-          model = new Model( test: nested )
-          shadow = model.shadow()
-
-          evented = false
-          shadow.watchModified((model) -> model.original() isnt nested).reactNow((value) -> evented = true if value is true)
-
-          shadow.get('test').get('test2').set('x', 'y')
-          evented.should.equal(false)
-
-          shadow.get('test').set('a', 'b')
-          evented.should.equal(true)
-    ###
+      TestModel.deserialize( a: 1, b: { c: 2, d: 3 } ).attributes.should.eql({ a: 'a1', b: { c: 'bc2', d: 3 } })
 
