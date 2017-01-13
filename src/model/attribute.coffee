@@ -55,7 +55,7 @@ class ModelAttribute extends Attribute
   writeDefault: true
 
   @deserialize: (data) -> this.modelClass.deserialize(data)
-  serialize: -> this.constructor.modelClass.serialize(this.getValue()) unless this.transient is true
+  serialize: -> this.constructor.modelClass.prototype.serialize.call(this.getValue()) unless this.transient is true
 
 class CollectionAttribute extends Attribute
   @collectionClass: List
@@ -63,7 +63,7 @@ class CollectionAttribute extends Attribute
   writeDefault: true
 
   @deserialize: (data) -> this.collectionClass.deserialize(data)
-  serialize: -> this.constructor.collectionClass.serialize(this.getValue()) unless this.transient is true
+  serialize: -> this.constructor.collectionClass.prototype.serialize.call(this.getValue()) unless this.transient is true
 
 class ReferenceAttribute extends Attribute
   isReference: true
