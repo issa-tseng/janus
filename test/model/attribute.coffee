@@ -113,7 +113,7 @@ describe 'Attribute', ->
       it 'should delegate serialization to the model class', ->
         called = false
         class TestModel extends Model
-          @serialize: -> called = true; 42
+          serialize: -> called = true; 42
         class TestAttribute extends attribute.ModelAttribute
           @modelClass: TestModel
 
@@ -141,7 +141,7 @@ describe 'Attribute', ->
       it 'should delegate serialization to the collection class', ->
         called = false
         class TestCollection extends List
-          @serialize: -> called = true; 42
+          serialize: -> called = true; 42
         class TestAttribute extends attribute.CollectionAttribute
           @collectionClass: TestCollection
 
