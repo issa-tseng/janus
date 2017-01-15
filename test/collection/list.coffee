@@ -381,3 +381,22 @@ describe 'List', ->
       l.putAll([ 1, 3, 6, 10, 15, 4 ])
       events.should.eql([ 'rm', 2, 1, 'rm', 5, 3, 'mv', 6, 2, 3, 'add', 10, 3, 'add', 15, 4 ])
 
+  describe 'deserialize', ->
+    it 'should use the provided modelClass if it has a deserialize class method', ->
+      class TestModel extends Model
+        @deserialize: -> 42
+
+      class TestList extends List
+        @modelClass: TestModel
+
+      TestList.deserialize([ 1, 2, 3, 4 ]).list.should.eql([ 42, 42, 42, 42 ])
+
+    it 'should simply take the array if the modelClass does not have a deserialized class method', ->
+      class TestModel extends Model
+        @deserialize: undefined
+
+      class TestList extends List
+        @modelClass: TestModel
+
+      TestList.deserialize([ 1, 2, 3, 4 ]).list.should.eql([ 1, 2, 3, 4 ])
+
