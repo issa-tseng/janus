@@ -94,7 +94,10 @@ Traversal.default =
       if attribute?
         value(attribute.serialize())
       else if v?
-        if v.isEnumerable is true
+        # TODO: what if you /do/ want to use something from an intermediate inheritance?
+        if v.constructor?.prototype.hasOwnProperty('serialize')
+          value(v.serialize())
+        else if v.isEnumerable is true
           recurse(v)
         else
           value(v)
