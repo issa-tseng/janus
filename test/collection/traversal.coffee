@@ -349,6 +349,21 @@ describe 'traversal', ->
         o = (new TestModel( a: 1, b: 2, c: [ 3, 4, 5 ] )).serialize()
         o.should.eql({ a: 1, b: 'number: 2', c: '[3,4,5]' })
 
+      it 'should rely on custom-defined serialize methods when defined', ->
+        class TestStruct extends Struct
+          serialize: -> 'test'
+
+        o = (new Struct( a: new TestStruct( b: 2, c: 3 ), d: 4 )).serialize()
+        o.should.eql({ a: 'test', d: 4 })
+
+      it 'should not try to use custom-defined serialize if it is inherited', ->
+        class TestStructA extends Struct
+          serialize: -> 'test'
+        class TestStructB extends TestStructA
+
+        o = (new Struct( a: new TestStructB( b: 2, c: 3 ), d: 4 )).serialize()
+        o.should.eql({ a: { b: 2, c: 3 }, d: 4 })
+
     describe 'diff', ->
       it 'should consider unlike objects eternally different', ->
         (new List()).watchDiff(new Struct()).get().should.equal(true)
