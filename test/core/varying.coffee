@@ -1,6 +1,6 @@
 should = require('should')
 
-{ Varying, Varied, FlatMappedVarying, FlattenedVarying, MappedVarying, ComposedVarying } = require('../../lib/core/varying')
+{ Varying, Observation, FlatMappedVarying, FlattenedVarying, MappedVarying, ComposedVarying } = require('../../lib/core/varying')
 
 countObservers = (o) ->
   observers = 0
@@ -55,10 +55,10 @@ describe 'Varying', ->
 
       results.should.eql([ 1, 2, 3 ])
 
-    it 'should return an instance of Varied on react()', ->
-      (new Varying()).react().should.be.an.instanceof(Varied)
+    it 'should return an instance of Observation on react()', ->
+      (new Varying()).react().should.be.an.instanceof(Observation)
 
-    it 'should bind this to the Varied within the handler', ->
+    it 'should bind this to the Observation within the handler', ->
       v = new Varying(1)
       t = null
 
@@ -212,7 +212,7 @@ describe 'Varying', ->
       result.should.be.an.instanceof(Varying)
       result.get().should.equal(2)
 
-    it 'should bind this to the Varied within the handler', ->
+    it 'should bind this to the Observation within the handler', ->
       v = new Varying(1)
       m = v.map((x) -> x * 2)
       t = null
@@ -407,7 +407,7 @@ describe 'Varying', ->
       v.set(2)
       result.should.equal(4)
 
-    it 'should bind this to the Varied within the handler', ->
+    it 'should bind this to the Observation within the handler', ->
       v = new Varying(1)
       m = v.flatMap((x) -> x * 2)
       t = null
@@ -628,7 +628,7 @@ describe 'Varying', ->
         result.should.be.an.instanceof(Varying)
         result.get().should.equal(3)
 
-      it 'should bind this to the Varied within the handler', ->
+      it 'should bind this to the Observation within the handler', ->
         va = new Varying(1)
         vb = new Varying(2)
         m = Varying.pure(((x, y) -> new Varying(x + y)), va, vb)

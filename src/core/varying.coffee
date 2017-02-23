@@ -53,24 +53,24 @@ class Varying
   # (Varying v) => v a -> (a -> v b) -> v b
   flatMap: (f) -> new FlatMappedVarying(this, f)
 
-  # returns the `Varied` representing this reaction.
-  # (Varying v, Varied w) => v a -> (a -> ()) -> w
+  # returns the `Observation` representing this reaction.
+  # (Varying v, Observation w) => v a -> (a -> ()) -> w
   react: (f_) ->
     id = uniqueId()
     this._refCount += 1
     this.refCount$?.set(this._refCount)
 
-    this._observers[id] = new Varied(id, f_, =>
+    this._observers[id] = new Observation(this, id, f_, =>
       delete this._observers[id]
       this._refCount -= 1
       this.refCount$?.set(this._refCount)
     )
 
-  # (Varying v, Varied w) => v a -> (a -> ()) -> w
+  # (Varying v, Observation w) => v a -> (a -> ()) -> w
   reactNow: (f_) ->
-    varied = this.react(f_)
-    f_.call(varied, this.get())
-    varied
+    observation = this.react(f_)
+    f_.call(observation, this.get())
+    observation
 
   # gets and stores a value, and triggers any reactions upon it. returns nothing.
   # impure! (Varying v) => v a -> b -> ()
@@ -137,14 +137,14 @@ class Varying
   # (Varying v) => a -> v a
   @ly: (x) -> if x?.isVarying is true then x else new Varying(x)
 
-class Varied
-  constructor: (@id, @f_, @_stop) ->
+class Observation
+  constructor: (@parent, @id, @f_, @_stop) ->
   stop: ->
     this.stopped = true # for debugging.
     this._stop()
 
 identity = (x) -> x
-nothing = {}
+nothing = { isNothing: true }
 
 class FlatMappedVarying extends Varying
   constructor: (@_parent, @_f = identity, @_flatten = true) ->
@@ -152,83 +152,81 @@ class FlatMappedVarying extends Varying
     this._refCount = 0
     this._value = nothing
 
-  _react: (callback, immediate) ->
-    self = this
-
-    # create the consumer Varied that will be returned.
-    id = uniqueId()
-    self._observers[id] = varied = new Varied(id, callback, ->
-      delete self._observers[id]
-
-      self._refCount -= 1
-      if self._refCount is 0
-        self._lastInnerVaried?.stop()
-        self._parentVaried.stop()
-        self._value = nothing
-      self.refCount$?.set(self._refCount)
-    )
-
-    # onValue is the handler called for both the parent changing _as well as_
-    # an inner flattened value changing.
-    ignoreFirst = true
-    onValue = (value) ->
-      if self._flatten is true and this is self._parentVaried
-        # unbind old and bind to new if applicable.
-        self._lastInnerVaried?.stop()
-        if value?.isVarying is true
-          self._lastInnerVaried = value.reactNow(onValue)
-          return # don't run the below, since reactNow will update the value.
-        else
-          self._lastInnerVaried = null
-
-      # don't bail until we've unlistened/relistened to the container result.
-      return if value is self._value
-      self._value = value
-
-      unless immediate is false and ignoreFirst is true
-        # we always call onValue immediately; so we don't want to notify if
-        # this is our first trip and immediate is false.
-        generation = (self._generation += 1)
-        o.f_(value) for _, o of self._observers when generation is self._generation
-
-      null
-
-    if self._refCount is 0
-      self._lastInnerVaried = null
-      self._generation = 0
-      self._parentVaried = self._bind(onValue) 
-
-    # increment and update refcount only after we've bound, but before we call
-    # immediate in case we have eg a managed varying.
-    initialGeneration = self._generation
-    self._refCount += 1
-    self.refCount$?.set(self._refCount)
-
-    # the only cases we can ignore the initial value are nonflat nonimmediates,
-    # or if someone has already fired our bound listener within refcount.
-    if (self._generation is initialGeneration) and (self._flatten is true or immediate is true)
-      if self._value is nothing
-        onValue.call(self._parentVaried, self._immediate())
-      else
-        callback.call(varied, self._value)
-
-    ignoreFirst = false
-    varied
-
   # with the normal Varying, we simply reactNow and call get() for the immediate
   # callback. this gets really tricky with flatten, because an extant Varying won't
   # be correctly bound to with that method when reactNow gets called. so we override
   # the default implementation and parameterize react to handle it internally if
   # necessary.
-  # TODO: there is an open question as to whether reactNow should be the only api.
   react: (f_) -> this._react(f_, false)
   reactNow: (f_) -> this._react(f_, true)
 
-  # actually listens to the parent(s) and returns the Varied that represents it.
+  _react: (callback, immediate) ->
+    # create the consumer Observation that will be returned.
+    id = uniqueId()
+    this._observers[id] = observation = new Observation(this, id, callback, =>
+      delete this._observers[id]
+
+      this._refCount -= 1
+      if this._refCount is 0
+        this._lastInnerObservation?.stop()
+        this._parentObservation.stop()
+        this._value = nothing
+      this.refCount$?.set(this._refCount)
+    )
+
+    # track our own refcount, an only bind upwards once on initial requirement.
+    if this._refCount is 0
+      this._lastInnerObservation = null
+      this._generation = 0
+      this._parentObservation = this._bind() 
+
+    # increment and update refcount only after we've bound, but before we call
+    # immediate in case we have eg a managed varying.
+    initialGeneration = this._generation
+    this._refCount += 1
+    this.refCount$?.set(this._refCount)
+
+    # the only cases we can ignore the initial value are nonflat nonimmediates,
+    # or if someone has already fired our bound listener within refcount.
+    if (this._generation is initialGeneration) and (this._flatten is true or immediate is true)
+      if this._value is nothing
+        this._onValue(this._parentObservation, this._immediate(), !immediate)
+      else if immediate is true
+        callback.call(observation, this._value)
+
+    observation
+
+  # onValue is the handler called for both the parent changing _as well as_
+  # an inner flattened value changing. it is called _after_ any value-mapping
+  # is performed.
+  _onValue: (observation, value, silent = false) ->
+    self = this
+
+    if this._flatten is true and observation is this._parentObservation
+      # unbind old and bind to new if applicable.
+      this._lastInnerObservation?.stop()
+      if value?.isVarying is true
+        this._lastInnerObservation = value.reactNow((raw) -> self._onValue(this, raw, silent))
+        silent = false # don't like this line repetition but it's necessary due to early return.
+        return # don't run the below, since reactNow will update the value.
+      else
+        this._lastInnerObservation = null
+
+    if (value isnt this._value) and (silent isnt true)
+      # we always call onValue immediately; so we don't want to notify if
+      # this is our first trip and immediate is false.
+      generation = (this._generation += 1)
+      o.f_(value) for _, o of this._observers when generation is this._generation
+
+    this._value = value
+    silent = false
+    null
+
+  # actually listens to the parent(s) and returns the Observation that represents it.
   #
   # mapping is handled here because the implementation of applying it varies depending
   # on whether there is one parent or many.
-  _bind: (callback) -> this._parent.react((raw) => callback.call(this._parentVaried, this._f.call(null, raw)))
+  _bind: -> this._parent.react((raw) => this._onValue(this._parentObservation, this._f.call(null, raw)))
 
   # used internally; essentially get() w/out flatten.
   _immediate: ->
@@ -265,31 +263,35 @@ class ComposedVarying extends FlatMappedVarying
     this._observers = {}
     this._refCount = 0
     this._value = nothing
+    this._allBound = false
 
     this._partial = [] # track the current mapping arguments.
-    this._parentVarieds = [] # track our observers watching for mapping arguments.
+    this._parentObservations = [] # track our observers watching for mapping arguments.
 
   # as noted above, we reimplement here because there are many parents, and we
   # have to implement the mapping application differently.
-  _bind: (callback) ->
+  _bind: ->
     # listen to all our parents if we must.
-    this._parentVarieds = for a, idx in this._applicants
+    this._parentObservations = for a, idx in this._applicants
       do (a, idx) => a.reactNow((value) =>
         # update our arguments list, then trigger internal observers in turn.
         # note that this doesn't happen for the very first call, since internal
         # observers is not updated until the end of this method.
         this._partial[idx] = value
-        callback.call(this._parentVaried, this._f.apply(this._parentVarieds[idx], this._partial)) if allBound is true
+        this._onValue(this._parentObservation, this._f.apply(this._parentObservations[idx], this._partial)) if this._allBound is true
         null
       )
 
-    # release lock on calback firing and return an agglomerated varied.
-    allBound = true
-    new Varied(uniqueId(), null, => v.stop() for v in this._parentVarieds)
+    # release lock on callback firing and return an agglomerated observation.
+    this._allBound = true
+    new Observation(this, uniqueId(), null, => v.stop() for v in this._parentObservations)
 
   _immediate: ->
     if this._value is nothing
-      this._f.apply(null, (a.get() for a in this._applicants))
+      if this._allBound is true
+        this._f.apply(null, this._partial)
+      else
+        this._f.apply(null, (a.get() for a in this._applicants))
     else
       this._value
 
@@ -318,5 +320,5 @@ class ManagedVarying extends FlatMappedVarying
       result
 
 
-module.exports = { Varying, Varied, FlatMappedVarying, FlattenedVarying, MappedVarying, ComposedVarying }
+module.exports = { Varying, Observation, FlatMappedVarying, FlattenedVarying, MappedVarying, ComposedVarying }
 
