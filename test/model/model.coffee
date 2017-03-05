@@ -269,6 +269,17 @@ describe 'Model', ->
 
         (new Child( x: 1, y: 2 )).get('contend').should.equal(2)
 
+    describe 'shadowing', ->
+      it 'should not propagate parent bound values', ->
+        class TestModel extends Model
+          @bind('b', from('a'))
+
+        x = new TestModel( a: 2 )
+        y = x.shadow()
+        y.set('a', 3)
+        x.set('a', 1)
+        y.get('b').should.equal(3)
+
   describe 'defined attributes', ->
     it 'should be definable and fetchable', ->
       class TestModel extends Model
