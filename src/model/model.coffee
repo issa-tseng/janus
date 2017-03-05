@@ -201,6 +201,11 @@ class Model extends Struct
 
     new this(data)
 
+  # Handles parent changes; mostly exists in Struct but we wrap to additionally
+  # bail if the changed parent attribute is a bound value; we want that to
+  # update naturally from our own bindings.
+  _parentChanged: (key, newValue, oldValue) -> super(key, newValue, oldValue) unless this._binders[key]?
+
 
 module.exports = { Model }
 
