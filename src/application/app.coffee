@@ -25,6 +25,8 @@ class App extends Model
 
     result
 
+  resolve: (key) -> super(key, this)
+
 
 module.exports = { App }
 
