@@ -138,6 +138,9 @@ describe 'Util', ->
     it 'should work with an array', ->
       util.deepGet({ a: { b: { c: 2 } } }, [ 'a', 'b', 'c' ]).should.equal(2)
 
+    it 'should work with a number', ->
+      util.deepGet({ 11: 38 }, 11).should.equal(38)
+
     it 'should return null if the key is not found', ->
       should(util.deepGet({}, 'a.b.c')).equal(null)
 
@@ -150,6 +153,11 @@ describe 'Util', ->
       util.deepSet(obj, 'a.b.c')(2)
       obj.should.eql({ a: { b: { c: 2 } } })
 
+    it 'should work with a number', ->
+      obj = {}
+      util.deepSet(obj, 11)(38)
+      obj.should.eql({ 11: 38 })
+
   describe 'deepDelete', ->
     it 'should delete a deep value and return the deleted value', ->
       obj = { a: { b: { c: 2, d: 3 } } }
@@ -160,6 +168,11 @@ describe 'Util', ->
       obj = {}
       should(util.deepDelete(obj, 'a.b.c')).equal(undefined)
       obj.should.eql({})
+
+    it 'should not fail if the last step does not exist', ->
+      obj = { a: { b: { c: null } } }
+      should(util.deepDelete(obj, 'a.b.c.d')).equal(undefined)
+      obj.should.eql({ a: { b: { c: null } } })
 
   describe 'traverse', ->
     it 'should traverse every leaf', ->
