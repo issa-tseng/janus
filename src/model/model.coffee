@@ -105,6 +105,13 @@ class Model extends Struct
   # Declare an attribute for this model.
   @attribute: (key, attribute) -> @attributes().set(key,  attribute)
 
+  # Declare an attribute by means of just a default value and an optional class reference.
+  @default: (key, value, klass) ->
+    klass ?= require('./attribute').Attribute
+    @attribute(key, class extends klass
+      default: -> value
+    )
+
   # Get an attribute for this model.
   #
   # **Returns** an `Attribute` object wrapping an attribute for the attribute

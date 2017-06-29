@@ -312,6 +312,16 @@ describe 'Model', ->
       model = new TestModel()
       model.attribute('attr').should.equal(model.attribute('attr'))
 
+    it 'should allow @default shortcut for defining a default value', ->
+      class TestModel extends Model
+        @default('test', 42)
+      (new TestModel()).get('test').should.equal(42)
+
+    it 'should allow for the attribute class to be defined with @default', ->
+      class TestModel extends Model
+        @default('test', 42, attribute.NumberAttribute)
+      (new TestModel()).attribute('test').should.be.an.instanceof(attribute.NumberAttribute)
+
   describe 'resolving', ->
     it 'should behave like watch for non-reference attributes', ->
       values = []
