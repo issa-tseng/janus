@@ -247,6 +247,17 @@ describe 'DomView', ->
       (new TestView({}, { app })).artifact()
       rendered.should.equal('test app')
 
+    it 'points app with a key reference correctly', ->
+      rendered = resolvedWith = null
+      app = { get: (-> { newEventBindings: -> app }), withViewLibrary: (-> app), destroyWith: (->), toString: (-> 'test app'), resolve: (key) -> resolvedWith = key; new Varying('resolved!') }
+      class TestView extends DomView
+        @_dom: -> makeDom({ text: ((x) -> rendered = x) })
+        @_template: template(find('.title').text(from.app('testkey').map((x) -> x.toString())))
+
+      (new TestView({}, { app })).artifact()
+      rendered.should.equal('resolved!')
+      resolvedWith.should.equal('testkey')
+
     it 'points self functions correctly', ->
       rendered = []
       pointed = null
