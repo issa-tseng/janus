@@ -54,7 +54,7 @@ class Model extends Struct
   # wrapped `types.result` cases. The actual property key will be populated
   # with a successful value if it comes.
   resolve: (key, app) ->
-    if !this.get(key)? and (attribute = this.attribute(key)).isReference is true
+    if !this.get(key)? and (attribute = this.attribute(key))?.isReference is true
       result = new Varying(terminate(attribute.resolver())
         .point((x) => this.constructor._point(x, this, app))
         .map((x) => x?.mapSuccess((y) -> attribute.constructor.deserialize(y)) ? x)

@@ -172,6 +172,18 @@ describe 'DomView', ->
       v.set('test 2')
       rendered.should.eql([ 'test', 'test 2' ])
 
+    it 'does not try to resolve literal subjects', ->
+      attr = null
+      rendered = []
+
+      class TestView extends DomView
+        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
+        @_template: template(find('.title').text(from('whatever')))
+
+      (new TestView('hello')).artifact()
+      rendered.should.eql([ 'whatever' ])
+      # not crashing is also a check here.
+
     it 'points attribute inputs correctly', ->
       attr = null
       rendered = []

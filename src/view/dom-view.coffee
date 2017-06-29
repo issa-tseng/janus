@@ -67,7 +67,7 @@ class DomView extends View
     dynamic (x, view) ->
       if isFunction(x)
         Varying.ly(x(view.subject))
-      else if isString(x)
+      else if isString(x) and view.subject.resolve?
         view.subject.resolve(x, view._app())
       else
         Varying.ly(x) # i guess? TODO
