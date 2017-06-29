@@ -340,6 +340,12 @@ describe 'Model', ->
       m.set('a', 2)
       values.should.eql([ null, 2 ])
 
+    it 'should do nothing if no attribute is declared', ->
+      value = -1
+      m = new Model()
+      m.resolve('a', null).reactNow((x) -> value = x)
+      should(value).equal(null)
+
     it 'should return the proper value for a resolved reference attribute', ->
       values = []
 
