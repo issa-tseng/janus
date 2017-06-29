@@ -10,6 +10,7 @@ module.exports =
     numberAttribute: require('./view/number-attribute')
     enumAttribute: require('./view/enum-attribute')
     enumAttributeList: require('./view/enum-attribute-list')
+    types: require('./view/types')
 
     registerWith: (library) -> view.registerWith(library) for _, view of this when view isnt this.registerWith
 
