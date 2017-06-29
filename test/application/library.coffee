@@ -32,6 +32,10 @@ describe 'Library', ->
 
     it 'should return "null" for null', ->
       Library._classId(null).should.equal('null')
+    it 'should return "case@#ns" for a case', ->
+      { success, fail } = defcase('org.janusjs.test', 'success', 'fail')
+      Library._classId(success).should.equal('case@org.janusjs.test.success')
+      Library._classId(success(42)).should.equal('case@org.janusjs.test.success')
     it 'should return "number" for Number', ->
       Library._classId(Number).should.equal('number')
     it 'should return "string" for String', ->
@@ -57,6 +61,16 @@ describe 'Library', ->
       library.register(TestObj, TestBook)
 
       library.get(new TestObj()).should.be.an.instanceof(TestBook)
+
+    it 'should return a book for its superclass with no description', ->
+      library = new Library()
+
+      class TestBook
+      class TestObj
+      class TestSubObj extends TestObj
+      library.register(TestObj, TestBook)
+
+      library.get(new TestSubObj()).should.be.an.instanceof(TestBook)
 
     it 'should return a book against a null registration', ->
       library = new Library()
