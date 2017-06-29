@@ -112,6 +112,11 @@ class Model extends Struct
       default: -> value
     )
 
+  # Shortcut to declare an attribute that marks an attribute as transient.
+  @transient: (key) -> @attributes().set(key, class extends (require('./attribute').Attribute)
+    transient: true
+  )
+
   # Get an attribute for this model.
   #
   # **Returns** an `Attribute` object wrapping an attribute for the attribute

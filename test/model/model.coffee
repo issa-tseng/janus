@@ -322,6 +322,11 @@ describe 'Model', ->
         @default('test', 42, attribute.NumberAttribute)
       (new TestModel()).attribute('test').should.be.an.instanceof(attribute.NumberAttribute)
 
+    it 'should allow @transient shortcut to declare an attribute transient', ->
+      class TestModel extends Model
+        @transient('tempkey')
+      (new TestModel()).attribute('tempkey').transient.should.equal(true)
+
   describe 'resolving', ->
     it 'should behave like watch for non-reference attributes', ->
       values = []
