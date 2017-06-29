@@ -21,7 +21,7 @@ describe 'View', ->
       model = new MyModel()
       view = new NoViewModel(model)
 
-      view.subject.should.equal model
+      view.subject.should.equal(model)
 
     it 'should wrap in ViewModel if a ViewModel is defined', ->
       class MyViewModel extends Model
@@ -33,8 +33,21 @@ describe 'View', ->
       model = new MyModel()
       view = new WithViewModel(model)
 
-      view.subject.should.be.an.instanceof MyViewModel
-      view.subject.get('subject').should.equal model
+      view.subject.should.be.an.instanceof(MyViewModel)
+      view.subject.get('subject').should.equal(model)
+
+    it 'should provide the view and the options to the ViewModel', ->
+      class MyViewModel extends Model
+      class WithViewModel extends View
+        @viewModelClass: MyViewModel
+
+      class MyModel extends Model
+
+      model = new MyModel()
+      view = new WithViewModel(model, { test: 14 })
+
+      view.subject.get('view').should.equal(view)
+      view.subject.get('options.test').should.equal(14)
 
   describe 'artifact handling', ->
     it 'should get its artifact from _render', ->

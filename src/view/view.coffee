@@ -19,14 +19,10 @@ class View extends Base
 
     # If we have a reference to a ViewModel intermediary, instantiate it and
     # inject our actual subject. Otherwise, accept as-is.
+    # TODO: destroy viewModel on View destruction.
     this.subject =
       if this.constructor.viewModelClass?
-        attrs =
-          if this.options.settings?
-            { settings: this.options.settings, subject }
-          else
-            { subject }
-        new this.constructor.viewModelClass(attrs)
+        new this.constructor.viewModelClass({ view: this, options: this.options, subject })
       else
         subject
 
