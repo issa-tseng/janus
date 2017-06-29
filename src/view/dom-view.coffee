@@ -46,10 +46,15 @@ class DomView extends View
     dom = this.constructor._dom()
 
     # shuffle dance to wrap the actual contents so that .find() behaves as expected.
-    dom.prepend('<div/>')
-    wrapper = dom.children(':first-child')
-    wrapper.remove()
-    wrapper.append(dom)
+    wrapper =
+      if dom.parent? and (parent = dom.parent()).length > 0
+        parent
+      else
+        dom.prepend('<div/>')
+        generated = dom.children(':first-child')
+        generated.remove()
+        generated.append(dom)
+        generated
 
     # apply the bindings and save the resulting Varieds so we can stop them later.
     found = this.constructor._template(wrapper)

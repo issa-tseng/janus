@@ -48,6 +48,17 @@ describe 'DomView', ->
 
       (new TestView()).artifact().should.equal(dom)
 
+    it 'uses the existing parent if there is one', ->
+      calledParentFind = false
+      parent = { find: (calledParentFind = true; -> parent), text: (->), length: 1 }
+      dom = { find: (-> dom), data: (->), parent: (-> parent) }
+      class TestView extends DomView
+        @_dom: -> dom
+        @_template: template(find('.heading').text(from('test')))
+
+      (new TestView({ resolve: -> })).artifact().should.equal(dom)
+      calledParentFind.should.equal(true)
+
     it 'finds the appropriate spots in the dom', ->
       finds = []
       dom = makeDom({ find: ((x) -> finds.push(x); dom), text: (->) })
