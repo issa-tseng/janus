@@ -30,6 +30,8 @@ describe 'Library', ->
 
       Library._classId(ClassA).should.not.equal(Library._classId(ClassB))
 
+    it 'should return "null" for null', ->
+      Library._classId(null).should.equal('null')
     it 'should return "number" for Number', ->
       Library._classId(Number).should.equal('number')
     it 'should return "string" for String', ->
@@ -55,6 +57,14 @@ describe 'Library', ->
       library.register(TestObj, TestBook)
 
       library.get(new TestObj()).should.be.an.instanceof(TestBook)
+
+    it 'should return a book against a null registration', ->
+      library = new Library()
+
+      class TestBook
+      library.register(null, TestBook)
+
+      library.get(null).should.be.an.instanceof(TestBook)
 
     it 'should handle multiple available registrations', ->
       library = new Library()

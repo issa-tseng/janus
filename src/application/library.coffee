@@ -78,13 +78,11 @@ class Library extends Base
   #
   # **Returns** a registered book, processed by the Library's `handler`.
   get: (obj, options = {}) ->
-    return null unless obj? # but what if i want to register against null?
-
     debugger if options.debug is true
 
     book =
-      this._get(obj, obj.constructor, options.context ? this._defaultContext, options) ?
-      this._get(obj, obj.constructor, 'default', options)
+      this._get(obj, obj?.constructor, options.context ? this._defaultContext, options) ?
+      this._get(obj, obj?.constructor, 'default', options)
 
     if book?
       result = (options.handler ? this.options.handler)(obj, book, options)
@@ -97,7 +95,9 @@ class Library extends Base
   # Internal recursion method for searching the library.
   _get: (obj, klass, context, options) ->
     bookId =
-      if obj.case?
+      if !obj?
+        'null'
+      else if obj.case?
         "case@#{obj.case.namespace}.#{obj.type}"
       else if obj.isCase is true
         "case@#{obj.namespace}.#{obj.type}"
@@ -115,7 +115,7 @@ class Library extends Base
       # we have a set of possible matches. go through them.
       return record.book for record in contextShelf when match(obj, record, options.attributes)
 
-    if util.superClass(klass)?
+    if klass? and util.superClass(klass)?
       this._get(obj, util.superClass(klass), context, options)
 
   # Returns a new `Library` that is identical to and bound to this one in every
@@ -134,7 +134,9 @@ class Library extends Base
 
   # Class-level method for tagging and reading the tag off of constructors.
   @_classId: (klass) ->
-    if klass.case?
+    if !klass?
+      'null'
+    else if klass.case?
       "case@#{klass.case.namespace}.#{klass.type}"
     else if klass.isCase is true
       "case@#{klass.namespace}.#{klass.type}"
