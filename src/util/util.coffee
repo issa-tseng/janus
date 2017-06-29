@@ -74,7 +74,7 @@ util =
   #
   # **Returns** the value in question, or else `null`.
   deepGet: (obj, path) ->
-    path = if util.isArray(path) then path else path.split('.')
+    path = if util.isArray(path) then path else if util.isString(path) then path.split('.') else [ path.toString() ]
 
     idx = 0
     obj = obj[path[idx++]] while obj? and idx < path.length
@@ -85,7 +85,7 @@ util =
   #
   # **Returns** a function that takes a value and sets the requested key
   deepSet: (obj, path) ->
-    path = if util.isArray(path) then path else path.split('.')
+    path = if util.isArray(path) then path else if util.isString(path) then path.split('.') else [ path.toString() ]
 
     idx = 0
     obj = obj[path[idx++]] ?= {} while (idx + 1) < path.length
@@ -103,6 +103,7 @@ util =
     obj = obj[path[idx++]] while (idx + 1) < path.length and obj?
 
     return unless idx is path.length - 1
+    return unless obj?
 
     oldValue = obj[path[idx]]
     delete obj[path[idx]]
