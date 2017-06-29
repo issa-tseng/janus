@@ -75,7 +75,7 @@ class DomView extends View
     resolve (x, view) -> view.subject.resolve(x, view._app())
     attribute (x, view) -> new Varying(view.subject.attribute(x))
     varying (x, view) -> if isFunction(x) then Varying.ly(x(view.subject)) else Varying.ly(x)
-    app (x, view) -> new Varying(view._app())
+    app (x, view) -> if x? then view._app().resolve(x) else new Varying(view._app())
     self (x, view) -> if isFunction(x) then Varying.ly(x(view)) else Varying.ly(view)
   )
 
