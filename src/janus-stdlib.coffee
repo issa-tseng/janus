@@ -14,3 +14,6 @@ module.exports =
 
     registerWith: (library) -> view.registerWith(library) for _, view of this when view isnt this.registerWith
 
+  util:
+    varying: require('./util/varying')
+
