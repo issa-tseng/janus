@@ -17,7 +17,7 @@
     "test": "make test"
   },
   "dependencies": {
-    "janus": "~0.2"
+    "janus": "~0.3"
   },
   "devDependencies": {
     "coffee-script": "~1.11",
