@@ -120,13 +120,13 @@ class DomView extends View
     view?.wireEvents() for view in this._subviews.list
     null
 
-  destroy: ->
+  _destroy: ->
     if this._artifact?
       this.artifact().trigger?('destroying')
       this.artifact().remove()
       binding.stop() for binding in this._bindings
-
-    super()
+      subview.destroy for subview in this._subviews.list
+      # destroy viewmodel
 
 
 module.exports = { DomView }

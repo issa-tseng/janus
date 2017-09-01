@@ -56,6 +56,7 @@ class Base extends EventEmitter
       this.emit('destroying')
       target?.off?(event, handler) for { 0: target, 1: event, 2: handler } in this._outwardListeners
       this.removeAllListeners()
+      this._destroy?()
 
   # Quick shortcut for expressing that this object's existence depends purely on
   # another, so it should self-destruct if the other does.
