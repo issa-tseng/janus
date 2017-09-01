@@ -16,6 +16,7 @@ Base = require('../core/base').Base
 
 
 class Library extends Base
+  isLibrary: true
   _defaultContext: 'default'
 
   # Initializes a `Library`. Libraries can be initialized with some options:
