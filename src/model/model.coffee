@@ -78,7 +78,12 @@ class Model extends Struct
 
   # Like `#resolve(key, app)`, but calls reactNow on the resulting request on
   # your behalf.
-  resolveNow: (key, app) -> this.resolve(key, app).reactNow((x) -> this.stop() if types.result.complete.match(x))
+  # TODO: can we push this to the bottom of the stack without a timeout? is
+  # it inviting trouble if we introduce reaction priority, or a concept of
+  # a cleanup/finally reaction?
+  # or perhaps in addition to #stop we have a #wrapup that allows queued reactions
+  # to complete first.
+  resolveNow: (key, app) -> this.resolve(key, app).reactNow((x) -> setTimeout((=> this.stop()), 0) if types.result.complete.match(x))
 
   # Class-level storage bucket for attribute schema definition.
   @attributes: ->

@@ -447,7 +447,10 @@ describe 'Model', ->
       m = new TestModel()
       m.resolveNow('a', app)
       request.set(types.result.failure(47))
-      called.should.equal(true)
+      setTimeout((->
+        called.should.equal(true)
+        done()
+      ), 0)
 
     it 'gives the request\'s inner value as its own', ->
       value = null
