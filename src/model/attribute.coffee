@@ -79,8 +79,8 @@ class ReferenceAttribute extends Attribute
       .and.app()
       .all.flatMap((request, app) ->
         Varying.managed((->
-          store = app.getStore(request)
-          store.handle()
+          store = app.vendStore(request)
+          store?.handle?()
           store
         ), (-> request))
       )

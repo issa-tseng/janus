@@ -398,6 +398,17 @@ describe 'Model', ->
       v.reactNow(->)
       called.should.equal(true)
 
+    it 'fails gracefully if no store is found to handle the request', ->
+      app = { vendStore: -> null }
+      class TestModel extends Model
+        @attribute 'a', class extends attribute.ReferenceAttribute
+          request: -> new Varying()
+
+      m = new TestModel()
+      v = m.resolve('a', app)
+      v.reactNow(->)
+      should(v.get()).equal(undefined)
+
     it 'destroys the store if the refcount drops to zero', ->
       destroyed = 0
       app = { getStore: -> { handle: (->), destroy: (-> destroyed++) } }
