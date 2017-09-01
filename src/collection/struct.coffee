@@ -145,6 +145,15 @@ class Struct extends Enumerable
   # **Returns** a new shadow copy, which is an instance of `Model`.
   shadow: (klass) -> new (klass ? this.constructor)({}, extendNew(this.options, { parent: this }))
 
+  # Shadow-copies a model, inserting the attributes given. Really just
+  # syntactic sugar.
+  #
+  # **Returns** a new shadow copy with added data.
+  with: (attributes) ->
+    result = this.shadow()
+    result.set(attributes)
+    result
+
   # Returns the original copy of a model. Returns itself if it's already an
   # original model.
   #
