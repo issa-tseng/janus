@@ -298,6 +298,21 @@ describe 'Struct', ->
         s.unset('b')
         results.should.eql([ 2, null ])
 
+    describe 'sugar', ->
+      it 'should return a shadow when with is called', ->
+        s = new Struct( a: 1 )
+        s.with()._parent.should.equal(s)
+
+      it 'should attach the given attributes to the shadow instance', ->
+        s1 = new Struct( a: 1, b: 2 )
+        s2 = s1.with( b: 3, c: 4 )
+
+        s1.get('a').should.equal(1)
+        s1.get('b').should.equal(2)
+        s2.get('a').should.equal(1)
+        s2.get('b').should.equal(3)
+        s2.get('c').should.equal(4)
+
   describe 'enumeration', ->
     it 'should return a KeyList of itself when asked for an enumeration', ->
       s = new Struct( a: 1, b: 2, c: { d: 3 } )
