@@ -92,9 +92,7 @@ class IndexList extends DerivedList
   mapPairs: (f) -> this.flatMap((idx) => Varying.mapAll(f, new Varying(idx), this.parent.watchAt(idx)))
   flatMapPairs: (f) -> this.flatMap((idx) => Varying.flatMapAll(f, new Varying(idx), this.parent.watchAt(idx)))
 
-  destroy: ->
-    this._lengthVaried.stop()
-    super()
+  _destroy: -> this._lengthVaried.stop()
 
 _dynamic = (f) -> (obj, options) ->
   Enumeration[if obj.isCollection is true then 'list' else if obj.isStruct is true then 'struct'][f](obj, options)
