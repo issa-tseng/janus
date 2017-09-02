@@ -56,7 +56,7 @@ class Model extends Struct
   resolve: (key, app) ->
     if !this.get(key)? and (attribute = this.attribute(key))?.isReference is true
       result = new Varying(terminate(attribute.resolver())
-        .point((x) => this.constructor._point(x, this, app))
+        .point((x) => this.constructor.point(x, this, app))
         .map((x) => x?.mapSuccess((y) -> attribute.constructor.deserialize(y)) ? x)
       ).flatten()
 
@@ -155,7 +155,7 @@ class Model extends Struct
         do (binder) =>
           key = binder._key
           this._binders[key] = terminate(binder)
-            .point((x) => this.constructor._point(x, this))
+            .point((x) => this.constructor.point(x, this))
             .reactNow((value) => this.set(key, value))
 
       superClass = util.superClass(obj)
@@ -165,7 +165,7 @@ class Model extends Struct
     recurse(this.constructor)
     null
 
-  @_point: match(
+  @point: match(
     from.default.dynamic (x, self) ->
       if util.isFunction(x)
         Varying.ly(x(self))

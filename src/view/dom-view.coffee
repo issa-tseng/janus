@@ -62,7 +62,7 @@ class DomView extends View
 
     # apply the bindings and save the resulting Varieds so we can stop them later.
     found = this.constructor._template(wrapper)
-    this._bindings = found((x) => this.constructor._point(x, this)) #k
+    this._bindings = found((x) => this.constructor.point(x, this)) #k
     dom
 
   # When we want to attach, we really just want to create a Templater against the
