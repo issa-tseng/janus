@@ -6,6 +6,7 @@
 { Varying } = require('../core/varying')
 { Traversal } = require('./traversal')
 folds = require('./folds')
+{ IndexOfFold } = require('./derived/indexof-fold')
 
 
 # cache this circularly referenced module once we fetch it:
@@ -97,6 +98,9 @@ class Collection extends Enumerable
 
   # get the sum of this list.
   sum: -> folds.sum(this)
+
+  # return the index of an item in the list. value may be Varying[x].
+  indexOf: (value) -> IndexOfFold.indexOf(this, value)
 
 
 # An `OrderedCollection` provides `add` and `remove` events for every element
