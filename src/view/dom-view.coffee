@@ -4,12 +4,8 @@
 # * It returns a DOM node.
 #
 
-{ Varying } = require('../core/varying')
-{ match } = require('../core/case')
-{ dynamic, watch, resolve, attribute, varying, app, self } = require('../core/from').default
 View = require('./view').View
 List = require('../collection/list').List
-{ isFunction, isString } = require('../util/util')
 
 
 class DomView extends View
@@ -68,24 +64,6 @@ class DomView extends View
     found = this.constructor._template(wrapper)
     this._bindings = found((x) => this.constructor._point(x, this)) #k
     dom
-
-  # Point is provided here as a top-level class method so that it's "compiled"
-  # as few times as possible. It deals with all the default cases.
-  @_point: match(
-    dynamic (x, view) ->
-      if isFunction(x)
-        Varying.ly(x(view.subject))
-      else if isString(x) and view.subject.resolve?
-        view.subject.resolve(x, view.options.app)
-      else
-        Varying.ly(x) # i guess? TODO
-    watch (x, view) -> view.subject.watch(x)
-    resolve (x, view) -> view.subject.resolve(x, view.options.app)
-    attribute (x, view) -> new Varying(view.subject.attribute(x))
-    varying (x, view) -> if isFunction(x) then Varying.ly(x(view.subject)) else Varying.ly(x)
-    app (x, view) -> if x? then view.options.app.resolve(x) else new Varying(view.options.app)
-    self (x, view) -> if isFunction(x) then Varying.ly(x(view)) else Varying.ly(view)
-  )
 
   # When we want to attach, we really just want to create a Templater against the
   # dom we've been given and tell it not to apply on init. We then want to feed
