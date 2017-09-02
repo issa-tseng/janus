@@ -10,9 +10,9 @@ describe 'case', ->
         success.should.be.a.Function
         fail.should.be.a.Function
 
-      it 'should return a list of functions that return identity strings', ->
+      it 'should return a list of functions that return case objects', ->
         { mycase } = defcase('org.janusjs.test', 'mycase')
-        mycase().should.equal('mycase')
+        mycase().toString().should.equal('mycase: undefined')
 
       it 'should return a list of functions that return identity strings that contain values', ->
         { outer } = defcase('org.janusjs.test', 'outer')
@@ -64,18 +64,18 @@ describe 'case', ->
 
       it 'should read child cases from direct arrays', ->
         { nothing, something, onething, twothings } = defcase('org.janusjs.test', 'nothing', something: [ 'onething', 'twothings' ])
-        onething().should.equal('onething')
-        twothings().should.equal('twothings')
+        onething(1).toString().should.equal('onething: 1')
+        twothings(2).toString().should.equal('twothings: 2')
 
       it 'should read child cases from prop definition', ->
         { nothing, something, onething, twothings } = defcase('org.janusjs.test', 'nothing', something: { children: [ 'onething', 'twothings' ] })
-        onething().should.equal('onething')
-        twothings().should.equal('twothings')
+        onething(1).toString().should.equal('onething: 1')
+        twothings(2).toString().should.equal('twothings: 2')
 
       it 'should read twice-nested child cases', ->
         cases = defcase('org.janusjs.test', 'nothing', something: [ onething: [ 'redfish', 'bluefish' ], twothings: { children: [ 'pairfish' ] } ] )
-        for x in [ 'nothing', 'something', 'onething', 'redfish', 'bluefish', 'twothings', 'pairfish' ]
-          cases[x]().should.equal(x)
+        for x, y in [ 'nothing', 'something', 'onething', 'redfish', 'bluefish', 'twothings', 'pairfish' ]
+          cases[x](y).toString().should.equal("#{x}: #{y}")
 
       it 'should decorate child cases appropriately', ->
         { nesteda, nestedb } = defcase('org.janusjs.test', 'topa': [ nesteda: { decoration: 3, children: [ nestedb: { decoration: 89 } ] } ] )
@@ -89,7 +89,7 @@ describe 'case', ->
         x.value.should.equal('a')
 
         y = x.map((v) -> v + 'b')
-        y.should.equal('test')
+        y.type.should.equal('test')
         y.value.should.equal('ab')
 
       it 'should return its inner value if it passes XOrElse, otherwise else', ->
@@ -100,19 +100,19 @@ describe 'case', ->
       it 'should return its inner value if it passes getX, otherwise self', ->
         { success, fail } = defcase('org.janusjs.test', 'success', 'fail')
         success('awesome').getSuccess().should.equal('awesome')
-        fail('awesome').getSuccess().should.equal('fail')
+        fail('awesome').getSuccess().type.should.equal('fail')
         fail('awesome').getSuccess().value.should.equal('awesome')
 
       it 'should map its inner value on mapT if it matches T', ->
         { success, fail } = defcase('org.janusjs.test', 'success', 'fail')
         result = success('cool').mapSuccess((x) -> x + ' beans')
-        result.should.equal('success')
+        result.type.should.equal('success')
         result.value.should.equal('cool beans')
 
       it 'should map its inner value on mapT only if it matches T', ->
         { success, fail } = defcase('org.janusjs.test', 'success', 'fail')
         result = success('cool').mapFail((x) -> x + ' beans')
-        result.should.equal('success')
+        result.type.should.equal('success')
         result.value.should.equal('cool')
 
       it 'should return a friendly string on toString', ->
@@ -343,7 +343,7 @@ describe 'case', ->
           otherwise (x) -> result = x
         )
 
-        m(fail('test')).should.equal('fail')
+        m(fail('test')).type.should.equal('fail')
 
       it 'should allow 2-arity cases', ->
         results = []

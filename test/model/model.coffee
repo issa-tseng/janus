@@ -168,7 +168,7 @@ describe 'Model', ->
           @bind('b', from.resolve('a'))
 
         m = new TestModel()
-        m.get('b').should.equal('resolve')
+        m.get('b').type.should.equal('resolve')
 
       it 'should point attribute objects', ->
         class TestModel extends Model
@@ -199,7 +199,7 @@ describe 'Model', ->
           @bind('b', from.app())
 
         m = new TestModel()
-        m.get('b').should.equal('app')
+        m.get('b').type.should.equal('app')
 
       it 'should point apps if given', ->
         app = {}
@@ -465,11 +465,11 @@ describe 'Model', ->
       should(value).equal(undefined)
 
       request.set(types.result.progress(26))
-      value.should.equal('progress')
+      value.type.should.equal('progress')
       value.value.should.equal(26)
 
       request.set(types.result.success())
-      value.should.equal('success')
+      value.type.should.equal('success')
       value.value.should.be.an.instanceof(Model)
 
     it 'deserializes with the attribute\'s declared contained class deserializer', ->
@@ -491,7 +491,7 @@ describe 'Model', ->
 
       request.set(types.result.success({ a: 42 }))
       called.should.equal(true)
-      value.should.equal('success')
+      value.type.should.equal('success')
       value.value.get('a').should.equal(42)
 
     it 'resolves correctly when given a value in handle()', ->
@@ -503,7 +503,7 @@ describe 'Model', ->
 
       m = new TestModel()
       m.resolve('a', app).reactNow((x) -> value = x)
-      value.should.equal('success')
+      value.type.should.equal('success')
       value.value.get('a').should.equal(42)
 
     it 'sets a successful value concretely if found', ->

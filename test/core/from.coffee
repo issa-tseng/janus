@@ -87,19 +87,19 @@ describe 'from', ->
         .and.varying('e')
         .all.point((x) -> args.push(x); x)
 
-      args[0].should.eql('dynamic')
+      args[0].type.should.eql('dynamic')
       args[0].value.should.equal('a')
 
-      args[1].should.eql('watch')
+      args[1].type.should.eql('watch')
       args[1].value.should.equal('b')
 
-      args[2].should.eql('resolve')
+      args[2].type.should.eql('resolve')
       args[2].value.should.equal('c')
 
-      args[3].should.eql('attribute')
+      args[3].type.should.eql('attribute')
       args[3].value.should.equal('d')
 
-      args[4].should.eql('varying')
+      args[4].type.should.eql('varying')
       args[4].value.should.equal('e')
 
     it 'should only point for things that have not resolved to varying', ->
@@ -159,8 +159,8 @@ describe 'from', ->
 
           xs.length.should.equal(2)
 
-          xs[0].should.eql('dynamic')
-          xs[1].should.eql('watch')
+          xs[0].type.should.eql('dynamic')
+          xs[1].type.should.eql('watch')
 
       called.should.be.false
 
@@ -213,7 +213,7 @@ describe 'from', ->
 
           xs[0].should.equal('dynamic: a')
 
-          xs[1].should.eql('watch')
+          xs[1].type.should.eql('watch')
         )
 
       v.reactNow(->)
