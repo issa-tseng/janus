@@ -204,13 +204,13 @@ describe 'Model', ->
       it 'should point apps if given', ->
         app = {}
         m = new Model()
-        Model._point(from.default.app(), m, app).get().should.equal(app)
+        Model.point(from.default.app(), m, app).get().should.equal(app)
 
       it 'should point into app subkeys if given', ->
         resolvedWith = null
         app = { resolve: (x) -> resolvedWith = x; 'resolved!' }
         m = new Model()
-        Model._point(from.default.app('test'), m, app).should.equal('resolved!')
+        Model.point(from.default.app('test'), m, app).should.equal('resolved!')
         resolvedWith.should.equal('test')
 
       it 'should point self by function', ->

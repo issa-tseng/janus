@@ -43,7 +43,7 @@ class View extends Base
   # Standard point implementation that all subclasses can typically use
   # unaltered. It is provided as a top-level class method so that it is
   # "compiled" as few times as possible.
-  @_point: match(
+  @point: match(
     dynamic (x, view) ->
       if isFunction(x)
         Varying.ly(x(view.subject))

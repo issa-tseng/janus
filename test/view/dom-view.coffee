@@ -81,7 +81,7 @@ describe 'DomView', ->
         @_template: template(
           find('.title').text(from((x) -> passed = x; v))
         )
-        @_point: -> called = true
+        @point: -> called = true
 
       (new TestView({})).artifact()
       called.should.equal(true)
