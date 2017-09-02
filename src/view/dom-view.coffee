@@ -27,11 +27,19 @@ class DomView extends View
 
     this._subviews = new List()
 
-    this.on 'appended', =>
+    this.on('appended', =>
       if this.artifact().closest('body').length > 0
         this.emit('appendedToDocument')
         subview.emit('appended') for subview in this._subviews.list
       null
+    )
+
+    this.options.app?.on('vended', (type, subview) =>
+      return unless type is 'views'
+
+      subview.wireEvents() if this._wired is true
+      this._subviews.add(subview)
+    )
 
     this.destroyWith(this.subject)
 
@@ -68,14 +76,14 @@ class DomView extends View
       if isFunction(x)
         Varying.ly(x(view.subject))
       else if isString(x) and view.subject.resolve?
-        view.subject.resolve(x, view._app())
+        view.subject.resolve(x, view.options.app)
       else
         Varying.ly(x) # i guess? TODO
     watch (x, view) -> view.subject.watch(x)
-    resolve (x, view) -> view.subject.resolve(x, view._app())
+    resolve (x, view) -> view.subject.resolve(x, view.options.app)
     attribute (x, view) -> new Varying(view.subject.attribute(x))
     varying (x, view) -> if isFunction(x) then Varying.ly(x(view.subject)) else Varying.ly(x)
-    app (x, view) -> if x? then view._app().resolve(x) else new Varying(view._app())
+    app (x, view) -> if x? then view.options.app.resolve(x) else new Varying(view.options.app)
     self (x, view) -> if isFunction(x) then Varying.ly(x(view)) else Varying.ly(view)
   )
 
@@ -85,20 +93,6 @@ class DomView extends View
   _attach: (dom) ->
     # TODO.
     null
-
-  # Internal helper to get an App, since there's a lot of juggling we want to do
-  # to get various follow-on effects to work correctly. Memoized for perf.
-  _app: -> this._app$ ?= do =>
-    return null unless this.options.app?
-
-    library = this.options.app.get('views').newEventBindings()
-    library.destroyWith(this)
-
-    this.listenTo library, 'got', (view) =>
-      view.wireEvents() if this._wired is true
-      this._subviews.add(view)
-
-    this.options.app.withViewLibrary(library)
 
   # We also know enough at this implementation level to provide a default
   # implementation for event wiring: the actual wiring should still be done

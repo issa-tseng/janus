@@ -177,7 +177,8 @@ class Model extends Struct
     from.default.resolve (x, self, app) -> if app? then self.resolve(x, app) else from.default.resolve(x)
     from.default.attribute (x, self) -> new Varying(self.attribute(x))
     from.default.varying (x, self) -> if util.isFunction(x) then Varying.ly(x(self)) else Varying.ly(x)
-    from.default.app (x, _, app) ->
+    from.default.app (x, self, app) ->
+      app ?= self.options.app
       if app?
         if x? then app.resolve(x) else new Varying(app)
       else from.default.app()

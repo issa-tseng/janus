@@ -255,7 +255,7 @@ describe 'Mutator', ->
     it 'passes the subject to the library', ->
       subject = null
       dom = { append: (->), empty: (->), data: (->) }
-      app = { getView: (x) -> subject = x; { artifact: (->) } }
+      app = { vendView: (x) -> subject = x; { artifact: (->) } }
       point = passthroughWithApp(app)
 
       mutators.render(from.varying(new Varying(1)))(dom, point)
@@ -265,7 +265,7 @@ describe 'Mutator', ->
       subject = null
       context = null
       dom = { append: (->), empty: (->), data: (->) }
-      app = { getView: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
+      app = { vendView: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
       point = passthroughWithApp(app)
 
       mutators
@@ -278,7 +278,7 @@ describe 'Mutator', ->
       subject = null
       context = null
       dom = { append: (->), empty: (->), data: (->) }
-      app = { getView: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
+      app = { vendView: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
       point = passthroughWithApp(app)
 
       mutators
@@ -291,7 +291,7 @@ describe 'Mutator', ->
     it 'passes bare find options to the library if provided', ->
       opts = null
       dom = { append: (->), empty: (->), data: (->) }
-      app = { getView: (x, y) -> opts = y; { artifact: (->) } }
+      app = { vendView: (x, y) -> opts = y; { artifact: (->) } }
       point = passthroughWithApp(app)
 
       mutators
@@ -305,7 +305,7 @@ describe 'Mutator', ->
     it 'passes constructor options to the library if provided', ->
       opts = null
       dom = { append: (->), empty: (->), data: (->) }
-      app = { getView: (x, y) -> opts = y; { artifact: (->) } }
+      app = { vendView: (x, y) -> opts = y; { artifact: (->) } }
       point = passthroughWithApp(app)
 
       mutators
@@ -321,7 +321,7 @@ describe 'Mutator', ->
       key = null
       oldView = { destroy: -> destroyed = true }
       dom = { append: (->), empty: (-> emptied = true), data: ((k) -> key = k; oldView) }
-      app = { getView: (->) }
+      app = { vendView: (->) }
       point = passthroughWithApp(app)
 
       mutators.render(from.varying(new Varying(1)))(dom, point)
@@ -335,7 +335,7 @@ describe 'Mutator', ->
       dataValue = null
       newView = { artifact: -> 4 }
       dom = { append: ((x) -> appended = x), empty: (->), data: ((k, v) -> dataKey = k; dataValue = v) }
-      app = { getView: (-> newView) }
+      app = { vendView: (-> newView) }
       point = passthroughWithApp(app)
 
       mutators.render(from.varying(new Varying(1)))(dom, point)
@@ -347,7 +347,7 @@ describe 'Mutator', ->
       evented = false
       newView = { artifact: (-> 4), emit: ((x) -> evented = true if x is 'appended') }
       dom = { append: (->), empty: (->), data: (->) }
-      app = { getView: (-> newView) }
+      app = { vendView: (-> newView) }
       point = passthroughWithApp(app)
 
       mutators.render(from.varying(new Varying(1)))(dom, point)
@@ -356,7 +356,7 @@ describe 'Mutator', ->
     it 'should return a Varied that can stop mutation', ->
       value = null
       dom = { append: ((x) -> value = x), empty: (->), data: (->) }
-      app = { getView: (x) -> { artifact: -> x } }
+      app = { vendView: (x) -> { artifact: -> x } }
       point = passthroughWithApp(app)
 
       v = new Varying(1)
@@ -383,7 +383,7 @@ describe 'Mutator', ->
       subject = null
       context = null
       dom = { append: (->), empty: (->), data: (->) }
-      app = { getView: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
+      app = { vendView: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
       point = passthroughWithApp(app)
 
       mutators
