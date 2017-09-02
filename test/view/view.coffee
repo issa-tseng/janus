@@ -89,3 +89,6 @@ describe 'View', ->
         view.wireEvents()
         called.should.equal(1)
 
+  # @_point is tested in DomView's tests, as the concrete implementation yields
+  # an easier test harness.
+

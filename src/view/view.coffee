@@ -6,6 +6,10 @@
 # supplies with its Views.
 
 Base = require('../core/base').Base
+{ Varying } = require('../core/varying')
+{ dynamic, watch, resolve, attribute, varying, app, self } = require('../core/from').default
+{ match } = require('../core/case')
+{ isFunction, isString } = require('../util/util')
 
 
 # Base gives us event listening things
@@ -35,6 +39,25 @@ class View extends Base
   # **Returns** artifact object.
   artifact: -> this._artifact ?= this._render()
   _render: -> # implement me!
+
+  # Standard point implementation that all subclasses can typically use
+  # unaltered. It is provided as a top-level class method so that it is
+  # "compiled" as few times as possible.
+  @_point: match(
+    dynamic (x, view) ->
+      if isFunction(x)
+        Varying.ly(x(view.subject))
+      else if isString(x) and view.subject.resolve?
+        view.subject.resolve(x, view.options.app)
+      else
+        Varying.ly(x) # i guess? TODO
+    watch (x, view) -> view.subject.watch(x)
+    resolve (x, view) -> view.subject.resolve(x, view.options.app)
+    attribute (x, view) -> new Varying(view.subject.attribute(x))
+    varying (x, view) -> if isFunction(x) then Varying.ly(x(view.subject)) else Varying.ly(x)
+    app (x, view) -> if x? then view.options.app.resolve(x) else new Varying(view.options.app)
+    self (x, view) -> if isFunction(x) then Varying.ly(x(view)) else Varying.ly(view)
+  )
 
   # Wires events against the artifact in question. This method is separate so
   # that:
