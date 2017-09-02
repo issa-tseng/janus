@@ -374,7 +374,7 @@ describe 'Model', ->
     it 'should point the reference request from the store library given an app', ->
       ourRequest = new Varying()
       givenRequest = null
-      app = { getStore: ((x) -> givenRequest = x; { handle: (->), destroy: (->) }) }
+      app = { vendStore: ((x) -> givenRequest = x; { handle: (->), destroy: (->) }) }
       class TestModel extends Model
         @attribute 'a', class extends attribute.ReferenceAttribute
           request: -> ourRequest
@@ -387,7 +387,7 @@ describe 'Model', ->
 
     it 'calls handle on the store that handles the request', ->
       called = false
-      app = { getStore: (x) -> { handle: (-> called = true), destroy: (->) } }
+      app = { vendStore: (x) -> { handle: (-> called = true), destroy: (->) } }
       class TestModel extends Model
         @attribute 'a', class extends attribute.ReferenceAttribute
           request: -> new Varying()
@@ -411,7 +411,7 @@ describe 'Model', ->
 
     it 'destroys the store if the refcount drops to zero', ->
       destroyed = 0
-      app = { getStore: -> { handle: (->), destroy: (-> destroyed++) } }
+      app = { vendStore: -> { handle: (->), destroy: (-> destroyed++) } }
       class TestModel extends Model
         @attribute 'a', class extends attribute.ReferenceAttribute
           request: -> new Varying()
@@ -427,7 +427,7 @@ describe 'Model', ->
 
     it 'immediately calls handle on the store that handles the request given resolveNow', ->
       called = false
-      app = { getStore: (x) -> { handle: (-> called = true), destroy: (->) } }
+      app = { vendStore: (x) -> { handle: (-> called = true), destroy: (->) } }
       class TestModel extends Model
         @attribute 'a', class extends attribute.ReferenceAttribute
           request: -> new Varying()
@@ -436,10 +436,10 @@ describe 'Model', ->
       m.resolveNow('a', app)
       called.should.equal(true)
 
-    it 'relinquishes its hold on the resolveNow`d request if it reaches completion', ->
+    it 'relinquishes its hold on the resolveNow`d request if it reaches completion', (done) ->
       called = false
       request = null
-      app = { getStore: (x) -> { handle: (-> request = x), destroy: (-> called = true) } }
+      app = { vendStore: (x) -> { handle: (-> request = x), destroy: (-> called = true) } }
       class TestModel extends Model
         @attribute 'a', class extends attribute.ReferenceAttribute
           request: -> new Varying()
@@ -455,7 +455,7 @@ describe 'Model', ->
     it 'gives the request\'s inner value as its own', ->
       value = null
       request = new Varying()
-      app = { getStore: (x) -> { handle: (->), destroy: (->) } }
+      app = { vendStore: (x) -> { handle: (->), destroy: (->) } }
       class TestModel extends Model
         @attribute 'a', class extends attribute.ReferenceAttribute
           request: -> request
@@ -476,7 +476,7 @@ describe 'Model', ->
       called = false
       value = null
       request = new Varying()
-      app = { getStore: (x) -> { handle: (->), destroy: (->) } }
+      app = { vendStore: (x) -> { handle: (->), destroy: (->) } }
       class TestInner extends Model
         @deserialize: (data) ->
           called = true
@@ -496,7 +496,7 @@ describe 'Model', ->
 
     it 'resolves correctly when given a value in handle()', ->
       value = null
-      app = { getStore: (x) -> { handle: (-> x.set(types.result.success({ a: 42 }))), destroy: (->) } }
+      app = { vendStore: (x) -> { handle: (-> x.set(types.result.success({ a: 42 }))), destroy: (->) } }
       class TestModel extends Model
         @attribute 'a', class extends attribute.ReferenceAttribute
           request: -> new Varying()
@@ -509,7 +509,7 @@ describe 'Model', ->
     it 'sets a successful value concretely if found', ->
       value = null
       request = new Varying()
-      app = { getStore: (x) -> { handle: (->), destroy: (->) } }
+      app = { vendStore: (x) -> { handle: (->), destroy: (->) } }
       class TestModel extends Model
         @attribute 'a', class extends attribute.ReferenceAttribute
           request: -> request

@@ -239,7 +239,7 @@ describe 'DomView', ->
 
     it 'points app correctly', ->
       rendered = null
-      app = { get: (-> { newEventBindings: -> app }), withViewLibrary: (-> app), destroyWith: (->), toString: (-> 'test app') }
+      app = { toString: (-> 'test app'), on: (->) }
       class TestView extends DomView
         @_dom: -> makeDom({ text: ((x) -> rendered = x) })
         @_template: template(find('.title').text(from.app().map((x) -> x.toString())))
@@ -249,7 +249,7 @@ describe 'DomView', ->
 
     it 'points app with a key reference correctly', ->
       rendered = resolvedWith = null
-      app = { get: (-> { newEventBindings: -> app }), withViewLibrary: (-> app), destroyWith: (->), toString: (-> 'test app'), resolve: (key) -> resolvedWith = key; new Varying('resolved!') }
+      app = { toString: (-> 'test app'), on: (->), resolve: (key) -> resolvedWith = key; new Varying('resolved!') }
       class TestView extends DomView
         @_dom: -> makeDom({ text: ((x) -> rendered = x) })
         @_template: template(find('.title').text(from.app('testkey').map((x) -> x.toString())))
@@ -389,15 +389,14 @@ describe 'DomView', ->
         _wireEvents: -> wired += 1
 
       child = new TestView()
-      library = { on: ((event, f_) -> this.f_ = f_ if event is 'got'), getView: (-> this.f_(child)), newEventBindings: (-> library), destroyWith: (->) }
-      parent = new TestView({}, { app: { get: (-> library), withViewLibrary: (->) } })
+      app = { on: ((event, f_) -> this.f_ = f_ if event is 'vended'), vendView: -> this.f_('views', child); child }
+      parent = new TestView({}, { app })
 
-      parent._app()
       parent.wireEvents()
-      library.getView()
+      app.vendView()
       wired.should.equal(2)
 
-    it 'does not wire child events if not appropriate', ->
+    it 'defers wiring child events until appropriate', ->
       wired = 0
       class TestView extends DomView
         @_dom: -> makeDom()
@@ -405,12 +404,14 @@ describe 'DomView', ->
         _wireEvents: -> wired += 1
 
       child = new TestView()
-      library = { on: ((event, f_) -> this.f_ = f_ if event is 'got'), getView: (-> this.f_(child)), newEventBindings: (-> library), destroyWith: (->) }
-      parent = new TestView({}, { app: { get: (-> library), withViewLibrary: (->) } })
+      app = { on: ((event, f_) -> this.f_ = f_ if event is 'vended'), vendView: -> this.f_('views', child); child }
+      parent = new TestView({}, { app })
 
-      parent._app()
-      library.getView()
+      app.vendView()
       wired.should.equal(0)
+
+      parent.wireEvents()
+      wired.should.equal(2)
 
   it 'concats dom outerHTMLs to provide markup', ->
     class TestView extends DomView

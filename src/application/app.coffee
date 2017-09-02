@@ -1,29 +1,26 @@
 Model = require('../model/model').Model
+attribute = require('../model/attribute')
+List = require('../collection/list').List
 util = require('../util/util')
 
 
 class App extends Model
-  _get: (library) -> (obj, options = {}) =>
-    library.get(obj, util.extendNew(options, { constructorOpts: util.extendNew(options.constructorOpts, { app: this }) }))
+  @default('stack', new List(), attribute.CollectionAttribute)
 
-  getView: (obj, options) -> this._get(this.get('views'))(obj, options)
-  getStore: (obj, options) -> this._get(this.get('stores'))(obj, options)
+  vend: (type, obj, options = {}) ->
+    library = this.get(type)
+    return unless library?.isLibrary is true
 
-  withViewLibrary: (viewLibrary) ->
-    result = this.shadow()
-    result.set('views', viewLibrary)
+    app = this.with( stack: new List(this.get('stack').list.concat([ obj ])) )
+    result = library.get(obj, util.extendNew(options, { constructorOpts: util.extendNew(options.constructorOpts, { app }) }))
 
-    this.emit('derived', result)
-
+    this.emit('vended', type, result) if result?
     result
 
-  withStoreLibrary: (storeLibrary) ->
-    result = this.shadow()
-    result.set('stores', storeLibrary)
+  vendView: (obj, options) -> this.vend('views', obj, options)
+  vendStore: (obj, options) -> this.vend('stores', obj, options)
 
-    this.emit('derived', result)
-
-    result
+  stack: -> this.get('stack').shadow()
 
   resolve: (key) -> super(key, this)
 

@@ -22,7 +22,7 @@ class View extends Base
     # TODO: destroy viewModel on View destruction.
     this.subject =
       if this.constructor.viewModelClass?
-        new this.constructor.viewModelClass({ view: this, options: this.options, subject })
+        new this.constructor.viewModelClass({ view: this, options: this.options, subject }, { app: this.options.app })
       else
         subject
 
