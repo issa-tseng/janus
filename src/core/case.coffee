@@ -28,11 +28,7 @@
 
 # otherwise is a case that like the others can be referenced by string or used
 # as a function.
-otherwise = (value) ->
-  instance = new String('otherwise')
-  instance.value = value
-  instance.case = otherwise
-  instance
+otherwise = (value) -> { type: 'otherwise', value, case: otherwise }
 otherwise.type = 'otherwise'
 
 
@@ -83,7 +79,7 @@ defcase = (namespace, inTypes...) ->
       defaultProps = {
         arity: 1
         map: (f) -> kase(f(this.value))
-        toString: -> "#{this}: #{this.value}"
+        toString: -> "#{this.type}: #{this.value}"
         unapply: (x, additional) ->
           if isFunction(x)
             if this.arity is 1
@@ -97,32 +93,32 @@ defcase = (namespace, inTypes...) ->
       }
       props = extendNew(defaultProps, setProps, caseProps)
 
-      # make the wrapper.
+      # make and cache an instance prototype:
+      instance = { type }
+      # decorate set-based methods:
+      for fType of types
+        do (fType) ->
+          # decorate TOrElse:
+          instance[fType + 'OrElse'] = (x) -> if type is fType then this.value else x
+
+          # decorate getT:
+          instance['get' + capitalize(fType)] = -> if type is fType then this.value else this
+
+          # decorate mapT:
+          instance['map' + capitalize(fType)] = (f) -> if type is fType then kase(f(this.value)) else this
+      # decorate the rest:
+      instance[prop] = val for prop, val of props
+
+      # eventual final product.
       kase = (x, y, z) ->
-        instance = new String('' + type)
-        instance.type = type
-        instance.value = x
-        instance.value2 = y if props.arity >= 2
-        instance.value3 = z if props.arity >= 3
+        newInstance = Object.create(instance)
+        newInstance.value = x
+        newInstance.value2 = y if props.arity >= 2
+        newInstance.value3 = z if props.arity >= 3
+        newInstance
 
-        # decorate set-based methods:
-        for fType of types
-          do (fType) ->
-            # decorate TOrElse:
-            instance[fType + 'OrElse'] = (x) -> if type is fType then this.value else x
-
-            # decorate getT:
-            instance['get' + capitalize(fType)] = -> if type is fType then this.value else this
-
-            # decorate mapT:
-            instance['map' + capitalize(fType)] = (f) -> if type is fType then kase(f(this.value)) else this
-
-        # decorate the rest:
-        instance.case = kase
-        instance[prop] = val for prop, val of props
-
-        # return the instance.
-        instance
+      # reference the case on the instance now that we have it.
+      instance.case = kase
 
       # decorate some things to help us find ourselves.
       kase.isCase = true
@@ -131,6 +127,7 @@ defcase = (namespace, inTypes...) ->
       kase.namespace = namespace
 
       # decorate direct matcher.
+      # TODO: should do namespace verification.
       kase.match = (x, f_) ->
         xtype = x?.type
         matches = (xtype is type) or (kase._allChildren[xtype] is true)
@@ -198,22 +195,25 @@ match = (args...) ->
       if x.case?
         kase = x.case
         handler = x.value
+        i += 1
       else
         kase = args[i]
         handler = args[i + 1]
+        i += 2
 
       # always process if otherwise.
       if kase.type is 'otherwise'
         return unapply(target, handler, additional, false)
 
-      # process if a match if it is in the same namespace and a direct match, or
-      # a child of the given matcher case.
+      # process a match if it is in the same namespace and a direct match, or a
+      # child of the given matcher case.
       if (target?.case ? target)?.namespace is namespace
-        targetName = target?.valueOf()
-        if (kase.type.valueOf() is targetName) or (kase._allChildren[targetName] is true)
+        targetName = target?.type
+        if (kase.type is targetName) or (kase._allChildren[targetName] is true)
           return unapply(target, handler, additional)
 
-      i += if x.case? then 1 else 2
+    # don't accumulate.
+    null
 
 # export.
 module.exports = { defcase, match, otherwise }
