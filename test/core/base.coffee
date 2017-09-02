@@ -1,5 +1,6 @@
 should = require('should')
 { Base } = require('../../lib/core/base')
+{ Varying } = require('../../lib/core/varying')
 
 describe 'base', ->
   describe 'events', ->
@@ -30,6 +31,29 @@ describe 'base', ->
       b.emit('testevent2', 42)
       b.emit('testevent3', 42)
       called.should.equal(3)
+
+  describe 'reactions', ->
+    it 'should react to a Varying', ->
+      a = new Base()
+      v = new Varying(2)
+
+      result = null
+      a.reactNowTo(v, (x) -> result = x)
+
+      result.should.equal(2)
+      v.refCount().get().should.equal(1)
+
+    it 'should cease reacting upon destruction', ->
+      a = new Base()
+      v = new Varying(2)
+
+      result = null
+      a.reactNowTo(v, (x) -> result = x)
+
+      a.destroy()
+      v.refCount().get().should.equal(0)
+      v.set(3)
+      result.should.equal(2)
 
   describe 'lifecycle', ->
     it 'should emit a destroying event upon destruction', ->
