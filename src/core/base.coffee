@@ -22,6 +22,7 @@ class Base extends EventEmitter
 
     # Keep track of who we're listening to so we can stop doing so later.
     this._outwardListeners = []
+    this._outwardReactions = []
 
     # Assign ourselves a globally-within-Janus unique id.
     this._id = util.uniqueId()
@@ -47,6 +48,15 @@ class Base extends EventEmitter
     target?.off?(event, handler) for { 0: target, 1: event, 2: handler } in this._outwardListeners when target is tgt
     this
 
+  # Perform and track a reaction such that it is halted if this object is
+  # destroyed.
+  #
+  # **Returns** the Observation of the reaction.
+  reactNowTo: (varying, f_) ->
+    observation = varying.reactNow(f_)
+    this._outwardReactions.push(observation)
+    observation
+
   # `destroy()` removes all listeners this object has on others via
   # `listenTo()`, and removes all listeners other objects have on this one.
   #
@@ -55,6 +65,7 @@ class Base extends EventEmitter
     if (this._refCount -= 1) is 0
       this.emit('destroying')
       target?.off?(event, handler) for { 0: target, 1: event, 2: handler } in this._outwardListeners
+      o.stop() for o in this._outwardReactions
       this.removeAllListeners()
       this._destroy?()
 
