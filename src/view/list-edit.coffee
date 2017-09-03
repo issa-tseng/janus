@@ -31,10 +31,10 @@ class ListEditItemView extends DomView
     dom = this.constructor._dom()
 
     # render our inner contents.
-    contentsBinding = this.options.renderItem(mutators.render(from(this.subject)))(dom.find('.janus-list-editItem-contents'), (x) => this.constructor._point(x, this))
+    contentsBinding = this.options.renderItem(mutators.render(from(this.subject)))(dom.find('.janus-list-editItem-contents'), (x) => this.constructor.point(x, this))
 
     # now render the bindings actually defined in our own template.
-    this._bindings = this.constructor._template(dom)((x) => this.constructor._point(x, this))
+    this._bindings = this.constructor._template(dom)((x) => this.constructor.point(x, this))
     this._bindings.push(contentsBinding)
 
     dom

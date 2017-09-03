@@ -29,10 +29,10 @@ class ListSelectItemView extends DomView
     dom = wrapper.children(':first')
 
     # render our inner contents.
-    contentsBinding = this.options.renderItem(mutators.render(from(this.subject)))(dom.find('.janus-list-selectItem-contents'), (x) => this.constructor._point(x, this))
+    contentsBinding = this.options.renderItem(mutators.render(from(this.subject)))(dom.find('.janus-list-selectItem-contents'), (x) => this.constructor.point(x, this))
 
     # now render the bindings actually defined in our own template.
-    this._bindings = this.constructor._template(wrapper)((x) => this.constructor._point(x, this))
+    this._bindings = this.constructor._template(wrapper)((x) => this.constructor.point(x, this))
     this._bindings.push(contentsBinding)
 
     dom

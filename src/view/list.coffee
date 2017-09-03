@@ -20,7 +20,7 @@ class ListView extends DomView
       # make a container and populate it with a view given the standard
       # pointed binding. destroy the binding if the list item is removed.
       itemDom = this.constructor._itemDom()
-      binding = this.options.renderItem(mutators.render(from(item)))(itemDom, (x) => this.constructor._point(x, this))
+      binding = this.options.renderItem(mutators.render(from(item)))(itemDom, (x) => this.constructor.point(x, this))
 
       # HACK?: decorate the binding with the dom obj.
       binding.dom = itemDom
