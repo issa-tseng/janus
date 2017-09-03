@@ -6,7 +6,7 @@ should = require('should')
 
 $ = require('../../lib/util/dollar')
 
-dummyApp = (new App()).withViewLibrary(new Library())
+dummyApp = new App()
 
 describe 'view', ->
   describe 'literal', ->

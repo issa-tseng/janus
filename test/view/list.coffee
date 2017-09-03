@@ -9,7 +9,7 @@ $ = require('../../lib/util/dollar')
 # register LiteralView for our tests to make our lives easier.
 testLibrary = new Library()
 require('../../lib/view/literal').registerWith(testLibrary)
-testApp = (new App()).withViewLibrary(testLibrary)
+testApp = new App( views: testLibrary )
 
 checkLiteral = (dom, expectedText) ->
   dom.is('span').should.equal(true)
@@ -102,7 +102,7 @@ describe 'view', ->
 
       library = new Library()
       library.register(Number, require('../../lib/view/literal').LiteralView, context: 'test')
-      app = (new App()).withViewLibrary(library)
+      app = new App( views: library )
 
       dom = (new ListView(l, { app, renderItem })).artifact()
 

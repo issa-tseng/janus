@@ -13,7 +13,7 @@ testLibrary = new Library()
 testLibrary.register(Number, LiteralView, context: 'summary')
 testLibrary.register(Number, ListSelectItemView, context: 'select-wrapper')
 testLibrary.register(List, ListView)
-testApp = (new App()).withViewLibrary(testLibrary)
+testApp = new App( views: testLibrary )
 
 checkListItem = (dom, inner) ->
   dom.is('li').should.equal(true)
@@ -62,7 +62,7 @@ describe 'view', ->
       library.register(Number, LiteralView, context: 'test')
       library.register(Number, ListSelectItemView, context: 'select-wrapper')
       library.register(List, ListView)
-      app = (new App()).withViewLibrary(library)
+      app = new App( views: library )
 
       renderItem = (render) -> render.context('test')
       class TestAttribute extends attribute.EnumAttribute
@@ -79,7 +79,7 @@ describe 'view', ->
       library.register(Number, LiteralView, context: 'summary')
       library.register(Number, ListSelectItemView, context: 'test')
       library.register(List, ListView)
-      app = (new App()).withViewLibrary(library)
+      app = new App( views: library )
 
       renderWrapper = (render) -> render.context('test')
       class TestAttribute extends attribute.EnumAttribute

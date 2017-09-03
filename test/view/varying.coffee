@@ -6,7 +6,7 @@ should = require('should')
 
 $ = require('../../lib/util/dollar')
 
-dummyApp = (new App()).withViewLibrary(new Library())
+dummyApp = new App()
 
 describe 'view', ->
   describe 'varying', ->
@@ -24,7 +24,7 @@ describe 'view', ->
 
       library = new Library()
       library.register(Number, NumberView)
-      app = (new App()).withViewLibrary(library)
+      app = new App( views: library )
 
       view = new VaryingView(new Varying(1), { app })
       dom = view.artifact()
@@ -41,7 +41,7 @@ describe 'view', ->
       library = new Library()
       library.register(Number, LiteralView1)
       library.register(String, LiteralView2)
-      app = (new App()).withViewLibrary(library)
+      app = new App( views: library )
 
       v = new Varying(1)
       view = new VaryingView(v, { app })
@@ -60,7 +60,7 @@ describe 'view', ->
 
       library = new Library()
       library.register(Number, NumberView)
-      app = (new App()).withViewLibrary(library)
+      app = new App( views: library )
 
       v = new Varying(1)
       view = new VaryingView(v, { app })
@@ -79,10 +79,10 @@ describe 'view', ->
       library = new Library()
       library.register(Number, NumberView, context: 'custom')
       library.register(Varying, VaryingView)
-      app = (new App()).withViewLibrary(library)
+      app = new App( views: library )
 
       v = new Varying(1)
-      view = library.get(v, context: 'custom', constructorOpts: { app })
+      view = library.get(v, context: 'custom', options: { app })
       dom = view.artifact()
       dom.children('span.janus-test').length.should.equal(1)
 

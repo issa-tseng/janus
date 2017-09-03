@@ -6,7 +6,7 @@ should = require('should')
 
 $ = require('../../lib/util/dollar')
 
-dummyApp = (new App()).withViewLibrary(new Library())
+dummyApp = new App()
 
 describe 'view', ->
   describe 'types', ->
@@ -21,7 +21,7 @@ describe 'view', ->
       it 'renders the case value', ->
         library = new Library()
         require('../../lib/view/literal').registerWith(library)
-        app = (new App()).withViewLibrary(library)
+        app = new App( views: library )
         view = new SuccessResultView(types.result.success(47), { app: app })
 
         dom = view.artifact()

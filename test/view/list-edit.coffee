@@ -10,7 +10,7 @@ $ = require('../../lib/util/dollar')
 testLibrary = new Library()
 testLibrary.register(Number, require('../../lib/view/literal').LiteralView, context: 'edit')
 testLibrary.register(Number, ListEditItemView, context: 'edit-wrapper')
-testApp = (new App()).withViewLibrary(testLibrary)
+testApp = new App( views: testLibrary )
 
 checkLiteral = (dom, expectedText) ->
   dom.is('span').should.equal(true)
@@ -46,7 +46,7 @@ describe 'view', ->
       library = new Library()
       library.register(Number, require('../../lib/view/literal').LiteralView, context: 'custom')
       library.register(Number, ListEditItemView, context: 'edit-wrapper')
-      app = (new App()).withViewLibrary(library)
+      app = new App( views: library )
 
       renderItem = (render) -> render.context('custom')
       dom = (new ListEditView(new List([ 1, 2 ]), { app, renderItem })).artifact()
@@ -60,7 +60,7 @@ describe 'view', ->
       library = new Library()
       library.register(Number, require('../../lib/view/literal').LiteralView, context: 'edit')
       library.register(Number, ListEditItemView, context: 'custom')
-      app = (new App()).withViewLibrary(library)
+      app = new App( views: library )
 
       renderWrapper = (render) -> render.context('custom')
       dom = (new ListEditView(new List([ 1, 2 ]), { app, renderWrapper })).artifact()
