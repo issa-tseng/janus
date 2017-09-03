@@ -1,5 +1,6 @@
 .DS_Store
 *.swp
 *.swo
+*.swn
 /node_modules
 /coverage
