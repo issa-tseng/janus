@@ -113,8 +113,9 @@ class Model extends Struct
   # Declare an attribute by means of just a default value and an optional class reference.
   @default: (key, value, klass) ->
     klass ?= require('./attribute').Attribute
+    wrapped = if util.isFunction(value) then value else (-> value)
     @attribute(key, class extends klass
-      default: -> value
+      default: wrapped
     )
 
   # Shortcut to declare an attribute that marks an attribute as transient.

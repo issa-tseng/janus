@@ -288,7 +288,7 @@ describe 'Mutator', ->
       context.should.equal('edit')
 
     # also checks for appropriate context merging.
-    it 'passes bare find options to the library if provided', ->
+    it 'passes bare criteria options to the library if provided', ->
       opts = null
       dom = { append: (->), empty: (->), data: (->) }
       app = { vendView: (x, y) -> opts = y; { artifact: (->) } }
@@ -297,11 +297,11 @@ describe 'Mutator', ->
       mutators
         .render(from.varying(new Varying(1)))
         .context('edit')
-        .find({ attrs: 2 })(dom, point)
+        .criteria({ attrs: 2 })(dom, point)
       opts.attrs.should.equal(2)
       opts.context.should.equal('edit')
 
-    # also checks for appropriate find merging.
+    # also checks for appropriate criteria merging.
     it 'passes constructor options to the library if provided', ->
       opts = null
       dom = { append: (->), empty: (->), data: (->) }
@@ -310,10 +310,10 @@ describe 'Mutator', ->
 
       mutators
         .render(from.varying(new Varying(1)))
-        .find({ attrs: 2 })
+        .criteria({ attrs: 2 })
         .options({ test: 3 })(dom, point)
       opts.attrs.should.equal(2)
-      opts.constructorOpts.should.eql({ test: 3 })
+      opts.options.should.eql({ test: 3 })
 
     it 'clears out the previous subview', ->
       emptied = false
