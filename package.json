@@ -2,7 +2,9 @@
   "name": "janus-stdlib",
   "author": "Clint Tseng <clint@dontexplain.com>",
   "description": "The reference set of code components and build tools for Janus",
-  "files": [ "lib" ],
+  "files": [
+    "lib"
+  ],
   "version": "0.2.1",
   "repository": {
     "type": "git",
@@ -21,13 +23,10 @@
   },
   "devDependencies": {
     "coffee-script": "~1.11",
-
     "domino": "~1.0",
     "jquery": "~3.1",
-
     "mocha": "~3",
     "should": "~11",
     "istanbul": "~0.4"
   }
 }
-
