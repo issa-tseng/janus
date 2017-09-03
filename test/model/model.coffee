@@ -329,6 +329,13 @@ describe 'Model', ->
         @default('test', 42)
       (new TestModel()).get('test').should.equal(42)
 
+    it 'should take a function with @default for defining a default value', ->
+      i = 0
+      class TestModel extends Model
+        @default('test', -> ++i)
+      (new TestModel()).get('test').should.equal(1)
+      (new TestModel()).get('test').should.equal(2)
+
     it 'should allow for the attribute class to be defined with @default', ->
       class TestModel extends Model
         @default('test', 42, attribute.NumberAttribute)

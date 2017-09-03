@@ -47,9 +47,9 @@ mutators =
     # TODO: eventually should analyze the view that may be already there and see if
     # it's already appropriate, in which case do nothing (for the attach case).
     result = (dom, point) ->
-      _vendView = (subject, context, app, find, options) -> app.vendView(subject, extendNew(find ? {}, context: context, constructorOpts: options))
+      _vendView = (subject, context, app, criteria, options) -> app.vendView(subject, extendNew(criteria ? {}, { context, options }))
 
-      Varying.flatMapAll(_vendView, terminate(data).point(point), doPoint(args.context, point), doPoint(from.app(), point), doPoint(args.find, point), doPoint(args.options, point)).reactNow (view) ->
+      Varying.flatMapAll(_vendView, terminate(data).point(point), doPoint(args.context, point), doPoint(from.app(), point), doPoint(args.criteria, point), doPoint(args.options, point)).reactNow (view) ->
         dom.data('subview')?.destroy()
         dom.empty()
         return unless view?
@@ -59,7 +59,7 @@ mutators =
         dom.data('subview', view)
 
     result.context = (context) -> mutators.render(data, extendNew(args, { context }))
-    result.find = (find) -> mutators.render(data, extendNew(args, { find }))
+    result.criteria = (criteria) -> mutators.render(data, extendNew(args, { criteria }))
     result.options = (options) -> mutators.render(data, extendNew(args, { options }))
 
     result

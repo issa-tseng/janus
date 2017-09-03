@@ -38,7 +38,7 @@ class Endpoint extends Base
 
     # make our app, our pageModel, and its pageView.
     pageModel = this.initPageModel(env, app, respond)
-    pageView = this.pageLibrary.get(pageModel, context: env.context, constructorOpts: { app: app })
+    pageView = this.pageLibrary.get(pageModel, context: env.context, options: { app: app })
 
     # grab dom before resolving so that rendering happens as objects come in.
     # TODO: not real happy about this method, or passing env thorugh, etc.
