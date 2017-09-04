@@ -1,13 +1,11 @@
 { Varying, Base } = require('janus')
 
-# warning: calling reactNow more than once per internal instance is undefined behaviour!
+nothing = {}
+
 class ManagedObservation extends Base
   constructor: (@varying) -> super()
-  reactNow: (f_) -> this._observation = this.varying.reactNow(f_)
-  destroy: ->
-    this._observation?.stop()
-    super()
-
+  react: (f_) -> this.reactTo(this.varying, f_)
+  reactNow: (f_) -> this.reactNowTo(this.varying, f_)
   @with: (varying) -> -> new ManagedObservation(varying)
 
 varyingUtils = {
@@ -39,6 +37,28 @@ varyingUtils = {
       mo.reactNow((value) ->
         clearTimeout(timer) if timer?
         timer = setTimeout((-> result.set(value)), cooldown)
+      )
+
+      result
+    )
+
+  throttle: (v, delay) ->
+    Varying.managed(ManagedObservation.with(v), (mo) ->
+      result = new Varying(v.get())
+
+      timer = null
+      pendingValue = nothing
+      mo.react((value) ->
+        if timer?
+          pendingValue = value
+        else
+          result.set(value)
+          timer = setTimeout((->
+            return if pendingValue is nothing
+            result.set(pendingValue)
+            timer = null
+            pendingValue = nothing
+          ), delay)
       )
 
       result

@@ -1,7 +1,7 @@
 should = require('should')
 
 { Varying } = require('janus')
-{ sticky, debounce, fromEvent, fromEventNow } = require('../../lib/util/varying')
+{ sticky, debounce, throttle, fromEvent, fromEventNow } = require('../../lib/util/varying')
 
 wait = (time, f) -> setTimeout(f, time)
 
@@ -122,6 +122,75 @@ describe 'varying utils', ->
         results.should.eql([ 0, 2 ])
         wait(10, ->
           results.should.eql([ 0, 2, 4 ])
+          done()
+        )
+      )
+
+  describe 'throttle', ->
+    it 'should set value immediately', ->
+      results = []
+      inner = new Varying(0)
+      outer = throttle(inner, 20)
+      outer.reactNow((x) -> results.push(x))
+
+      inner.set(2)
+      results.should.eql([ 0, 2 ])
+
+    it 'should delay set within throttle zone until throttle expiration', (done) ->
+      results = []
+      inner = new Varying(0)
+      outer = throttle(inner, 10)
+      outer.reactNow((x) -> results.push(x))
+
+      inner.set(2)
+      inner.set(4)
+      results.should.eql([ 0, 2 ])
+
+      wait(15, ->
+        results.should.eql([ 0, 2, 4 ])
+        done()
+      )
+
+    it 'should delay multiple sets and take only the final value', (done) ->
+      results = []
+      inner = new Varying(0)
+      outer = throttle(inner, 20)
+      outer.reactNow((x) -> results.push(x))
+
+      inner.set(2)
+      inner.set(4)
+      results.should.eql([ 0, 2 ])
+
+      wait(10, ->
+        inner.set(6)
+        results.should.eql([ 0, 2 ])
+      )
+      wait(25, ->
+        results.should.eql([ 0, 2, 6 ])
+        done()
+      )
+
+    it 'should reset cycle once the throttle has expired', (done) ->
+      results = []
+      inner = new Varying(0)
+      outer = throttle(inner, 10)
+      outer.reactNow((x) -> results.push(x))
+
+      inner.set(2)
+      inner.set(4)
+      results.should.eql([ 0, 2 ])
+
+      wait(15, ->
+        results.should.eql([ 0, 2, 4 ])
+
+        inner.set(6)
+        results.should.eql([ 0, 2, 4, 6 ])
+
+        inner.set(8)
+        results.should.eql([ 0, 2, 4, 6 ])
+
+        wait(15, ->
+          results.should.eql([ 0, 2, 4, 6, 8 ])
           done()
         )
       )
