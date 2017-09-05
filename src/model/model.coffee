@@ -10,9 +10,6 @@ types = require('../util/types')
 util = require('../util/util')
 
 
-# util:
-terminate = (x) -> if x.all? then x.all else x # TODO: becoming a common pattern. move to util.
-
 class Model extends Struct
   isModel: true
 
@@ -55,7 +52,7 @@ class Model extends Struct
   # with a successful value if it comes.
   resolve: (key, app) ->
     if !this.get(key)? and (attribute = this.attribute(key))?.isReference is true
-      result = new Varying(terminate(attribute.resolver())
+      result = new Varying(attribute.resolver().all
         .point((x) => this.constructor.point(x, this, app))
         .map((x) => x?.mapSuccess((y) -> attribute.constructor.deserialize(y)) ? x)
       ).flatten()
@@ -155,7 +152,7 @@ class Model extends Struct
       for binder in obj.binders() when !this._binders[binder._key]?
         do (binder) =>
           key = binder._key
-          this._binders[key] = terminate(binder)
+          this._binders[key] = binder.all
             .point((x) => this.constructor.point(x, this))
             .react((value) => this.set(key, value))
 
