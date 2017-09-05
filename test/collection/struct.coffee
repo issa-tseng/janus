@@ -239,9 +239,10 @@ describe 'Struct', ->
         shadow = struct.shadow()
 
         evented = false
-        shadow.watch('test').react (value) ->
+        shadow.watch('test').reactLater((value) ->
           evented = true
           value.should.equal('y')
+        )
 
         struct.set('test', 'y')
         evented.should.equal(true)
@@ -253,7 +254,7 @@ describe 'Struct', ->
         shadow.set('test', 'y')
 
         evented = false
-        shadow.watch('test').react(-> evented = true)
+        shadow.watch('test').reactLater(-> evented = true)
 
         struct.set('test', 'z')
         evented.should.equal(false)
@@ -264,7 +265,7 @@ describe 'Struct', ->
         s3 = s2.shadow()
 
         results = []
-        s3.watch('a').reactNow((x) -> results.push(x))
+        s3.watch('a').react((x) -> results.push(x))
 
         s.set('a', 2)
         results.should.eql([ 1, 2 ])
@@ -294,7 +295,7 @@ describe 'Struct', ->
         s = new Struct( a: 1, b: { c: 2 })
 
         results = []
-        s.watch('b.c').reactNow((x) -> results.push(x))
+        s.watch('b.c').react((x) -> results.push(x))
         s.unset('b')
         results.should.eql([ 2, null ])
 
@@ -341,7 +342,7 @@ describe 'Struct', ->
     it 'should allow the length to be watched', ->
       results = []
       s = new Struct( a: 1, b: 2 )
-      s.watchLength().reactNow((x) -> results.push(x))
+      s.watchLength().react((x) -> results.push(x))
 
       s.set('c', 3)
       s.unset('b')

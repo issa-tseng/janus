@@ -21,7 +21,7 @@ class FilteredList extends DerivedList
     this._idxMap.splice(idx, 0, this._idxMap[idx - 1] ? -1)
 
     lastResult = false
-    filtered = Varying.ly(this.filterer(elem)).reactNow((result) =>
+    filtered = Varying.ly(this.filterer(elem)).react((result) =>
       result = result is true # force boolean because otherwise lastResult check fails.
       cidx = this._filtereds.indexOf(filtered)
       cidx = idx if cidx < 0 # this gets called once before we store away the Varied.

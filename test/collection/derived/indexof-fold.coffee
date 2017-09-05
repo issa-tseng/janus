@@ -18,7 +18,7 @@ describe 'collection', ->
 
       result = null
       v = indexOf(l, 23)
-      v.reactNow((x) -> result = x)
+      v.react((x) -> result = x)
       result.should.equal(4)
 
     it 'should return -1 if the value is not found', ->
@@ -30,7 +30,7 @@ describe 'collection', ->
 
       result = null
       v = indexOf(l, 48)
-      v.reactNow((x) -> result = x)
+      v.react((x) -> result = x)
       result.should.equal(-1)
 
       l.add(45)
@@ -51,7 +51,7 @@ describe 'collection', ->
 
       result = null
       v = indexOf(l, 16)
-      v.reactNow((x) -> result = x)
+      v.react((x) -> result = x)
       result.should.equal(3)
 
       l.removeAt(2)
@@ -68,7 +68,7 @@ describe 'collection', ->
 
       result = null
       v = indexOf(l, 16)
-      v.reactNow((x) -> result = x)
+      v.react((x) -> result = x)
       result.should.equal(3)
 
       l.moveAt(0, 2)
@@ -90,7 +90,7 @@ describe 'collection', ->
 
       result = null
       v = indexOf(l, target)
-      v.reactNow((x) -> result = x)
+      v.react((x) -> result = x)
       result.should.equal(2)
 
       target.set(23)
@@ -106,7 +106,7 @@ describe 'collection', ->
       target = new Varying(15)
 
       v = indexOf(l, target)
-      o = v.reactNow(->)
+      o = v.react(->)
 
       target.refCount().get().should.equal(1)
       o.stop()

@@ -222,7 +222,7 @@ class Struct extends Enumerable
     result = new klass()
     varieds = {}
     add = (key) =>
-      varieds[key] ?= this.watch(key).flatMap((value) => f(key, value)).reactNow((x) -> result.__set(key, x))
+      varieds[key] ?= this.watch(key).flatMap((value) => f(key, value)).react((x) -> result.__set(key, x))
     traverse(this.attributes, (k) -> add(k.join('.')))
 
     result.listenTo(this, 'anyChanged', (key, newValue, oldValue) =>

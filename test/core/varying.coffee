@@ -25,44 +25,44 @@ describe 'Varying', ->
       v.get().should.equal(2)
 
   describe 'react', ->
-    it 'should react to new values on react()', ->
+    it 'should react to new values on reactLater()', ->
       results = []
       v = new Varying(1)
-      v.react((x) -> results.push(x))
+      v.reactLater((x) -> results.push(x))
 
       v.set(2)
       v.set(3)
 
       results.should.eql([ 2, 3 ])
 
-    it 'should not re-react to old values on react()', ->
+    it 'should not re-react to old values on reactLater()', ->
       results = []
       v = new Varying(1)
-      v.react((x) -> results.push(x))
+      v.reactLater((x) -> results.push(x))
 
       v.set(2)
       v.set(2)
 
       results.should.eql([ 2 ])
 
-    it 'should react immediately and on new values on reactNow()', ->
+    it 'should react immediately and on new values on react()', ->
       results = []
       v = new Varying(1)
-      v.reactNow((x) -> results.push(x))
+      v.react((x) -> results.push(x))
 
       v.set(2)
       v.set(3)
 
       results.should.eql([ 1, 2, 3 ])
 
-    it 'should return an instance of Observation on react()', ->
-      (new Varying()).react().should.be.an.instanceof(Observation)
+    it 'should return an instance of Observation on reactLater()', ->
+      (new Varying()).reactLater().should.be.an.instanceof(Observation)
 
     it 'should bind this to the Observation within the handler', ->
       v = new Varying(1)
       t = null
 
-      r = v.reactNow(-> t = this)
+      r = v.react(-> t = this)
       r.should.equal(t)
 
       v.set(2)
@@ -72,7 +72,7 @@ describe 'Varying', ->
       runCount = 0
       v = new Varying(1)
 
-      r = v.react(-> runCount += 1)
+      r = v.reactLater(-> runCount += 1)
       v.set(2)
       runCount.should.equal(1)
 
@@ -84,7 +84,7 @@ describe 'Varying', ->
       runCount = 0
       v = new Varying(1)
 
-      r = v.reactNow(-> runCount += 1)
+      r = v.react(-> runCount += 1)
       v.set(2)
       runCount.should.equal(2)
 
@@ -95,8 +95,8 @@ describe 'Varying', ->
   describe 'refCount', ->
     it 'should return a Varying with the number of reactions', ->
       v = new Varying(true)
-      v.reactNow(->)
       v.react(->)
+      v.reactLater(->)
 
       result = v.refCount()
       result.get().should.equal(2)
@@ -105,15 +105,15 @@ describe 'Varying', ->
       v = new Varying(true)
 
       results = []
-      v.refCount().reactNow((x) -> results.push(x))
+      v.refCount().react((x) -> results.push(x))
 
-      v.reactNow(-> this.stop())
-      v.react()
+      v.react(-> this.stop())
+      v.reactLater()
       results.should.eql([ 0, 1, 0, 1 ])
 
     it 'should account for chained references', ->
       v = new Varying(true)
-      v.map((x) -> !x).reactNow(->)
+      v.map((x) -> !x).react(->)
       v.refCount().get().should.equal(1)
 
     it 'should work on (flat)mapped varyings', ->
@@ -121,20 +121,20 @@ describe 'Varying', ->
       vv = v.flatMap((x) -> !x)
 
       results = []
-      vv.refCount().reactNow((x) -> results.push(x))
+      vv.refCount().react((x) -> results.push(x))
 
-      vv.react(->)
-      vv.reactNow(-> this.stop())
+      vv.reactLater(->)
+      vv.react(-> this.stop())
       results.should.eql([ 0, 1, 2, 1 ])
 
     it 'should work on composed varyings', ->
       v = Varying.mapAll((->), new Varying(1), new Varying(2), new Varying(3))
 
       results = []
-      v.refCount().reactNow((x) -> results.push(x))
+      v.refCount().react((x) -> results.push(x))
 
-      v.react(->)
-      v.reactNow(-> this.stop())
+      v.reactLater(->)
+      v.react(-> this.stop())
       results.should.eql([ 0, 1, 2, 1 ])
 
   describe 'bind', ->
@@ -151,7 +151,7 @@ describe 'Varying', ->
       vy.bind(vx)
 
       result = null
-      vy.reactNow((x) -> result = x)
+      vy.react((x) -> result = x)
       vx.set(6)
       result.should.equal(6)
 
@@ -175,7 +175,7 @@ describe 'Varying', ->
       m = v.map((x) -> x * 2)
 
       result = 0
-      m.react((x) -> result = x)
+      m.reactLater((x) -> result = x)
 
       v.set(2)
       result.should.equal(4)
@@ -185,7 +185,7 @@ describe 'Varying', ->
       m = v.map(-> 4)
 
       count = 0
-      m.reactNow((x) -> count += 1)
+      m.react((x) -> count += 1)
 
       v.set(2)
       v.set(3)
@@ -196,7 +196,7 @@ describe 'Varying', ->
       m = v.map((x) -> x * 2)
 
       result = 0
-      m.reactNow((x) -> result = x)
+      m.react((x) -> result = x)
       result.should.equal(2)
 
       v.set(2)
@@ -207,7 +207,7 @@ describe 'Varying', ->
       m = v.map((x) -> new Varying(x * 2))
 
       result = null
-      m.reactNow((x) -> result = x)
+      m.react((x) -> result = x)
 
       result.should.be.an.instanceof(Varying)
       result.get().should.equal(2)
@@ -217,7 +217,7 @@ describe 'Varying', ->
       m = v.map((x) -> x * 2)
       t = null
 
-      r = m.reactNow(-> t = this)
+      r = m.react(-> t = this)
       r.should.equal(t)
 
       v.set(2)
@@ -228,7 +228,7 @@ describe 'Varying', ->
       m = v.map((x) -> x * 2)
 
       runCount = 0
-      r = m.react(-> runCount += 1)
+      r = m.reactLater(-> runCount += 1)
 
       v.set(2)
       runCount.should.equal(1)
@@ -241,7 +241,7 @@ describe 'Varying', ->
       v = new Varying(1)
       m = v.map((x) -> x * 2)
 
-      m.react(->).stop()
+      m.reactLater(->).stop()
 
       countObservers(v).should.equal(0)
 
@@ -263,7 +263,7 @@ describe 'Varying', ->
       f = v.flatten()
 
       result = null
-      f.react((x) -> result = x)
+      f.reactLater((x) -> result = x)
 
       v.set(2)
       result.should.equal(2)
@@ -276,7 +276,7 @@ describe 'Varying', ->
       f = v.flatten()
 
       result = null
-      f.reactNow((x) -> result = x)
+      f.react((x) -> result = x)
       result.should.equal(1)
 
       v.set(new Varying(2))
@@ -287,7 +287,7 @@ describe 'Varying', ->
       f = v.flatten()
 
       result = null
-      f.reactNow((x) -> result = x)
+      f.react((x) -> result = x)
 
       v.set(new Varying(new Varying(2)))
       result.should.be.an.instanceof(Varying)
@@ -298,7 +298,7 @@ describe 'Varying', ->
       f = v.flatten()
 
       result = null
-      f.reactNow((x) -> result = x)
+      f.react((x) -> result = x)
 
       i = new Varying(1)
       v.set(i)
@@ -313,7 +313,7 @@ describe 'Varying', ->
       f = v.flatten()
 
       result = null
-      f.reactNow((x) -> result = x)
+      f.react((x) -> result = x)
       result.should.equal(1)
 
       i.set(2)
@@ -325,7 +325,7 @@ describe 'Varying', ->
       vx = va.flatMap((a) -> if a then vb else 42)
 
       results = []
-      vx.reactNow((x) -> results.push(x))
+      vx.react((x) -> results.push(x))
       va.set(false)
       vb.set(47)
       results.should.eql([ 42 ])
@@ -335,7 +335,7 @@ describe 'Varying', ->
       f = v.flatten()
 
       result = null
-      f.reactNow((x) -> result = x)
+      f.react((x) -> result = x)
 
       i = new Varying(1)
       v.set(i)
@@ -352,7 +352,7 @@ describe 'Varying', ->
       i = new Varying(1)
 
       result = null
-      r = f.reactNow((x) -> result = x)
+      r = f.react((x) -> result = x)
 
       v.set(i)
       result.should.equal(1)
@@ -365,7 +365,7 @@ describe 'Varying', ->
       v = new Varying()
       f = v.flatten()
 
-      f.reactNow((x) -> result = x)
+      f.react((x) -> result = x)
 
       i = new Varying(1)
       v.set(i)
@@ -391,7 +391,7 @@ describe 'Varying', ->
       m = v.flatMap((x) -> new Varying(x * 2))
 
       result = 0
-      m.react((x) -> result = x)
+      m.reactLater((x) -> result = x)
 
       v.set(2)
       result.should.equal(4)
@@ -401,7 +401,7 @@ describe 'Varying', ->
       m = v.flatMap((x) -> new Varying(x * 2))
 
       result = 0
-      m.reactNow((x) -> result = x)
+      m.react((x) -> result = x)
       result.should.equal(2)
 
       v.set(2)
@@ -412,7 +412,7 @@ describe 'Varying', ->
       m = v.flatMap((x) -> x * 2)
       t = null
 
-      r = m.reactNow(-> t = this)
+      r = m.react(-> t = this)
       r.should.equal(t)
 
       v.set(2)
@@ -423,7 +423,7 @@ describe 'Varying', ->
       m = v.flatMap((x) -> x * 2)
 
       runCount = 0
-      r = m.react(-> runCount += 1)
+      r = m.reactLater(-> runCount += 1)
 
       v.set(2)
       runCount.should.equal(1)
@@ -438,7 +438,7 @@ describe 'Varying', ->
       m = v.flatMap((x) -> i = new Varying(x * 2))
 
       result = null
-      m.reactNow((x) -> result = x)
+      m.react((x) -> result = x)
 
       v.set(1)
       result.should.equal(2)
@@ -452,7 +452,7 @@ describe 'Varying', ->
       m = v.flatMap((x) -> i = new Varying(x * 2))
 
       result = null
-      m.reactNow((x) -> result = x)
+      m.react((x) -> result = x)
 
       v.set(1)
       i2 = i
@@ -466,7 +466,7 @@ describe 'Varying', ->
       vv = new Varying(v)
 
       result = null
-      vv.flatMap((x) -> x).map((x) -> x).reactNow((x) -> result = x)
+      vv.flatMap((x) -> x).map((x) -> x).react((x) -> result = x)
 
       v.set(2)
       result.should.equal(2)
@@ -478,7 +478,7 @@ describe 'Varying', ->
       v2 = new Varying(2)
 
       result = null
-      v.flatMap((x) -> v2.map((y) -> x * y)).react((z) -> result = z)
+      v.flatMap((x) -> v2.map((y) -> x * y)).reactLater((z) -> result = z)
       should(result).equal(null)
 
       v2.set(3)
@@ -491,8 +491,8 @@ describe 'Varying', ->
       flat = vv.flatMap((x) -> x)
 
       ra = rb = null
-      a = flat.reactNow((x) -> ra = x)
-      b = flat.reactNow((x) -> rb = x)
+      a = flat.react((x) -> ra = x)
+      b = flat.react((x) -> rb = x)
       ra.should.equal(1)
       rb.should.equal(1)
 
@@ -507,8 +507,8 @@ describe 'Varying', ->
       flat = vv.flatMap((x) -> x)
 
       ra = rb = null
-      a = flat.reactNow((x) -> ra = x)
-      b = flat.reactNow((x) -> rb = x)
+      a = flat.react((x) -> ra = x)
+      b = flat.react((x) -> rb = x)
       ra.should.equal(1)
       rb.should.equal(1)
 
@@ -517,24 +517,24 @@ describe 'Varying', ->
       ra.should.equal(1)
       rb.should.equal(2)
 
-    it 'should dedupe intermediate results for reactNow', -> # gh40
-      v = new Varying(1)
-      vv = new Varying(0)
-
-      results = []
-      vv.flatMap((x) -> v.map((y) -> y)).map((z) -> z + 1).reactNow((w) -> results.push(w))
-
-      vv.set(2)
-      vv.set(3)
-      v.set(2)
-      results.should.eql([ 2, 3 ])
-
     it 'should dedupe intermediate results for react', -> # gh40
       v = new Varying(1)
       vv = new Varying(0)
 
       results = []
       vv.flatMap((x) -> v.map((y) -> y)).map((z) -> z + 1).react((w) -> results.push(w))
+
+      vv.set(2)
+      vv.set(3)
+      v.set(2)
+      results.should.eql([ 2, 3 ])
+
+    it 'should dedupe intermediate results for reactLater', -> # gh40
+      v = new Varying(1)
+      vv = new Varying(0)
+
+      results = []
+      vv.flatMap((x) -> v.map((y) -> y)).map((z) -> z + 1).reactLater((w) -> results.push(w))
 
       vv.set(2)
       vv.set(3)
@@ -547,11 +547,11 @@ describe 'Varying', ->
 
       # first, set up a reaction that causes a cyclic set.
       hasRetriggered = false
-      v.react(-> v.set(2) unless hasRetriggered)
+      v.reactLater(-> v.set(2) unless hasRetriggered)
 
       # next, set up a reaction later in the chain. count its executions.
       runCount = 0
-      v.react(-> runCount += 1)
+      v.reactLater(-> runCount += 1)
 
       # now go.
       v.set(1)
@@ -561,10 +561,10 @@ describe 'Varying', ->
       v = new Varying()
 
       hasRetriggered = false
-      v.react(-> v.set(2) unless hasRetriggered)
+      v.reactLater(-> v.set(2) unless hasRetriggered)
 
       result = null
-      v.react((x) -> result = x)
+      v.reactLater((x) -> result = x)
 
       v.set(1)
       result.should.equal(2)
@@ -593,13 +593,13 @@ describe 'Varying', ->
       it 'should not flatten on get', ->
         Varying.pure(((x, y) -> new Varying(x + y)), new Varying(1), new Varying(2)).get().should.be.an.instanceof(Varying)
 
-      it 'should callback with a mapped value when react is called', ->
+      it 'should callback with a mapped value when reactLater is called', ->
         va = new Varying(1)
         vb = new Varying(2)
         m = Varying.pure(((x, y) -> x + y), va, vb)
 
         result = 0
-        m.react((x) -> result = x)
+        m.reactLater((x) -> result = x)
 
         va.set(3)
         result.should.equal(5)
@@ -607,13 +607,13 @@ describe 'Varying', ->
         vb.set(4)
         result.should.equal(7)
 
-      it 'should callback immediately with a mapped value when reactNow is called', ->
+      it 'should callback immediately with a mapped value when react is called', ->
         va = new Varying(1)
         vb = new Varying(2)
         m = Varying.pure(((x, y) -> x + y), va, vb)
 
         result = 0
-        m.reactNow((x) -> result = x)
+        m.react((x) -> result = x)
         result.should.equal(3)
 
         vb.set(4)
@@ -623,7 +623,7 @@ describe 'Varying', ->
         m = Varying.pure(((x, y) -> new Varying(x + y)), new Varying(1), new Varying(2))
 
         result = null
-        m.reactNow((x) -> result = x)
+        m.react((x) -> result = x)
 
         result.should.be.an.instanceof(Varying)
         result.get().should.equal(3)
@@ -634,7 +634,7 @@ describe 'Varying', ->
         m = Varying.pure(((x, y) -> new Varying(x + y)), va, vb)
         t = null
 
-        r = m.reactNow(-> t = this)
+        r = m.react(-> t = this)
         r.should.equal(t)
 
         va.set(2)
@@ -646,7 +646,7 @@ describe 'Varying', ->
         m = Varying.pure(((x, y) -> new Varying(x + y)), va, vb)
 
         runCount = 0
-        r = m.react((x) -> runCount += 1)
+        r = m.reactLater((x) -> runCount += 1)
         runCount.should.equal(0)
 
         va.set(2)
@@ -661,7 +661,7 @@ describe 'Varying', ->
         vb = new Varying(2)
         m = Varying.pure(((x, y) -> x + y), va, vb)
 
-        m.reactNow(->).stop()
+        m.react(->).stop()
 
         countObservers(va).should.equal(0)
         countObservers(vb).should.equal(0)
@@ -672,8 +672,8 @@ describe 'Varying', ->
         vf = va.flatMap((x) -> vb.map((y) -> x * y))
 
         results = []
-        vf.reactNow((z) -> results.push(1, z))
-        vf.reactNow((z) -> results.push(2, z))
+        vf.react((z) -> results.push(1, z))
+        vf.react((z) -> results.push(2, z))
 
         vb.set(4)
         va.set(3)
@@ -690,7 +690,7 @@ describe 'Varying', ->
         m = Varying.flatMapAll(((x, y) -> new Varying(x + y)), va, vb)
 
         result = 0
-        m.react((x) -> result = x)
+        m.reactLater((x) -> result = x)
 
         va.set(3)
         result.should.equal(5)
@@ -698,13 +698,13 @@ describe 'Varying', ->
         vb.set(4)
         result.should.equal(7)
 
-      it 'should callback immediately with a flatmapped value when reactNow is called', ->
+      it 'should callback immediately with a flatmapped value when react is called', ->
         va = new Varying(1)
         vb = new Varying(2)
         m = Varying.flatMapAll(((x, y) -> new Varying(x + y)), va, vb)
 
         result = 0
-        m.reactNow((x) -> result = x)
+        m.react((x) -> result = x)
         result.should.equal(3)
 
         vb.set(4)
@@ -716,7 +716,7 @@ describe 'Varying', ->
         m = Varying.flatMapAll(((x, y) -> new Varying(x + y)), va, vb)
 
         result = null
-        m.reactNow((x) -> result = x)
+        m.react((x) -> result = x)
 
         result.should.equal(3)
 
@@ -727,7 +727,7 @@ describe 'Varying', ->
         m = Varying.flatMapAll(((x, y) -> vz = new Varying(x + y)), va, vb)
 
         result = null
-        m.reactNow((x) -> result = x)
+        m.react((x) -> result = x)
 
         va.set(3)
         result.should.equal(5)
@@ -740,7 +740,7 @@ describe 'Varying', ->
         m = Varying.flatMapAll(((x, y) -> vz = new Varying(x + y)), new Varying(1), new Varying(2))
 
         result = null
-        m.reactNow((x) -> result = x)
+        m.react((x) -> result = x)
         result.should.equal(3)
 
         vz.set(4)
@@ -753,7 +753,7 @@ describe 'Varying', ->
         m = Varying.flatMapAll(((x, y) -> vx = new Varying(x + y)), va, vb)
 
         result = null
-        m.reactNow((x) -> result = x)
+        m.react((x) -> result = x)
 
         va.set(1)
         vz = vx
@@ -767,7 +767,7 @@ describe 'Varying', ->
       results = null
       v = Varying.managed((-> 1), (-> 2), (-> 3), (xs...) -> results = xs)
       should(results).equal(null)
-      v.react(->)
+      v.reactLater(->)
       results.should.eql([ 1, 2, 3 ])
 
     it 'should use the result of the computation generator as its own result', ->
@@ -775,7 +775,7 @@ describe 'Varying', ->
       v = Varying.managed(-> vi)
 
       results = []
-      vd = v.reactNow((x) -> results.push(x))
+      vd = v.react((x) -> results.push(x))
       vi.set(2)
       vi.set(4)
       results.should.eql([ 0, 2, 4 ])
@@ -785,9 +785,9 @@ describe 'Varying', ->
       track = (f) -> -> count++; f()
       v = Varying.managed(track(-> 1), track(-> 2), (x, y) -> new Varying(x + y))
       count.should.equal(0)
-      v.reactNow(->)
+      v.react(->)
       count.should.equal(2)
-      v.reactNow(->)
+      v.react(->)
       count.should.equal(2)
 
     it 'should destroy resources if no longer needed', ->
@@ -795,8 +795,8 @@ describe 'Varying', ->
       destructible = -> { destroy: -> destroyed++ }
       v = Varying.managed(destructible, destructible, -> new Varying())
       destroyed.should.equal(0)
-      vda = v.reactNow(->)
-      vdb = v.reactNow(->)
+      vda = v.react(->)
+      vdb = v.react(->)
       destroyed.should.equal(0)
       vda.stop()
       destroyed.should.equal(0)
@@ -807,18 +807,18 @@ describe 'Varying', ->
       count = 0
       track = (f) -> -> count++; { valueOf: f, destroy: (->) }
       v = Varying.managed(track(-> 1), track(-> 2), (x, y) -> new Varying(x + y))
-      vda = v.reactNow(->)
-      vdb = v.reactNow(->)
+      vda = v.react(->)
+      vdb = v.react(->)
       count.should.equal(2)
       vda.stop()
       vdb.stop()
       count.should.equal(2)
-      v.reactNow(->)
+      v.react(->)
       count.should.equal(4)
 
     it 'should get value from active managed varyings', ->
       v = Varying.managed((-> 1), (-> 2), (-> 3), (x, y, z) -> new Varying(x + y + z))
-      v.reactNow(->)
+      v.react(->)
       v.get().should.equal(6)
 
     it 'should get value from dormant managed varyings, and clean up', ->

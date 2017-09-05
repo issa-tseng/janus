@@ -354,7 +354,7 @@ describe 'Model', ->
         @attribute('a', attribute.NumberAttribute)
 
       m = new TestModel()
-      m.resolve('a', null).reactNow((x) -> values.push(x))
+      m.resolve('a', null).react((x) -> values.push(x))
 
       m.set('a', 2)
       values.should.eql([ null, 2 ])
@@ -362,7 +362,7 @@ describe 'Model', ->
     it 'should do nothing if no attribute is declared', ->
       value = -1
       m = new Model()
-      m.resolve('a', null).reactNow((x) -> value = x)
+      m.resolve('a', null).react((x) -> value = x)
       should(value).equal(null)
 
     it 'should return the proper value for a resolved reference attribute', ->
@@ -374,7 +374,7 @@ describe 'Model', ->
       m = new TestModel()
       m.set('a', 1)
 
-      m.resolve('a', null).reactNow((x) -> values.push(x))
+      m.resolve('a', null).react((x) -> values.push(x))
       m.set('a', 2)
       values.should.eql([ 1, 2 ])
 
@@ -389,7 +389,7 @@ describe 'Model', ->
       m = new TestModel()
       v = m.resolve('a', app)
       should(givenRequest).equal(null) # doesn't actually point until reacted.
-      v.reactNow(->)
+      v.react(->)
       givenRequest.should.equal(ourRequest)
 
     it 'calls handle on the store that handles the request', ->
@@ -402,7 +402,7 @@ describe 'Model', ->
       m = new TestModel()
       v = m.resolve('a', app)
       called.should.equal(false) # doesn't actually point until reacted.
-      v.reactNow(->)
+      v.react(->)
       called.should.equal(true)
 
     it 'fails gracefully if no store is found to handle the request', ->
@@ -413,7 +413,7 @@ describe 'Model', ->
 
       m = new TestModel()
       v = m.resolve('a', app)
-      v.reactNow(->)
+      v.react(->)
       should(v.get()).equal(undefined)
 
     it 'destroys the store if the refcount drops to zero', ->
@@ -425,8 +425,8 @@ describe 'Model', ->
 
       m = new TestModel()
       v = m.resolve('a', app)
-      vda = v.reactNow(->)
-      vdb = v.reactNow(->)
+      vda = v.react(->)
+      vdb = v.react(->)
       destroyed.should.equal(0)
       vda.stop()
       vdb.stop()
@@ -468,7 +468,7 @@ describe 'Model', ->
           request: -> request
 
       m = new TestModel()
-      m.resolve('a', app).reactNow((x) -> value = x)
+      m.resolve('a', app).react((x) -> value = x)
       should(value).equal(undefined)
 
       request.set(types.result.progress(26))
@@ -494,7 +494,7 @@ describe 'Model', ->
           request: -> request
 
       m = new TestModel()
-      m.resolve('a', app).reactNow((x) -> value = x)
+      m.resolve('a', app).react((x) -> value = x)
 
       request.set(types.result.success({ a: 42 }))
       called.should.equal(true)
@@ -509,7 +509,7 @@ describe 'Model', ->
           request: -> new Varying()
 
       m = new TestModel()
-      m.resolve('a', app).reactNow((x) -> value = x)
+      m.resolve('a', app).react((x) -> value = x)
       value.type.should.equal('success')
       value.value.get('a').should.equal(42)
 
@@ -522,7 +522,7 @@ describe 'Model', ->
           request: -> request
 
       m = new TestModel()
-      m.resolve('a', app).reactNow(->)
+      m.resolve('a', app).react(->)
       should(m.get('a')).equal(null)
 
       request.set(types.result.progress(26))

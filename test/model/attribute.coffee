@@ -36,7 +36,7 @@ describe 'Attribute', ->
       a = new attribute.Attribute(m, 'testkey')
 
       results = []
-      a.watchValue().reactNow((x) -> results.push(x))
+      a.watchValue().react((x) -> results.push(x))
       m.set('testkey', 47)
       m.set('testkey', 101)
       results.should.eql([ 42, 47, 101 ])

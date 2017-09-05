@@ -43,7 +43,7 @@ should.Assertion.add('varying', (->
   this.obj.map.should.be.a.Function
 
   this.obj.react.should.be.a.Function
-  this.obj.reactNow.should.be.a.Function
+  this.obj.reactLater.should.be.a.Function
 ), true)
 
 describe 'from', ->
@@ -136,7 +136,7 @@ describe 'from', ->
       v2 = new Varying('b')
 
       result = null
-      from(v1).and.varying(v2).all.plain().map((x, y) -> x + y).reactNow((x) -> result = x)
+      from(v1).and.varying(v2).all.plain().map((x, y) -> x + y).react((x) -> result = x)
       result.should.equal('ab')
 
       v1.set('x')
@@ -164,7 +164,7 @@ describe 'from', ->
 
       called.should.be.false
 
-      v.reactNow(->)
+      v.react(->)
       called.should.be.true
 
     it 'should be called with resolved applicants', ->
@@ -186,12 +186,12 @@ describe 'from', ->
           xs[1].should.equal('watch: b')
         )
 
-      v.reactNow(->)
+      v.react(->)
       called.should.be.true
 
     it 'should not flatten the result', ->
       result = null
-      from('a').all.map(-> new Varying(2)).reactNow((x) -> result = x)
+      from('a').all.map(-> new Varying(2)).react((x) -> result = x)
       result.isVarying.should.be.true
       result.get().should.equal(2)
 
@@ -216,12 +216,12 @@ describe 'from', ->
           xs[1].type.should.eql('watch')
         )
 
-      v.reactNow(->)
+      v.react(->)
       called.should.be.true
 
     it 'should flatten the result', ->
       result = null
-      from('a').all.flatMap(-> new Varying(3)).reactNow((x) -> result = x)
+      from('a').all.flatMap(-> new Varying(3)).react((x) -> result = x)
       result.should.equal(3)
 
   describe 'direct reaction', ->
@@ -233,7 +233,7 @@ describe 'from', ->
         .all.point(match(
           dynamic (x) -> new Varying(x)
           otherwise id
-        )).reactNow((x) -> result = x)
+        )).react((x) -> result = x)
 
       result.should.eql([ 'a', 'b', 'c' ])
 
@@ -245,7 +245,7 @@ describe 'from', ->
         .all.point(match(
           dynamic (x) -> new Varying(x)
           otherwise id
-        )).reactNow((x) -> result = x)
+        )).react((x) -> result = x)
 
       result.should.equal('a')
 
@@ -259,7 +259,7 @@ describe 'from', ->
           dynamic (xs) -> new Varying(xs[0])
           otherwise ->
         ))
-        .map(id).reactNow((x) -> result = x)
+        .map(id).react((x) -> result = x)
 
       result.should.equal('ab')
 
@@ -272,7 +272,7 @@ describe 'from', ->
           dynamic (xs) -> new Varying(xs[0])
           otherwise ->
         ))
-        .map(id).reactNow((x) -> result = x)
+        .map(id).react((x) -> result = x)
 
       result.should.equal('abc')
 
@@ -286,7 +286,7 @@ describe 'from', ->
           dynamic (x) -> new Varying(x)
           otherwise ->
         ))
-        .reactNow((x) -> result = x)
+        .react((x) -> result = x)
 
       result.should.equal(v)
 
@@ -304,7 +304,7 @@ describe 'from', ->
           dynamic (xs) -> new Varying(xs[0])
           otherwise ->
         ))
-        .map(id).reactNow((x) -> result = x)
+        .map(id).react((x) -> result = x)
 
       result.should.equal('ab')
 
@@ -323,7 +323,7 @@ describe 'from', ->
           dynamic -> new Varying({ watch: (x) -> called = x; iv })
           otherwise ->
         ))
-        .map(id).reactNow((x) -> result = x)
+        .map(id).react((x) -> result = x)
 
       called.should.equal('myattr')
       result.should.equal(2)
@@ -337,7 +337,7 @@ describe 'from', ->
           dynamic -> new Varying()
           otherwise ->
         ))
-        .map(id).reactNow((x) -> result = x)
+        .map(id).react((x) -> result = x)
 
       result.should.equal('no luck')
 
@@ -355,7 +355,7 @@ describe 'from', ->
           app -> new Varying(myApp)
           otherwise ->
         ))
-        .map(id).reactNow((x) -> result = x)
+        .map(id).react((x) -> result = x)
 
       result.should.equal(2)
       calledAttr.should.equal('myattr')
@@ -372,7 +372,7 @@ describe 'from', ->
           dynamic -> new Varying({ attribute: (x) -> called = x; 42 })
           otherwise ->
         ))
-        .map(id).reactNow((x) -> result = x)
+        .map(id).react((x) -> result = x)
 
       called.should.equal('myattr')
       result.should.equal(42)
@@ -391,7 +391,7 @@ describe 'from', ->
         )).flatMap((xs...) -> xs.join(' '))
 
       result = null
-      v.reactNow((x) -> result = x)
+      v.react((x) -> result = x)
       result.should.equal('aone btwo cthree')
 
     it 'should use the dynamic case if present', ->
@@ -405,7 +405,7 @@ describe 'from', ->
         )).flatMap((xs...) -> xs.join(' '))
 
       result = null
-      v.reactNow((x) -> result = x)
+      v.react((x) -> result = x)
       result.should.equal('aone btwo')
 
     it 'should not use the dynamic case if not present', ->
@@ -414,7 +414,7 @@ describe 'from', ->
       from.build(custom).should.not.be.a.Function
 
   describe 'deferred point calling order', ->
-    it 'should work with react', ->
+    it 'should work with reactLater', ->
       { dynamic } = from.default
 
       f = from('a').and('b')
@@ -427,13 +427,13 @@ describe 'from', ->
       ))
 
       result = null
-      v.react((x) -> result = x)
+      v.reactLater((x) -> result = x)
       (result is null).should.be.true
 
       iv.set('d')
       result.should.equal('adbd')
 
-    it 'should work with reactNow', ->
+    it 'should work with react', ->
       { dynamic } = from.default
 
       f = from('a').and('d')
@@ -446,6 +446,6 @@ describe 'from', ->
       ))
 
       result = null
-      v.reactNow((x) -> result = x)
+      v.react((x) -> result = x)
       result.should.equal('acdc')
 

@@ -63,27 +63,27 @@ class Model extends Struct
       # snoop on the result if someone else reacts on it, and set successful
       # values to the attribute.
       varied = null
-      result.refCount().react((count) =>
+      result.refCount().reactLater((count) =>
         if count is 1
           if varied?
             varied.stop()
             varied = null
           else
-            varied = result.reactNow((x) => types.result.success.match(x, (y) => this.set(key, y)))
+            varied = result.react((x) => types.result.success.match(x, (y) => this.set(key, y)))
       )
 
       result
     else
       this.watch(key)
 
-  # Like `#resolve(key, app)`, but calls reactNow on the resulting request on
+  # Like `#resolve(key, app)`, but calls react on the resulting request on
   # your behalf.
   # TODO: can we push this to the bottom of the stack without a timeout? is
   # it inviting trouble if we introduce reaction priority, or a concept of
   # a cleanup/finally reaction?
   # or perhaps in addition to #stop we have a #wrapup that allows queued reactions
   # to complete first.
-  resolveNow: (key, app) -> this.resolve(key, app).reactNow((x) -> setTimeout((=> this.stop()), 0) if types.result.complete.match(x))
+  resolveNow: (key, app) -> this.resolve(key, app).react((x) -> setTimeout((=> this.stop()), 0) if types.result.complete.match(x))
 
   # Class-level storage bucket for attribute schema definition.
   @attributes: ->
@@ -157,7 +157,7 @@ class Model extends Struct
           key = binder._key
           this._binders[key] = terminate(binder)
             .point((x) => this.constructor.point(x, this))
-            .reactNow((value) => this.set(key, value))
+            .react((value) => this.set(key, value))
 
       superClass = util.superClass(obj)
       recurse(superClass) if superClass and superClass.binders?

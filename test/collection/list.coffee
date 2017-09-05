@@ -274,7 +274,7 @@ describe 'List', ->
     it 'should watch the value at an index', ->
       l = new List([ 1, 2, 3 ])
       results = []
-      l.watchAt(4).reactNow((x) -> results.push(x))
+      l.watchAt(4).react((x) -> results.push(x))
       l.add(4) # 1, 2, 3, 4
       l.add(5) # 1, 2, 3, 4, *5
       l.add(0, 0) # 0, 1, 2, 3, *4, 5
@@ -289,7 +289,7 @@ describe 'List', ->
     it 'should watch the value at a reverse index', ->
       l = new List([ 1, 2, 3, 4 ])
       results = []
-      l.watchAt(-5).reactNow((x) -> results.push(x))
+      l.watchAt(-5).react((x) -> results.push(x))
       l.add(5) # *1, 2, 3, 4, 5
       l.add(0, 0) # 0, *1, 2, 3, 4, 5
       l.add(1.5, 2) # 0, 1, *1.5, 2, 3, 4, 5
@@ -306,7 +306,7 @@ describe 'List', ->
       results = []
       l = new List([ 1, 2, 3, 4 ])
       v = new Varying(2)
-      l.watchAt(v).reactNow((x) -> results.push(x))
+      l.watchAt(v).react((x) -> results.push(x))
       l.removeAt(1) # 1 3 *4
       v.set(0) # *1 3 4
       l.add(0, 0) # *0 1 3 4
@@ -316,7 +316,7 @@ describe 'List', ->
     it 'should watch the length of the list', ->
       l = new List([ 1, 2, 3, 4 ])
       results = []
-      l.watchLength().reactNow((x) -> results.push(x))
+      l.watchLength().react((x) -> results.push(x))
       l.add(5)
       l.add([ 6, 7 ])
       l.removeAt(0)

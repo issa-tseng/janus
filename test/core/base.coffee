@@ -38,9 +38,22 @@ describe 'base', ->
       v = new Varying(2)
 
       result = null
-      a.reactNowTo(v, (x) -> result = x)
+      a.reactTo(v, (x) -> result = x)
 
       result.should.equal(2)
+      v.refCount().get().should.equal(1)
+
+    it 'should reactLater to a Varying', ->
+      a = new Base()
+      v = new Varying(2)
+
+      result = null
+      a.reactLaterTo(v, (x) -> result = x)
+      should(result).equal(null)
+
+      v.set(3)
+      result.should.equal(3)
+
       v.refCount().get().should.equal(1)
 
     it 'should cease reacting upon destruction', ->
@@ -48,7 +61,8 @@ describe 'base', ->
       v = new Varying(2)
 
       result = null
-      a.reactNowTo(v, (x) -> result = x)
+      a.reactTo(v, (x) -> result = x)
+      a.reactLaterTo(v, (x) -> result = x)
 
       a.destroy()
       v.refCount().get().should.equal(0)
