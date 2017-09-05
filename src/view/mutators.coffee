@@ -17,7 +17,6 @@ from = require('../core/from')
 
 # util.
 safe = (x) -> if isFunction(x?.toString) then x.toString() else ''
-terminate = (x) -> if x.point? then x else x.all
 doPoint = (x, point) ->
   if x?.point?
     x.point(point)
@@ -27,22 +26,22 @@ doPoint = (x, point) ->
     Varying.ly(x)
 
 mutators =
-  attr: (prop, data) -> (dom, point) -> terminate(data).point(point).react((x) -> dom.attr(prop, safe(x)))
+  attr: (prop, data) -> (dom, point) -> data.all.point(point).react((x) -> dom.attr(prop, safe(x)))
 
   classGroup: (prefix, data) -> (dom, point) ->
-    terminate(data).point(point).react((x) ->
+    data.all.point(point).react((x) ->
       existing = dom.attr('class')?.split(/[ ]+/) ? []
       dom.removeClass(y) for y in existing when y.indexOf(prefix) is 0
       dom.addClass("#{prefix}#{safe(x)}")
     )
 
-  classed: (name, data) -> (dom, point) -> terminate(data).point(point).react((x) -> dom.toggleClass(name, x is true))
+  classed: (name, data) -> (dom, point) -> data.all.point(point).react((x) -> dom.toggleClass(name, x is true))
 
-  css: (prop, data) -> (dom, point) -> terminate(data).point(point).react((x) -> dom.css(prop, safe(x)))
+  css: (prop, data) -> (dom, point) -> data.all.point(point).react((x) -> dom.css(prop, safe(x)))
 
-  text: (data) -> (dom, point) -> terminate(data).point(point).react((x) -> dom.text(safe(x)))
+  text: (data) -> (dom, point) -> data.all.point(point).react((x) -> dom.text(safe(x)))
 
-  html: (data) -> (dom, point) -> terminate(data).point(point).react((x) -> dom.html(safe(x)))
+  html: (data) -> (dom, point) -> data.all.point(point).react((x) -> dom.html(safe(x)))
 
   render: (data, args = {}) ->
     # TODO: eventually should analyze the view that may be already there and see if
@@ -50,7 +49,7 @@ mutators =
     result = (dom, point) ->
       _vendView = (subject, context, app, criteria, options) -> app.vendView(subject, extendNew(criteria ? {}, { context, options }))
 
-      Varying.flatMapAll(_vendView, terminate(data).point(point), doPoint(args.context, point), doPoint(from.app(), point), doPoint(args.criteria, point), doPoint(args.options, point)).react((view) ->
+      Varying.flatMapAll(_vendView, data.all.point(point), doPoint(args.context, point), doPoint(from.app(), point), doPoint(args.criteria, point), doPoint(args.options, point)).react((view) ->
         dom.data('subview')?.destroy()
         dom.empty()
         return unless view?
