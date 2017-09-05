@@ -10,7 +10,7 @@ describe 'varying utils', ->
     it 'should stop its inner observation if destroyed', ->
       started = stopped = false
       dummyVarying = { reactNow: (-> started = true; { stop: (-> stopped = true) }), get: (->) } 
-      v = sticky(dummyVarying)
+      v = sticky(null, dummyVarying)
       o = v.reactNow(->)
       started.should.equal(true)
       stopped.should.equal(false)
@@ -19,12 +19,12 @@ describe 'varying utils', ->
 
   describe 'sticky', ->
     it 'should return a varying', ->
-      sticky(new Varying()).should.be.an.instanceof(Varying)
+      sticky(null, new Varying()).should.be.an.instanceof(Varying)
 
     it 'should by default pass values through (instantly)', ->
       results = []
       inner = new Varying(0)
-      outer = sticky(inner)
+      outer = sticky(null, inner)
       outer.reactNow((x) -> results.push(x))
 
       results.should.eql([ 0 ])
@@ -36,7 +36,7 @@ describe 'varying utils', ->
     it 'should hold on to values as configured', (done) ->
       results = []
       inner = new Varying(0)
-      outer = sticky(inner, { 1: 20 })
+      outer = sticky({ 1: 20 }, inner)
       outer.reactNow((x) -> results.push(x))
 
       results.should.eql([ 0 ])
@@ -52,7 +52,7 @@ describe 'varying utils', ->
     it 'should collapse changes during delay', (done) ->
       results = []
       inner = new Varying(0)
-      outer = sticky(inner, { 1: 20 })
+      outer = sticky({ 1: 20 }, inner)
       outer.reactNow((x) -> results.push(x))
 
       results.should.eql([ 0 ])
@@ -68,11 +68,17 @@ describe 'varying utils', ->
         done()
       )
 
+    it 'should curry if given only one parameter', ->
+      a = sticky(null)
+      a.should.be.an.instanceof(Function)
+      b = a(new Varying())
+      b.should.be.an.instanceof(Varying)
+
   describe 'debounce', ->
     it 'should collapse values up through cooldown', (done) ->
       results = []
       inner = new Varying(0)
-      outer = debounce(inner, 10)
+      outer = debounce(10, inner)
       outer.reactNow((x) -> results.push(x))
 
       results.should.eql([ 0 ])
@@ -88,7 +94,7 @@ describe 'varying utils', ->
     it 'should push cooldown for each change', (done) ->
       results = []
       inner = new Varying(0)
-      outer = debounce(inner, 20)
+      outer = debounce(20, inner)
       outer.reactNow((x) -> results.push(x))
 
       results.should.eql([ 0 ])
@@ -109,7 +115,7 @@ describe 'varying utils', ->
     it 'should work through successive cycles', (done) ->
       results = []
       inner = new Varying(0)
-      outer = debounce(inner, 5)
+      outer = debounce(5, inner)
       outer.reactNow((x) -> results.push(x))
 
       inner.set(1)
@@ -126,11 +132,17 @@ describe 'varying utils', ->
         )
       )
 
+    it 'should curry if given only one parameter', ->
+      a = debounce(20)
+      a.should.be.an.instanceof(Function)
+      b = a(new Varying())
+      b.should.be.an.instanceof(Varying)
+
   describe 'throttle', ->
     it 'should set value immediately', ->
       results = []
       inner = new Varying(0)
-      outer = throttle(inner, 20)
+      outer = throttle(20, inner)
       outer.reactNow((x) -> results.push(x))
 
       inner.set(2)
@@ -139,7 +151,7 @@ describe 'varying utils', ->
     it 'should delay set within throttle zone until throttle expiration', (done) ->
       results = []
       inner = new Varying(0)
-      outer = throttle(inner, 10)
+      outer = throttle(10, inner)
       outer.reactNow((x) -> results.push(x))
 
       inner.set(2)
@@ -154,7 +166,7 @@ describe 'varying utils', ->
     it 'should delay multiple sets and take only the final value', (done) ->
       results = []
       inner = new Varying(0)
-      outer = throttle(inner, 20)
+      outer = throttle(20, inner)
       outer.reactNow((x) -> results.push(x))
 
       inner.set(2)
@@ -173,7 +185,7 @@ describe 'varying utils', ->
     it 'should reset cycle once the throttle has expired', (done) ->
       results = []
       inner = new Varying(0)
-      outer = throttle(inner, 10)
+      outer = throttle(10, inner)
       outer.reactNow((x) -> results.push(x))
 
       inner.set(2)
@@ -194,6 +206,12 @@ describe 'varying utils', ->
           done()
         )
       )
+
+    it 'should curry if given only one parameter', ->
+      a = throttle(20)
+      a.should.be.an.instanceof(Function)
+      b = a(new Varying())
+      b.should.be.an.instanceof(Varying)
 
   describe 'fromEvent binding', ->
     it 'should return a varying', ->

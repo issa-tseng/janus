@@ -9,7 +9,9 @@ class ManagedObservation extends Base
   @with: (varying) -> -> new ManagedObservation(varying)
 
 varyingUtils = {
-  sticky: (v, delays = {}) ->
+  sticky: (delays = {}, v) ->
+    return ((v) -> varyingUtils.sticky(delays, v)) unless v?
+
     Varying.managed(ManagedObservation.with(v), (mo) ->
       result = new Varying(v.get())
 
@@ -29,7 +31,9 @@ varyingUtils = {
       result
     )
 
-  debounce: (v, cooldown) ->
+  debounce: (cooldown, v) ->
+    return ((v) -> varyingUtils.debounce(cooldown, v)) unless v?
+
     Varying.managed(ManagedObservation.with(v), (mo) ->
       result = new Varying(v.get())
 
@@ -42,7 +46,9 @@ varyingUtils = {
       result
     )
 
-  throttle: (v, delay) ->
+  throttle: (delay, v) ->
+    return ((v) -> varyingUtils.throttle(delay, v)) unless v?
+
     Varying.managed(ManagedObservation.with(v), (mo) ->
       result = new Varying(v.get())
 
