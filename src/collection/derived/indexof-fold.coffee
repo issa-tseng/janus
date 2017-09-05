@@ -13,7 +13,7 @@ class IndexOfFold extends Base
     this.listenTo(this._list, 'moved', (obj, idx, oldIdx) => this._moveObj(obj, idx, oldIdx))
     this.listenTo(this._list, 'removed', (obj, idx) => this._removeObj(obj, idx))
 
-    this._targetObservation = Varying.ly(x).reactNow((value) => this._handleValue(value))
+    this._targetObservation = Varying.ly(x).react((value) => this._handleValue(value))
 
   _handleValue: (value) ->
     this._value = value

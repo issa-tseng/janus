@@ -52,8 +52,17 @@ class Base extends EventEmitter
   # destroyed.
   #
   # **Returns** the Observation of the reaction.
-  reactNowTo: (varying, f_) ->
-    observation = varying.reactNow(f_)
+  reactTo: (varying, f_) ->
+    observation = varying.react(f_)
+    this._outwardReactions.push(observation)
+    observation
+
+  # Perform and track a deferred reaction such that it is halted if this
+  # object is destroyed.
+  #
+  # **Returns** the Observation of the reaction.
+  reactLaterTo: (varying, f_) ->
+    observation = varying.reactLater(f_)
     this._outwardReactions.push(observation)
     observation
 

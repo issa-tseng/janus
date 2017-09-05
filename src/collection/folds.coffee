@@ -4,10 +4,10 @@ foldBase = (update) -> (collection) ->
   result = new Varying(null)
   watched = 0
 
-  collection.watchLength().reactNow (length) ->
+  collection.watchLength().react (length) ->
     for idx in [watched...length]
       do (idx) ->
-        collection.watchAt(idx).reactNow((value) -> result.set(update(value, idx, collection)))
+        collection.watchAt(idx).react((value) -> result.set(update(value, idx, collection)))
     watched = length
 
   result
@@ -95,7 +95,7 @@ folds =
     intermediate = new (require('./list').List)()
     intermediate.add(Varying.ly(memo))
 
-    collection.watchLength().reactNow (length) ->
+    collection.watchLength().react (length) ->
       intermediateLength = intermediate.list.length - 1
       if length > intermediateLength
         for idx in [intermediateLength...length]

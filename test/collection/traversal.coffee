@@ -376,7 +376,7 @@ describe 'traversal', ->
         sb = new Struct( a: 1, b: 2, c: { d: 3 } )
 
         result = null
-        sa.watchDiff(sb).reactNow((x) -> result = x)
+        sa.watchDiff(sb).react((x) -> result = x)
 
         result.should.equal(false)
         sa.set('b', 3)
@@ -393,7 +393,7 @@ describe 'traversal', ->
         lb = new List([ 1, 2, 3, 4, 5 ])
 
         result = null
-        la.watchDiff(lb).reactNow((x) -> result = x)
+        la.watchDiff(lb).react((x) -> result = x)
 
         result.should.equal(false)
         la.add(6)
@@ -410,7 +410,7 @@ describe 'traversal', ->
         sb = new Struct( a: 1, b: 2, c: new Struct( d: 3 ) )
 
         result = null
-        sa.watchDiff(sb).reactNow((x) -> result = x)
+        sa.watchDiff(sb).react((x) -> result = x)
 
         result.should.equal(false)
         sb.set('c', new Struct( d: 3 ))
@@ -427,7 +427,7 @@ describe 'traversal', ->
         sb = new Struct( a: 1, b: 2, c: new List([ 3, 4 ]) )
 
         result = null
-        sa.watchDiff(sb).reactNow((x) -> result = x)
+        sa.watchDiff(sb).react((x) -> result = x)
 
         result.should.equal(false)
         sb.set('c', new List([ 3, 4 ]))
@@ -446,7 +446,7 @@ describe 'traversal', ->
         lb = new List([ 1, new List([ 2, 3 ]), 4 ])
 
         result = null
-        la.watchDiff(lb).reactNow((x) -> result = x)
+        la.watchDiff(lb).react((x) -> result = x)
 
         result.should.equal(false)
         la.at(1).add(0)
@@ -463,7 +463,7 @@ describe 'traversal', ->
         lb = new List([ 1, new Struct( a: 2, b: 3 ), 4 ])
 
         result = null
-        la.watchDiff(lb).reactNow((x) -> result = x)
+        la.watchDiff(lb).react((x) -> result = x)
 
         result.should.equal(false)
         la.at(1).set( c: 4 )

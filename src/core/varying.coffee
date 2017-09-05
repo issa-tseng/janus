@@ -55,7 +55,7 @@ class Varying
 
   # returns the `Observation` representing this reaction.
   # (Varying v, Observation w) => v a -> (a -> ()) -> w
-  react: (f_) ->
+  reactLater: (f_) ->
     id = uniqueId()
     this._refCount += 1
     this.refCount$?.set(this._refCount)
@@ -67,8 +67,8 @@ class Varying
     )
 
   # (Varying v, Observation w) => v a -> (a -> ()) -> w
-  reactNow: (f_) ->
-    observation = this.react(f_)
+  react: (f_) ->
+    observation = this.reactLater(f_)
     f_.call(observation, this.get())
     observation
 
@@ -152,13 +152,13 @@ class FlatMappedVarying extends Varying
     this._refCount = 0
     this._value = nothing
 
-  # with the normal Varying, we simply reactNow and call get() for the immediate
+  # with the normal Varying, we simply react and call get() for the immediate
   # callback. this gets really tricky with flatten, because an extant Varying won't
-  # be correctly bound to with that method when reactNow gets called. so we override
-  # the default implementation and parameterize react to handle it internally if
+  # be correctly bound to with that method when react gets called. so we override
+  # the default implementation and parameterize _react to handle it internally if
   # necessary.
-  react: (f_) -> this._react(f_, false)
-  reactNow: (f_) -> this._react(f_, true)
+  react: (f_) -> this._react(f_, true)
+  reactLater: (f_) -> this._react(f_, false)
 
   _react: (callback, immediate) ->
     # create the consumer Observation that will be returned.
@@ -206,9 +206,9 @@ class FlatMappedVarying extends Varying
       # unbind old and bind to new if applicable.
       this._lastInnerObservation?.stop()
       if value?.isVarying is true
-        this._lastInnerObservation = value.reactNow((raw) -> self._onValue(this, raw, silent))
+        this._lastInnerObservation = value.react((raw) -> self._onValue(this, raw, silent))
         silent = false # don't like this line repetition but it's necessary due to early return.
-        return # don't run the below, since reactNow will update the value.
+        return # don't run the below, since react will update the value.
       else
         this._lastInnerObservation = null
 
@@ -226,7 +226,7 @@ class FlatMappedVarying extends Varying
   #
   # mapping is handled here because the implementation of applying it varies depending
   # on whether there is one parent or many.
-  _bind: -> this._parent.react((raw) => this._onValue(this._parentObservation, this._f.call(null, raw)))
+  _bind: -> this._parent.reactLater((raw) => this._onValue(this._parentObservation, this._f.call(null, raw)))
 
   # used internally; essentially get() w/out flatten.
   _immediate: ->
@@ -257,7 +257,7 @@ class MappedVarying extends FlatMappedVarying
 # ComposedVarying has some odd implications. It's not valid to apply our map
 # without all the values present, and trying to fulfill that kind of interface
 # leads to huge oddities with side effects and call orders.
-# So, we always reactNow on our parents, even if we simply are reacted.
+# So, we always react on our parents, even if we simply are reactLatered.
 class ComposedVarying extends FlatMappedVarying
   constructor: (@_applicants, @_f = identity, @_flatten = false) ->
     this._observers = {}
@@ -273,7 +273,7 @@ class ComposedVarying extends FlatMappedVarying
   _bind: ->
     # listen to all our parents if we must.
     this._parentObservations = for a, idx in this._applicants
-      do (a, idx) => a.reactNow((value) =>
+      do (a, idx) => a.react((value) =>
         # update our arguments list, then trigger internal observers in turn.
         # note that this doesn't happen for the very first call, since internal
         # observers is not updated until the end of this method.
@@ -301,7 +301,7 @@ class ManagedVarying extends FlatMappedVarying
 
     this._awake = false
     resources = null
-    this.refCount().react((count) =>
+    this.refCount().reactLater((count) =>
       if count > 0 and this._awake is false
         this._awake = true
         resources = (f() for f in this._resources)
@@ -316,7 +316,7 @@ class ManagedVarying extends FlatMappedVarying
       super()
     else
       result = null
-      this.reactNow((x) -> result = x; this.stop()) # kind of gross? but maybe not?
+      this.react((x) -> result = x; this.stop()) # kind of gross? but maybe not?
       result
 
 

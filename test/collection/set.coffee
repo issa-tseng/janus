@@ -41,8 +41,8 @@ describe 'collection', ->
 
       v1 = s.watchHas(2)
       v2 = s.watchHas(6)
-      v1.reactNow((x) -> results.push(1, x))
-      v2.reactNow((x) -> results.push(2, x))
+      v1.react((x) -> results.push(1, x))
+      v2.react((x) -> results.push(2, x))
 
       s.remove(2)
       s.add(6)

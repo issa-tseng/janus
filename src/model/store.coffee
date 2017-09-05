@@ -113,7 +113,7 @@ class MemoryCacheStore extends Store
         # TODO: not at all happy with the listening strategy here.
         if request.cacheResult isnt false and !types.operation.delete.match(request.type)
           cache = this._cache
-          request.react((result) ->
+          request.reactLater((result) ->
             cache.set(signature, request) if types.result.success.match(result)
             this.stop() if types.result.complete.match(result)
           )

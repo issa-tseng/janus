@@ -80,7 +80,7 @@ class IndexList extends DerivedList
   constructor: (@parent) ->
     super()
 
-    this._lengthVaried = this.parent.watchLength().reactNow((length) =>
+    this._lengthVaried = this.parent.watchLength().react((length) =>
       ourLength = this.length
       if length > ourLength
         this._add(idx) for idx in [ourLength...length]

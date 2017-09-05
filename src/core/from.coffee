@@ -155,7 +155,7 @@ terminus = (applicants, maps = []) ->
   result.point = (f) -> terminus(mappedPoint(x, f) for x in applicants, maps)
 
   result.react = (f_) -> applyMaps(applicants, maps).react(f_)
-  result.reactNow = (f_) -> applyMaps(applicants, maps).reactNow(f_)
+  result.reactLater = (f_) -> applyMaps(applicants, maps).reactLater(f_)
 
   result.plain = -> result.point(plainMap)
 

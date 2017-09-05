@@ -32,7 +32,7 @@ class FlatMappedList extends DerivedList
 
     initial = null
     mapping = wrapped.flatMap(this.mapper)
-    binding = mapping.reactNow((newValue) =>
+    binding = mapping.react((newValue) =>
       initial ?= newValue # perf: saves us one mapping.get()
       bidx = this._bindings.list.indexOf(binding)
       this._put(newValue, bidx) if bidx >= 0
