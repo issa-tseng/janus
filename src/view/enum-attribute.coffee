@@ -35,7 +35,7 @@ class EnumAttributeEditView extends DomView
       else
         console.error('got an unexpected value for EnumAttribute#values')
         new List()
-    ).reactNow((list) =>
+    ).react((list) =>
       # we have a new list; anything we'd previously had is completely invalid.
       this._removeAll(select)
 
@@ -62,7 +62,7 @@ class EnumAttributeEditView extends DomView
             item.toString()
           else
             item # good luck.
-        ).reactNow((text) -> option.text(text))
+        ).react((text) -> option.text(text))
 
         # generate and save a unique id, along with relevant state data.
         id = this._generateId(item)
@@ -137,7 +137,7 @@ class EnumAttributeEditView extends DomView
     subject = this.subject
 
     # bind from model.
-    subject.watchValue().reactNow(=> this._updateVal(select))
+    subject.watchValue().react(=> this._updateVal(select))
 
     # bind to model. do so once immediately so that if the select is non-nullable
     # then the entry the user sees is what is saved.

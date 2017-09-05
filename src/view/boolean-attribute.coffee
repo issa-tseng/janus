@@ -20,7 +20,7 @@ class BooleanAttributeEditView extends DomView
     input = this.artifact()
     subject = this.subject
 
-    subject.watchValue().reactNow(-> _updateVal(input, subject))
+    subject.watchValue().react(-> _updateVal(input, subject))
     input.on('input change', -> subject.setValue(input.prop('checked')))
 
 class BooleanButtonAttributeEditView extends DomView

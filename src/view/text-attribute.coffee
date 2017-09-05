@@ -24,9 +24,9 @@ class TextAttributeEditView extends DomView
     input = this.artifact()
     subject = this.subject
 
-    # update the input if the value changes. reactNow in case it has changed since
-    # initial rendering and event wiring.
-    this.subject.watchValue().reactNow(-> _updateVal(input, subject))
+    # update the input if the value changes. can't reactLater as it may have
+    # changed in the meantime.
+    this.subject.watchValue().react(-> _updateVal(input, subject))
 
     # update the input's focus. we use classes as they are more easily testable in
     # flimsier/faster dom emulation frameworks.

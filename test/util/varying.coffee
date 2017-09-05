@@ -9,9 +9,9 @@ describe 'varying utils', ->
   describe 'managed observation', ->
     it 'should stop its inner observation if destroyed', ->
       started = stopped = false
-      dummyVarying = { reactNow: (-> started = true; { stop: (-> stopped = true) }), get: (->) } 
+      dummyVarying = { react: (-> started = true; { stop: (-> stopped = true) }), get: (->) }
       v = sticky(null, dummyVarying)
-      o = v.reactNow(->)
+      o = v.react(->)
       started.should.equal(true)
       stopped.should.equal(false)
       o.stop()
@@ -25,7 +25,7 @@ describe 'varying utils', ->
       results = []
       inner = new Varying(0)
       outer = sticky(null, inner)
-      outer.reactNow((x) -> results.push(x))
+      outer.react((x) -> results.push(x))
 
       results.should.eql([ 0 ])
       inner.set(1)
@@ -37,7 +37,7 @@ describe 'varying utils', ->
       results = []
       inner = new Varying(0)
       outer = sticky({ 1: 20 }, inner)
-      outer.reactNow((x) -> results.push(x))
+      outer.react((x) -> results.push(x))
 
       results.should.eql([ 0 ])
       inner.set(1)
@@ -53,7 +53,7 @@ describe 'varying utils', ->
       results = []
       inner = new Varying(0)
       outer = sticky({ 1: 20 }, inner)
-      outer.reactNow((x) -> results.push(x))
+      outer.react((x) -> results.push(x))
 
       results.should.eql([ 0 ])
       inner.set(1)
@@ -79,7 +79,7 @@ describe 'varying utils', ->
       results = []
       inner = new Varying(0)
       outer = debounce(10, inner)
-      outer.reactNow((x) -> results.push(x))
+      outer.react((x) -> results.push(x))
 
       results.should.eql([ 0 ])
       inner.set(1)
@@ -95,7 +95,7 @@ describe 'varying utils', ->
       results = []
       inner = new Varying(0)
       outer = debounce(20, inner)
-      outer.reactNow((x) -> results.push(x))
+      outer.react((x) -> results.push(x))
 
       results.should.eql([ 0 ])
       inner.set(1)
@@ -116,7 +116,7 @@ describe 'varying utils', ->
       results = []
       inner = new Varying(0)
       outer = debounce(5, inner)
-      outer.reactNow((x) -> results.push(x))
+      outer.react((x) -> results.push(x))
 
       inner.set(1)
       inner.set(2)
@@ -143,7 +143,7 @@ describe 'varying utils', ->
       results = []
       inner = new Varying(0)
       outer = throttle(20, inner)
-      outer.reactNow((x) -> results.push(x))
+      outer.react((x) -> results.push(x))
 
       inner.set(2)
       results.should.eql([ 0, 2 ])
@@ -152,7 +152,7 @@ describe 'varying utils', ->
       results = []
       inner = new Varying(0)
       outer = throttle(10, inner)
-      outer.reactNow((x) -> results.push(x))
+      outer.react((x) -> results.push(x))
 
       inner.set(2)
       inner.set(4)
@@ -167,7 +167,7 @@ describe 'varying utils', ->
       results = []
       inner = new Varying(0)
       outer = throttle(20, inner)
-      outer.reactNow((x) -> results.push(x))
+      outer.react((x) -> results.push(x))
 
       inner.set(2)
       inner.set(4)
@@ -186,7 +186,7 @@ describe 'varying utils', ->
       results = []
       inner = new Varying(0)
       outer = throttle(10, inner)
-      outer.reactNow((x) -> results.push(x))
+      outer.react((x) -> results.push(x))
 
       inner.set(2)
       inner.set(4)
@@ -221,15 +221,15 @@ describe 'varying utils', ->
       registered = []
       jq = { on: ((x) -> registered.push(x)) }
       v = fromEvent(jq, 'click', null)
-      v.reactNow(->)
-      v.reactNow(->)
+      v.react(->)
+      v.react(->)
       registered.should.eql([ 'click' ])
 
     it 'should unregister a listener when first reacted', ->
       unregistered = []
       jq = { on: (->), off: ((x) -> unregistered.push(x)) }
       v = fromEvent(jq, 'click', null)
-      o = v.reactNow(->)
+      o = v.react(->)
       unregistered.should.eql([])
       o.stop()
       unregistered.should.eql([ 'click' ])
@@ -239,14 +239,14 @@ describe 'varying utils', ->
       jq = { on: ((_, f_) -> f_(event)) }
 
       calledWith = null
-      fromEvent(jq, null, (x) -> calledWith = x).reactNow(->)
+      fromEvent(jq, null, (x) -> calledWith = x).react(->)
       calledWith.should.equal(event)
 
     it 'should use the result of the mapping function as the value of the varying', ->
       f_ = null
       results = []
       jq = { on: ((_, x) -> f_ = x) }
-      fromEvent(jq, null, ((x) -> x * 2)).reactNow((x) -> results.push(x))
+      fromEvent(jq, null, ((x) -> x * 2)).react((x) -> results.push(x))
 
       f_(2)
       results.should.eql([ undefined, 4 ])
@@ -258,7 +258,7 @@ describe 'varying utils', ->
       f_ = null
       results = []
       jq = { on: ((_, x) -> f_ = x) }
-      fromEventNow(jq, null, (-> extern)).reactNow((x) -> results.push(x))
+      fromEventNow(jq, null, (-> extern)).react((x) -> results.push(x))
 
       results.should.eql([ 0 ])
       extern = 1

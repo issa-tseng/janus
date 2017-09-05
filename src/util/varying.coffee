@@ -5,7 +5,7 @@ nothing = {}
 class ManagedObservation extends Base
   constructor: (@varying) -> super()
   react: (f_) -> this.reactTo(this.varying, f_)
-  reactNow: (f_) -> this.reactNowTo(this.varying, f_)
+  reactLater: (f_) -> this.reactLaterTo(this.varying, f_)
   @with: (varying) -> -> new ManagedObservation(varying)
 
 varyingUtils = {
@@ -17,7 +17,7 @@ varyingUtils = {
 
       value = timer = null
       update = -> timer = null; result.set(value)
-      mo.reactNow((newValue) ->
+      mo.react((newValue) ->
         if timer?
           value = newValue
         else if (delay = delays[value])?
@@ -38,7 +38,7 @@ varyingUtils = {
       result = new Varying(v.get())
 
       timer = null
-      mo.reactNow((value) ->
+      mo.react((value) ->
         clearTimeout(timer) if timer?
         timer = setTimeout((-> result.set(value)), cooldown)
       )
@@ -54,7 +54,7 @@ varyingUtils = {
 
       timer = null
       pendingValue = nothing
-      mo.react((value) ->
+      mo.reactLater((value) ->
         if timer?
           pendingValue = value
         else
