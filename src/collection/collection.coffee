@@ -25,8 +25,8 @@ class Enumerable extends Base
   isEnumerable: true
 
   # Calls into the Enumeration module to get either a live KeySet or a static
-  # array enumerating the keys of this Struct or List. The options are passed
-  # directly to Enumeration and only matter for Structs, but consist of:
+  # array enumerating the keys of this Map or List. The options are passed
+  # directly to Enumeration and only matter for Maps, but consist of:
   # * scope: (all|direct) all inherited or only dir
   enumerate: (options) -> (Enumeration$ ?= require('./enumeration').Enumeration).get(this, options)
   enumeration: (options) ->

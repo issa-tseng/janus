@@ -1,18 +1,18 @@
-# An Enumeration can be attached to or run against a Struct. It allows live- or
-# static- traversal of that Struct, respectively.
+# An Enumeration can be attached to or run against a Map. It allows live- or
+# static- traversal of that Map, respectively.
 #
-# Enumerations are separate from Structs and not a derivation or inherent feature
+# Enumerations are separate from Maps and not a derivation or inherent feature
 # so that they are only instantiated and incur overhead cost when actually needed,
 # and because enumeration behaviour options like shadow-flattening and deep traversal
 # can be chosen at will.
 
 { Varying } = require('../core/varying')
 { DerivedList } = require('../collection/list')
-{ Struct } = require('./struct')
+{ Map } = require('./map')
 { traverse, traverseAll, deepGet } = require('../util/util')
 
 class KeyList extends DerivedList
-  constructor: (@struct, options = {}) ->
+  constructor: (@map, options = {}) ->
     super()
     this.scope = options.scope ? 'all'
     this.include = options.include ? 'values'
@@ -21,20 +21,20 @@ class KeyList extends DerivedList
     this._trackedKeys = {}
 
     # add initial keys.
-    scanStruct = (struct) => traverse(struct.attributes, (key) => this._addKey(key.join('.')))
+    scanMap = (map) => traverse(map.attributes, (key) => this._addKey(key.join('.')))
     if this.scope is 'all'
-      ptr = this.struct
+      ptr = this.map
       while ptr?
-        scanStruct(ptr)
+        scanMap(ptr)
         ptr = ptr._parent
     else if this.scope is 'direct'
-      scanStruct(this.struct)
+      scanMap(this.map)
 
     # listen for future keys.
-    this.listenTo(this.struct, 'anyChanged', (key, newValue, oldValue) =>
+    this.listenTo(this.map, 'anyChanged', (key, newValue, oldValue) =>
       if this.scope is 'direct'
         # TODO: is there a cleverer way to do this?
-        ownValue = deepGet(this.struct.attributes, key)
+        ownValue = deepGet(this.map.attributes, key)
         return if ownValue isnt newValue
 
       if newValue? and not oldValue?
@@ -73,8 +73,8 @@ class KeyList extends DerivedList
     null
 
   # (flat)mapPairs takes f: (k, v) -> x and returns List[x]
-  mapPairs: (f) -> this.flatMap((key) => Varying.mapAll(f, new Varying(key), this.struct.watch(key)))
-  flatMapPairs: (f) -> this.flatMap((key) => Varying.flatMapAll(f, new Varying(key), this.struct.watch(key)))
+  mapPairs: (f) -> this.flatMap((key) => Varying.mapAll(f, new Varying(key), this.map.watch(key)))
+  flatMapPairs: (f) -> this.flatMap((key) => Varying.flatMapAll(f, new Varying(key), this.map.watch(key)))
 
 class IndexList extends DerivedList
   constructor: (@parent) ->
@@ -95,29 +95,29 @@ class IndexList extends DerivedList
   _destroy: -> this._lengthVaried.stop()
 
 _dynamic = (f) -> (obj, options) ->
-  Enumeration[if obj.isCollection is true then 'list' else if obj.isStruct is true then 'struct'][f](obj, options)
+  Enumeration[if obj.isCollection is true then 'list' else if obj.isMap is true then 'map'][f](obj, options)
 Enumeration =
   get: _dynamic('get')
   watch: _dynamic('watch')
 
-  struct:
-    get: (struct, options = {}) ->
+  map:
+    get: (map, options = {}) ->
       scope = options.scope ? 'all'
       include = options.include ? 'values'
 
       result = []
       traverser = if include is 'values' then traverse else if include is 'all' then traverseAll
-      scanStruct = (struct) => traverser(struct.attributes, (key) => result.push(key.join('.')) unless result.indexOf(key) >= 0)
+      scanMap = (map) => traverser(map.attributes, (key) => result.push(key.join('.')) unless result.indexOf(key) >= 0)
       if scope is 'all'
-        ptr = struct
+        ptr = map
         while ptr?
-          scanStruct(ptr)
+          scanMap(ptr)
           ptr = ptr._parent
       else if scope is 'direct'
-        scanStruct(struct)
+        scanMap(map)
       result
 
-    watch: (struct, options) -> new KeyList(struct, options)
+    watch: (map, options) -> new KeyList(map, options)
 
   list:
     get: (list) -> (idx for idx in [0...list.length])

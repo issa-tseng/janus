@@ -3,7 +3,7 @@
 types = require('../util/types')
 { Base } = require('../core/base')
 { Model } = require('../model/model')
-{ Struct } = require('../collection/struct')
+{ Map } = require('../collection/map')
 { Varying } = require('../core/varying')
 
 
@@ -75,7 +75,7 @@ class MemoryCacheStore extends Store
   # we take no request or options.
   constructor: ->
     super()
-    this._cache = new Struct()
+    this._cache = new Map()
 
   handle: (request) ->
     signature = request.signature()
