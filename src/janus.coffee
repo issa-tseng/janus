@@ -17,7 +17,7 @@ module.exports = (window ? global)._janus$ ?=
   # collection functionality.
   Base: require('./core/base').Base
 
-  Struct: require('./collection/struct').Struct
+  Map: require('./collection/map').Map
   List: require('./collection/list').List
   Set: require('./collection/set').Set
 

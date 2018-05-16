@@ -1,8 +1,8 @@
-# **Struct**s underly `Model`s, and provide the basic observable hash data
+# **Map**s underly `Model`s, and provide the basic observable hash data
 # structure at the core of `Model`.
 #
 # The only advanced feature it provides is shadowing; there aren't really
-# many internal uses for Struct that don't also want shadowing, and separating
+# many internal uses for Map that don't also want shadowing, and separating
 # that concern results in harder to read, less performant code anyway.
 
 { Enumerable } = require('./collection')
@@ -15,8 +15,8 @@
 class NullClass
 Null = new NullClass()
 
-class Struct extends Enumerable
-  isStruct: true
+class Map extends Enumerable
+  isMap: true
 
   constructor: (attributes = {}, @options = {}) ->
     super()
@@ -48,7 +48,7 @@ class Struct extends Enumerable
     value = deepGet(this.attributes, key)
 
     # If we don't have a value, maybe our parent does. If it does and it's a
-    # Struct, we'll want to shadowclone it before returning.
+    # Map, we'll want to shadowclone it before returning.
     if !value? and this._parent?
       value = this._parent.get(key)
       if value?.isEnumerable is true
@@ -196,12 +196,12 @@ class Struct extends Enumerable
     this.emit("changed:#{key}", newValue, oldValue)
     this.emit('anyChanged', key, newValue, oldValue)
 
-  # Maps this struct's values onto a new one, with the same key structure. The
+  # Maps this map's values onto a new one, with the same key structure. The
   # mapping functions are passed (key, value) as the arguments.
   #
-  # **Returns** a new Struct.
+  # **Returns** a new Map.
   mapPairs: (f) ->
-    result = new DerivedStruct()
+    result = new DerivedMap()
     traverse(this.attributes, (k, v) ->
       k = k.join('.')
       result.__set(k, f(k, v))
@@ -214,11 +214,11 @@ class Struct extends Enumerable
     )
     result
 
-  # Flatmaps this struct's values onto a new one, with the same key structure.
+  # Flatmaps this map's values onto a new one, with the same key structure.
   # The mapping functions are passed (key, value) as the arguments.
   #
-  # **Returns** a new Struct.
-  flatMapPairs: (f, klass = DerivedStruct) ->
+  # **Returns** a new Map.
+  flatMapPairs: (f, klass = DerivedMap) ->
     result = new klass()
     varieds = {}
     add = (key) =>
@@ -238,18 +238,18 @@ class Struct extends Enumerable
     result.on('destroying', -> varied.stop() for _, varied of varieds)
     result
 
-  # Gets the number of k/v pairs in this Struct. Depends on enumeration.
+  # Gets the number of k/v pairs in this Map. Depends on enumeration.
   watchLength: -> this.watchLength$ ?= Varying.managed((=> this.enumeration()), (it) -> it.watchLength())
 
-  # Takes in a data hash and populates a new Struct with its data.
+  # Takes in a data hash and populates a new Map with its data.
   #
-  # **Returns** a `Struct` or subclass of `Struct`, depending on invocation, with
+  # **Returns** a `Map` or subclass of `Map`, depending on invocation, with
   # the data populated.
   @deserialize: (data) -> new this(data)
 
 
-class DerivedStruct extends Struct
-  roError = -> throw new Error('this struct is read-only')
+class DerivedMap extends Map
+  roError = -> throw new Error('this map is read-only')
 
   for method in [ '_set', 'setAll', 'unset', 'revert' ]
     this.prototype["_#{method}"] = this.__super__[method]
@@ -259,5 +259,5 @@ class DerivedStruct extends Struct
   shadow: -> this
 
 
-module.exports = { Null, Struct }
+module.exports = { Null, Map }
 

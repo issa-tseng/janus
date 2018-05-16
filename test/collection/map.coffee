@@ -1,199 +1,199 @@
 should = require('should')
 
 { Varying } = require('../../lib/core/varying')
-{ Struct } = require('../../lib/collection/struct')
+{ Map } = require('../../lib/collection/map')
 { KeyList } = require('../../lib/collection/enumeration')
 
-describe 'Struct', ->
+describe 'Map', ->
   describe 'core', ->
     it 'should construct', ->
-      (new Struct()).should.be.an.instanceof(Struct)
+      (new Map()).should.be.an.instanceof(Map)
 
     it 'should construct with an attribute bag', ->
-      (new Struct( test: 'attr' )).attributes.test.should.equal('attr')
+      (new Map( test: 'attr' )).attributes.test.should.equal('attr')
 
     it 'should call preinitialize before attributes are populated', ->
       result = -1
-      class TestStruct extends Struct
+      class TestMap extends Map
         _preinitialize: -> result = this.get('a')
 
-      new TestStruct({ a: 42 })
+      new TestMap({ a: 42 })
       should(result).equal(null)
 
     it 'should call initialize after attributes are populated', ->
       result = -1
-      class TestStruct extends Struct
+      class TestMap extends Map
         _initialize: -> result = this.get('a')
 
-      new TestStruct({ a: 42 })
+      new TestMap({ a: 42 })
       result.should.equal(42)
 
   describe 'attribute', ->
     describe 'get', ->
       it 'should be able to get a shallow attribute', ->
-        struct = new Struct( vivace: 'brix' )
-        struct.get('vivace').should.equal('brix')
+        map = new Map( vivace: 'brix' )
+        map.get('vivace').should.equal('brix')
 
       it 'should be able to get a deep attribute', ->
-        struct = new Struct( cafe: { vivace: 'brix' } )
-        struct.get('cafe.vivace').should.equal('brix')
+        map = new Map( cafe: { vivace: 'brix' } )
+        map.get('cafe.vivace').should.equal('brix')
 
       it 'should return null on nonexistent attributes', ->
-        struct = new Struct( broad: 'way' )
-        (struct.get('vivace') is null).should.be.true
-        (struct.get('cafe.vivace') is null).should.be.true
+        map = new Map( broad: 'way' )
+        (map.get('vivace') is null).should.be.true
+        (map.get('cafe.vivace') is null).should.be.true
 
     describe 'set', ->
       it 'should be able to set a shallow attribute', ->
-        struct = new Struct()
-        struct.set('colman', 'pool')
+        map = new Map()
+        map.set('colman', 'pool')
 
-        struct.attributes.colman.should.equal('pool')
-        struct.get('colman').should.equal('pool')
+        map.attributes.colman.should.equal('pool')
+        map.get('colman').should.equal('pool')
 
       it 'should be able to set a deep attribute', ->
-        struct = new Struct()
-        struct.set('colman.pool', 'slide')
+        map = new Map()
+        map.set('colman.pool', 'slide')
 
-        struct.attributes.colman.pool.should.equal('slide')
-        struct.get('colman.pool').should.equal('slide')
+        map.attributes.colman.pool.should.equal('slide')
+        map.get('colman.pool').should.equal('slide')
 
       it 'should be able to set an empty object', ->
-        struct = new Struct()
-        struct.set('an.obj', {})
+        map = new Map()
+        map.set('an.obj', {})
 
-        struct.attributes.an.obj.should.eql({})
-        struct.get('an.obj').should.eql({})
+        map.attributes.an.obj.should.eql({})
+        map.get('an.obj').should.eql({})
 
       it 'should be able to set a deep attribute bag', ->
-        struct = new Struct()
-        struct.set('colman.pool', { location: 'west seattle', length: { amount: 50, unit: 'meter' } })
+        map = new Map()
+        map.set('colman.pool', { location: 'west seattle', length: { amount: 50, unit: 'meter' } })
 
-        struct.get('colman.pool.location').should.equal('west seattle')
-        struct.get('colman.pool.length.amount').should.equal(50)
-        struct.get('colman.pool.length.unit').should.equal('meter')
+        map.get('colman.pool.location').should.equal('west seattle')
+        map.get('colman.pool.length.amount').should.equal(50)
+        map.get('colman.pool.length.unit').should.equal('meter')
 
       it 'should accept a bag of attributes', ->
-        struct = new Struct()
-        struct.set( the: 'stranger' )
+        map = new Map()
+        map.set( the: 'stranger' )
 
-        struct.attributes.the.should.equal('stranger')
+        map.attributes.the.should.equal('stranger')
 
       it 'should do nothing if setting an equal value', ->
-        struct = new Struct( test: 47 )
+        map = new Map( test: 47 )
         evented = false
-        struct.on('changed:test', => evented = true)
+        map.on('changed:test', => evented = true)
 
-        struct.set('test', 47)
+        map.set('test', 47)
         evented.should.equal(false)
-        struct.set('test', 42)
+        map.set('test', 42)
         evented.should.equal(true)
 
       it 'should deep write all attributes in a given bag', ->
-        struct = new Struct( the: { stranger: 'seattle' } )
-        struct.set( the: { joule: 'apartments' }, black: 'dog' )
+        map = new Map( the: { stranger: 'seattle' } )
+        map.set( the: { joule: 'apartments' }, black: 'dog' )
 
-        struct.attributes.the.stranger.should.equal('seattle')
-        struct.get('the.stranger').should.equal('seattle')
+        map.attributes.the.stranger.should.equal('seattle')
+        map.get('the.stranger').should.equal('seattle')
 
-        struct.attributes.the.joule.should.equal('apartments')
-        struct.get('the.joule').should.equal('apartments')
+        map.attributes.the.joule.should.equal('apartments')
+        map.get('the.joule').should.equal('apartments')
 
-        struct.attributes.black.should.equal('dog')
-        struct.get('black').should.equal('dog')
+        map.attributes.black.should.equal('dog')
+        map.get('black').should.equal('dog')
 
     describe 'unset', ->
       it 'should be able to unset an attribute', ->
-        struct = new Struct( cafe: { vivace: 'brix' } )
-        struct.unset('cafe.vivace')
+        map = new Map( cafe: { vivace: 'brix' } )
+        map.unset('cafe.vivace')
 
-        (struct.get('cafe.vivace') is null).should.be.true
+        (map.get('cafe.vivace') is null).should.be.true
 
       it 'should be able to unset an attribute tree', ->
-        struct = new Struct( cafe: { vivace: 'brix' } )
-        struct.unset('cafe')
+        map = new Map( cafe: { vivace: 'brix' } )
+        map.unset('cafe')
 
-        (struct.get('cafe.vivace') is null).should.be.true
-        (struct.get('cafe') is null).should.be.true
+        (map.get('cafe.vivace') is null).should.be.true
+        (map.get('cafe') is null).should.be.true
 
     describe 'setAll', ->
       it 'should set all attributes in the given bag', ->
-        struct = new Struct()
-        struct.setAll( the: { stranger: 'seattle', joule: 'apartments' } )
+        map = new Map()
+        map.setAll( the: { stranger: 'seattle', joule: 'apartments' } )
 
-        struct.attributes.the.stranger.should.equal('seattle')
-        struct.get('the.stranger').should.equal('seattle')
+        map.attributes.the.stranger.should.equal('seattle')
+        map.get('the.stranger').should.equal('seattle')
 
-        struct.attributes.the.joule.should.equal('apartments')
-        struct.get('the.joule').should.equal('apartments')
+        map.attributes.the.joule.should.equal('apartments')
+        map.get('the.joule').should.equal('apartments')
 
       it 'should clear attributes not in the given bag', ->
-        struct = new Struct( una: 'bella', tazza: { di: 'caffe' } )
-        struct.setAll( tazza: { of: 'cafe' } )
+        map = new Map( una: 'bella', tazza: { di: 'caffe' } )
+        map.setAll( tazza: { of: 'cafe' } )
 
-        should.not.exist(struct.attributes.una)
-        (struct.get('una') is null).should.be.true
-        should.not.exist(struct.attributes.tazza.di)
-        (struct.get('tazza.di') is null).should.be.true
+        should.not.exist(map.attributes.una)
+        (map.get('una') is null).should.be.true
+        should.not.exist(map.attributes.tazza.di)
+        (map.get('tazza.di') is null).should.be.true
 
-        struct.attributes.tazza.of.should.equal('cafe')
-        struct.get('tazza.of').should.equal('cafe')
+        map.attributes.tazza.of.should.equal('cafe')
+        map.get('tazza.of').should.equal('cafe')
 
   describe 'shadowing', ->
     describe 'creation', ->
-      it 'should create a new instance of the same struct class', ->
-        class TestStruct extends Struct
+      it 'should create a new instance of the same map class', ->
+        class TestMap extends Map
 
-        struct = new TestStruct()
-        shadow = struct.shadow()
+        map = new TestMap()
+        shadow = map.shadow()
 
-        shadow.should.not.equal(struct)
-        shadow.should.be.an.instanceof(TestStruct)
+        shadow.should.not.equal(map)
+        shadow.should.be.an.instanceof(TestMap)
 
       it 'should optionally take a different class to shadow with', ->
-        class TestStruct extends Struct
+        class TestMap extends Map
 
-        struct = new Struct()
-        shadow = struct.shadow(TestStruct)
+        map = new Map()
+        shadow = map.shadow(TestMap)
 
-        shadow._parent.should.equal(struct)
-        shadow.should.be.an.instanceof(TestStruct)
+        shadow._parent.should.equal(map)
+        shadow.should.be.an.instanceof(TestMap)
 
       it 'should return the original of a shadow', ->
-        struct = new Struct()
-        struct.shadow().original().should.equal(struct)
+        map = new Map()
+        map.shadow().original().should.equal(map)
 
       it 'should return the original of a shadow\'s shadow', ->
-        struct = new Struct()
-        struct.shadow().shadow().original().should.equal(struct)
+        map = new Map()
+        map.shadow().shadow().original().should.equal(map)
 
       it 'should return itself as the original if it is not a shadow', ->
-        struct = new Struct()
-        struct.original().should.equal(struct)
+        map = new Map()
+        map.original().should.equal(map)
 
     describe 'attributes', ->
       it 'should return the parent\'s values', ->
-        struct = new Struct( test1: 'a' )
-        shadow = struct.shadow()
+        map = new Map( test1: 'a' )
+        shadow = map.shadow()
 
         shadow.get('test1').should.equal('a')
 
-        struct.set('test2', 'b')
+        map.set('test2', 'b')
         shadow.get('test2').should.equal('b')
 
       it 'should override the parent\'s values with its own', ->
-        struct = new Struct( test: 'x' )
-        shadow = struct.shadow()
+        map = new Map( test: 'x' )
+        shadow = map.shadow()
 
         shadow.get('test').should.equal('x')
         shadow.set('test', 'y')
         shadow.get('test').should.equal('y')
 
-        struct.get('test').should.equal('x')
+        map.get('test').should.equal('x')
 
       it 'should revert to the parent\'s value on revert()', ->
-        struct = new Struct( test: 'x' )
-        shadow = struct.shadow()
+        map = new Map( test: 'x' )
+        shadow = map.shadow()
 
         shadow.set('test', 'y')
         shadow.get('test').should.equal('y')
@@ -202,13 +202,13 @@ describe 'Struct', ->
         shadow.get('test').should.equal('x')
 
       it 'should do nothing on revert() if there is no parent', ->
-        struct = new Struct( test: 'x' )
-        struct.revert('test')
-        struct.get('test').should.equal('x')
+        map = new Map( test: 'x' )
+        map.revert('test')
+        map.get('test').should.equal('x')
 
       it 'should return null for values that have been set and unset, even if the parent has values', ->
-        struct = new Struct( test: 'x' )
-        shadow = struct.shadow()
+        map = new Map( test: 'x' )
+        shadow = map.shadow()
 
         shadow.set('test', 'y')
         shadow.get('test').should.equal('y')
@@ -220,23 +220,23 @@ describe 'Struct', ->
         shadow.get('test').should.equal('x')
 
       it 'should return null for values that have been directly unset, even if the parent has values', ->
-        struct = new Struct( test: 'x' )
-        shadow = struct.shadow()
+        map = new Map( test: 'x' )
+        shadow = map.shadow()
 
         shadow.unset('test')
         (shadow.get('test') is null).should.equal(true)
 
-      it 'should return a shadow substruct if it sees a struct', ->
-        substruct = new Struct()
-        struct = new Struct( test: substruct )
+      it 'should return a shadow submap if it sees a map', ->
+        submap = new Map()
+        map = new Map( test: submap )
 
-        shadow = struct.shadow()
-        shadow.get('test').original().should.equal(substruct)
+        shadow = map.shadow()
+        shadow.get('test').original().should.equal(submap)
 
     describe 'watching', ->
       it 'should handle when an inherited attribute value changes', ->
-        struct = new Struct( test: 'x' )
-        shadow = struct.shadow()
+        map = new Map( test: 'x' )
+        shadow = map.shadow()
 
         evented = false
         shadow.watch('test').reactLater((value) ->
@@ -244,23 +244,23 @@ describe 'Struct', ->
           value.should.equal('y')
         )
 
-        struct.set('test', 'y')
+        map.set('test', 'y')
         evented.should.equal(true)
 
       it 'should not fire when an overriden inherited attribute changes', ->
-        struct = new Struct( test: 'x' )
-        shadow = struct.shadow()
+        map = new Map( test: 'x' )
+        shadow = map.shadow()
 
         shadow.set('test', 'y')
 
         evented = false
         shadow.watch('test').reactLater(-> evented = true)
 
-        struct.set('test', 'z')
+        map.set('test', 'z')
         evented.should.equal(false)
 
       it 'should handle when a skiplevel parent has changed', -> # gh45
-        s = new Struct( a: 1 )
+        s = new Map( a: 1 )
         s2 = s.shadow()
         s3 = s2.shadow()
 
@@ -271,7 +271,7 @@ describe 'Struct', ->
         results.should.eql([ 1, 2 ])
 
       it 'should emit anyChanged when a skiplevel parent has changed', -> # gh45
-        s = new Struct()
+        s = new Map()
         s2 = s.shadow()
         s3 = s2.shadow()
 
@@ -282,7 +282,7 @@ describe 'Struct', ->
         results.should.eql([ [ 'a', 1, null ] ])
 
       it 'should output null rather than NullClass upon change', -> # gh54
-        s = new Struct( a: 0 )
+        s = new Map( a: 0 )
         s2 = s.shadow()
 
         results = []
@@ -292,7 +292,7 @@ describe 'Struct', ->
         results.should.eql([ null, 0, 1, null ])
 
       it 'should update leaves correctly when a branch is removed', ->
-        s = new Struct( a: 1, b: { c: 2 })
+        s = new Map( a: 1, b: { c: 2 })
 
         results = []
         s.watch('b.c').react((x) -> results.push(x))
@@ -301,11 +301,11 @@ describe 'Struct', ->
 
     describe 'sugar', ->
       it 'should return a shadow when with is called', ->
-        s = new Struct( a: 1 )
+        s = new Map( a: 1 )
         s.with()._parent.should.equal(s)
 
       it 'should attach the given attributes to the shadow instance', ->
-        s1 = new Struct( a: 1, b: 2 )
+        s1 = new Map( a: 1, b: 2 )
         s2 = s1.with( b: 3, c: 4 )
 
         s1.get('a').should.equal(1)
@@ -316,24 +316,24 @@ describe 'Struct', ->
 
   describe 'enumeration', ->
     it 'should return a KeyList of itself when asked for an enumeration', ->
-      s = new Struct( a: 1, b: 2, c: { d: 3 } )
+      s = new Map( a: 1, b: 2, c: { d: 3 } )
       kl = s.enumeration()
       kl.should.be.an.instanceof(KeyList)
       kl.list.should.eql([ 'a', 'b', 'c.d' ])
 
     it 'should pass options along appropriately', ->
-      s = new Struct( a: 1, b: 2, c: { d: 3 } )
+      s = new Map( a: 1, b: 2, c: { d: 3 } )
       kl = s.enumeration( scope: 'direct', include: 'all' )
       kl.scope.should.equal('direct')
       kl.include.should.equal('all')
 
     it 'should return an array of keys when asked to enumerate', ->
-      s = new Struct( a: 1, b: 2, c: { d: 3 } )
+      s = new Map( a: 1, b: 2, c: { d: 3 } )
       ks = s.enumerate()
       ks.should.eql([ 'a', 'b', 'c.d' ])
 
     it 'should pass option to the static enumerator', ->
-      s = new Struct( a: 1, b: 2, c: { d: 3 } )
+      s = new Map( a: 1, b: 2, c: { d: 3 } )
       s2 = s.shadow()
       s2.set( c: { e: 4 }, f: 5 )
       ks = s.enumerate( scope: 'direct', include: 'all' )
@@ -341,7 +341,7 @@ describe 'Struct', ->
 
     it 'should allow the length to be watched', ->
       results = []
-      s = new Struct( a: 1, b: 2 )
+      s = new Map( a: 1, b: 2 )
       s.watchLength().react((x) -> results.push(x))
 
       s.set('c', 3)
@@ -352,18 +352,18 @@ describe 'Struct', ->
     describe 'mapPairs', ->
       it 'should provide the appropriate k/v arguments to the mapping function', ->
         called = []
-        s = new Struct( a: 1, b: 2, c: { d: 3 } )
+        s = new Map( a: 1, b: 2, c: { d: 3 } )
         s.mapPairs((k, v) -> called.push(k, v))
         called.should.eql([ 'a', 1, 'b', 2, 'c.d', 3 ])
 
-      it 'should return a Struct with the appropriate mapped values', ->
-        s = new Struct( a: 1, b: 2, c: { d: 3 } )
+      it 'should return a Map with the appropriate mapped values', ->
+        s = new Map( a: 1, b: 2, c: { d: 3 } )
         s2 = s.mapPairs((k, v) -> v + 1)
-        s2.should.be.an.instanceof(Struct)
+        s2.should.be.an.instanceof(Map)
         s2.attributes.should.eql({ a: 2, b: 3, c: { d: 4 } })
 
       it 'should handle added and removed values', ->
-        s = new Struct( a: 1, b: 2, c: { d: 3 } )
+        s = new Map( a: 1, b: 2, c: { d: 3 } )
         s2 = s.mapPairs((k, v) -> v + 1)
 
         s.set('c.e.f', 4)
@@ -376,7 +376,7 @@ describe 'Struct', ->
         s2.attributes.should.eql({ a: 2, c: { d: 4 } })
 
       it 'should handle changed values', ->
-        s = new Struct( a: 1, b: 2, c: { d: 3 } )
+        s = new Map( a: 1, b: 2, c: { d: 3 } )
         s2 = s.mapPairs((k, v) -> v + 1)
 
         s.set('c.d', 4)
@@ -388,19 +388,19 @@ describe 'Struct', ->
     describe 'flatMapPairs', ->
       it 'should provide the appropriate k/v arguments to the mapping function', ->
         called = []
-        s = new Struct( a: 1, b: 2, c: { d: 3 } )
+        s = new Map( a: 1, b: 2, c: { d: 3 } )
         s.flatMapPairs((k, v) -> called.push(k, v))
         called.should.eql([ 'a', 1, 'b', 2, 'c.d', 3 ])
 
-      it 'should return a Struct with the appropriate mapped values', ->
-        s = new Struct( a: 1, b: 2, c: { d: 3 } )
+      it 'should return a Map with the appropriate mapped values', ->
+        s = new Map( a: 1, b: 2, c: { d: 3 } )
         c = new Varying(1)
         s2 = s.flatMapPairs((k, v) -> c.map((cv) -> v + cv))
-        s2.should.be.an.instanceof(Struct)
+        s2.should.be.an.instanceof(Map)
         s2.attributes.should.eql({ a: 2, b: 3, c: { d: 4 } })
 
       it 'should handle added and removed values', ->
-        s = new Struct( a: 1, b: 2, c: { d: 3 } )
+        s = new Map( a: 1, b: 2, c: { d: 3 } )
         c = new Varying(1)
         s2 = s.flatMapPairs((k, v) -> c.map((cv) -> v + cv))
 
@@ -414,7 +414,7 @@ describe 'Struct', ->
         s2.attributes.should.eql({ a: 2, c: { d: 4 } })
 
       it 'should handle changed values', ->
-        s = new Struct( a: 1, b: 2, c: { d: 3 } )
+        s = new Map( a: 1, b: 2, c: { d: 3 } )
         c = new Varying(1)
         s2 = s.flatMapPairs((k, v) -> c.map((cv) -> v + cv))
 
@@ -432,7 +432,7 @@ describe 'Struct', ->
 
       it 'should deregister all watches on destruction', ->
         count = 0
-        s = new Struct( a: 1, b: 2, c: { d: 3 } )
+        s = new Map( a: 1, b: 2, c: { d: 3 } )
         c = new Varying(1)
         s2 = s.flatMapPairs((k, v) -> c.map((cv) -> count += 1; v + cv))
 
@@ -443,10 +443,10 @@ describe 'Struct', ->
 
   describe 'deserialize', ->
     it 'should populate the result with the appropriate data', ->
-      result = Struct.deserialize( a: 1, b: 2, c: { d: 3 } )
+      result = Map.deserialize( a: 1, b: 2, c: { d: 3 } )
       result.attributes.should.eql({ a: 1, b: 2, c: { d: 3 } })
 
     it 'should create an instance of a subclass if called from it', ->
-      class MyStruct extends Struct
-      MyStruct.deserialize({}).should.be.an.instanceof(MyStruct)
+      class MyMap extends Map
+      MyMap.deserialize({}).should.be.an.instanceof(MyMap)
 

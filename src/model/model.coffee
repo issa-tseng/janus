@@ -5,12 +5,12 @@ from = require('../core/from')
 { match, otherwise } = require('../core/case')
 types = require('../util/types')
 
-{ Null, Struct } = require('../collection/struct')
+{ Null, Map } = require('../collection/map')
 { Varying } = require('../core/varying')
 util = require('../util/util')
 
 
-class Model extends Struct
+class Model extends Map
   isModel: true
 
   # We take in an attribute bag and optionally some options for this Model.
@@ -27,7 +27,7 @@ class Model extends Struct
   #
   # **Returns** the value of the given key.
   get: (key) ->
-    # see what Struct says; it handles basic attrs and shadowing.
+    # see what Map says; it handles basic attrs and shadowing.
     value = super(key)
 
     # if that fails, check the attribute.
@@ -92,7 +92,7 @@ class Model extends Struct
         if superClass.attributes?
           superClass.attributes().shadow()
         else
-          new Struct()
+          new Map()
     else
       @_attributes
 
@@ -220,7 +220,7 @@ class Model extends Struct
 
     new this(data)
 
-  # Handles parent changes; mostly exists in Struct but we wrap to additionally
+  # Handles parent changes; mostly exists in Map but we wrap to additionally
   # bail if the changed parent attribute is a bound value; we want that to
   # update naturally from our own bindings.
   _parentChanged: (key, newValue, oldValue) -> super(key, newValue, oldValue) unless this._binders[key]?

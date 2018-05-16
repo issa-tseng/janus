@@ -1,6 +1,6 @@
 from = require('../core/from')
 { Model } = require('./model')
-{ Struct } = require('../collection/struct')
+{ Map } = require('../collection/map')
 { Varying } = require('../core/varying')
 { List } = require('../collection/list')
 
