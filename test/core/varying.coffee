@@ -762,6 +762,33 @@ describe 'Varying', ->
         vz.set(4)
         result.should.equal(5)
 
+  describe 'lift', ->
+    it 'should take a pure function and arguments and return a mapped varying', ->
+      va = new Varying(2)
+      vb = new Varying(7)
+      fm = Varying.lift((x, y) -> x * y)
+      vc = fm(va, vb)
+
+      result = null
+      vc.react((x) -> result = x)
+
+      result.should.equal(14)
+      vb.set(5)
+      result.should.equal(10)
+      va.set(3)
+      result.should.equal(15)
+
+    it 'should not flatten the result', ->
+      va = new Varying(2)
+      vb = new Varying(7)
+      fm = Varying.lift((x, y) -> new Varying(x * y))
+      vc = fm(va, vb)
+
+      result = null
+      vc.react((x) -> result = x)
+      result.isVarying.should.equal(true)
+      result.get().should.equal(14)
+
   describe 'pipe chaining', ->
     it 'should call the given function with itself', ->
       result = null
