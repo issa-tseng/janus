@@ -89,6 +89,11 @@ class Varying
   # (Varying v) => v a -> a
   get: -> this._value
 
+  # simple chaining tool to allow eg myvarying.pipe(throttle(50)), which is easier to
+  # read in a chain order than throttle(50, myvarying).
+  # (Varying v, Any w) => v a -> (v b -> w b) -> w b
+  pipe: (f) -> f(this)
+
   # (Varying v, Int b) => v a -> v b
   refCount: -> this.refCount$ ?= new Varying(this._refCount)
 

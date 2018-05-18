@@ -762,6 +762,15 @@ describe 'Varying', ->
         vz.set(4)
         result.should.equal(5)
 
+  describe 'pipe chaining', ->
+    it 'should call the given function with itself', ->
+      result = null
+      pipeFunc = (x) -> result = x
+
+      v = new Varying(1)
+      v.pipe(pipeFunc)
+      result.should.equal(v)
+
   describe 'managed resources', ->
     it 'should call each resource generator and pass them to the computation generator upon react', ->
       results = null
