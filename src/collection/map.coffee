@@ -7,7 +7,7 @@
 
 { Enumerable } = require('./collection')
 { Varying } = require('../core/varying')
-{ deepGet, deepSet, deepDelete, extendNew, isArray, isPlainObject, isEmptyObject, traverse, traverseAll } = require('../util/util')
+{ deepGet, deepSet, deepDelete, extendNew, isArray, isString, isPlainObject, isEmptyObject, traverse, traverseAll } = require('../util/util')
 
 
 # sentinel value to record a child-nulled value. instantiate a class instance
@@ -67,7 +67,9 @@ class Map extends Enumerable
   #
   # **Returns** the value that was set.
   set: (x, y) ->
-    if y? and (!isPlainObject(y) or isEmptyObject(y))
+    if isString(x) and !y?
+      (y) => this._set(x, y)
+    else if y? and (!isPlainObject(y) or isEmptyObject(y))
       this._set(x, y)
     else if isPlainObject(y)
       obj = {}

@@ -102,6 +102,16 @@ describe 'Map', ->
         map.attributes.black.should.equal('dog')
         map.get('black').should.equal('dog')
 
+      it 'should curry if given only a string key', ->
+        map = new Map()
+        setter = map.set('test')
+        (map.get('test') is null).should.equal(true)
+
+        setter(2)
+        map.get('test').should.equal(2)
+        setter(4)
+        map.get('test').should.equal(4)
+
     describe 'unset', ->
       it 'should be able to unset an attribute', ->
         map = new Map( cafe: { vivace: 'brix' } )
