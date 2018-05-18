@@ -135,6 +135,10 @@ class Varying
   # (Varying v) => v a -> v b -> (a -> b -> v c) -> v c
   @flatMapAll: _pure(true)
 
+  # simple lift operation for a pure function:
+  # (Varying v) => (a -> b -> c) -> v a -> v b -> v c
+  @lift: (f) -> (args...) -> new ComposedVarying(args, f, false)
+
   @managed: (resources..., computation) -> new ManagedVarying(resources, computation)
 
   # convenience constructor to ensure a Varying. wraps nonVaryings, and returns
