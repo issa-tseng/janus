@@ -51,18 +51,30 @@ walk = (dom, walks) ->
 #
 # TODO: we wrap our fragment here so that the behavior works even if find() is used
 # on its own. but that means we're redoing the work many times.
-rechain = (chain, selector) ->
+rechain = (chains, mutators, selector) ->
+  # prebind if called with fragment (locks the chain).
   result = (fragment) ->
     walks = selectorToWalks(wrap(fragment), selector)
-    (dom, point) -> chain(walk(dom, walks), point)
-  for k, v of chain
-    do (v) -> result[k] = (args...) -> rechain(v(args...), selector)
+    (dom, point) ->
+      target = walk(dom, walks)
+      chain(target, point) for chain in chains
+
+  # first decorate anything specific to the present chain.
+  [ head..., tail ] = chains
+  if tail?
+    for k, v of tail
+      do (v) -> result[k] = (args...) -> rechain(head.concat([ v(args...) ]), mutators, selector)
+
+  # now decorate anything nonconflicting from our base set.
+  for k, v of mutators when !result[k]?
+    do (v) -> result[k] = (args...) -> rechain(chains.concat([ v(args...) ]), mutators, selector)
+
   result
 
 # build creates a find()er with the given mutators as chaining options. we then
 # build against our default mutators to provide a default find(), and then decorate
 # build() onto that find to allow userland custom find()s.
-build = (mutators) -> (selector) -> rechain(mutators, selector)
+build = (mutators) -> (selector) -> rechain([], mutators, selector)
 find = build(defaultMutators)
 find.build = build
 
