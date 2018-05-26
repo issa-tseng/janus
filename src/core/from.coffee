@@ -12,7 +12,7 @@
 
 # util.
 conj = (x, y) -> x.concat([ y ])
-internalCases = ic = defcase('org.janusjs.core.from.internal', 'varying', 'map', 'flatMap', 'pipe', 'resolve')
+internalCases = ic = defcase('org.janusjs.core.from.internal': { arity: 2 }, 'varying', 'map', 'flatMap', 'pipe', 'resolve')
 
 # default applicants:
 defaultCases = dc = defcase('org.janusjs.core.from.default', 'dynamic', 'watch', 'resolve', 'attribute', 'varying', 'app', 'self')
@@ -23,29 +23,29 @@ val = (conjunction, applicants = []) ->
 
   result.map = (f) ->
     [ rest..., last ] = applicants
-    val(conjunction, conj(rest, internalCases.map( inner: last, f: f )))
+    val(conjunction, conj(rest, internalCases.map(last, f)))
 
   result.flatMap = (f) ->
     [ rest..., last ] = applicants
-    val(conjunction, conj(rest, internalCases.flatMap( inner: last, f: f )))
+    val(conjunction, conj(rest, internalCases.flatMap(last, f)))
 
   result.watch = (attr, orElse = null) ->
     [ rest..., last ] = applicants
     f = (obj) -> obj?.watch?(attr) ? orElse
-    val(conjunction, conj(rest, internalCases.flatMap( inner: last, f: f )))
+    val(conjunction, conj(rest, internalCases.flatMap(last, f)))
 
   result.pipe = (f) ->
     [ rest..., last ] = applicants
-    val(conjunction, conj(rest, internalCases.pipe( inner: last, f: f )))
+    val(conjunction, conj(rest, internalCases.pipe(last, f)))
 
   result.resolve = (attr) ->
     [ rest..., last ] = applicants
-    val(conjunction, conj(rest, internalCases.resolve( inner: last, attr: attr )))
+    val(conjunction, conj(rest, internalCases.resolve(last, attr)))
 
   result.attribute = (attr) ->
     [ rest..., last ] = applicants
     f = (obj) -> obj?.attribute?(attr)
-    val(conjunction, conj(rest, internalCases.map( inner: last, f: f )))
+    val(conjunction, conj(rest, internalCases.map(last, f)))
 
   result.all = terminus(applicants)
   result.and = conjunction(applicants)
@@ -73,28 +73,28 @@ build = (cases) ->
 
 # helper for point() that processes our intermediate maps within one applicant chain.
 mappedPoint = match(
-  ic.map ({ inner, f }, point) ->
+  ic.map (inner, f, point) ->
     match(
       ic.varying (x) -> ic.varying(x.map(f))
-      otherwise -> ic.map({ inner, f })
+      otherwise -> ic.map(inner, f)
     )(mappedPoint(inner, point))
 
-  ic.flatMap ({ inner, f }, point) ->
+  ic.flatMap (inner, f, point) ->
     match(
       ic.varying (x) -> ic.varying(x.flatMap(f))
-      otherwise -> ic.flatMap({ inner, f })
+      otherwise -> ic.flatMap(inner, f)
     )(mappedPoint(inner, point))
 
-  ic.pipe ({ inner, f }, point) ->
+  ic.pipe (inner, f, point) ->
     match(
       ic.varying (x) -> ic.varying(f(x))
-      otherwise -> ic.pipe({ inner, f })
+      otherwise -> ic.pipe(inner, f)
     )(mappedPoint(inner, point))
 
-  ic.resolve ({ inner, attr }, point) ->
+  ic.resolve (inner, attr, point) ->
     match(
       ic.varying (x) -> ic.varying(x.flatMap((obj) -> point(from.default.app()).flatMap((app) -> obj.resolve(attr, app)) if obj?))
-      otherwise -> ic.resolve({ inner, f })
+      otherwise -> ic.resolve(inner, f)
     )(mappedPoint(inner, point))
 
   ic.varying (x) -> ic.varying(x) # TODO: rewrapping is slow.
