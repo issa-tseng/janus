@@ -50,13 +50,12 @@ mutators =
       _vendView = (subject, context, app, criteria, options) -> app.vendView(subject, extendNew(criteria ? {}, { context, options }))
 
       Varying.flatMapAll(_vendView, data.all.point(point), doPoint(args.context, point), doPoint(from.app(), point), doPoint(args.criteria, point), doPoint(args.options, point)).react((view) ->
-        dom.data('subview')?.destroy()
+        this.view ?= new Varying()
+        this.view.get()?.destroy()
         dom.empty()
-        return unless view?
 
-        dom.append(view.artifact())
-        view.emit?('appended') # tell it it's been appended. it will figure out for itself where to.
-        dom.data('subview', view)
+        dom.append(view.artifact()) if view?
+        this.view.set(view)
       )
 
     result.context = (context) -> mutators.render(data, extendNew(args, { context }))

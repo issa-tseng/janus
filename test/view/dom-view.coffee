@@ -6,347 +6,212 @@ from = require('../../lib/core/from')
 { DomView } = require('../../lib/view/dom-view')
 { Varying } = require('../../lib/core/varying')
 { List } = require('../../lib/collection/list')
+$ = require('jquery')(require('domino').createWindow())
 
+mockfrom = (v) -> { all: { point: -> Varying.ly(v) } }
 inf = -> inf
-makeDom = (dom = {}) ->
-  result = { remove: (->), append: (->), find: (-> result), data: (->), prepend: (-> result), children: (-> result) }
-  extend(result, dom)
-  result
 
 describe 'DomView', ->
-  describe 'definition', ->
-    it 'throws an exception if no dom method is provided', ->
-      class TestView extends DomView
-        @_template: -> inf
-
-      view = new TestView({})
-      thrown = null
-      try
-        view.artifact()
-      catch ex
-        thrown = ex.message
-      thrown.should.equal('no dom fragment provided!')
-
-    it 'throws an exception if no template method is provided', ->
-      class TestView extends DomView
-        @_dom: -> makeDom()
-
-      view = new TestView({})
-      thrown = null
-      try
-        view.artifact()
-      catch ex
-        thrown = ex.message
-      thrown.should.equal('no template provided!')
-
   describe 'template dom handling', ->
     it 'renders based on the provided dom fragment method', ->
-      dom = makeDom()
-      class TestView extends DomView
-        @_dom: -> dom
-        @_template: inf
-
-      (new TestView()).artifact().should.equal(dom)
-
-    it 'uses the existing parent if there is one', ->
-      calledParentFind = false
-      parent = { find: (calledParentFind = true; -> parent), text: (->), length: 1 }
-      dom = { find: (-> dom), data: (->), parent: (-> parent) }
-      class TestView extends DomView
-        @_dom: -> dom
-        @_template: template(find('.heading').text(from('test')))
-
-      (new TestView({ resolve: -> })).artifact().should.equal(dom)
-      calledParentFind.should.equal(true)
+      TestView = DomView.build($('<div class="test"/>'), inf)
+      (new TestView()).artifact().is('.test').should.equal(true)
 
     it 'finds the appropriate spots in the dom', ->
-      finds = []
-      dom = makeDom({ find: ((x) -> finds.push(x); dom), text: (->) })
+      TestView = DomView.build($('<div><div class="title"/><div class="body"/></div>'),
+        template(
+          find('.title').text(mockfrom('mytitle'))
+          find('.body').text(mockfrom('mybody'))
+        ))
 
-      class TestView extends DomView
-        @_dom: -> dom
-        @_template: template(
-          find('.title').text(from('somewhere'))
-          find('.body').text(from('somewhere-else'))
-        )
-
-      (new TestView({ resolve: -> })).artifact()
-      finds.should.eql([ '.title', '.body' ])
+      artifact = (new TestView({})).artifact()
+      artifact.find('.title').text().should.equal('mytitle')
+      artifact.find('.body').text().should.equal('mybody')
 
   describe 'template pointing', ->
     it 'applies a point function correctly', ->
       called = false
-      class TestView extends DomView
-        @_dom: -> makeDom({ text: (->) })
-        @_template: template(
+      TestView = class extends DomView.build($('<div/>'),
+        template(
           find('.title').text(from((x) -> passed = x; v))
-        )
-        @point: -> called = true
+        ))
+        @point: (-> called = true)
 
       (new TestView({})).artifact()
       called.should.equal(true)
 
     it 'points dynamic function inputs correctly', ->
       passed = null
-      rendered = []
       v = new Varying('test')
-
       subject = {}
+      TestView = DomView.build($('<div/>'), template(
+        find('div').text(from((x) -> passed = x; v))
+      ))
 
-      class TestView extends DomView
-        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
-        @_template: template(
-          find('.title').text(from((x) -> passed = x; v))
-        )
-
-      (new TestView(subject)).artifact()
+      artifact = (new TestView(subject)).artifact()
       passed.should.equal(subject)
-      rendered.should.eql([ 'test' ])
+      artifact.text().should.equal('test')
 
       v.set('test 2')
-      rendered.should.eql([ 'test', 'test 2' ])
+      artifact.text().should.equal('test 2')
 
     it 'points dynamic string inputs correctly', ->
       attr = null
-      rendered = []
-
       v = new Varying('test')
       subject = { resolve: (x) -> attr = x; v }
+      TestView = DomView.build($('<div/>'), template(
+        find('div').text(from('someattr'))
+      ))
 
-      class TestView extends DomView
-        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
-        @_template: template(find('.title').text(from('someattr')))
-
-      (new TestView(subject)).artifact()
-      rendered.should.eql([ 'test' ])
+      artifact = (new TestView(subject)).artifact()
+      attr.should.equal('someattr')
+      artifact.text().should.equal('test')
 
       v.set('test 2')
-      rendered.should.eql([ 'test', 'test 2' ])
+      artifact.text().should.equal('test 2')
 
     it 'points dynamic other inputs correctly', ->
-      rendered = []
-
       v = new Varying('test')
       subject = { resolve: (x) -> attr = x; v }
+      TestView = DomView.build($('<div/>'), template(
+        find('div').text(from(42))
+      ))
 
-      class TestView extends DomView
-        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
-        @_template: template(find('.title').text(from(42)))
-
-      (new TestView(subject)).artifact()
-      rendered.should.eql([ '42' ])
+      (new TestView(subject)).artifact().text().should.equal('42')
 
     it 'points watch inputs correctly', ->
       attr = null
-      rendered = []
-
       v = new Varying('test')
       subject = { watch: (x) -> attr = x; v }
+      TestView = DomView.build($('<div/>'), template(
+        find('div').text(from.watch('someattr'))
+      ))
 
-      class TestView extends DomView
-        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
-        @_template: template(find('.title').text(from.watch('someattr')))
-
-      (new TestView(subject)).artifact()
+      artifact = (new TestView(subject)).artifact()
       attr.should.equal('someattr')
-      rendered.should.eql([ 'test' ])
+      artifact.text().should.equal('test')
 
       v.set('test 2')
-      rendered.should.eql([ 'test', 'test 2' ])
+      artifact.text().should.equal('test 2')
 
     it 'points resolve inputs correctly', ->
       attr = null
-      rendered = []
-
       v = new Varying('test')
       subject = { resolve: (x) -> attr = x; v }
+      TestView = DomView.build($('<div/>'), template(
+        find('div').text(from.resolve('someattr'))
+      ))
 
-      class TestView extends DomView
-        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
-        @_template: template(find('.title').text(from.resolve('someattr')))
-
-      (new TestView(subject)).artifact()
+      artifact = (new TestView(subject)).artifact()
       attr.should.equal('someattr')
-      rendered.should.eql([ 'test' ])
+      artifact.text().should.equal('test')
 
       v.set('test 2')
-      rendered.should.eql([ 'test', 'test 2' ])
+      artifact.text().should.equal('test 2')
 
     it 'does not try to resolve literal subjects', ->
       attr = null
       rendered = []
+      TestView = DomView.build($('<div/>'), template(
+        find('div').text(from('whatever'))
+      ))
 
-      class TestView extends DomView
-        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
-        @_template: template(find('.title').text(from('whatever')))
-
-      (new TestView('hello')).artifact()
-      rendered.should.eql([ 'whatever' ])
-      # not crashing is also a check here.
+      artifact = (new TestView('hello')).artifact() # not crashing is also a check here.
+      artifact.text().should.equal('whatever')
 
     it 'points attribute inputs correctly', ->
       attr = null
-      rendered = []
+      subject = { attribute: (x) -> attr = x; 'test' }
+      TestView = DomView.build($('<div/>'), template(
+        find('div').text(from.attribute('test_attr'))
+      ))
 
-      attribute = 'test'
-      subject = { attribute: (x) -> attr = x; attribute }
-
-      class TestView extends DomView
-        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
-        @_template: template(find('.title').text(from.attribute('test_attr')))
-
-      (new TestView(subject)).artifact()
+      artifact = (new TestView(subject)).artifact()
       attr.should.equal('test_attr')
-      rendered.should.eql([ 'test' ])
+      artifact.text().should.equal('test')
 
     it 'points varying function inputs correctly', ->
       passed = null
-      rendered = []
       v = new Varying('test')
-
       subject = {}
+      TestView = DomView.build($('<div/>'), template(
+        find('div').text(from.varying((x) -> passed = x; v))
+      ))
 
-      class TestView extends DomView
-        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
-        @_template: template(
-          find('.title').text(from.varying((x) -> passed = x; v))
-        )
-
-      (new TestView(subject)).artifact()
+      artifact = (new TestView(subject)).artifact()
       passed.should.equal(subject)
-      rendered.should.eql([ 'test' ])
+      artifact.text().should.equal('test')
 
       v.set('test 2')
-      rendered.should.eql([ 'test', 'test 2' ])
+      artifact.text().should.equal('test 2')
 
     it 'points varying static inputs correctly', ->
-      rendered = []
       v = new Varying('test')
-
       subject = {}
+      TestView = DomView.build($('<div/>'), template(
+        find('div').text(from.varying(v))
+      ))
 
-      class TestView extends DomView
-        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
-        @_template: template(
-          find('.title').text(from.varying(v))
-        )
-
-      (new TestView(subject)).artifact()
-      rendered.should.eql([ 'test' ])
+      artifact = (new TestView(subject)).artifact()
+      artifact.text().should.equal('test')
 
       v.set('test 2')
-      rendered.should.eql([ 'test', 'test 2' ])
+      artifact.text().should.equal('test 2')
 
     it 'points app correctly', ->
-      rendered = null
       app = { toString: (-> 'test app'), on: (->) }
-      class TestView extends DomView
-        @_dom: -> makeDom({ text: ((x) -> rendered = x) })
-        @_template: template(find('.title').text(from.app().map((x) -> x.toString())))
+      TestView = DomView.build($('<div/>'), template(
+        find('div').text(from.app().map((x) -> x.toString()))
+      ))
 
-      (new TestView({}, { app })).artifact()
-      rendered.should.equal('test app')
+      artifact = (new TestView({}, { app })).artifact()
+      artifact.text().should.equal('test app')
 
     it 'points app with a key reference correctly', ->
       rendered = resolvedWith = null
       app = { toString: (-> 'test app'), on: (->), resolve: (key) -> resolvedWith = key; new Varying('resolved!') }
-      class TestView extends DomView
-        @_dom: -> makeDom({ text: ((x) -> rendered = x) })
-        @_template: template(find('.title').text(from.app('testkey').map((x) -> x.toString())))
+      TestView = DomView.build($('<div/>'), template(
+        find('div').text(from.app('testkey').map((x) -> x.toString()))
+      ))
 
-      (new TestView({}, { app })).artifact()
-      rendered.should.equal('resolved!')
+      artifact = (new TestView({}, { app })).artifact()
+      artifact.text().should.equal('resolved!')
       resolvedWith.should.equal('testkey')
 
     it 'points self functions correctly', ->
-      rendered = []
       pointed = null
       v = new Varying('test')
-
-      class TestView extends DomView
-        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
-        @_template: template(
-          find('.title').text(from.self((x) -> pointed = x; v))
-        )
+      TestView = DomView.build($('<div/>'), template(
+        find('div').text(from.self((x) -> pointed = x; v))
+      ))
 
       t = new TestView({})
-      t.artifact()
+      artifact = t.artifact()
       pointed.should.equal(t)
-      rendered.should.eql([ 'test' ])
+      artifact.text().should.equal('test')
 
       v.set('test 2')
-      rendered.should.eql([ 'test', 'test 2' ])
+      artifact.text().should.equal('test 2')
 
     it 'points static self correctly', ->
-      rendered = []
       pointed = null
       v = new Varying('test')
-
-      class TestView extends DomView
-        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
-        @_template: template(
-          find('.title').text(from.self().flatMap((x) -> pointed = x; v))
-        )
+      TestView = DomView.build($('<div/>'), template(
+        find('div').text(from.self().flatMap((x) -> pointed = x; v))
+      ))
 
       t = new TestView({})
-      t.artifact()
+      artifact = t.artifact()
       pointed.should.equal(t)
-      rendered.should.eql([ 'test' ])
+      artifact.text().should.equal('test')
 
       v.set('test 2')
-      rendered.should.eql([ 'test', 'test 2' ])
-
-  describe 'dom events', ->
-    it 'emits appendedToDocument when it is appended to body', ->
-      class TestView extends DomView
-        @_dom: -> makeDom({ text: (->), closest: (-> [ 42 ]) })
-        @_template: template(find('.title').text(from.varying(42)))
-
-      emitted = false
-      view = new TestView({})
-      view.on('appendedToDocument', -> emitted = true)
-      view.artifact()
-      emitted.should.equal(false)
-      view.emit('appended')
-      emitted.should.equal(true)
-
-    it 'emits appendedToDocument only when it is appended to body', ->
-      class TestView extends DomView
-        @_dom: -> makeDom ({ text: (->), closest: (-> []) })
-        @_template: template(find('.title').text(from.varying(42)))
-
-      emitted = false
-      view = new TestView({})
-      view.on('appendedToDocument', -> emitted = true)
-      view.artifact()
-      view.emit('appended')
-      emitted.should.equal(false)
-
-    it 'triggers appended events on subviews when appended to body', ->
-      class TestView extends DomView
-        @_dom: -> makeDom({ text: (->), closest: (-> [ 42 ]) })
-        @_template: template(find('.title').text(from.varying(42)))
-
-      called = 0
-      childA = new TestView({})
-      childA.on('appended', -> called += 1)
-      childB = new TestView({})
-      childB.on('appended', -> called += 1)
-      subviews = new List([ childA, childB ])
-
-      view = new TestView({})
-      view._subviews = subviews # yeah, i know, i'm cheating.
-      view.artifact()
-      called.should.equal(0)
-      view.emit('appended')
-      called.should.equal(2)
+      artifact.text().should.equal('test 2')
 
   describe 'client event wiring', ->
     it 'only wires events once', ->
       count = 0
-      class TestView extends DomView
-        @_dom: -> makeDom()
-        @_template: inf
+      TestView = class extends DomView.build($('<div/>'), inf)
         _wireEvents: -> count += 1
 
       view = new TestView({})
@@ -355,123 +220,142 @@ describe 'DomView', ->
       count.should.equal(1)
 
     it 'adds a reference to self on the top-level dom node', ->
-      dataKey = dataValue = null
-      class TestView extends DomView
-        @_dom: -> makeDom({ data: ((k, v) -> dataKey = k; dataValue = v) })
-        @_template: inf
+      TestView = DomView.build($('<div/>'), inf)
 
       view = new TestView()
       view.wireEvents()
-      dataKey.should.equal('view')
-      dataValue.should.equal(view)
+      view.artifact().data('view').should.equal(view)
 
     it 'also wires subview events', ->
       wired = []
-      class TestView extends DomView
-        @_dom: -> makeDom({ data: ((k, v) -> dataKey = k; dataValue = v) })
-        @_template: inf
+      ParentView = class extends DomView.build($('<div><div class="a"/><div class="b"/></div>'), template(
+          find('.a').render(from(true))
+          find('.b').render(from(true))
+        ))
         _wireEvents: -> wired.push(this)
+      ChildView = class extends DomView.build($('<div/>'), inf)
+        _wireEvents: -> wired.push(this)
+      app = { vendView: -> new ChildView() }
 
-      childA = new TestView({})
-      childB = new TestView({})
-      subviews = new List([ childA, childB ])
-
-      view = new TestView()
-      view._subviews = subviews
+      view = new ParentView({}, { app })
+      wired.length.should.equal(0)
       view.wireEvents()
-      wired.should.eql([ view, childA, childB ])
+      wired.length.should.equal(3)
+      wired[0].should.equal(view)
+      wired[1].should.be.an.instanceof(ChildView)
+      wired[2].should.be.an.instanceof(ChildView)
 
-    it 'wires child events if appropriate', ->
-      wired = 0
-      class TestView extends DomView
-        @_dom: -> makeDom()
-        @_template: inf
-        _wireEvents: -> wired += 1
+    it 'wires subview events as new subviews are rendered', ->
+      wired = []
+      v = new Varying(0)
+      ParentView = class extends DomView.build($('<div/>'), template(
+          find('div').render(from(v))
+        ))
+        _wireEvents: -> wired.push(this)
+      ChildView = class extends DomView.build($('<div/>'), inf)
+        _wireEvents: -> wired.push(this)
+      app = { vendView: -> new ChildView() }
 
-      child = new TestView()
-      app = { on: ((event, f_) -> this.f_ = f_ if event is 'vended'), vendView: -> this.f_('views', child); child }
-      parent = new TestView({}, { app })
+      view = new ParentView({}, { app })
+      view.wireEvents()
+      wired.length.should.equal(2)
 
-      parent.wireEvents()
-      app.vendView()
-      wired.should.equal(2)
+      v.set(1)
+      wired.length.should.equal(3)
+      wired[2].should.be.an.instanceof(ChildView)
 
-    it 'defers wiring child events until appropriate', ->
-      wired = 0
-      class TestView extends DomView
-        @_dom: -> makeDom()
-        @_template: inf
-        _wireEvents: -> wired += 1
-
-      child = new TestView()
-      app = { on: ((event, f_) -> this.f_ = f_ if event is 'vended'), vendView: -> this.f_('views', child); child }
-      parent = new TestView({}, { app })
-
-      app.vendView()
-      wired.should.equal(0)
-
-      parent.wireEvents()
-      wired.should.equal(2)
+    it 'accepts a wireEvents via options, and gives it the appropriate parameters', ->
+      called = false
+      subject = {}
+      TestView = DomView.build($('<div/>'), inf, {
+        wireEvents: (partifact, psubject, pview) ->
+          partifact.is('div').should.equal(true)
+          psubject.should.equal(subject)
+          pview.should.equal(view)
+          called = true
+      })
+      view = new TestView(subject)
+      view.wireEvents()
+      called.should.equal(true)
 
   it 'concats dom outerHTMLs to provide markup', ->
-    class TestView extends DomView
-      @_dom: -> makeDom({ get: (-> [ { outerHTML: '123' }, { outerHTML: 'abc' } ]) })
-      @_template: inf
-
-    view = new TestView()
-    view.markup().should.equal('123abc')
+    TestView = DomView.build($('<div>123</div><div>abc</div>'), inf)
+    (new TestView()).markup().should.equal('<div>123</div><div>abc</div>')
 
   describe 'lifecycle', ->
     it 'triggers a `destroying` event on the dom fragment root', ->
-      triggered = null
+      evented = false
+      TestView = DomView.build($('<div/>'), inf)
+      view = new TestView()
+      view.artifact().on('destroying', -> evented = true)
 
-      class TestView extends DomView
-        @_dom: -> makeDom({ trigger: ((x) -> triggered = x), text: (->) })
-        @_template: template(
-          find('.title').text(from(42))
-        )
-
-      view = new TestView({})
-      view.artifact()
-
-      should(triggered).equal(null)
+      evented.should.equal(false)
       view.destroy()
-      triggered.should.equal('destroying')
+      evented.should.equal(true)
 
     it 'removes itself from the dom when destroyed', ->
-      removed = false
+      TestView = DomView.build($('<div/>'), inf)
+      view = new TestView()
 
-      class TestView extends DomView
-        @_dom: -> makeDom({ remove: (-> removed = true), children: (-> makeDom({ text: (->) })) })
-        @_template: template(
-          find('.title').text(from(42))
-        )
+      parent = $('<div/>')
+      parent.append(view.artifact())
+      parent.children().length.should.equal(1)
 
-      view = new TestView({})
-      view.artifact()
-
-      removed.should.equal(false)
       view.destroy()
-      removed.should.equal(true)
+      parent.children().length.should.equal(0)
 
     it 'stops all related bindings when destroyed', ->
-      rendered = []
       v = new Varying('test')
-
-      class TestView extends DomView
-        @_dom: -> makeDom({ text: ((x) -> rendered.push(x)) })
-        @_template: template(
-          find('.title').text(from(v))
-        )
+      TestView = DomView.build($('<div/>'), template(
+        find('div').text(from(v))
+      ))
 
       view = new TestView({})
-      view.artifact()
-      rendered.should.eql([ 'test' ])
+      artifact = view.artifact()
+      artifact.text().should.equal('test')
 
       v.set('test 2')
-      rendered.should.eql([ 'test', 'test 2' ])
+      artifact.text().should.equal('test 2')
 
       view.destroy()
       v.set('test 3')
-      rendered.should.eql([ 'test', 'test 2' ])
+      artifact.text().should.equal('test 2')
+
+    # it is the render mutator's job to destroy children when it rotates in a new
+    # view in place of an old one, so we don't test that here. we only test that
+    # destroying a view destroys all children at that moment.
+    it 'destroys children when destroyed', ->
+      destroyed = []
+      ParentView = class extends DomView.build($('<div><div class="a"/><div class="b"/></div>'), template(
+          find('.a').render(from(true))
+          find('.b').render(from(true))
+        ))
+        _destroy: -> destroyed.push(this); super()
+      ChildView = class extends DomView.build($('<div/>'), inf)
+        _destroy: -> destroyed.push(this); super()
+      app = { vendView: -> new ChildView() }
+
+      view = new ParentView({}, { app })
+      view.artifact()
+      destroyed.length.should.equal(0)
+
+      view.destroy()
+      destroyed.length.should.equal(3)
+
+    # i don't really know how to test this without reaching into internals:
+    it 'stops trying to wire new subview events when destroyed', ->
+      ParentView = DomView.build($('<div><div class="a"/><div class="b"/></div>'), template(
+        find('.a').render(from(true))
+        find('.b').render(from(true))
+      ))
+      ChildView = DomView.build($('<div/>'), inf)
+      app = { vendView: -> new ChildView() }
+
+      view = new ParentView({}, { app })
+      view.wireEvents()
+
+      view._subwires.length.should.equal(2)
+      view.destroy()
+      view._subwires[0].stopped.should.equal(true)
+      view._subwires[1].stopped.should.equal(true)
 

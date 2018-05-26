@@ -36,6 +36,8 @@
     "coffee-script": "1.12.2",
     "mocha": "~3",
     "should": "~11",
-    "istanbul": "~0.4"
+    "istanbul": "~0.4",
+    "jquery": "~3",
+    "domino": "~1"
   }
 }
