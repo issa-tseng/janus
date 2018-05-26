@@ -316,42 +316,39 @@ describe 'Mutator', ->
       opts.options.should.eql({ test: 3 })
 
     it 'clears out the previous subview', ->
-      emptied = false
-      destroyed = false
-      key = null
-      oldView = { destroy: -> destroyed = true }
-      dom = { append: (->), empty: (-> emptied = true), data: ((k) -> key = k; oldView) }
-      app = { vendView: (->) }
+      views = []
+      emptied = 0
+      dom = { append: (->), empty: (-> emptied += 1), data: (->) }
+      view = -> { artifact: (-> dom), destroy: -> (this.destroyed = true) }
+      app = { vendView: -> (v = view(); views.push(v); v) }
       point = passthroughWithApp(app)
 
-      mutators.render(from.varying(new Varying(1)))(dom, point)
-      emptied.should.equal(true)
-      destroyed.should.equal(true)
-      key.should.equal('subview')
+      varying = new Varying(1)
+      mutators.render(from.varying(varying))(dom, point)
+
+      varying.set(2)
+      views.length.should.equal(2)
+      views[0].destroyed.should.equal(true)
+      emptied.should.equal(2)
+
+      varying.set(3)
+      views.length.should.equal(3)
+      views[1].destroyed.should.equal(true)
+      emptied.should.equal(3)
+
+      (views[2].destroyed is true).should.equal(false)
 
     it 'drops in the new subview', ->
       appended = null
       dataKey = null
       dataValue = null
       newView = { artifact: -> 4 }
-      dom = { append: ((x) -> appended = x), empty: (->), data: ((k, v) -> dataKey = k; dataValue = v) }
+      dom = { append: ((x) -> appended = x), empty: (->) }
       app = { vendView: (-> newView) }
       point = passthroughWithApp(app)
 
       mutators.render(from.varying(new Varying(1)))(dom, point)
       appended.should.equal(4)
-      dataKey.should.equal('subview')
-      dataValue.should.equal(newView)
-
-    it 'notifies the new subview it\'s been appended', ->
-      evented = false
-      newView = { artifact: (-> 4), emit: ((x) -> evented = true if x is 'appended') }
-      dom = { append: (->), empty: (->), data: (->) }
-      app = { vendView: (-> newView) }
-      point = passthroughWithApp(app)
-
-      mutators.render(from.varying(new Varying(1)))(dom, point)
-      evented.should.equal(true)
 
     it 'should return a Varied that can stop mutation', ->
       value = null

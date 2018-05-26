@@ -2,6 +2,7 @@ should = require('should')
 
 { extendNew } = require('../../lib/util/util')
 { find, template } = require('../../lib/view/template')
+$ = require('jquery')(require('domino').createWindow())
 
 describe 'templater', ->
   describe 'find', ->
@@ -14,11 +15,37 @@ describe 'templater', ->
       result.should.be.a.Function
       result.length.should.equal(1)
 
-    it 'passes the selector along to the dom obj when called second-order', ->
-      selector = null
-      dom = { find: (x) -> selector = x }
-      find('a').text()(dom)
-      selector.should.equal('a')
+    describe 'selection', ->
+      it 'selects appropriately the root node', ->
+        nodes = null
+        testfind = find.build({ test: (_) -> (x) -> nodes = x })
+        mutator = testfind('.root').test()
+
+        fragment = $('<div class="root"><div/></div>')
+        mutator(fragment)(fragment)
+        nodes.length.should.equal(1)
+        nodes[0].should.equal(fragment[0])
+
+      it 'selects appropriately from amongst sibling branches', ->
+        nodes = null
+        testfind = find.build({ test: (_) -> (x) -> nodes = x })
+        mutator = testfind('.target').test()
+
+        fragment = $('<div><div/><div><div class="target"/></div></div>')
+        mutator(fragment)(fragment)
+        nodes.length.should.equal(1)
+        nodes[0].should.equal(fragment.find('.target').get(0))
+
+      it 'selects appropriately multiple nodes', ->
+        nodes = null
+        testfind = find.build({ test: (_) -> (x) -> nodes = x })
+        mutator = testfind('span').test()
+
+        fragment = $('<div class="root"><span><span/></span></div>')
+        mutator(fragment)(fragment)
+        nodes.length.should.equal(2)
+        nodes.get(0).should.equal(fragment.children().get(0))
+        nodes.get(1).should.equal(fragment.children().children().get(0))
 
     describe 'build', ->
       it 'mixes in our mutators', ->
@@ -45,7 +72,7 @@ describe 'templater', ->
         b.should.equal(2)
 
     describe 'mutator chaining', ->
-      it 'retains object permeance in chaining', ->
+      it 'retains object permanence in chaining', ->
         allArgs = null
         mymutator = (args = {}) ->
           result = (->)
@@ -75,21 +102,21 @@ describe 'templater', ->
         mymutator = () -> () -> called = true
         myfind = find.build({ test: mymutator })
 
-        dom = { find: (->) }
+        dom = $('<div/>')
         found = myfind('a').test()(dom)
         called.should.equal(false)
-        found()
+        found(dom)
         called.should.equal(true)
 
       it 'should call the final order on mutator with the correct context arguments', ->
         givenDom = givenPoint = null
-        dom = { find: -> 1 }
+        dom = $('<a/>')
         point = -> 2
         mymutator = () -> (dom, point) -> givenDom = dom; givenPoint = point
         myfind = find.build({ test: mymutator })
 
-        myfind('a').test()(dom)(point)
-        givenDom.should.equal(1)
+        myfind('a').test()(dom)(dom, point)
+        givenDom[0].should.equal(dom[0])
         givenPoint.should.be.a.Function
         givenPoint().should.equal(2)
 
@@ -98,7 +125,8 @@ describe 'templater', ->
         mymutator = (a, b) -> (dom, point) -> x = a; y = b
         myfind = find.build({ test: mymutator })
 
-        myfind('a').test(3, 4)({ find: -> })(->)
+        dom = $('<div/>')
+        myfind('a').test(3, 4)(dom)(dom)
         x.should.equal(3)
         y.should.equal(4)
 
