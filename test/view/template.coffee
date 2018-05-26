@@ -1,6 +1,7 @@
 should = require('should')
 
 { extendNew } = require('../../lib/util/util')
+{ Varying } = require('../../lib/core/varying')
 { find, template } = require('../../lib/view/template')
 $ = require('jquery')(require('domino').createWindow())
 
@@ -71,6 +72,7 @@ describe 'templater', ->
         a.should.equal(1)
         b.should.equal(2)
 
+    # tests chaining within a mutator's own return value (ie .render().options()).
     describe 'mutator chaining', ->
       it 'retains object permanence in chaining', ->
         allArgs = null
@@ -95,6 +97,97 @@ describe 'templater', ->
         result = myfind('a').test({ a: 1 }).chain({ b: 2 }).chain({ c: 3 })
         result.should.be.a.Function
         result.length.should.equal(1)
+
+    # tests chaining across different mutators.
+    describe 'multi-mutator chaining', ->
+      it 'executes all chained mutators', ->
+        results = []
+        makeMutator = (id) -> () -> () -> results.push(id)
+        testfind = find.build({ a: makeMutator('a'), b: makeMutator('b'), c: makeMutator('c') })
+
+        fragment = $('<div/>')
+        testfind('div').b().a().c().b()(fragment)(fragment)
+        results.should.eql([ 'b', 'a', 'c', 'b' ])
+
+      it 'provides the appropriate arguments to all mutators', ->
+        results = []
+        makeMutator = (id) -> (x, y) -> (dom, point) -> results.push([ id, x, y, dom.get(0), point ])
+        testfind = find.build({ a: makeMutator('a'), b: makeMutator('b') })
+
+        fragment = $('<div/>')
+        point = (->)
+        testfind('div').b(1, 2).a(3, 4).b(5, 6)(fragment)(fragment, point)
+
+        dom = fragment.get(0)
+        results.should.eql([
+          [ 'b', 1, 2, dom, point ],
+          [ 'a', 3, 4, dom, point ],
+          [ 'b', 5, 6, dom, point ]
+        ])
+
+      it 'selects the appropriate node for all mutators', ->
+        results = []
+        makeMutator = (id) -> () -> (dom) -> results.push(dom.get(0))
+        testfind = find.build({ a: makeMutator('a'), b: makeMutator('b') })
+
+        fragment = $('<div><span/><div><p class="target"/></div></div>')
+        testfind('.target').b().a()(fragment)(fragment)
+
+        dom = fragment.find('.target').get(0)
+        results.should.eql([ dom, dom ])
+
+      it 'returns a flattened list of Observations', ->
+        result = []
+        v = new Varying(2)
+        makeMutator = (id) -> (x) -> () -> v.map((y) -> x + y).react((z) -> result.push(z))
+        testfind = find.build({ a: makeMutator('a'), b: makeMutator('b') })
+
+        fragment = $('<div/>')
+        observations = testfind('div').a(4).b(8)(fragment)(fragment)
+        observations.length.should.equal(2)
+        observations[0].parent.should.be.an.instanceof(Varying)
+        observations[1].parent.should.be.an.instanceof(Varying)
+        result.should.eql([ 6, 10 ])
+
+        observations[1].stop()
+        v.set(0)
+        result.should.eql([ 6, 10, 4 ])
+
+      it 'intermixes mutator/multi-mutator chaining', ->
+        chainingMutator = (args = {}) ->
+          result = -> Varying.ly(args).react(->)
+          result.chain = (moreArgs) -> chainingMutator(extendNew(args, moreArgs))
+          result
+        makeMutator = (id) -> (x) -> () -> Varying.ly(x).react(->)
+
+        myfind = find.build({ chaining: chainingMutator, a: makeMutator('a'), b: makeMutator('b') })
+        fragment = $('<div/>')
+        observations = myfind('div')
+          .a(3)
+          .chaining({ x: 5 }).chain({ y: 7 })
+          .b(9)(fragment)(fragment)
+        observations.length.should.equal(3)
+        observations[0].parent.get().should.equal(3)
+        observations[1].parent.get().should.eql({ x: 5, y: 7 })
+        observations[2].parent.get().should.equal(9)
+
+      it 'does not clobber mutator chaining', ->
+        chainingMutator = (args = {}) ->
+          result = -> Varying.ly(args).react(->)
+          result.chain = (moreArgs) -> chainingMutator(extendNew(args, moreArgs))
+          result
+        makeMutator = (id) -> (x) -> () -> Varying.ly(x).react(->)
+
+        myfind = find.build({ chaining: chainingMutator, x: makeMutator('x'), chain: makeMutator('chain') })
+        fragment = $('<div/>')
+        observations = myfind('div')
+          .chain(3)
+          .chaining({ x: 5 }).chain({ y: 7 })
+          .x(9)(fragment)(fragment)
+        observations.length.should.equal(3)
+        observations[0].parent.get().should.equal(3)
+        observations[1].parent.get().should.eql({ x: 5, y: 7 })
+        observations[2].parent.get().should.equal(9)
 
     describe 'finalizing', ->
       it 'should call the final order on mutator when pointed', ->
