@@ -12,7 +12,7 @@
 
 # util.
 conj = (x, y) -> x.concat([ y ])
-internalCases = ic = defcase('org.janusjs.core.from.internal', 'varying', 'map', 'flatMap', 'resolve')
+internalCases = ic = defcase('org.janusjs.core.from.internal', 'varying', 'map', 'flatMap', 'pipe', 'resolve')
 
 # default applicants:
 defaultCases = dc = defcase('org.janusjs.core.from.default', 'dynamic', 'watch', 'resolve', 'attribute', 'varying', 'app', 'self')
@@ -33,6 +33,10 @@ val = (conjunction, applicants = []) ->
     [ rest..., last ] = applicants
     f = (obj) -> obj?.watch?(attr) ? orElse
     val(conjunction, conj(rest, internalCases.flatMap( inner: last, f: f )))
+
+  result.pipe = (f) ->
+    [ rest..., last ] = applicants
+    val(conjunction, conj(rest, internalCases.pipe( inner: last, f: f )))
 
   result.resolve = (attr) ->
     [ rest..., last ] = applicants
@@ -79,6 +83,12 @@ mappedPoint = match(
     match(
       ic.varying (x) -> ic.varying(x.flatMap(f))
       otherwise -> ic.flatMap({ inner, f })
+    )(mappedPoint(inner, point))
+
+  ic.pipe ({ inner, f }, point) ->
+    match(
+      ic.varying (x) -> ic.varying(f(x))
+      otherwise -> ic.pipe({ inner, f })
     )(mappedPoint(inner, point))
 
   ic.resolve ({ inner, attr }, point) ->
