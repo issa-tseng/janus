@@ -20,6 +20,9 @@ class DomView extends View
     dom.data?('view', this)
     this._wireEvents()
 
+    # then run any declarations from our template:
+    binding.start() for binding in this._bindings when binding.start?
+
     # then run our children forever:
     this._subwires = for binding in this._bindings when binding.view?
       binding.view.react((view) -> view?.wireEvents())
