@@ -23,8 +23,8 @@
   },
   "devDependencies": {
     "coffee-script": "~1.11",
-    "domino": "~1.0",
-    "jquery": "~3.1",
+    "domino": "~2.0",
+    "jquery": "~3",
     "mocha": "~3",
     "should": "~11",
     "istanbul": "~0.4"
