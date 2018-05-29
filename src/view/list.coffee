@@ -1,17 +1,17 @@
 { Varying, DomView, mutators, from, List } = require('janus')
+{ identity } = require('janus').util
 
 $ = require('../util/dollar')
 
 class ListView extends DomView
-  @_dom: -> $('<ul class="janus-list"/>')
-  @_itemDom: -> $('<li/>')
-  @_template: ->
+  dom: -> $('<ul class="janus-list"/>')
+  itemDom: -> $('<li/>')
 
-  _initialize: -> this.options.renderItem ?= (x) -> x
+  _initialize: -> this.options.renderItem ?= identity
 
   # the default _render doesn't do much for us. do it manually.
   _render: ->
-    dom = this.constructor._dom()
+    dom = this.dom()
 
     # simply map the subject list into a list of their resulting views.
     # subviews work themselves out as a result as they are based on views
@@ -19,10 +19,9 @@ class ListView extends DomView
     this._mappedBindings = this.subject.map((item) =>
       # make a container and populate it with a view given the standard
       # pointed binding. destroy the binding if the list item is removed.
-      itemDom = this.constructor._itemDom()
+      itemDom = this.itemDom()
       binding = this.options.renderItem(mutators.render(from(item)))(itemDom, (x) => this.constructor.point(x, this))
 
-      # HACK?: decorate the binding with the dom obj.
       binding.dom = itemDom
       binding
     )
@@ -50,8 +49,8 @@ class ListView extends DomView
       children.eq(idx).before(itemDom)
 
   _remove: (binding) ->
+    binding.view.get()?.destroy()
     binding.stop()
-    binding.dom.data('subview')?.destroy()
     binding.dom.remove()
 
 module.exports = { ListView, registerWith: (library) -> library.register(List, ListView) }

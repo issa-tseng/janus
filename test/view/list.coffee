@@ -64,10 +64,12 @@ describe 'view', ->
 
     it 'should destroy views related to removed elements', ->
       l = new List([ 1, 2, 3, 4, 5 ])
-      dom = (new ListView(l, { app: testApp })).artifact()
+      view = new ListView(l, { app: testApp })
+      dom = view.artifact()
+      view.wireEvents()
 
       destroyed = false
-      victimView = dom.children().eq(2).data('subview')
+      victimView = dom.children().eq(2).children().data('view')
       victimView.on('destroying', -> destroyed = true)
 
       l.remove(3)
