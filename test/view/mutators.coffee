@@ -16,6 +16,11 @@ passthroughWithApp = (given) ->
     from.default.app -> Varying.ly(given)
     otherwise (x) -> passthrough(x)
   )
+passthroughWithSelf = (given) ->
+  match(
+    from.default.self -> Varying.ly(given)
+    otherwise (x) -> passthrough(x)
+  )
 
 describe 'Mutator', ->
   describe 'attr', ->
@@ -363,6 +368,69 @@ describe 'Mutator', ->
       m.stop()
       v.set(2)
       value.should.equal(1)
+
+  describe 'on', ->
+    it 'should do nothing initially', ->
+      called = false
+      fired = false
+      dom = { on: (-> called = true) }
+      mutators.on('click', (-> fired = true))(dom, passthroughWithSelf({}))
+      called.should.equal(false)
+      fired.should.equal(false)
+
+    it 'should start listening on the dom node when start() is called', ->
+      called = false
+      fired = false
+      dom = { on: (-> called = true) }
+      binding = mutators.on('click', (-> fired = true))(dom, passthroughWithSelf({}))
+      binding.start()
+      called.should.equal(true)
+      fired.should.equal(false)
+
+    it 'should register the listener with the appropriate parameters', ->
+      calledWith = []
+      dom = { on: ((xs...) -> calledWith.push(xs)) }
+      binding = mutators.on('click', '.selector', 42, (-> fired = true))(dom, passthroughWithSelf({}))
+      binding.start()
+      calledWith.length.should.equal(1)
+      calledWith[0].length.should.equal(4)
+      calledWith[0][0].should.equal('click')
+      calledWith[0][1].should.equal('.selector')
+      calledWith[0][2].should.equal(42)
+      calledWith[0][3].should.be.a.Function()
+
+    it 'should call the handler with the appropriate arguments when fired', ->
+      handler = null
+      firedWith = []
+      dom = { on: ((event, cb) -> handler = cb) }
+      view = { subject: {}, artifact: (-> dom) }
+      binding = mutators.on('click', ((xs...) -> firedWith.push(xs)))(dom, passthroughWithSelf(view))
+      binding.start()
+
+      event = {}
+      handler(event)
+      firedWith.should.eql([[ event, view.subject, dom, view ]])
+
+    it 'should stop the listener when the binding is stopped', ->
+      calledOn = false
+      calledOff = false
+      dom = { on: (-> calledOn = true), off: (-> calledOff = true) }
+      binding = mutators.on('click', (->))(dom, passthroughWithSelf({}))
+      binding.start()
+      calledOn.should.equal(true)
+      calledOff.should.equal(false)
+      binding.stop()
+      calledOff.should.equal(true)
+
+    it 'should stop the binding when stop() is called', ->
+      dom = { on: (->), off: (->) }
+      v = new Varying({})
+      binding = mutators.on('click', (->))(dom, passthroughWithSelf(v))
+      binding.start()
+      oldStart = binding.start
+      binding.stop()
+      v.set({})
+      binding.start.should.equal(oldStart)
 
   describe 'all-terminated froms', ->
     it 'should work if passed an all-terminated from', ->

@@ -64,6 +64,18 @@ mutators =
 
     result
 
+  # a bit dirty, but it is efficient and predictable.
+  on: (args...) -> (dom, point) -> from.self().all.point(point).react((view) ->
+    f_ = args.pop()
+    g_ = (event) -> f_(event, view.subject, view.artifact(), view)
+    args.push(g_)
+    this.start = =>
+      dom.on(args...)
+      this.stop = ->
+        dom.off(args[0], g_)
+        this.constructor.prototype.stop.call(this)
+  )
+
 
 module.exports = mutators
 

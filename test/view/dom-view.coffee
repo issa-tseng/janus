@@ -278,6 +278,36 @@ describe 'DomView', ->
       view.wireEvents()
       called.should.equal(true)
 
+    it 'runs template .on declarations', ->
+      called = []
+      TestView = DomView.build($('<div/>'), template(
+        find('div')
+          .on('click', (event) -> called.push(event.type))
+          .on('mouseover', (event) -> called.push(event.type))))
+      view = new TestView({})
+      dom = view.artifact()
+      dom.trigger('click')
+      called.should.eql([])
+      view.wireEvents()
+      dom.trigger('mouseover')
+      dom.trigger('click')
+      called.should.eql([ 'mouseover', 'click' ])
+
+    it 'stops template .on declarations on destroy', ->
+      called = []
+      TestView = DomView.build($('<div/>'), template(
+        find('div')
+          .on('click', (event) -> called.push(event.type))
+          .on('mouseover', (event) -> called.push(event.type))))
+      view = new TestView({})
+      dom = view.artifact()
+      view.wireEvents()
+      dom.trigger('mouseover')
+      view.destroy()
+      dom.trigger('click')
+      dom.trigger('mouseover')
+      called.should.eql([ 'mouseover' ])
+
   it 'concats dom outerHTMLs to provide markup', ->
     TestView = DomView.build($('<div>123</div><div>abc</div>'), inf)
     (new TestView()).markup().should.equal('<div>123</div><div>abc</div>')
