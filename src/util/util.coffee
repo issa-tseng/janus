@@ -10,7 +10,7 @@ stringifier = (view) ->
   else if view.subject.stringify?
     Varying.ly(view.subject.stringify)
   else
-    new Varying((x) -> x?.toString())
+    new Varying((x) -> x?.toString() ? '')
 
 # standard resolution for taking a value and trying to derive a List out of it.
 asList = (x) ->

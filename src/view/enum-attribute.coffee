@@ -1,12 +1,12 @@
 { Varying, DomView, from, template, find, Base, List } = require('janus')
 { EnumAttribute } = require('janus').attribute
 { isArray, isPrimitive, uniqueId } = require('janus').util
+{ stringifier, asList } = require('../util/util')
 
 $ = require('../util/dollar')
 
 class EnumAttributeEditView extends DomView
-  @_dom: -> $('<select/>')
-  @_template: ->
+  dom: -> $('<select/>')
 
   # if we have the necessary mapping, locate the correct value and apply if found.
   _updateVal: (select) ->
@@ -15,7 +15,7 @@ class EnumAttributeEditView extends DomView
     select.val(id) if id? # TODO: this may not work with zepto/cheerio.
 
   _render: ->
-    select = this.constructor._dom()
+    select = this.dom()
 
     # because we don't necessarily have a safe reference to put down as each
     # option's value, we'll just generate ints and same a mapping here.
@@ -24,18 +24,7 @@ class EnumAttributeEditView extends DomView
     this._textBindingsMap = {}
 
     # map our values onto options.
-    Varying.ly(this.subject.values()).map((x) ->
-      # normalize our input to a List.
-      if !x?
-        new List()
-      else if isArray(x)
-        new List(x)
-      else if x.isCollection
-        x
-      else
-        console.error('got an unexpected value for EnumAttribute#values')
-        new List()
-    ).react((list) =>
+    Varying.ly(this.subject.values()).map(asList).react((list) =>
       # we have a new list; anything we'd previously had is completely invalid.
       this._removeAll(select)
 
@@ -47,22 +36,8 @@ class EnumAttributeEditView extends DomView
       this._options = options = list.map((item) =>
         option = $('<option/>')
 
-        # then prefer options.stringify, then attribute.stringify, then handle
-        # obvious primitives, then fall back to toString, or trial by hellfire.
-        textBinding = Varying.ly(
-          if this.options.stringify?
-            this.options.stringify(item)
-          else if this.subject.stringify?
-            this.subject.stringify(item)
-          else if !item?
-            ''
-          else if isPrimitive(item)
-            item.toString()
-          else if item.toString?
-            item.toString()
-          else
-            item # good luck.
-        ).react((text) -> option.text(text))
+        # use our standard stringifier to convert items to text; remember the binding.
+        textBinding = stringifier(this).flatMap((f) -> f(item)).react((text) -> option.text(text))
 
         # generate and save a unique id, along with relevant state data.
         id = this._generateId(item)
