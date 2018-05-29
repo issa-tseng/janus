@@ -2,9 +2,9 @@
 
 $ = require('../util/dollar')
 
-class SuccessResultView extends DomView
-  @_dom: -> $('<div class="janus-successResult"/>')
-  @_template: template(find('div').render(from.self().map((view) -> view.subject.value)))
+SuccessResultView = DomView.build($('<div class="janus-successResult"/>'), template(
+  find('div').render(from.self().map((view) -> view.subject.value))
+))
 
 module.exports = {
   SuccessResultView,
