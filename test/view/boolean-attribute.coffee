@@ -32,13 +32,9 @@ describe 'view', ->
       dom.trigger('change')
       m.get('test').should.equal(true)
 
-      # due to a bug in domino, an input once checked cannot be unchecked.
-      # https://github.com/fgnass/domino/pull/91
-      ###
       dom.prop('checked', false)
       dom.trigger('change')
       m.get('test').should.equal(false)
-      ###
 
     it 'is updated when the model value changes', ->
       m = new Model({ test: false })
@@ -51,12 +47,8 @@ describe 'view', ->
       m.set('test', true)
       dom.is(':checked').should.equal(true)
 
-      # due to a bug in domino, an input once checked cannot be unchecked.
-      # https://github.com/fgnass/domino/pull/91
-      ###
       m.set('test', false)
       dom.is(':checked').should.equal(false)
-      ###
 
   describe 'boolean attribute (button)', ->
     it 'renders an button tag', ->
