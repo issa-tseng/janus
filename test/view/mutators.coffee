@@ -256,6 +256,42 @@ describe 'Mutator', ->
       v.set('test 2')
       value.should.equal('test')
 
+  describe 'prop', ->
+    it 'should call prop on the dom obj correctly', ->
+      param = null
+      value = null
+
+      dom = { prop: (x, y) -> param = x; value = y }
+      mutators.prop('style', from.varying(new Varying('display')))(dom, passthrough)
+
+      param.should.equal('style')
+      value.should.equal('display')
+
+    it 'should not coerce values to a string', ->
+      param = null
+      value = null
+
+      dom = { prop: (x, y) -> param = x; value = y }
+      mutators.prop('checked', from.varying(new Varying(true)))(dom, passthrough)
+
+      param.should.equal('checked')
+      value.should.equal(true)
+
+    it 'should return a Varied that can stop mutation', ->
+      param = null
+      value = null
+
+      dom = { prop: (x, y) -> param = x; value = y }
+      v = new Varying(true)
+      m = mutators.prop('checked', from.varying(v))(dom, passthrough)
+
+      param.should.equal('checked')
+      value.should.equal(true)
+
+      m.stop()
+      v.set(false)
+      value.should.equal(true)
+
   describe 'render', ->
     it 'passes the subject to the library', ->
       subject = null

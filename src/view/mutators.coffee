@@ -43,6 +43,8 @@ mutators =
 
   html: (data) -> (dom, point) -> data.all.point(point).react((x) -> dom.html(safe(x)))
 
+  prop: (prop, data) -> (dom, point) -> data.all.point(point).react((x) -> dom.prop(prop, x))
+
   render: (data, args = {}) ->
     # TODO: eventually should analyze the view that may be already there and see if
     # it's already appropriate, in which case do nothing (for the attach case).
