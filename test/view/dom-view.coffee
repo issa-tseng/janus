@@ -309,8 +309,8 @@ describe 'DomView', ->
       called.should.eql([ 'mouseover' ])
 
   it 'concats dom outerHTMLs to provide markup', ->
-    TestView = DomView.build($('<div>123</div><div>abc</div>'), inf)
-    (new TestView()).markup().should.equal('<div>123</div><div>abc</div>')
+    TestView = DomView.build($('<div><div>123</div><div>abc</div></div>'), inf)
+    (new TestView()).markup().should.equal('<div><div>123</div><div>abc</div></div>')
 
   describe 'lifecycle', ->
     it 'triggers a `destroying` event on the dom fragment root', ->

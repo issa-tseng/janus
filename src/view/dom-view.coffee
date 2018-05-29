@@ -4,7 +4,7 @@ class DomView extends View
   constructor: (@subject, @options = {}) ->
     super(@subject, @options)
 
-  markup: -> (node.outerHTML for node in this.artifact().get()).join('')
+  markup: -> (node.outerHTML for node in this.artifact()).join('')
 
   _render: ->
     dom = this.dom()
