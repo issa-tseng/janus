@@ -447,6 +447,22 @@ describe 'Mutator', ->
       handler(event)
       firedWith.should.eql([[ event, view.subject, dom, view ]])
 
+    # had a bug where accidental reuse/mutation of args caused crosstalk:
+    it 'should work multiple times independently', ->
+      subjects = []
+      dommer = -> { on: (_, cb) -> this.cb = cb }
+      m = mutators.on('click', (_, subject) -> subjects.push(subject))
+
+      domA = dommer()
+      m(domA, passthroughWithSelf({ artifact: (-> domA), subject: 'a' })).start()
+      domB = dommer()
+      m(domB, passthroughWithSelf({ artifact: (-> domB), subject: 'b' })).start()
+
+      domB.cb()
+      domA.cb()
+
+      subjects.should.eql([ 'b', 'a' ])
+
     it 'should stop the listener when the binding is stopped', ->
       calledOn = false
       calledOff = false

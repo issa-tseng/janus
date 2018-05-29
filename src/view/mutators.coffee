@@ -68,13 +68,14 @@ mutators =
 
   # a bit dirty, but it is efficient and predictable.
   on: (args...) -> (dom, point) -> from.self().all.point(point).react((view) ->
-    f_ = args.pop()
+    f_ = args[args.length - 1]
     g_ = (event) -> f_(event, view.subject, view.artifact(), view)
-    args.push(g_)
+    thisArgs = args.slice(0, -1)
+    thisArgs.push(g_)
     this.start = =>
-      dom.on(args...)
+      dom.on(thisArgs...)
       this.stop = ->
-        dom.off(args[0], g_)
+        dom.off(thisArgs[0], g_)
         this.constructor.prototype.stop.call(this)
   )
 
