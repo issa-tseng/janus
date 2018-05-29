@@ -69,7 +69,7 @@ mutators =
   # a bit dirty, but it is efficient and predictable.
   on: (args...) -> (dom, point) -> from.self().all.point(point).react((view) ->
     f_ = args[args.length - 1]
-    g_ = (event) -> f_(event, view.subject, view.artifact(), view)
+    g_ = (event) -> f_(event, view.subject, view, view.artifact())
     thisArgs = args.slice(0, -1)
     thisArgs.push(g_)
     this.start = =>

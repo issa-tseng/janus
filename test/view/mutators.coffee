@@ -445,7 +445,7 @@ describe 'Mutator', ->
 
       event = {}
       handler(event)
-      firedWith.should.eql([[ event, view.subject, dom, view ]])
+      firedWith.should.eql([[ event, view.subject, view, dom ]])
 
     # had a bug where accidental reuse/mutation of args caused crosstalk:
     it 'should work multiple times independently', ->
