@@ -2,9 +2,9 @@
 
 $ = require('../util/dollar')
 
-class LiteralView extends DomView
-  @_dom: -> $('<span class="janus-literal"/>')
-  @_template: template(find('span').text(from((subject) -> subject)))
+LiteralView = DomView.build($('<span class="janus-literal"/>'), template(
+  find('span').text(from((subject) -> subject))
+))
 
 module.exports = {
   LiteralView,
