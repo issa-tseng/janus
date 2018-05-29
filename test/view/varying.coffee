@@ -18,9 +18,9 @@ describe 'view', ->
       dom.hasClass('janus-varying').should.equal(true)
 
     it 'should render an appropriate view initially', ->
-      class NumberView extends DomView
-        @_dom: -> $('<span class="janus-test"/>')
-        @_template: template(find('span').text(from((subject) -> subject)))
+      NumberView = DomView.build($('<span class="janus-test"/>'), template(
+        find('span').text(from((subject) -> subject))
+      ))
 
       library = new Library()
       library.register(Number, NumberView)
@@ -32,11 +32,9 @@ describe 'view', ->
       dom.children().length.should.equal(1)
 
     it 'should handle a view change correctly', ->
-      class LiteralView1 extends DomView
-        @_dom: -> $('<span class="janus-test1"/>')
-        @_template: template(find('span').text(from((subject) -> subject)))
-      class LiteralView2 extends LiteralView1
-        @_dom: -> $('<span class="janus-test2"/>')
+      basicTemplate = template(find('span').text(from((subject) -> subject)))
+      LiteralView1 = DomView.build($('<span class="janus-test1"/>'), basicTemplate)
+      LiteralView2 = DomView.build($('<span class="janus-test2"/>'), basicTemplate)
 
       library = new Library()
       library.register(Number, LiteralView1)
@@ -54,9 +52,9 @@ describe 'view', ->
       dom.children().length.should.equal(1)
 
     it 'should empty out if no view is to be had', ->
-      class NumberView extends DomView
-        @_dom: -> $('<span class="janus-test"/>')
-        @_template: template(find('span').text(from((subject) -> subject)))
+      NumberView = DomView.build($('<span class="janus-test"/>'), template(
+        find('span').text(from((subject) -> subject))
+      ))
 
       library = new Library()
       library.register(Number, NumberView)
@@ -72,9 +70,9 @@ describe 'view', ->
       dom.children().length.should.equal(0)
 
     it 'should attempt to pass its library context to its child', ->
-      class NumberView extends DomView
-        @_dom: -> $('<span class="janus-test"/>')
-        @_template: template(find('span').text(from((subject) -> subject)))
+      NumberView = DomView.build($('<span class="janus-test"/>'), template(
+        find('span').text(from((subject) -> subject))
+      ))
 
       library = new Library()
       library.register(Number, NumberView, context: 'custom')
