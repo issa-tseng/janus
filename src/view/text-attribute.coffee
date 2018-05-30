@@ -3,44 +3,17 @@
 
 $ = require('../util/dollar')
 
-class TextAttributeEditView extends DomView
-  @_dom: -> $('<input/>')
-  @_template: template(
-    find('input').attr('type', from.self().map((view) -> view.options.type ? 'text'))
-    find('input').attr('placeholder', from.self().flatMap((view) -> view.options.placeholder ? ''))
-  )
+TextAttributeEditView = DomView.build($('<input/>'), template(
+  find('input')
+    .attr('type', from.self().map((view) -> view.options.type ? 'text'))
+    .attr('placeholder', from.self().flatMap((view) -> view.options.placeholder ? ''))
+    .prop('value', from((subject) -> subject.watchValue()))
 
-  _updateVal = (input, subject) -> input.val(subject.getValue()) unless input.hasClass('focus')
-  eventsFor = { 'all': 'input change', 'commit': 'change' }
-
-  # splice into here just so we can initially set the value. we can't do a full
-  # binding, as that would cause weird event loops while typing.
-  _render: ->
-    dom = super()
-    _updateVal(dom, this.subject)
-    dom
-
-  _wireEvents: ->
-    input = this.artifact()
-    subject = this.subject
-
-    # update the input if the value changes. can't reactLater as it may have
-    # changed in the meantime.
-    this.subject.watchValue().react(-> _updateVal(input, subject))
-
-    # update the input's focus. we use classes as they are more easily testable in
-    # flimsier/faster dom emulation frameworks.
-    input.on('focus', -> input.addClass('focus'))
-    input.on('blur', -> input.removeClass('focus'))
-
-    # update the value on input change.
-    input.on(eventsFor[this.options.update ? 'all'], -> subject.setValue(input.val()))
+    .on('input change', (event, subject) -> subject.setValue(event.target.value))
+))
 
 class MultilineTextAttributeEditView extends TextAttributeEditView
-  @_dom: -> $('<textarea/>')
-  @_template: template(
-    find('textarea').attr('placeholder', from.self().flatMap((view) -> view.options.placeholder ? ''))
-  )
+  dom: -> $('<textarea/>')
 
 module.exports = {
   TextAttributeEditView,

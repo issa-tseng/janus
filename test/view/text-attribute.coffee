@@ -45,29 +45,6 @@ describe 'view', ->
       m.set('test', 'xyz')
       dom.val().should.equal('xyz')
 
-    it 'updates its focus class appropriately on focus change', ->
-      view = new TextAttributeEditView(new attribute.TextAttribute(new Model(), 'test'))
-      dom = view.artifact()
-      view.wireEvents()
-
-      dom.hasClass('focus').should.equal(false)
-      dom.focus()
-      dom.hasClass('focus').should.equal(true)
-      dom.blur()
-      dom.hasClass('focus').should.equal(false)
-
-    it 'does not update its value from model when focused', ->
-      m = new Model({ test: 'abc' })
-      view = new TextAttributeEditView(new attribute.TextAttribute(m, 'test'))
-      dom = view.artifact()
-      view.wireEvents()
-
-      dom.val().should.equal('abc')
-
-      dom.focus()
-      m.set('test', 'xyz')
-      dom.val().should.equal('abc')
-
     it 'updates the model on input and change by default', ->
       m = new Model({ test: 'abc' })
       view = new TextAttributeEditView(new attribute.TextAttribute(m, 'test'))
@@ -83,6 +60,7 @@ describe 'view', ->
       dom.trigger('change')
       m.get('test').should.equal('xyz')
 
+    ### for now, we've cut this feature. if people want it back we can figure it out.
     it 'updates the model only on change if specified', ->
       m = new Model({ test: 'abc' })
       view = new TextAttributeEditView(new attribute.TextAttribute(m, 'test'), { update: 'commit' })
@@ -96,6 +74,7 @@ describe 'view', ->
 
       dom.trigger('change')
       m.get('test').should.equal('xyz')
+    ###
 
     describe 'multiline', ->
       it 'renders a textedit for the multiline style', ->
