@@ -12,6 +12,7 @@ class ListView extends DomView
   # the default _render doesn't do much for us. do it manually.
   _render: ->
     dom = this.dom()
+    point = (x) => this.constructor.point(x, this)
 
     # simply map the subject list into a list of their resulting views.
     # subviews work themselves out as a result as they are based on views
@@ -20,7 +21,7 @@ class ListView extends DomView
       # make a container and populate it with a view given the standard
       # pointed binding. destroy the binding if the list item is removed.
       itemDom = this.itemDom()
-      binding = this.options.renderItem(mutators.render(from(item)))(itemDom, (x) => this.constructor.point(x, this))
+      binding = this.options.renderItem(mutators.render(from(item)))(itemDom, point)
 
       binding.dom = itemDom
       binding
