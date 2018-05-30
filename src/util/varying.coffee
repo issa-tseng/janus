@@ -60,9 +60,9 @@ varyingUtils = {
         else
           result.set(value)
           timer = setTimeout((->
+            timer = null
             return if pendingValue is nothing
             result.set(pendingValue)
-            timer = null
             pendingValue = nothing
           ), delay)
       )

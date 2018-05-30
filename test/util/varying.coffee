@@ -207,6 +207,19 @@ describe 'varying utils', ->
         )
       )
 
+    it 'should not freeze up if the initial set does not throttle', (done) ->
+      results = []
+      inner = new Varying(0)
+      outer = throttle(5, inner)
+      outer.react((x) -> results.push(x))
+
+      inner.set(1)
+      wait(10, ->
+        inner.set(2)
+        results.should.eql([ 0, 1, 2 ])
+        done()
+      )
+
     it 'should curry if given only one parameter', ->
       a = throttle(20)
       a.should.be.an.instanceof(Function)
