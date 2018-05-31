@@ -81,7 +81,7 @@ describe 'view', ->
       dom = view.artifact()
 
       unbound = false
-      victimMutator = view._bindings[2]
+      victimMutator = view._mappedBindings.list[2]
       victimMutator.stop = -> unbound = true
 
       l.remove(3)
@@ -115,4 +115,25 @@ describe 'view', ->
         child.children().length.should.equal(1)
 
         checkLiteral(child.children(':first-child'), i + 1)
+
+    it 'should wire events on extant children upon request', ->
+      view = new ListView(new List([ 1, 2, 3 ]), { app: testApp })
+      dom = view.artifact()
+      view.wireEvents()
+
+      dom.children().eq(0).children().data('view')._wired.should.equal(true)
+      dom.children().eq(1).children().data('view')._wired.should.equal(true)
+      dom.children().eq(2).children().data('view')._wired.should.equal(true)
+
+    it 'should wire events on new children when added', ->
+      l = new List([ 1 ])
+      view = new ListView(l, { app: testApp })
+      dom = view.artifact()
+      view.wireEvents()
+
+      dom.children().eq(0).children().data('view')._wired.should.equal(true)
+      l.add(2)
+      dom.children().eq(1).children().data('view')._wired.should.equal(true)
+      l.add(3)
+      dom.children().eq(2).children().data('view')._wired.should.equal(true)
 
