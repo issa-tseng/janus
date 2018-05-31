@@ -24,7 +24,7 @@ ListSelectItemView = class extends DomView.build($('
     # TODO: is there some way to do this without breaking into the class?
     dom = this.dom()
     contentWrapper = dom.children().eq(1) # faster
-    point = (x) => this.constructor.point(x, this)
+    point = this.pointer()
 
     # render our inner contents.
     contentBinding = this.options.renderItem(mutators.render(from(this.subject)))(contentWrapper, point)

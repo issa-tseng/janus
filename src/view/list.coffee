@@ -12,7 +12,7 @@ class ListView extends DomView
   # the default _render doesn't do much for us. do it manually.
   _render: ->
     dom = this.dom()
-    point = (x) => this.constructor.point(x, this)
+    point = this.pointer()
 
     # simply map the subject list into a list of their resulting views.
     # subviews work themselves out as a result as they are based on views

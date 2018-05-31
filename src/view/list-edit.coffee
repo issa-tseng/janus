@@ -58,7 +58,7 @@ ListEditItemView = class extends DomView.build($('
   _render: ->
     dom = this.dom()
     content = dom.children().eq(4) # faster
-    point = (x) => this.constructor.point(x, this)
+    point = this.pointer()
 
     # render our inner contents.
     contentBinding = this.options.renderItem(mutators.render(from(this.subject)))(content, point)
