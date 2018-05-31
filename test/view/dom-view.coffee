@@ -5,6 +5,7 @@ from = require('../../lib/core/from')
 { template, find } = require('../../lib/view/template')
 { DomView } = require('../../lib/view/dom-view')
 { Varying } = require('../../lib/core/varying')
+{ Model } = require('../../lib/model/model')
 { List } = require('../../lib/collection/list')
 $ = require('jquery')(require('domino').createWindow())
 
@@ -388,4 +389,20 @@ describe 'DomView', ->
       view.destroy()
       view._subwires[0].stopped.should.equal(true)
       view._subwires[1].stopped.should.equal(true)
+
+  describe 'viewModel declaration', ->
+    it 'should wrap in ViewModel if one is provided via options', ->
+      class MyModel extends Model
+        id: 'real mccoy'
+      class MyViewModel extends Model
+        id: 'just a viewmodel'
+
+      WithViewModel = DomView.build($('<div/>'), template(
+        find('div').text(from.self((view) -> view.subject.id))
+      ), { viewModelClass: MyViewModel })
+
+
+      model = new MyModel()
+      view = new WithViewModel(model)
+      view.artifact().text().should.equal('just a viewmodel')
 
