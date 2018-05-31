@@ -2,6 +2,7 @@ should = require('should')
 
 Model = require('../../lib/model/model').Model
 View = require('../../lib/view/view').View
+from = require('../../lib/core/from')
 
 describe 'View', ->
   describe 'core', ->
@@ -91,4 +92,9 @@ describe 'View', ->
 
   # @point is tested in DomView's tests, as the concrete implementation yields
   # an easier test harness.
+
+  describe 'pointer', ->
+    it 'should provide itself as the view instance', ->
+      view = new View()
+      from.self().all.point(view.pointer()).get().should.equal(view)
 
