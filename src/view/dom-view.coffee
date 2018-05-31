@@ -8,7 +8,7 @@ class DomView extends View
 
   _render: ->
     dom = this.dom()
-    this._bindings = this.preboundTemplate(dom, (x) => this.constructor.point(x, this)) #k
+    this._bindings = this.preboundTemplate(dom, this.pointer())
     dom
 
   wireEvents: ->

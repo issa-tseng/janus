@@ -59,6 +59,11 @@ class View extends Base
     self (x, view) -> if isFunction(x) then Varying.ly(x(view)) else Varying.ly(view)
   )
 
+  # Since View@point() wants two parameters, the target and the view instance,
+  # it gets tedious to write (x) => this.constructor.point(x, this) all the time.
+  # So all this instance method really does is perform that boilerplate for you.
+  pointer: -> (x) => this.constructor.point(x, this)
+
   # Wires events against the artifact in question. This method is separate so
   # that:
   #
