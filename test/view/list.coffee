@@ -137,3 +137,16 @@ describe 'view', ->
       l.add(3)
       dom.children().eq(2).children().data('view')._wired.should.equal(true)
 
+    it 'should destroy all child views when destroyed', ->
+      l = new List([ 1, 2, 3 ])
+      view = new ListView(l, { app: testApp })
+      dom = view.artifact()
+      view.wireEvents() # we do this just so we have easy access to the subviews via .data('view'):
+
+      subviews = dom.children().children().map(-> $(this).data('view')).toArray()
+      destroyed = 0
+      (subview._destroy = -> destroyed += 1) for subview in subviews
+
+      view.destroy()
+      destroyed.should.equal(3)
+

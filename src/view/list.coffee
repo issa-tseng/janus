@@ -50,11 +50,18 @@ class ListView extends DomView
     super()
 
     # now actually bind whatever we currently have.
-    binding.view.get()?.wireEvents() for binding in this._mappedBindings.list
-
+    #
     # note that because a change in the list would result in a item remove/append
     # cycle rather than any kind of in-place re-render, it is unnecessary to actually
     # watch on the binding.view and continue to rewire new view result.
+    binding.view.get()?.wireEvents() for binding in this._mappedBindings.list
+
+  # because we completely ignore how _render is normally done, we also need to
+  # do a little dance to get _destroy to work.
+  _destroy: ->
+    if this._artifact?
+      this._bindings = this._mappedBindings.list
+      super()
 
 
 insertNode = (dom, itemDom, idx) ->
