@@ -119,16 +119,6 @@ class Library extends Base
     if klass? and util.superClass(klass)?
       this._get(obj, util.superClass(klass), context, options)
 
-  # Returns a new `Library` that is identical to and bound to this one in every
-  # way except that it has a separate event binding context.
-  #
-  # Secretly, this operation is a clone. However, I don't want to name it as
-  # such, since I'm still hoping for a lighter weight way of accomplishing this.
-  newEventBindings: ->
-    newLibrary = Object.create(this)
-    newLibrary._events = {}
-    newLibrary
-
   # Class-level internal tracking of object constructors.
   @classKey: "__janus_classId#{new Date().getTime()}"
   @classMap: {}

@@ -45,11 +45,12 @@ class Manifest extends Base
     ), 0)
 
 class StoreManifest extends Manifest
-  constructor: (@library) ->
+  constructor: (@app) ->
     super()
 
-    this.listenTo this.library, 'got', (store) =>
-      store.on('requesting', (request) => this.requested(request))
+    this.listenTo(this.app, 'vended', (type, store) =>
+      store.on('requesting', (request) => this.requested(request)) if type is 'stores'
+    )
 
 
 module.exports = { Manifest, StoreManifest }
