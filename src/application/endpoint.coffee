@@ -30,11 +30,12 @@ class Endpoint extends Base
     app = this.initApp(env)
 
     # create a manifest to track created objects and request completion.
-    manifest = new StoreManifest(app.get('stores'))
+    manifest = new StoreManifest(app)
     manifest.on('allComplete', => this.finish(pageModel, pageView, manifest, respond))
-    manifest.on 'requestComplete', (request) =>
+    manifest.on('requestComplete', (request) =>
       if types.result.failure.match(request.value) and request.options.fatal is true
         this.error(request, respond)
+    )
 
     # make our app, our pageModel, and its pageView.
     pageModel = this.initPageModel(env, app, respond)
@@ -48,10 +49,8 @@ class Endpoint extends Base
     # return dom immediately if the upstream needs/wants it
     dom
 
-  initApp: (env) ->
-    # make our own store library so we can track events on it specifically.
-    storeLibrary = this.app.get('stores').newEventBindings()
-    this.app.withStoreLibrary(storeLibrary)
+  # we shadow the app so we get our own domain for vend events, so we can track stores.
+  initApp: (env) -> this.app.shadow()
 
   initPageModel: (env, app, respond) -> new this.pageModelClass({ env: env }, { app: app })
 
