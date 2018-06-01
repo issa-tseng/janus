@@ -21,7 +21,7 @@ class KeyList extends DerivedList
     this._trackedKeys = {}
 
     # add initial keys.
-    scanMap = (map) => traverse(map.attributes, (key) => this._addKey(key.join('.')))
+    scanMap = (map) => traverse(map.data, (key) => this._addKey(key.join('.')))
     if this.scope is 'all'
       ptr = this.map
       while ptr?
@@ -34,7 +34,7 @@ class KeyList extends DerivedList
     this.listenTo(this.map, 'anyChanged', (key, newValue, oldValue) =>
       if this.scope is 'direct'
         # TODO: is there a cleverer way to do this?
-        ownValue = deepGet(this.map.attributes, key)
+        ownValue = deepGet(this.map.data, key)
         return if ownValue isnt newValue
 
       if newValue? and not oldValue?
@@ -107,7 +107,7 @@ Enumeration =
 
       result = []
       traverser = if include is 'values' then traverse else if include is 'all' then traverseAll
-      scanMap = (map) => traverser(map.attributes, (key) => result.push(key.join('.')) unless result.indexOf(key) >= 0)
+      scanMap = (map) => traverser(map.data, (key) => result.push(key.join('.')) unless result.indexOf(key) >= 0)
       if scope is 'all'
         ptr = map
         while ptr?

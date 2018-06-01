@@ -13,14 +13,14 @@ util = require('../util/util')
 class Model extends Map
   isModel: true
 
-  # We take in an attribute bag and optionally some options for this Model.
+  # We take in a data bag and optionally some options for this Model.
   # Options are for both framework and implementation use.
-  constructor: (attributes = {}, options) ->
+  constructor: (data = {}, options) ->
     this._attributes = {}
-    super(attributes, options)
+    super(data, options)
     this._bind() # kick off bindings only after basic init.
 
-  # Get an attribute about this model. The key can be a dot-separated path into
+  # Get an data about this model. The key can be a dot-separated path into
   # a nested plain model. We do not traverse into submodels.
   #
   # If we are a shadow copy, we'll delegate to parent if we find nothing.

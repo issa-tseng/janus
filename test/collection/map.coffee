@@ -9,10 +9,10 @@ describe 'Map', ->
     it 'should construct', ->
       (new Map()).should.be.an.instanceof(Map)
 
-    it 'should construct with an attribute bag', ->
-      (new Map( test: 'attr' )).attributes.test.should.equal('attr')
+    it 'should construct with a data bag', ->
+      (new Map( test: 'attr' )).data.test.should.equal('attr')
 
-    it 'should call preinitialize before attributes are populated', ->
+    it 'should call preinitialize before data is populated', ->
       result = -1
       class TestMap extends Map
         _preinitialize: -> result = this.get('a')
@@ -20,7 +20,7 @@ describe 'Map', ->
       new TestMap({ a: 42 })
       should(result).equal(null)
 
-    it 'should call initialize after attributes are populated', ->
+    it 'should call initialize after data is populated', ->
       result = -1
       class TestMap extends Map
         _initialize: -> result = this.get('a')
@@ -28,44 +28,44 @@ describe 'Map', ->
       new TestMap({ a: 42 })
       result.should.equal(42)
 
-  describe 'attribute', ->
+  describe 'data', ->
     describe 'get', ->
-      it 'should be able to get a shallow attribute', ->
+      it 'should be able to get a shallow key', ->
         map = new Map( vivace: 'brix' )
         map.get('vivace').should.equal('brix')
 
-      it 'should be able to get a deep attribute', ->
+      it 'should be able to get a deep key', ->
         map = new Map( cafe: { vivace: 'brix' } )
         map.get('cafe.vivace').should.equal('brix')
 
-      it 'should return null on nonexistent attributes', ->
+      it 'should return null on nonexistent keys', ->
         map = new Map( broad: 'way' )
         (map.get('vivace') is null).should.be.true
         (map.get('cafe.vivace') is null).should.be.true
 
     describe 'set', ->
-      it 'should be able to set a shallow attribute', ->
+      it 'should be able to set a shallow key', ->
         map = new Map()
         map.set('colman', 'pool')
 
-        map.attributes.colman.should.equal('pool')
+        map.data.colman.should.equal('pool')
         map.get('colman').should.equal('pool')
 
-      it 'should be able to set a deep attribute', ->
+      it 'should be able to set a deep key', ->
         map = new Map()
         map.set('colman.pool', 'slide')
 
-        map.attributes.colman.pool.should.equal('slide')
+        map.data.colman.pool.should.equal('slide')
         map.get('colman.pool').should.equal('slide')
 
       it 'should be able to set an empty object', ->
         map = new Map()
         map.set('an.obj', {})
 
-        map.attributes.an.obj.should.eql({})
+        map.data.an.obj.should.eql({})
         map.get('an.obj').should.eql({})
 
-      it 'should be able to set a deep attribute bag', ->
+      it 'should be able to set a deep data bag', ->
         map = new Map()
         map.set('colman.pool', { location: 'west seattle', length: { amount: 50, unit: 'meter' } })
 
@@ -73,11 +73,11 @@ describe 'Map', ->
         map.get('colman.pool.length.amount').should.equal(50)
         map.get('colman.pool.length.unit').should.equal('meter')
 
-      it 'should accept a bag of attributes', ->
+      it 'should accept a bag of data', ->
         map = new Map()
         map.set( the: 'stranger' )
 
-        map.attributes.the.should.equal('stranger')
+        map.data.the.should.equal('stranger')
 
       it 'should do nothing if setting an equal value', ->
         map = new Map( test: 47 )
@@ -89,17 +89,17 @@ describe 'Map', ->
         map.set('test', 42)
         evented.should.equal(true)
 
-      it 'should deep write all attributes in a given bag', ->
+      it 'should deep write all data in a given bag', ->
         map = new Map( the: { stranger: 'seattle' } )
         map.set( the: { joule: 'apartments' }, black: 'dog' )
 
-        map.attributes.the.stranger.should.equal('seattle')
+        map.data.the.stranger.should.equal('seattle')
         map.get('the.stranger').should.equal('seattle')
 
-        map.attributes.the.joule.should.equal('apartments')
+        map.data.the.joule.should.equal('apartments')
         map.get('the.joule').should.equal('apartments')
 
-        map.attributes.black.should.equal('dog')
+        map.data.black.should.equal('dog')
         map.get('black').should.equal('dog')
 
       it 'should curry if given only a string key', ->
@@ -113,13 +113,13 @@ describe 'Map', ->
         map.get('test').should.equal(4)
 
     describe 'unset', ->
-      it 'should be able to unset an attribute', ->
+      it 'should be able to unset a key', ->
         map = new Map( cafe: { vivace: 'brix' } )
         map.unset('cafe.vivace')
 
         (map.get('cafe.vivace') is null).should.be.true
 
-      it 'should be able to unset an attribute tree', ->
+      it 'should be able to unset a key tree', ->
         map = new Map( cafe: { vivace: 'brix' } )
         map.unset('cafe')
 
@@ -127,26 +127,26 @@ describe 'Map', ->
         (map.get('cafe') is null).should.be.true
 
     describe 'setAll', ->
-      it 'should set all attributes in the given bag', ->
+      it 'should set all data in the given bag', ->
         map = new Map()
         map.setAll( the: { stranger: 'seattle', joule: 'apartments' } )
 
-        map.attributes.the.stranger.should.equal('seattle')
+        map.data.the.stranger.should.equal('seattle')
         map.get('the.stranger').should.equal('seattle')
 
-        map.attributes.the.joule.should.equal('apartments')
+        map.data.the.joule.should.equal('apartments')
         map.get('the.joule').should.equal('apartments')
 
-      it 'should clear attributes not in the given bag', ->
+      it 'should clear keys not in the given bag', ->
         map = new Map( una: 'bella', tazza: { di: 'caffe' } )
         map.setAll( tazza: { of: 'cafe' } )
 
-        should.not.exist(map.attributes.una)
+        should.not.exist(map.data.una)
         (map.get('una') is null).should.be.true
-        should.not.exist(map.attributes.tazza.di)
+        should.not.exist(map.data.tazza.di)
         (map.get('tazza.di') is null).should.be.true
 
-        map.attributes.tazza.of.should.equal('cafe')
+        map.data.tazza.of.should.equal('cafe')
         map.get('tazza.of').should.equal('cafe')
 
   describe 'shadowing', ->
@@ -181,7 +181,7 @@ describe 'Map', ->
         map = new Map()
         map.original().should.equal(map)
 
-    describe 'attributes', ->
+    describe 'shadowing', ->
       it 'should return the parent\'s values', ->
         map = new Map( test1: 'a' )
         shadow = map.shadow()
@@ -244,7 +244,7 @@ describe 'Map', ->
         shadow.get('test').original().should.equal(submap)
 
     describe 'watching', ->
-      it 'should handle when an inherited attribute value changes', ->
+      it 'should handle when an inherited value changes', ->
         map = new Map( test: 'x' )
         shadow = map.shadow()
 
@@ -257,7 +257,7 @@ describe 'Map', ->
         map.set('test', 'y')
         evented.should.equal(true)
 
-      it 'should not fire when an overriden inherited attribute changes', ->
+      it 'should not fire when an overriden inherited value changes', ->
         map = new Map( test: 'x' )
         shadow = map.shadow()
 
@@ -314,7 +314,7 @@ describe 'Map', ->
         s = new Map( a: 1 )
         s.with()._parent.should.equal(s)
 
-      it 'should attach the given attributes to the shadow instance', ->
+      it 'should attach the given data to the shadow instance', ->
         s1 = new Map( a: 1, b: 2 )
         s2 = s1.with( b: 3, c: 4 )
 
@@ -370,30 +370,30 @@ describe 'Map', ->
         s = new Map( a: 1, b: 2, c: { d: 3 } )
         s2 = s.mapPairs((k, v) -> v + 1)
         s2.should.be.an.instanceof(Map)
-        s2.attributes.should.eql({ a: 2, b: 3, c: { d: 4 } })
+        s2.data.should.eql({ a: 2, b: 3, c: { d: 4 } })
 
       it 'should handle added and removed values', ->
         s = new Map( a: 1, b: 2, c: { d: 3 } )
         s2 = s.mapPairs((k, v) -> v + 1)
 
         s.set('c.e.f', 4)
-        s2.attributes.should.eql({ a: 2, b: 3, c: { d: 4, e: { f: 5 } } })
+        s2.data.should.eql({ a: 2, b: 3, c: { d: 4, e: { f: 5 } } })
 
         s.unset('b')
-        s2.attributes.should.eql({ a: 2, c: { d: 4, e: { f: 5 } } })
+        s2.data.should.eql({ a: 2, c: { d: 4, e: { f: 5 } } })
 
         s.unset('c.e')
-        s2.attributes.should.eql({ a: 2, c: { d: 4 } })
+        s2.data.should.eql({ a: 2, c: { d: 4 } })
 
       it 'should handle changed values', ->
         s = new Map( a: 1, b: 2, c: { d: 3 } )
         s2 = s.mapPairs((k, v) -> v + 1)
 
         s.set('c.d', 4)
-        s2.attributes.should.eql({ a: 2, b: 3, c: { d: 5 } })
+        s2.data.should.eql({ a: 2, b: 3, c: { d: 5 } })
 
         s.set('c', 8)
-        s2.attributes.should.eql({ a: 2, b: 3, c: 9 })
+        s2.data.should.eql({ a: 2, b: 3, c: 9 })
 
     describe 'flatMapPairs', ->
       it 'should provide the appropriate k/v arguments to the mapping function', ->
@@ -407,7 +407,7 @@ describe 'Map', ->
         c = new Varying(1)
         s2 = s.flatMapPairs((k, v) -> c.map((cv) -> v + cv))
         s2.should.be.an.instanceof(Map)
-        s2.attributes.should.eql({ a: 2, b: 3, c: { d: 4 } })
+        s2.data.should.eql({ a: 2, b: 3, c: { d: 4 } })
 
       it 'should handle added and removed values', ->
         s = new Map( a: 1, b: 2, c: { d: 3 } )
@@ -415,13 +415,13 @@ describe 'Map', ->
         s2 = s.flatMapPairs((k, v) -> c.map((cv) -> v + cv))
 
         s.set('c.e.f', 4)
-        s2.attributes.should.eql({ a: 2, b: 3, c: { d: 4, e: { f: 5 } } })
+        s2.data.should.eql({ a: 2, b: 3, c: { d: 4, e: { f: 5 } } })
 
         s.unset('b')
-        s2.attributes.should.eql({ a: 2, c: { d: 4, e: { f: 5 } } })
+        s2.data.should.eql({ a: 2, c: { d: 4, e: { f: 5 } } })
 
         s.unset('c.e')
-        s2.attributes.should.eql({ a: 2, c: { d: 4 } })
+        s2.data.should.eql({ a: 2, c: { d: 4 } })
 
       it 'should handle changed values', ->
         s = new Map( a: 1, b: 2, c: { d: 3 } )
@@ -429,16 +429,16 @@ describe 'Map', ->
         s2 = s.flatMapPairs((k, v) -> c.map((cv) -> v + cv))
 
         c.set(2)
-        s2.attributes.should.eql({ a: 3, b: 4, c: { d: 5 } })
+        s2.data.should.eql({ a: 3, b: 4, c: { d: 5 } })
 
         s.set('c.d', 4)
-        s2.attributes.should.eql({ a: 3, b: 4, c: { d: 6 } })
+        s2.data.should.eql({ a: 3, b: 4, c: { d: 6 } })
 
         c.set(4)
-        s2.attributes.should.eql({ a: 5, b: 6, c: { d: 8 } })
+        s2.data.should.eql({ a: 5, b: 6, c: { d: 8 } })
 
         s.set('c', 8)
-        s2.attributes.should.eql({ a: 5, b: 6, c: 12 })
+        s2.data.should.eql({ a: 5, b: 6, c: 12 })
 
       it 'should deregister all watches on destruction', ->
         count = 0
@@ -454,7 +454,7 @@ describe 'Map', ->
   describe 'deserialize', ->
     it 'should populate the result with the appropriate data', ->
       result = Map.deserialize( a: 1, b: 2, c: { d: 3 } )
-      result.attributes.should.eql({ a: 1, b: 2, c: { d: 3 } })
+      result.data.should.eql({ a: 1, b: 2, c: { d: 3 } })
 
     it 'should create an instance of a subclass if called from it', ->
       class MyMap extends Map

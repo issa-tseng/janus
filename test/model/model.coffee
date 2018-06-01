@@ -16,10 +16,10 @@ describe 'Model', ->
     it 'should construct', ->
       (new Model()).should.be.an.instanceof(Model)
 
-    it 'should construct with an attribute bag', ->
-      (new Model( test: 'attr' )).attributes.test.should.equal('attr')
+    it 'should construct with a data bag', ->
+      (new Model( test: 'attr' )).data.test.should.equal('attr')
 
-    it 'should call preinitialize before attributes are populated', ->
+    it 'should call preinitialize before data is populated', ->
       result = -1
       class TestModel extends Model
         _preinitialize: -> result = this.get('a')
@@ -27,7 +27,7 @@ describe 'Model', ->
       new TestModel({ a: 42 })
       should(result).equal(null)
 
-    it 'should call initialize after attributes are populated', ->
+    it 'should call initialize after data is populated', ->
       result = -1
       class TestModel extends Model
         _initialize: -> result = this.get('a')
@@ -58,7 +58,7 @@ describe 'Model', ->
 
       m = new TestModel()
       m.get('latte').should.equal('espresso')
-      m.attributes.should.eql({})
+      m.data.should.eql({})
 
     it 'should write the default value if writeDefault is true', ->
       class TestAttribute extends attribute.Attribute
@@ -69,13 +69,13 @@ describe 'Model', ->
         @attribute('latte', TestAttribute)
 
       m = new TestModel()
-      m.attributes.should.eql({})
+      m.data.should.eql({})
       m.get('latte').should.equal('espresso')
-      m.attributes.should.eql({ latte: 'espresso' })
+      m.data.should.eql({ latte: 'espresso' })
 
   describe 'binding', ->
     describe 'application', ->
-      it 'should bind one attribute from another', ->
+      it 'should bind one value from another', ->
         class TestModel extends Model
           @bind('slave', from('master'))
 
@@ -85,7 +85,7 @@ describe 'Model', ->
         model.set('master', 'commander')
         model.get('slave').should.equal('commander')
 
-      it 'should map multiple attributes together', ->
+      it 'should map multiple value together', ->
         class TestModel extends Model
           @bind('c', from('a').and('b').all.map((a, b) -> a + b))
 
@@ -136,7 +136,7 @@ describe 'Model', ->
         v.set(2)
         m.get('b').should.equal(2)
 
-      it 'should point dynamic attribute names', ->
+      it 'should point dynamic key names', ->
         class TestModel extends Model
           @bind('b', from('a'))
 
@@ -153,7 +153,7 @@ describe 'Model', ->
         m = new TestModel()
         m.get('b').should.equal(42)
 
-      it 'should point watch attribute names', ->
+      it 'should point watch key names', ->
         class TestModel extends Model
           @bind('b', from.watch('a'))
 
@@ -163,7 +163,7 @@ describe 'Model', ->
         m.set('a', 2)
         m.get('b').should.equal(2)
 
-      it 'should not point resolve attribute names by default', ->
+      it 'should not point resolve names by default', ->
         class TestModel extends Model
           @bind('b', from.resolve('a'))
 
@@ -634,7 +634,7 @@ describe 'Model', ->
 
   describe 'deserialization', ->
     it 'should store the given data into the correct places', ->
-      Model.deserialize( a: { b: 1, c: 2 }, d: 3 ).attributes.should.eql({ a: { b: 1, c: 2 }, d: 3 })
+      Model.deserialize( a: { b: 1, c: 2 }, d: 3 ).data.should.eql({ a: { b: 1, c: 2 }, d: 3 })
 
     it 'should rely on provided attributes to deserialize if given', ->
       class TestModel extends Model
@@ -649,5 +649,5 @@ describe 'Model', ->
         @attribute 'x', class extends attribute.Attribute
           @deserialize: (x) -> "x#{x}"
 
-      TestModel.deserialize( a: 1, b: { c: 2, d: 3 } ).attributes.should.eql({ a: 'a1', b: { c: 'bc2', d: 3 } })
+      TestModel.deserialize( a: 1, b: { c: 2, d: 3 } ).data.should.eql({ a: 'a1', b: { c: 'bc2', d: 3 } })
 
