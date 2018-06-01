@@ -259,7 +259,7 @@ describe 'traversal', ->
 
     it 'should map a map to a map', ->
       s = Traversal.asNatural(new Map( a: 1, b: 2, c: 3 ), map: (k, v) -> value("#{k}#{v}"))
-      s.attributes.should.eql({ a: 'a1', b: 'b2', c: 'c3' })
+      s.data.should.eql({ a: 'a1', b: 'b2', c: 'c3' })
 
     it 'should recursively map like types', ->
       source = new Map( a: 1, b: new List([ 2, new Map( c: 3, d: 4 ) ]), e: new Map( f: 5 ) )
@@ -279,9 +279,9 @@ describe 'traversal', ->
       s.get('b').at(0).should.equal('02')
       s.get('b').at(1).should.be.an.instanceof(Map)
 
-      s.get('b').at(1).attributes.should.eql({ c: 'c3', d: 'd4' })
+      s.get('b').at(1).data.should.eql({ c: 'c3', d: 'd4' })
 
-      s.get('e').attributes.should.eql({ f: 'f5' })
+      s.get('e').data.should.eql({ f: 'f5' })
 
   describe 'get natural', ->
     # largely relies on the asList tests for correctness of internal traversal.

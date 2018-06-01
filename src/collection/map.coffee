@@ -18,10 +18,10 @@ Null = new NullClass()
 class Map extends Enumerable
   isMap: true
 
-  constructor: (attributes = {}, @options = {}) ->
+  constructor: (data = {}, @options = {}) ->
     super()
 
-    this.attributes = {}
+    this.data = {}
     this._watches = {}
 
     # If we have a designated shadow parent, set it and track its events.
@@ -29,23 +29,23 @@ class Map extends Enumerable
       this._parent = this.options.parent
       this.listenTo(this._parent, 'anyChanged', (key, newValue, oldValue) => this._parentChanged(key, newValue, oldValue))
 
-    # Allow setup that happens before attribute binding occurs, without
+    # Allow setup that happens before initial data load occurs, without
     # overriding constructor args.
     this._preinitialize?()
 
-    # Drop in our attributes.
-    this.set(attributes)
+    # Drop in our data.
+    this.set(data)
 
     # Allow setup tasks without overriding+passing along constructor args.
     this._initialize?()
 
-  # Get an attribute about this model. The key can be a dot-separated path into
+  # Get a data value from this model. The key can be a dot-separated path into
   # a nested plain model. We do not traverse into submodels that have been
   # inflated.
   #
   # **Returns** the value of the given key.
   get: (key) ->
-    value = deepGet(this.attributes, key)
+    value = deepGet(this.data, key)
 
     # If we don't have a value, maybe our parent does. If it does and it's a
     # Map, we'll want to shadowclone it before returning.
@@ -56,7 +56,7 @@ class Map extends Enumerable
 
     if value is Null then null else value
 
-  # Set an attribute about this model. Takes two forms:
+  # Set a data value on this model. Takes two forms:
   #
   # 1. Two fixed parameters. As with get, the first parameter is a dot-separated
   #    string key. The second parameter is the value to set.
@@ -82,29 +82,29 @@ class Map extends Enumerable
   # out of parameters above each k/v pair may be assessed and manipulated by
   # subclasses.
   _set: (key, value) ->
-    oldValue = deepGet(this.attributes, key)
+    oldValue = deepGet(this.data, key)
     return value if oldValue is value
 
-    deepSet(this.attributes, key)(value)
+    deepSet(this.data, key)(value)
     key = key.join('.') if isArray(key)
     this._changed(key, value, oldValue)
 
     value
 
-  # Takes an entire attribute bag, and replaces our own attributes with it.
+  # Takes an entire data bag, and replaces our own data with it.
   # Will fire the appropriate events.
   #
   # **Returns** nothing.
   setAll: (attrs) ->
-    # first clear off attributes that are about to no longer exist, then write over.
-    traverseAll(this.attributes, (path, value) =>
+    # first clear off data values that are about to no longer exist, then write over.
+    traverseAll(this.data, (path, value) =>
       this.unset(path.join('.')) unless deepGet(attrs, path)?
     )
     this.set(attrs)
 
     null
 
-  # Clear the value of some attribute. If we are a shadow copy, we'll actually
+  # Clear the value of some key. If we are a shadow copy, we'll actually
   # leave behind a sentinel so that we know not to read into our parent.
   #
   # If the value has changed as a result of this operation, a change event will
@@ -114,17 +114,16 @@ class Map extends Enumerable
   unset: (key) ->
     if this._parent?
       oldValue = this.get(key)
-      deepSet(this.attributes, key)(Null)
+      deepSet(this.data, key)(Null)
     else
-      oldValue = deepDelete(this.attributes, key)
+      oldValue = deepDelete(this.data, key)
 
     this._changed(key, this.get(key), oldValue) if oldValue?
     oldValue
 
-  # Revert a particular attribute on this model. After this, the model will
-  # return whatever its parent thinks the attribute should be. If no parent
-  # exists, this function will fail silently. The key can be a dot-separated
-  # path.
+  # Revert a particular data key on this model. After this, the model will
+  # return whatever its parent thinks the value should be. If no parent exists,
+  # this function will fail silently. The key can be a dot-separated path.
   #
   # If the value has changed as a result of this operation, a change event will
   # be issued.
@@ -133,7 +132,7 @@ class Map extends Enumerable
   revert: (key) ->
     return unless this._parent?
 
-    oldValue = deepDelete(this.attributes, key)
+    oldValue = deepDelete(this.data, key)
     newValue = this.get(key)
     this._changed(key, newValue, oldValue) unless newValue is oldValue
 
@@ -141,19 +140,18 @@ class Map extends Enumerable
 
   # Shadow-copies a model. This allows a second copy of the model to function
   # as its own model instance and keep a separate set of changes, but which
-  # will fall back on the original model if asked about an attribute it doesn't
+  # will fall back on the original model if asked about a key it doesn't
   # know about.
   #
   # **Returns** a new shadow copy, which is an instance of `Model`.
   shadow: (klass) -> new (klass ? this.constructor)({}, extendNew(this.options, { parent: this }))
 
-  # Shadow-copies a model, inserting the attributes given. Really just
-  # syntactic sugar.
+  # Shadow-copies a model, inserting the data given. Really just syntactic sugar.
   #
   # **Returns** a new shadow copy with added data.
-  with: (attributes) ->
+  with: (data) ->
     result = this.shadow()
-    result.set(attributes)
+    result.set(data)
     result
 
   # Returns the original copy of a model. Returns itself if it's already an
@@ -163,9 +161,9 @@ class Map extends Enumerable
   original: -> this._parent?.original() ? this
 
   # Get a `Varying` object for a particular key. This simply creates a new
-  # Varying that points at our attribute.
+  # Varying that points at our key.
   #
-  # **Returns** a `Varying` object against our attribute at `key`.
+  # **Returns** a `Varying` object against our value at `key`.
   watch: (key) ->
     this._watches[key] ?= do =>
       varying = new Varying(this.get(key))
@@ -192,7 +190,7 @@ class Map extends Enumerable
 
   # Handles our parent's changes and judiciously vends those events ourselves.
   _parentChanged: (key, newValue, oldValue) ->
-    ourValue = deepGet(this.attributes, key)
+    ourValue = deepGet(this.data, key)
     return if ourValue? or ourValue is Null # the change doesn't affect us.
 
     this.emit("changed:#{key}", newValue, oldValue)
@@ -204,7 +202,7 @@ class Map extends Enumerable
   # **Returns** a new Map.
   mapPairs: (f) ->
     result = new DerivedMap()
-    traverse(this.attributes, (k, v) ->
+    traverse(this.data, (k, v) ->
       k = k.join('.')
       result.__set(k, f(k, v))
     )
@@ -225,7 +223,7 @@ class Map extends Enumerable
     varieds = {}
     add = (key) =>
       varieds[key] ?= this.watch(key).flatMap((value) => f(key, value)).react((x) -> result.__set(key, x))
-    traverse(this.attributes, (k) -> add(k.join('.')))
+    traverse(this.data, (k) -> add(k.join('.')))
 
     result.listenTo(this, 'anyChanged', (key, newValue, oldValue) =>
       if newValue? and !varieds[key]?
