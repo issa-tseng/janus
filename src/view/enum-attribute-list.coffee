@@ -1,5 +1,5 @@
 { Varying, DomView, from, template, find, mutators, Base, List } = require('janus')
-{ EnumAttribute } = require('janus').attribute
+{ Enum } = require('janus').attribute
 { identity } = require('janus').util
 { asList } = require('../util/util')
 
@@ -72,7 +72,7 @@ module.exports = {
     library.register(Boolean, ListSelectItemView, context: 'select-wrapper')
     library.register(String, ListSelectItemView, context: 'select-wrapper')
     library.register(Base, ListSelectItemView, context: 'select-wrapper')
-    library.register(EnumAttribute, EnumAttributeListEditView, context: 'edit', attributes: { style: 'list' })
+    library.register(Enum, EnumAttributeListEditView, context: 'edit', attributes: { style: 'list' })
 }
 
 

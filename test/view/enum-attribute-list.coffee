@@ -35,7 +35,7 @@ checkLiteral = (dom, text) ->
 describe 'view', ->
   describe 'enum attribute (list)', ->
     it 'should render an unordered list element of the appropriate classes (and a wrapper)', ->
-      dom = (new EnumAttributeListEditView(new attribute.EnumAttribute(new Model(), 'test'), { app: testApp })).artifact()
+      dom = (new EnumAttributeListEditView(new attribute.Enum(new Model(), 'test'), { app: testApp })).artifact()
       dom.is('div').should.equal(true)
       dom.children().length.should.equal(1)
 
@@ -44,7 +44,7 @@ describe 'view', ->
       listDom.children().length.should.equal(0)
 
     it 'should render a wrapper for each list item', ->
-      class TestAttribute extends attribute.EnumAttribute
+      class TestAttribute extends attribute.Enum
         values: -> [ 1, 2, 3 ]
       dom = (new EnumAttributeListEditView(new TestAttribute(new Model(), 'test'), { app: testApp })).artifact()
       listDom = dom.children().eq(0)
@@ -65,7 +65,7 @@ describe 'view', ->
       app = new App( views: library )
 
       renderItem = (render) -> render.context('test')
-      class TestAttribute extends attribute.EnumAttribute
+      class TestAttribute extends attribute.Enum
         values: -> [ 1, 2, 3 ]
       dom = (new EnumAttributeListEditView(new TestAttribute(new Model(), 'test'), { app, renderItem })).artifact()
 
@@ -82,7 +82,7 @@ describe 'view', ->
       app = new App( views: library )
 
       renderWrapper = (render) -> render.context('test')
-      class TestAttribute extends attribute.EnumAttribute
+      class TestAttribute extends attribute.Enum
         values: -> [ 1, 2, 3 ]
       dom = (new EnumAttributeListEditView(new TestAttribute(new Model(), 'test'), { app, renderWrapper })).artifact()
       listDom = dom.children('ul')
@@ -91,14 +91,14 @@ describe 'view', ->
         checkListItem(listDom.children().eq(idx), (inner) -> checkLiteral(inner, label.toString()))
 
     it 'should default the button label to "Select"', ->
-      class TestAttribute extends attribute.EnumAttribute
+      class TestAttribute extends attribute.Enum
         values: -> [ 1, 2, 3 ]
       dom = (new EnumAttributeListEditView(new TestAttribute(new Model(), 'test'), { app: testApp })).artifact()
 
       dom.find('button:first').text().should.equal('Select')
 
     it 'should allow specifying the button label', ->
-      class TestAttribute extends attribute.EnumAttribute
+      class TestAttribute extends attribute.Enum
         values: -> [ 1, 2, 3 ]
       v = new Varying('test')
       buttonLabel = -> v
@@ -110,7 +110,7 @@ describe 'view', ->
       dom.find('button:first').text().should.equal('test 2')
 
     it 'should apply a selected class to the selected item', ->
-      class TestAttribute extends attribute.EnumAttribute
+      class TestAttribute extends attribute.Enum
         values: -> [ 1, 2, 3 ]
       m = new Model({ test: 2 })
       dom = (new EnumAttributeListEditView(new TestAttribute(m, 'test'), { app: testApp })).artifact()
@@ -124,7 +124,7 @@ describe 'view', ->
       wrappers.eq(2).hasClass('checked').should.equal(true)
 
     it 'should update the model value when select is clicked', ->
-      class TestAttribute extends attribute.EnumAttribute
+      class TestAttribute extends attribute.Enum
         values: -> [ 1, 2, 3 ]
       m = new Model()
       view = new EnumAttributeListEditView(new TestAttribute(m, 'test'), { app: testApp })

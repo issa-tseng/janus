@@ -1,5 +1,5 @@
 { Varying, DomView, from, template, find, Base, List } = require('janus')
-{ EnumAttribute } = require('janus').attribute
+{ Enum } = require('janus').attribute
 { isArray, isPrimitive, uniqueId } = require('janus').util
 { stringifier, asList } = require('../util/util')
 
@@ -123,5 +123,5 @@ class EnumAttributeEditView extends DomView
     select.on('change input', update)
     update()
 
-module.exports = { EnumAttributeEditView, registerWith: (library) -> library.register(EnumAttribute, EnumAttributeEditView, context: 'edit') }
+module.exports = { EnumAttributeEditView, registerWith: (library) -> library.register(Enum, EnumAttributeEditView, context: 'edit') }
 

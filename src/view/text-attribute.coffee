@@ -1,5 +1,5 @@
 { Varying, DomView, from, template, find, Base } = require('janus')
-{ TextAttribute } = require('janus').attribute
+{ Text } = require('janus').attribute
 
 $ = require('../util/dollar')
 
@@ -19,7 +19,7 @@ module.exports = {
   TextAttributeEditView,
   MultilineTextAttributeEditView,
   registerWith: (library) ->
-    library.register(TextAttribute, TextAttributeEditView, context: 'edit')
-    library.register(TextAttribute, MultilineTextAttributeEditView, context: 'edit', attributes: { style: 'multiline' })
+    library.register(Text, TextAttributeEditView, context: 'edit')
+    library.register(Text, MultilineTextAttributeEditView, context: 'edit', attributes: { style: 'multiline' })
 }
 

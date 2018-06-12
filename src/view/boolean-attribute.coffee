@@ -1,5 +1,5 @@
 { Varying, DomView, from, template, find, Base } = require('janus')
-{ BooleanAttribute } = require('janus').attribute
+{ Boolean } = require('janus').attribute
 { stringifier } = require('../util/util')
 
 $ = require('../util/dollar')
@@ -28,7 +28,7 @@ module.exports = {
   BooleanAttributeEditView,
   BooleanButtonAttributeEditView,
   registerWith: (library) ->
-    library.register(BooleanAttribute, BooleanAttributeEditView, context: 'edit')
-    library.register(BooleanAttribute, BooleanButtonAttributeEditView, context: 'edit', attributes: { style: 'button' })
+    library.register(Boolean, BooleanAttributeEditView, context: 'edit')
+    library.register(Boolean, BooleanButtonAttributeEditView, context: 'edit', attributes: { style: 'button' })
 }
 
