@@ -264,6 +264,9 @@ class List extends OrderedCollection
 
     new this(items)
 
+  @of: (modelClass) -> class extends this
+    @modelClass: modelClass
+
 class DerivedList extends List
   constructor: ->
     # still call Base to set up important things, but skip List constructor as
