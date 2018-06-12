@@ -400,3 +400,20 @@ describe 'List', ->
 
       TestList.deserialize([ 1, 2, 3, 4 ]).list.should.eql([ 1, 2, 3, 4 ])
 
+  describe 'of', ->
+    it 'should set the modelClass property', ->
+      class TestModel extends Model
+      TestList = List.of(TestModel)
+      TestList.modelClass.should.equal(TestModel)
+
+    it 'should deserialize as the given model', ->
+      class TestModel extends Model
+      TestList = List.of(TestModel)
+
+      result = TestList.deserialize([ { a: 1 }, { b: 2 } ]).list
+      result[0].should.be.an.instanceof(TestModel)
+      result[0].get('a').should.equal(1)
+      result[1].should.be.an.instanceof(TestModel)
+      result[1].get('b').should.equal(2)
+
+
