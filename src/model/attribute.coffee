@@ -57,6 +57,9 @@ class ModelAttribute extends Attribute
   @deserialize: (data) -> this.modelClass.deserialize(data)
   serialize: -> this.constructor.modelClass.prototype.serialize.call(this.getValue()) unless this.transient is true
 
+  @of: (modelClass) -> class extends this
+    @modelClass: modelClass
+
 class CollectionAttribute extends Attribute
   @collectionClass: List
 
@@ -64,6 +67,9 @@ class CollectionAttribute extends Attribute
 
   @deserialize: (data) -> this.collectionClass.deserialize(data)
   serialize: -> this.constructor.collectionClass.prototype.serialize.call(this.getValue()) unless this.transient is true
+
+  @of: (collectionClass) -> class extends this
+    @collectionClass: collectionClass
 
 class ReferenceAttribute extends Attribute
   isReference: true
@@ -87,6 +93,9 @@ class ReferenceAttribute extends Attribute
 
   @contains: Model
   @deserialize: (data) -> this.contains.deserialize(data)
+
+  @of: (inner) -> class extends this
+    @contains: inner
 
 
 module.exports = {
