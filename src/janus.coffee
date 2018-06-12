@@ -1,9 +1,14 @@
 util = require('./util/util')
 
-# pre-require these to fan them out top-level
+# pre-require these to fan them out top-level:
 kase = require('./core/case')
 template = require('./view/template')
 collection = require('./collection/collection')
+
+# integrate these bits into one object:
+schema = require('./model/schema')
+attribute = schema.attribute
+util.extend(attribute, require('./model/attribute'))
 
 # TODO: once we're sure the global is superfluous, remove.
 module.exports = (window ? global)._janus$ ?=
@@ -29,8 +34,12 @@ module.exports = (window ? global)._janus$ ?=
 
   # model functionality.
   Model: require('./model/model').Model
-  attribute: require('./model/attribute')
-  Issue: require('./model/issue').Issue
+  attribute: attribute
+  bind: schema.bind
+  issue: schema.issue
+  transient: schema.transient
+  default: schema.default
+  Trait: schema.Trait
   store: require('./model/store')
 
   # view and templating functionality.
