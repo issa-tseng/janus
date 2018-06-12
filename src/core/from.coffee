@@ -12,7 +12,7 @@
 
 # util.
 conj = (x, y) -> x.concat([ y ])
-internalCases = ic = defcase('org.janusjs.core.from.internal': { arity: 2 }, 'varying', 'map', 'flatMap', 'pipe', 'resolve')
+internalCases = ic = defcase('org.janusjs.core.from.internal': { arity: 2 }, 'varying', 'map', 'flatMap', 'pipe', 'resolve', 'unflat': { arity: 1 })
 
 # default applicants:
 defaultCases = dc = defcase('org.janusjs.core.from.default', 'dynamic', 'watch', 'resolve', 'attribute', 'varying', 'app', 'self')
@@ -46,6 +46,10 @@ val = (conjunction, applicants = []) ->
     [ rest..., last ] = applicants
     f = (obj) -> obj?.attribute?(attr)
     val(conjunction, conj(rest, internalCases.map(last, f)))
+
+  result.asVarying = () ->
+    [ rest..., last ] = applicants
+    val(conjunction, conj(rest, internalCases.unflat(last)))
 
   result.all = terminus(applicants)
   result.and = conjunction(applicants)
@@ -95,6 +99,12 @@ mappedPoint = match(
     match(
       ic.varying (x) -> ic.varying(x.flatMap((obj) -> point(from.default.app()).flatMap((app) -> obj.resolve(attr, app)) if obj?))
       otherwise -> ic.resolve(inner, f)
+    )(mappedPoint(inner, point))
+
+  ic.unflat (inner, point) ->
+    match(
+      ic.varying (x) -> ic.varying(new Varying(x))
+      otherwise -> ic.unflat(inner)
     )(mappedPoint(inner, point))
 
   ic.varying (x) -> ic.varying(x) # TODO: rewrapping is slow.

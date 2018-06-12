@@ -392,6 +392,46 @@ describe 'from', ->
       called.should.equal('myattr')
       result.should.equal(42)
 
+  describe 'inline asVarying', ->
+    { dynamic } = from.default
+    idmatch = match(
+      dynamic (x) -> x
+      otherwise ->
+    )
+
+    it 'should supply a varying parameter to all-map', ->
+
+      v = new Varying(1)
+      result = null
+      from(v).asVarying()
+        .all.point(idmatch).map(id).react((x) -> result = x)
+
+      result.isVarying.should.equal(true)
+
+    it 'should provide the correct inner value', ->
+      { dynamic } = from.default
+
+      v = new Varying(1)
+      results = []
+      from(v).map((x) -> x * 2).asVarying()
+        .all.point(idmatch).map(id).react((x) -> x.react((y) -> results.push(y)))
+
+      v.set(4)
+      results.should.eql([ 2, 8 ])
+
+    it 'should supply a varying parameter to inline-map', ->
+      { dynamic } = from.default
+
+      v = new Varying(1)
+      result = null
+      results = []
+      from(v).asVarying().flatMap((x) -> result = x; x)
+        .all.point(idmatch).map(id).react((x) -> results.push(x))
+
+      result.isVarying.should.equal(true)
+      v.set(3)
+      results.should.eql([ 1, 3 ])
+
   describe 'builder', ->
     it 'should accept custom cases as intermediate methods/applicants', ->
       { alpha, beta, gamma } = custom = defcase('org.janusjs.test', 'alpha', 'beta', 'gamma')
