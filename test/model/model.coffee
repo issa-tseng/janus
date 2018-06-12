@@ -159,7 +159,7 @@ describe 'Model', ->
 
       it 'should point attribute objects', ->
         TestModel = Model.build(
-          attribute('a', attributes.NumberAttribute)
+          attribute('a', attributes.Number)
           bind('b', from.attribute('a'))
         )
 
@@ -267,25 +267,25 @@ describe 'Model', ->
 
   describe 'defined attributes', ->
     it 'should be definable and fetchable', ->
-      TestModel = Model.build(attribute('attr', attributes.TextAttribute))
+      TestModel = Model.build(attribute('attr', attributes.Text))
 
-      (new TestModel()).attribute('attr').should.be.an.instanceof(attributes.TextAttribute)
+      (new TestModel()).attribute('attr').should.be.an.instanceof(attributes.Text)
 
     it 'should inherit down the classtree', ->
-      Root = Model.build(attribute('attr', attributes.NumberAttribute))
+      Root = Model.build(attribute('attr', attributes.Number))
       class Child extends Root
 
-      (new Child()).attribute('attr').should.be.an.instanceof(attributes.NumberAttribute)
+      (new Child()).attribute('attr').should.be.an.instanceof(attributes.Number)
 
     it 'should not pollute across classdefs', ->
-      A = Model.build(attribute('a', attributes.NumberAttribute))
-      B = Model.build(attribute('b', attributes.NumberAttribute))
+      A = Model.build(attribute('a', attributes.Number))
+      B = Model.build(attribute('b', attributes.Number))
 
       should.not.exist((new A()).attribute('b'))
       should.not.exist((new B()).attribute('a'))
 
     it 'should memoize results', ->
-      TestModel = Model.build(attribute('attr', attributes.BooleanAttribute))
+      TestModel = Model.build(attribute('attr', attributes.Boolean))
 
       model = new TestModel()
       model.attribute('attr').should.equal(model.attribute('attr'))
@@ -301,8 +301,8 @@ describe 'Model', ->
       (new TestModel()).get('test').should.equal(2)
 
     it 'should allow for the attribute class to be defined with @default', ->
-      TestModel = Model.build(dfault('test', 42, attributes.NumberAttribute))
-      (new TestModel()).attribute('test').should.be.an.instanceof(attributes.NumberAttribute)
+      TestModel = Model.build(dfault('test', 42, attributes.Number))
+      (new TestModel()).attribute('test').should.be.an.instanceof(attributes.Number)
 
     it 'should allow @transient shortcut to declare an attribute transient', ->
       TestModel = Model.build(transient('tempkey'))
@@ -311,7 +311,7 @@ describe 'Model', ->
   describe 'resolving', ->
     it 'should behave like watch for non-reference attributes', ->
       values = []
-      TestModel = Model.build(attribute('a', attributes.NumberAttribute))
+      TestModel = Model.build(attribute('a', attributes.Number))
 
       m = new TestModel()
       m.resolve('a', null).react((x) -> values.push(x))
@@ -328,7 +328,7 @@ describe 'Model', ->
     it 'should return the proper value for a resolved reference attribute', ->
       values = []
 
-      TestModel = Model.build(attribute('a', attributes.ReferenceAttribute))
+      TestModel = Model.build(attribute('a', attributes.Reference))
 
       m = new TestModel()
       m.set('a', 1)
@@ -342,7 +342,7 @@ describe 'Model', ->
       givenRequest = null
       app = { vendStore: ((x) -> givenRequest = x; { handle: (->), destroy: (->) }) }
       TestModel = Model.build(
-        attribute('a', class extends attributes.ReferenceAttribute
+        attribute('a', class extends attributes.Reference
           request: -> ourRequest
         )
       )
@@ -357,7 +357,7 @@ describe 'Model', ->
       called = false
       app = { vendStore: (x) -> { handle: (-> called = true), destroy: (->) } }
       TestModel = Model.build(
-        attribute('a', class extends attributes.ReferenceAttribute
+        attribute('a', class extends attributes.Reference
           request: -> new Varying()
         )
       )
@@ -371,7 +371,7 @@ describe 'Model', ->
     it 'fails gracefully if no store is found to handle the request', ->
       app = { vendStore: -> null }
       TestModel = Model.build(
-        attribute('a', class extends attributes.ReferenceAttribute
+        attribute('a', class extends attributes.Reference
           request: -> new Varying()
         )
       )
@@ -385,7 +385,7 @@ describe 'Model', ->
       destroyed = 0
       app = { vendStore: -> { handle: (->), destroy: (-> destroyed++) } }
       TestModel = Model.build(
-        attribute('a', class extends attributes.ReferenceAttribute
+        attribute('a', class extends attributes.Reference
           request: -> new Varying()
         )
       )
@@ -403,7 +403,7 @@ describe 'Model', ->
       called = false
       app = { vendStore: (x) -> { handle: (-> called = true), destroy: (->) } }
       TestModel = Model.build(
-        attribute('a', class extends attributes.ReferenceAttribute
+        attribute('a', class extends attributes.Reference
           request: -> new Varying()
         )
       )
@@ -417,7 +417,7 @@ describe 'Model', ->
       request = null
       app = { vendStore: (x) -> { handle: (-> request = x), destroy: (-> called = true) } }
       TestModel = Model.build(
-        attribute('a', class extends attributes.ReferenceAttribute
+        attribute('a', class extends attributes.Reference
           request: -> new Varying()
         )
       )
@@ -435,7 +435,7 @@ describe 'Model', ->
       request = new Varying()
       app = { vendStore: (x) -> { handle: (->), destroy: (->) } }
       TestModel = Model.build(
-        attribute('a', class extends attributes.ReferenceAttribute
+        attribute('a', class extends attributes.Reference
           request: -> request
         )
       )
@@ -462,7 +462,7 @@ describe 'Model', ->
           called = true
           super(data)
       TestModel = Model.build(
-        attribute('a', class extends attributes.ReferenceAttribute
+        attribute('a', class extends attributes.Reference
           @contains: TestInner
           request: -> request
         )
@@ -480,7 +480,7 @@ describe 'Model', ->
       value = null
       app = { vendStore: (x) -> { handle: (-> x.set(types.result.success({ a: 42 }))), destroy: (->) } }
       TestModel = Model.build(
-        attribute('a', class extends attributes.ReferenceAttribute
+        attribute('a', class extends attributes.Reference
           request: -> new Varying()
         )
       )
@@ -495,7 +495,7 @@ describe 'Model', ->
       request = new Varying()
       app = { vendStore: (x) -> { handle: (->), destroy: (->) } }
       TestModel = Model.build(
-        attribute('a', class extends attributes.ReferenceAttribute
+        attribute('a', class extends attributes.Reference
           request: -> request
         )
       )

@@ -336,7 +336,7 @@ describe 'traversal', ->
 
       it 'should rely on attribute serialization methods when available', ->
         TestModel = Model.build(
-          attribute('b', class extends attributes.NumberAttribute
+          attribute('b', class extends attributes.Number
             serialize: -> "number: #{this.getValue()}")
 
           attribute('c', class extends attributes.Attribute
