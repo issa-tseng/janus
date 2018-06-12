@@ -9,7 +9,7 @@ util = require('../util/util')
 App = class extends Model.build(
   dfault('views', -> new Library())
   dfault('stores', -> new Library())
-  dfault('stack', (-> new List()), attribute.CollectionAttribute))
+  dfault('stack', (-> new List()), attribute.Collection))
 
   vend: (type, obj, options = {}) ->
     library = this.get(type)

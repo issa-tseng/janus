@@ -91,11 +91,11 @@ describe 'Attribute', ->
   describe 'standard', ->
     describe 'date type', ->
       it 'should deserialize by feeding the value to Date by default', ->
-        attribute.DateAttribute.deserialize(0).should.be.an.instanceof(Date)
+        attribute.Date.deserialize(0).should.be.an.instanceof(Date)
 
       it 'should serialize by chomping Date down to epoch millis', ->
         m = new Model({ date: new Date() })
-        result = (new attribute.DateAttribute(m, 'date')).serialize()
+        result = (new attribute.Date(m, 'date')).serialize()
         result.should.be.a.Number
         (result > 1400000000000).should.equal(true)
 
@@ -104,7 +104,7 @@ describe 'Attribute', ->
         called = false
         class TestModel extends Model
           @deserialize: -> called = true; 42
-        class TestAttribute extends attribute.ModelAttribute
+        class TestAttribute extends attribute.Model
           @modelClass: TestModel
 
         TestAttribute.deserialize({}).should.equal(42)
@@ -114,14 +114,14 @@ describe 'Attribute', ->
         called = false
         class TestModel extends Model
           serialize: -> called = true; 42
-        class TestAttribute extends attribute.ModelAttribute
+        class TestAttribute extends attribute.Model
           @modelClass: TestModel
 
         (new TestAttribute(new Model(), 'whatever')).serialize().should.equal(42)
         called.should.equal(true)
 
       it 'should not serialize if transient', ->
-        class TestAttribute extends attribute.ModelAttribute
+        class TestAttribute extends attribute.Model
           @modelClass: Model
           transient: true
 
@@ -132,7 +132,7 @@ describe 'Attribute', ->
         called = false
         class TestCollection extends List
           @deserialize: -> called = true; 42
-        class TestAttribute extends attribute.CollectionAttribute
+        class TestAttribute extends attribute.Collection
           @collectionClass: TestCollection
 
         TestAttribute.deserialize({}).should.equal(42)
@@ -142,14 +142,14 @@ describe 'Attribute', ->
         called = false
         class TestCollection extends List
           serialize: -> called = true; 42
-        class TestAttribute extends attribute.CollectionAttribute
+        class TestAttribute extends attribute.Collection
           @collectionClass: TestCollection
 
         (new TestAttribute(new Model(), 'whatever')).serialize().should.equal(42)
         called.should.equal(true)
 
       it 'should not serialize if transient', ->
-        class TestAttribute extends attribute.CollectionAttribute
+        class TestAttribute extends attribute.Collection
           @collectionClass: List
           transient: true
 

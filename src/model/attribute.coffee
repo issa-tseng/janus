@@ -92,13 +92,13 @@ class ReferenceAttribute extends Attribute
 module.exports = {
   Attribute: Attribute
 
-  TextAttribute: TextAttribute
-  EnumAttribute: EnumAttribute
-  NumberAttribute: NumberAttribute
-  BooleanAttribute: BooleanAttribute
-  DateAttribute: DateAttribute
-  ModelAttribute: ModelAttribute
-  CollectionAttribute: CollectionAttribute
-  ReferenceAttribute: ReferenceAttribute
+  Text: TextAttribute
+  Enum: EnumAttribute
+  Number: NumberAttribute
+  Boolean: BooleanAttribute
+  Date: DateAttribute
+  Model: ModelAttribute
+  Collection: CollectionAttribute
+  Reference: ReferenceAttribute
 }
 
