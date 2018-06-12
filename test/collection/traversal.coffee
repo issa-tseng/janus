@@ -3,8 +3,9 @@ should = require('should')
 { Varying } = require('../../lib/core/varying')
 { Map } = require('../../lib/collection/map')
 { Model } = require('../../lib/model/model')
+{ attribute } = require('../../lib/model/schema')
 { List } = require('../../lib/collection/list')
-attribute = require('../../lib/model/attribute')
+attributes = require('../../lib/model/attribute')
 { sum } = require('../../lib/collection/folds')
 { Traversal } = require('../../lib/collection/traversal')
 { recurse, delegate, defer, varying, value, nothing } = require('../../lib/util/types').traversal
@@ -130,8 +131,7 @@ describe 'traversal', ->
       result.get().should.equal(10)
 
     it 'should provide an attribute if available', ->
-      class TestModel extends Model
-        @attribute('b', attribute.BooleanAttribute)
+      TestModel = Model.build(attribute('b', attributes.BooleanAttribute))
 
       results = []
       m = new TestModel( a: 1, b: 2 )
@@ -241,8 +241,7 @@ describe 'traversal', ->
         nothing
       )
 
-      class TestModel extends Model
-        @attribute('b', attribute.BooleanAttribute)
+      TestModel = Model.build(attribute('b', attributes.BooleanAttribute))
       m = new TestModel( a: 15, b: 16 )
       Traversal.asNatural(m, map: (k, v, o, a) ->
         results.push(k, v, o, a)
@@ -293,8 +292,7 @@ describe 'traversal', ->
         nothing
       )
 
-      class TestModel extends Model
-        @attribute('b', attribute.BooleanAttribute)
+      TestModel = Model.build(attribute('b', attributes.BooleanAttribute))
       m = new TestModel( a: 15, b: 16 )
       Traversal.getNatural(m, map: (k, v, o, a) ->
         results.push(k, v, o, a)
@@ -337,14 +335,13 @@ describe 'traversal', ->
         o.should.eql({ a: 1, b: [ 2, { c: 3, d: 4 } ], e: { f: 5 } })
 
       it 'should rely on attribute serialization methods when available', ->
-        class TestModel extends Model
-          @attribute('b', class extends attribute.NumberAttribute
-            serialize: -> "number: #{this.getValue()}"
-          )
+        TestModel = Model.build(
+          attribute('b', class extends attributes.NumberAttribute
+            serialize: -> "number: #{this.getValue()}")
 
-          @attribute('c', class extends attribute.Attribute
-            serialize: -> JSON.stringify(this.getValue())
-          )
+          attribute('c', class extends attributes.Attribute
+            serialize: -> JSON.stringify(this.getValue()))
+        )
 
         o = (new TestModel( a: 1, b: 2, c: [ 3, 4, 5 ] )).serialize()
         o.should.eql({ a: 1, b: 'number: 2', c: '[3,4,5]' })

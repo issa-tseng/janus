@@ -1,14 +1,15 @@
 Model = require('../model/model').Model
+dfault = require('../model/schema').default
 attribute = require('../model/attribute')
 List = require('../collection/list').List
 { Library } = require('./library')
 util = require('../util/util')
 
 
-class App extends Model
-  @default('views', -> new Library())
-  @default('stores', -> new Library())
-  @default('stack', (-> new List()), attribute.CollectionAttribute)
+App = class extends Model.build(
+  dfault('views', -> new Library())
+  dfault('stores', -> new Library())
+  dfault('stack', (-> new List()), attribute.CollectionAttribute))
 
   vend: (type, obj, options = {}) ->
     library = this.get(type)

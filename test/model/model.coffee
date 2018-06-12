@@ -4,8 +4,9 @@ from = require('../../lib/core/from')
 types = require('../../lib/util/types')
 
 Model = require('../../lib/model/model').Model
-Issue = require('../../lib/model/issue').Issue
-attribute = require('../../lib/model/attribute')
+attributes = require('../../lib/model/attribute')
+{ attribute, bind, issue, transient, Trait } = require('../../lib/model/schema')
+dfault = require('../../lib/model/schema')['default'] # silly coffeescript
 
 Varying = require('../../lib/core/varying').Varying
 { List } = require('../../lib/collection/list')
@@ -37,11 +38,9 @@ describe 'Model', ->
 
   describe 'attribute get', ->
     it 'should return the default value if defined', ->
-      class TestAttribute extends attribute.Attribute
+      class TestAttribute extends attributes.Attribute
         default: -> 'espresso'
-
-      class TestModel extends Model
-        @attribute('latte', TestAttribute)
+      TestModel = Model.build(attribute('latte', TestAttribute))
 
       m = new TestModel()
       m.get('latte').should.equal('espresso')
@@ -50,23 +49,19 @@ describe 'Model', ->
       m2.get('latte').should.equal('good')
 
     it 'should not write the default value if not specified', ->
-      class TestAttribute extends attribute.Attribute
+      class TestAttribute extends attributes.Attribute
         default: -> 'espresso'
-
-      class TestModel extends Model
-        @attribute('latte', TestAttribute)
+      TestModel = Model.build(attribute('latte', TestAttribute))
 
       m = new TestModel()
       m.get('latte').should.equal('espresso')
       m.data.should.eql({})
 
     it 'should write the default value if writeDefault is true', ->
-      class TestAttribute extends attribute.Attribute
+      class TestAttribute extends attributes.Attribute
         default: -> 'espresso'
         writeDefault: true
-
-      class TestModel extends Model
-        @attribute('latte', TestAttribute)
+      TestModel = Model.build(attribute('latte', TestAttribute))
 
       m = new TestModel()
       m.data.should.eql({})
@@ -76,9 +71,7 @@ describe 'Model', ->
   describe 'binding', ->
     describe 'application', ->
       it 'should bind one value from another', ->
-        class TestModel extends Model
-          @bind('slave', from('master'))
-
+        TestModel = Model.build(bind('slave', from('master')))
         model = new TestModel()
         should.not.exist(model.get('slave'))
 
@@ -86,8 +79,7 @@ describe 'Model', ->
         model.get('slave').should.equal('commander')
 
       it 'should map multiple value together', ->
-        class TestModel extends Model
-          @bind('c', from('a').and('b').all.map((a, b) -> a + b))
+        TestModel = Model.build(bind('c', from('a').and('b').all.map((a, b) -> a + b)))
 
         model = new TestModel()
         model.set( a: 3, b: 4 )
@@ -96,10 +88,7 @@ describe 'Model', ->
 
       it 'should be able to bind from a Varying', ->
         v = new Varying(2)
-
-        class TestModel extends Model
-          @bind('x', from.varying(-> v))
-
+        TestModel = Model.build(bind('x', from.varying(-> v)))
         model = new TestModel()
 
         model.get('x').should.equal(2)
@@ -109,12 +98,13 @@ describe 'Model', ->
 
       it 'should give model as param in Varying bind', ->
         called = false
-        class TestModel extends Model
-          @bind('y', from.varying((self) ->
+        TestModel = Model.build(
+          bind('y', from.varying((self) ->
             called = true
             self.should.be.an.instanceof(TestModel)
             new Varying()
           ))
+        )
 
         new TestModel()
         called.should.be.true
@@ -123,11 +113,12 @@ describe 'Model', ->
       it 'should point dynamic varying functions', ->
         calledWith = null
         v = new Varying(1)
-        class TestModel extends Model
-          @bind('b', from((self) ->
+        TestModel = Model.build(
+          bind('b', from((self) ->
             calledWith = self
             v
           ))
+        )
 
         m = new TestModel()
         calledWith.should.equal(m)
@@ -137,8 +128,7 @@ describe 'Model', ->
         m.get('b').should.equal(2)
 
       it 'should point dynamic key names', ->
-        class TestModel extends Model
-          @bind('b', from('a'))
+        TestModel = Model.build(bind('b', from('a')))
 
         m = new TestModel()
         m.set('a', 1)
@@ -147,15 +137,13 @@ describe 'Model', ->
         m.get('b').should.equal(2)
 
       it 'should point dynamic other objects', ->
-        class TestModel extends Model
-          @bind('b', from(42))
+        TestModel = Model.build(bind('b', from(42)))
 
         m = new TestModel()
         m.get('b').should.equal(42)
 
       it 'should point watch key names', ->
-        class TestModel extends Model
-          @bind('b', from.watch('a'))
+        TestModel = Model.build(bind('b', from.watch('a')))
 
         m = new TestModel()
         m.set('a', 1)
@@ -164,16 +152,16 @@ describe 'Model', ->
         m.get('b').should.equal(2)
 
       it 'should not point resolve names by default', ->
-        class TestModel extends Model
-          @bind('b', from.resolve('a'))
+        TestModel = Model.build(bind('b', from.resolve('a')))
 
         m = new TestModel()
         m.get('b').type.should.equal('resolve')
 
       it 'should point attribute objects', ->
-        class TestModel extends Model
-          @attribute('a', attribute.NumberAttribute)
-          @bind('b', from.attribute('a'))
+        TestModel = Model.build(
+          attribute('a', attributes.NumberAttribute)
+          bind('b', from.attribute('a'))
+        )
 
         m = new TestModel()
         m.get('b').should.equal(m.attribute('a'))
@@ -181,11 +169,12 @@ describe 'Model', ->
       it 'should point explicit varying functions', ->
         calledWith = null
         v = new Varying(1)
-        class TestModel extends Model
-          @bind('b', from.varying((self) ->
+        TestModel = Model.build(
+          bind('b', from.varying((self) ->
             calledWith = self
             v
           ))
+        )
 
         m = new TestModel()
         calledWith.should.equal(m)
@@ -195,8 +184,7 @@ describe 'Model', ->
         m.get('b').should.equal(2)
 
       it 'should not point apps by default', ->
-        class TestModel extends Model
-          @bind('b', from.app())
+        TestModel = Model.build(bind('b', from.app()))
 
         m = new TestModel()
         m.get('b').type.should.equal('app')
@@ -215,27 +203,22 @@ describe 'Model', ->
 
       it 'should point self by function', ->
         calledWith = null
-        class TestModel extends Model
-          @bind('b', from.self((x) -> calledWith = x; 42))
+        TestModel = Model.build(bind('b', from.self((x) -> calledWith = x; 42)))
 
         m = new TestModel()
         calledWith.should.equal(m)
         m.get('b').should.equal(42)
 
       it 'should point self statically', ->
-        class TestModel extends Model
-          @bind('b', from.self())
+        TestModel = Model.build(bind('b', from.self()))
 
         m = new TestModel()
         m.get('b').should.equal(m)
 
     describe 'classtree', ->
       it 'should not pollute across classdefs', ->
-        class TestA extends Model
-          @bind('a', from('c'))
-
-        class TestB extends Model
-          @bind('b', from('c'))
+        TestA = Model.build(bind('a', from('c')))
+        TestB = Model.build(bind('b', from('c')))
 
         a = new TestA()
 
@@ -244,14 +227,9 @@ describe 'Model', ->
         should.not.exist(b.get('a'))
 
       it 'should not pollute crosstree', ->
-        class Root extends Model
-          @bind('root', from('x'))
-
-        class Left extends Root
-          @bind('left', from('x'))
-
-        class Right extends Root
-          @bind('right', from('x'))
+        Root = Model.build(bind('root', from('x')))
+        Left = Model.build(bind('left', from('x')))
+        Right = Model.build(bind('right', from('x')))
 
         root = new Root( x: 'root' )
         should.not.exist(root.get('left'))
@@ -264,27 +242,22 @@ describe 'Model', ->
         should.not.exist(right.get('left'))
 
       it 'should extend downtree', ->
-        class Root extends Model
-          @bind('root', from('x'))
+        Root = Model.build(bind('root', from('x')))
+        Child = Root.build(bind('child', from('x')))
 
-        class Child extends Root
-          @bind('child', from('x'))
-
-        (new Child( x: 'test' )).get('root').should.equal('test')
+        child = new Child( x: 'test' )
+        child.get('root').should.equal('test')
+        child.get('child').should.equal('test')
 
       it 'should allow child bind to override parent', ->
-        class Root extends Model
-          @bind('contend', from('x'))
-
-        class Child extends Root
-          @bind('contend', from('y'))
+        Root = Model.build(bind('contend', from('x')))
+        Child = Root.build(bind('contend', from('y')))
 
         (new Child( x: 1, y: 2 )).get('contend').should.equal(2)
 
     describe 'shadowing', ->
       it 'should not propagate parent bound values', ->
-        class TestModel extends Model
-          @bind('b', from('a'))
+        TestModel = Model.build(bind('b', from('a')))
 
         x = new TestModel( a: 2 )
         y = x.shadow()
@@ -294,64 +267,51 @@ describe 'Model', ->
 
   describe 'defined attributes', ->
     it 'should be definable and fetchable', ->
-      class TestModel extends Model
-        @attribute('attr', attribute.TextAttribute)
+      TestModel = Model.build(attribute('attr', attributes.TextAttribute))
 
-      (new TestModel()).attribute('attr').should.be.an.instanceof(attribute.TextAttribute)
+      (new TestModel()).attribute('attr').should.be.an.instanceof(attributes.TextAttribute)
 
     it 'should inherit down the classtree', ->
-      class Root extends Model
-        @attribute('attr', attribute.NumberAttribute)
-
+      Root = Model.build(attribute('attr', attributes.NumberAttribute))
       class Child extends Root
 
-      (new Child()).attribute('attr').should.be.an.instanceof(attribute.NumberAttribute)
+      (new Child()).attribute('attr').should.be.an.instanceof(attributes.NumberAttribute)
 
     it 'should not pollute across classdefs', ->
-      class A extends Model
-        @attribute('a', attribute.NumberAttribute)
-
-      class B extends Model
-        @attribute('b', attribute.NumberAttribute)
+      A = Model.build(attribute('a', attributes.NumberAttribute))
+      B = Model.build(attribute('b', attributes.NumberAttribute))
 
       should.not.exist((new A()).attribute('b'))
       should.not.exist((new B()).attribute('a'))
 
     it 'should memoize results', ->
-      class TestModel extends Model
-        @attribute('attr', attribute.BooleanAttribute)
+      TestModel = Model.build(attribute('attr', attributes.BooleanAttribute))
 
       model = new TestModel()
       model.attribute('attr').should.equal(model.attribute('attr'))
 
-    it 'should allow @default shortcut for defining a default value', ->
-      class TestModel extends Model
-        @default('test', 42)
+    it 'should allow default shortcut for defining a default value', ->
+      TestModel = Model.build(dfault('test', 42))
       (new TestModel()).get('test').should.equal(42)
 
-    it 'should take a function with @default for defining a default value', ->
+    it 'should take a function with default for defining a default value', ->
       i = 0
-      class TestModel extends Model
-        @default('test', -> ++i)
+      TestModel = Model.build(dfault('test', -> ++i))
       (new TestModel()).get('test').should.equal(1)
       (new TestModel()).get('test').should.equal(2)
 
     it 'should allow for the attribute class to be defined with @default', ->
-      class TestModel extends Model
-        @default('test', 42, attribute.NumberAttribute)
-      (new TestModel()).attribute('test').should.be.an.instanceof(attribute.NumberAttribute)
+      TestModel = Model.build(dfault('test', 42, attributes.NumberAttribute))
+      (new TestModel()).attribute('test').should.be.an.instanceof(attributes.NumberAttribute)
 
     it 'should allow @transient shortcut to declare an attribute transient', ->
-      class TestModel extends Model
-        @transient('tempkey')
+      TestModel = Model.build(transient('tempkey'))
       (new TestModel()).attribute('tempkey').transient.should.equal(true)
 
   describe 'resolving', ->
     it 'should behave like watch for non-reference attributes', ->
       values = []
-
-      class TestModel extends Model
-        @attribute('a', attribute.NumberAttribute)
+      TestModel = Model.build(attribute('a', attributes.NumberAttribute))
 
       m = new TestModel()
       m.resolve('a', null).react((x) -> values.push(x))
@@ -368,8 +328,7 @@ describe 'Model', ->
     it 'should return the proper value for a resolved reference attribute', ->
       values = []
 
-      class TestModel extends Model
-        @attribute('a', attribute.ReferenceAttribute)
+      TestModel = Model.build(attribute('a', attributes.ReferenceAttribute))
 
       m = new TestModel()
       m.set('a', 1)
@@ -382,9 +341,11 @@ describe 'Model', ->
       ourRequest = new Varying()
       givenRequest = null
       app = { vendStore: ((x) -> givenRequest = x; { handle: (->), destroy: (->) }) }
-      class TestModel extends Model
-        @attribute 'a', class extends attribute.ReferenceAttribute
+      TestModel = Model.build(
+        attribute('a', class extends attributes.ReferenceAttribute
           request: -> ourRequest
+        )
+      )
 
       m = new TestModel()
       v = m.resolve('a', app)
@@ -395,9 +356,11 @@ describe 'Model', ->
     it 'calls handle on the store that handles the request', ->
       called = false
       app = { vendStore: (x) -> { handle: (-> called = true), destroy: (->) } }
-      class TestModel extends Model
-        @attribute 'a', class extends attribute.ReferenceAttribute
+      TestModel = Model.build(
+        attribute('a', class extends attributes.ReferenceAttribute
           request: -> new Varying()
+        )
+      )
 
       m = new TestModel()
       v = m.resolve('a', app)
@@ -407,9 +370,11 @@ describe 'Model', ->
 
     it 'fails gracefully if no store is found to handle the request', ->
       app = { vendStore: -> null }
-      class TestModel extends Model
-        @attribute 'a', class extends attribute.ReferenceAttribute
+      TestModel = Model.build(
+        attribute('a', class extends attributes.ReferenceAttribute
           request: -> new Varying()
+        )
+      )
 
       m = new TestModel()
       v = m.resolve('a', app)
@@ -419,9 +384,11 @@ describe 'Model', ->
     it 'destroys the store if the refcount drops to zero', ->
       destroyed = 0
       app = { vendStore: -> { handle: (->), destroy: (-> destroyed++) } }
-      class TestModel extends Model
-        @attribute 'a', class extends attribute.ReferenceAttribute
+      TestModel = Model.build(
+        attribute('a', class extends attributes.ReferenceAttribute
           request: -> new Varying()
+        )
+      )
 
       m = new TestModel()
       v = m.resolve('a', app)
@@ -435,9 +402,11 @@ describe 'Model', ->
     it 'immediately calls handle on the store that handles the request given resolveNow', ->
       called = false
       app = { vendStore: (x) -> { handle: (-> called = true), destroy: (->) } }
-      class TestModel extends Model
-        @attribute 'a', class extends attribute.ReferenceAttribute
+      TestModel = Model.build(
+        attribute('a', class extends attributes.ReferenceAttribute
           request: -> new Varying()
+        )
+      )
 
       m = new TestModel()
       m.resolveNow('a', app)
@@ -447,9 +416,11 @@ describe 'Model', ->
       called = false
       request = null
       app = { vendStore: (x) -> { handle: (-> request = x), destroy: (-> called = true) } }
-      class TestModel extends Model
-        @attribute 'a', class extends attribute.ReferenceAttribute
+      TestModel = Model.build(
+        attribute('a', class extends attributes.ReferenceAttribute
           request: -> new Varying()
+        )
+      )
 
       m = new TestModel()
       m.resolveNow('a', app)
@@ -463,9 +434,11 @@ describe 'Model', ->
       value = null
       request = new Varying()
       app = { vendStore: (x) -> { handle: (->), destroy: (->) } }
-      class TestModel extends Model
-        @attribute 'a', class extends attribute.ReferenceAttribute
+      TestModel = Model.build(
+        attribute('a', class extends attributes.ReferenceAttribute
           request: -> request
+        )
+      )
 
       m = new TestModel()
       m.resolve('a', app).react((x) -> value = x)
@@ -488,10 +461,12 @@ describe 'Model', ->
         @deserialize: (data) ->
           called = true
           super(data)
-      class TestModel extends Model
-        @attribute 'a', class extends attribute.ReferenceAttribute
+      TestModel = Model.build(
+        attribute('a', class extends attributes.ReferenceAttribute
           @contains: TestInner
           request: -> request
+        )
+      )
 
       m = new TestModel()
       m.resolve('a', app).react((x) -> value = x)
@@ -504,9 +479,11 @@ describe 'Model', ->
     it 'resolves correctly when given a value in handle()', ->
       value = null
       app = { vendStore: (x) -> { handle: (-> x.set(types.result.success({ a: 42 }))), destroy: (->) } }
-      class TestModel extends Model
-        @attribute 'a', class extends attribute.ReferenceAttribute
+      TestModel = Model.build(
+        attribute('a', class extends attributes.ReferenceAttribute
           request: -> new Varying()
+        )
+      )
 
       m = new TestModel()
       m.resolve('a', app).react((x) -> value = x)
@@ -517,9 +494,11 @@ describe 'Model', ->
       value = null
       request = new Varying()
       app = { vendStore: (x) -> { handle: (->), destroy: (->) } }
-      class TestModel extends Model
-        @attribute 'a', class extends attribute.ReferenceAttribute
+      TestModel = Model.build(
+        attribute('a', class extends attributes.ReferenceAttribute
           request: -> request
+        )
+      )
 
       m = new TestModel()
       m.resolve('a', app).react(->)
@@ -541,113 +520,99 @@ describe 'Model', ->
       issues.list.length.should.equal(0)
 
     it 'should contain issues from the Model level', ->
-      issueList = new List()
-
-      class TestModel extends Model
-        _issues: -> issueList
-
-      model = new TestModel()
-      model.issues().list.length.should.equal(0)
-
-      issueList.add(new Issue( active: true ))
-      model.issues().list.length.should.equal(1)
-
-      issueList.removeAll()
-      model.issues().list.length.should.equal(0)
-
-    it 'should contain issues from the Attribute level', ->
-      issueList = new List()
-
-      class TestModel extends Model
-        @attribute 'attr', class extends attribute.Attribute
-          issues: -> issueList
+      TestModel = Model.build(
+        issue(from(types.validity.valid()))
+        issue(from(types.validity.error()))
+      )
 
       model = new TestModel()
-      model.issues().list.length.should.equal(0)
-
-      issueList.add(new Issue( active: true ))
-      model.issues().list.length.should.equal(1)
-
-      issueList.removeAll()
-      model.issues().list.length.should.equal(0)
-
-    it 'should only contain active issues', ->
-      class TestModel extends Model
-        @attribute 'attr', class extends attribute.Attribute
-          issues: -> new List([ new Issue( active: this.watchValue() ) ])
-
-      model = new TestModel( attr: false )
-      model.issues().list.length.should.equal(0)
-
-      model.set('attr', true)
-      model.issues().list.length.should.equal(1)
-
-      model.set('attr', false)
-      model.issues().list.length.should.equal(0)
+      model.issues().list.length.should.equal(2)
 
   describe 'validity', ->
     it 'should return true if no active issues exist', ->
-      class TestModel extends Model
-        @attribute 'attr', class extends attribute.Attribute
-          issues: -> new List([ new Issue( active: this.watchValue() ) ])
+      v1 = new Varying(types.validity.valid())
+      v2 = new Varying(types.validity.valid())
+      TestModel = Model.build(
+        issue(from(v1))
+        issue(from(v2))
+      )
 
-      model = new TestModel( attr: false )
+      model = new TestModel()
       model.valid().get().should.equal(true)
 
     it 'should return false if one or more active issues exist', ->
-      class TestModel extends Model
-        @attribute 'attr', class extends attribute.Attribute
-          issues: -> new List([ new Issue( active: this.watchValue() ) ])
+      v1 = new Varying(types.validity.error())
+      v2 = new Varying(types.validity.error())
+      TestModel = Model.build(
+        issue(from(v1))
+        issue(from(v2))
+      )
 
-        @attribute 'attr2', class extends attribute.Attribute
-          issues: -> new List([ new Issue( active: this.watchValue() ) ])
-
-      model = new TestModel( attr: true, attr2: false )
+      model = new TestModel()
       model.valid().get().should.equal(false)
 
-      model.set('attr2', true)
+      v1.set(types.validity.valid())
       model.valid().get().should.equal(false)
 
-      model.set('attr', false)
-      model.set('attr2', false)
+      v2.set(types.validity.valid())
       model.valid().get().should.equal(true)
 
-    it 'should take a severity threshold', ->
-      class TestModel extends Model
-        @attribute 'attr', class extends attribute.Attribute
-          issues: ->
-            new List([
-              new Issue( active: this.watchValue().map((val) -> val > 0), severity: 2 )
-              new Issue( active: this.watchValue().map((val) -> val > 1), severity: 1 )
-            ])
+  describe 'trait bundling', ->
+    it 'should receive and apply a set of schema definitions', ->
+      TestTrait = Trait(
+        bind('a', from('b'))
+        bind('x', from('y'))
+      )
+      TestModel = Model.build(TestTrait)
 
-      model = new TestModel( attr: 0 )
-      model.valid().get().should.equal(true)
+      m = new TestModel( b: 2, y: 4 )
+      m.get('a').should.equal(2)
+      m.get('x').should.equal(4)
 
-      model.set('attr', 1)
-      model.valid(1).get().should.equal(true)
-      model.valid(2).get().should.equal(false)
+    it 'should work alongside direct definitions', ->
+      TestTrait = Trait(
+        bind('a', from('b'))
+      )
+      TestModel = Model.build(
+        TestTrait
+        bind('x', from('y'))
+      )
 
-      model.set('attr', 2)
-      model.valid(1).get().should.equal(false)
-      model.valid(2).get().should.equal(false)
+      m = new TestModel( b: 2, y: 4 )
+      m.get('a').should.equal(2)
+      m.get('x').should.equal(4)
+
+    it 'should nest', ->
+      RootTrait = Trait(
+        bind('a', from('b'))
+      )
+      ChildTrait = Trait(
+        RootTrait
+        bind('x', from('y'))
+      )
+      TestModel = Model.build(ChildTrait)
+
+      m = new TestModel( b: 2, y: 4 )
+      m.get('a').should.equal(2)
+      m.get('x').should.equal(4)
 
   describe 'deserialization', ->
     it 'should store the given data into the correct places', ->
       Model.deserialize( a: { b: 1, c: 2 }, d: 3 ).data.should.eql({ a: { b: 1, c: 2 }, d: 3 })
 
     it 'should rely on provided attributes to deserialize if given', ->
-      class TestModel extends Model
-        @attribute 'a', class extends attribute.Attribute
-          @deserialize: (x) -> "a#{x}"
+      TestModel = Model.build(
+        attribute('a', class extends attributes.Attribute
+          @deserialize: (x) -> "a#{x}")
 
-        @attribute 'b.c', class extends attribute.Attribute
-          @deserialize: (x) -> "bc#{x}"
+        attribute('b.c', class extends attributes.Attribute
+          @deserialize: (x) -> "bc#{x}")
 
-        @attribute('b.d', attribute.Attribute)
+        attribute('b.d', attributes.Attribute)
 
-        @attribute 'x', class extends attribute.Attribute
-          @deserialize: (x) -> "x#{x}"
+        attribute('x', class extends attributes.Attribute
+          @deserialize: (x) -> "x#{x}")
+      )
 
       TestModel.deserialize( a: 1, b: { c: 2, d: 3 } ).data.should.eql({ a: 'a1', b: { c: 'bc2', d: 3 } })
 

@@ -11,6 +11,8 @@ types =
 
   traversal: defcase('org.janusjs.collection.traversal': { arity: 2 }, 'recurse', 'delegate', 'defer', 'varying', 'value', 'nothing')
 
+  validity: defcase('org.janusjs.model.validity', 'valid', 'invalid': [ 'warning', 'error' ])
+
 
 module.exports = types
 

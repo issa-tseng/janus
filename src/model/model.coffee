@@ -31,16 +31,14 @@ class Model extends Map
     value = super(key)
 
     # if that fails, check the attribute.
-    if !value?
-      attribute = this.attribute(key)
+    if !value? and (attribute = this.attribute(key))?
       value =
-        if attribute?
-          if attribute.writeDefault is true
-            # first, check forceDefault, and set-on-write if present.
-            this.set(key, attribute.default())
-          else
-            # failing that, call default in general.
-            attribute.default()
+        if attribute.writeDefault is true
+          # first, check forceDefault, and set-on-write if present.
+          this.set(key, attribute.default())
+        else
+          # failing that, call default in general.
+          attribute.default()
 
     # drop undef to null
     value ?= null
@@ -82,85 +80,21 @@ class Model extends Map
   # to complete first.
   resolveNow: (key, app) -> this.resolve(key, app).react((x) -> setTimeout((=> this.stop()), 0) if types.result.complete.match(x))
 
-  # Class-level storage bucket for attribute schema definition.
-  @attributes: ->
-    if @_attributesAgainst isnt this
-      @_attributesAgainst = this
-
-      superClass = util.superClass(this)
-      @_attributes =
-        if superClass.attributes?
-          superClass.attributes().shadow()
-        else
-          new Map()
-    else
-      @_attributes
-
-  # Get all attributes declared on this model, including inherited attributes.
-  # TODO: should be an easier way to extract this structure.
-  @allAttributes: ->
-    attrs = @attributes()
-    result = {}
-    (result[attr] = attrs.get(attr)) for attr in attrs.enumerate()
-    result
-
-  # Declare an attribute for this model.
-  @attribute: (key, attribute) -> @attributes().set(key,  attribute)
-
-  # Declare an attribute by means of just a default value and an optional class reference.
-  @default: (key, value, klass) ->
-    klass ?= require('./attribute').Attribute
-    wrapped = if util.isFunction(value) then value else (-> value)
-    @attribute(key, class extends klass
-      default: wrapped
-    )
-
-  # Shortcut to declare an attribute that marks an attribute as transient.
-  @transient: (key) -> @attributes().set(key, class extends (require('./attribute').Attribute)
-    transient: true
-  )
-
   # Get an attribute for this model.
   #
   # **Returns** an `Attribute` object wrapping an attribute for the attribute
   # at the given key.
-  attribute: (key) -> this._attributes[key] ?= new (@constructor.attributes().get(key))?(this, key)
-
-  # Returns actual instances of every attribute associated with this model.
-  #
-  # **Returns** an array of `Attribute`s.
-  allAttributes: -> this.attribute(key) for key of @constructor.allAttributes()
-
-  # Store our binders
-  @binders: ->
-    if this._bindersAgainst isnt this
-      this._bindersAgainst = this
-      this._binders = []
-
-    this._binders
-
-  # Declare a binding for this model.
-  @bind: (key, binding) ->
-    binding._key = key # avoids creating new objs; perf.
-    this.binders().push(binding)
+  attribute: (key) -> this._attributes[key] ?=
+    new (this.constructor.schema.attributes[key])?(this, key)
 
   # Actually set up our binding.
   # **Returns** nothing.
   _bind: ->
-    this._binders = {}
-    recurse = (obj) =>
-      for binder in obj.binders() when !this._binders[binder._key]?
-        do (binder) =>
-          key = binder._key
-          this._binders[key] = binder.all
-            .point((x) => this.constructor.point(x, this))
-            .react((value) => this.set(key, value))
-
-      superClass = util.superClass(obj)
-      recurse(superClass) if superClass and superClass.binders?
-      null
-
-    recurse(this.constructor)
+    this._bindings = {}
+    for key, binding of this.constructor.schema.bindings
+      this._bindings[key] = binding.all
+        .point(this.pointer())
+        .react(this.set(key))
     null
 
   @point: match(
@@ -183,30 +117,25 @@ class Model extends Map
     from.default.self (x, self) -> if util.isFunction(x) then Varying.ly(x(self)) else Varying.ly(self)
   )
 
-  # Returns a `List` of issues with this model. If no issues exist, the `List`
-  # will be empty.
-  #
-  # **Returns** `List[Issue]`
-  issues: ->
-    this.issues$ ?= do =>
-      issueList = (attr.issues() for attr in this.allAttributes() when attr.issues?)
-      issueList.unshift(this._issues()) if this._issues?
-      (new (require('../collection/derived/catted-list').CattedList)(issueList)).filter((issue) -> issue.active)
+  pointer: -> (x) => this.constructor.point(x, this)
 
-  # To specify model-level validation for this model, declare a `_issues()`
-  # method:
-  #
-  # _issues: ->
+  # Returns a list of the issue results that have been bound against this model.
+  issues: -> this._issues$ ?= do =>
+    { List } = require('../collection/list')
+    new List(this.constructor.schema.issues.map((binding) => binding.all.point(this.pointer())))
 
   # Returns a `Varying` of `true` or `false` depending on whether this model is
-  # valid or not. Can be given a `severity` to filter by some threshold.
+  # valid or not.
   #
   # **Returns** `Varying[Boolean]` indicating current validity.
-  valid: (severity = 0) ->
+  valid: -> this._valid$ ?=
     this.issues()
-      .filter((issue) -> issue.severity.map((issueSev) -> issueSev <= severity))
-      .watchLength()
-        .map((length) -> length is 0)
+      .filter((issue) -> issue.map(types.validity.invalid.match))
+      .watchLength().map((length) -> length is 0)
+
+  # Overridden to define model characteristics like attributes, bindings, and issues.
+  # Usually this is done through the Model.build mechanism rather than directly.
+  @schema: { attributes: {}, bindings: {}, issues: [] }
 
   # Takes in a data hash and relies upon attribute definition to provide a sane
   # default deserialization methodology.
@@ -214,7 +143,7 @@ class Model extends Map
   # **Returns** a `Model` or subclass of `Model`, depending on invocation, with
   # the data populated.
   @deserialize: (data) ->
-    for key, attribute of this.allAttributes()
+    for key, attribute of this.schema.attributes
       prop = util.deepGet(data, key)
       util.deepSet(data, key)(attribute.deserialize(prop)) if prop?
 
@@ -223,7 +152,19 @@ class Model extends Map
   # Handles parent changes; mostly exists in Map but we wrap to additionally
   # bail if the changed parent attribute is a bound value; we want that to
   # update naturally from our own bindings.
-  _parentChanged: (key, newValue, oldValue) -> super(key, newValue, oldValue) unless this._binders[key]?
+  _parentChanged: (key, newValue, oldValue) -> super(key, newValue, oldValue) unless this._bindings[key]?
+
+  # Quick shortcut to define the schema of this model.
+  @build: (parts...) ->
+    schema = {
+      attributes: util.extendNew({}, this.schema.attributes),
+      bindings: util.extendNew({}, this.schema.bindings),
+      issues: this.schema.issues.slice()
+    }
+    part(schema) for part in parts
+
+    class extends this
+      @schema: schema
 
 
 module.exports = { Model }
