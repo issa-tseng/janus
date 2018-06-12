@@ -127,6 +127,11 @@ describe 'Attribute', ->
 
         should((new TestAttribute(new Model(), 'whatever')).serialize()).equal(undefined)
 
+      it 'should allow Model.of(x) shortcut definition', ->
+        class MyModel extends Model
+        MyAttribute = attribute.Model.of(MyModel)
+        MyAttribute.modelClass.should.equal(MyModel)
+
     describe 'collection type', ->
       it 'should delegate deserialization to the collection class', ->
         called = false
@@ -155,5 +160,16 @@ describe 'Attribute', ->
 
         should((new TestAttribute(new Model(), 'whatever')).serialize()).equal(undefined)
 
-    # Reference types are mainly tested in Model#resolve() tests.
+      it 'should allow Collection.of(x) shortcut definition', ->
+        class MyList extends List
+        MyAttribute = attribute.Collection.of(MyList)
+        MyAttribute.collectionClass.should.equal(MyList)
+
+    describe 'reference type', ->
+      it 'should allow Reference.of(x) shortcut definition', ->
+        class MyModel extends Model
+        MyAttribute = attribute.Reference.of(MyModel)
+        MyAttribute.contains.should.equal(MyModel)
+
+      # Reference types are mainly tested in Model#resolve() tests.
 
