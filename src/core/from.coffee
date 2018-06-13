@@ -1,6 +1,5 @@
 { Varying } = require('./varying')
 { defcase, match, otherwise } = require('./case')
-{ immediate, identity } = require('../util/util')
 
 # TODO:
 # * question: how should varying external cases be handled? right now they are
@@ -12,7 +11,7 @@
 
 # util.
 conj = (x, y) -> x.concat([ y ])
-internalCases = ic = defcase('org.janusjs.core.from.internal': { arity: 2 }, 'varying', 'map', 'flatMap', 'pipe', 'resolve', 'unflat': { arity: 1 })
+internalCases = ic = defcase('org.janusjs.core.from.internal': { arity: 2 }, 'varying', 'map', 'flatMap', 'pipe', 'resolve', 'unflat')
 
 # default applicants:
 defaultCases = dc = defcase('org.janusjs.core.from.default', 'dynamic', 'watch', 'resolve', 'attribute', 'varying', 'app', 'self')
@@ -34,10 +33,6 @@ val = (conjunction, applicants = []) ->
     f = (obj) -> obj?.watch?(attr) ? orElse
     val(conjunction, conj(rest, internalCases.flatMap(last, f)))
 
-  result.pipe = (f) ->
-    [ rest..., last ] = applicants
-    val(conjunction, conj(rest, internalCases.pipe(last, f)))
-
   result.resolve = (attr) ->
     [ rest..., last ] = applicants
     val(conjunction, conj(rest, internalCases.resolve(last, attr)))
@@ -46,6 +41,10 @@ val = (conjunction, applicants = []) ->
     [ rest..., last ] = applicants
     f = (obj) -> obj?.attribute?(attr)
     val(conjunction, conj(rest, internalCases.map(last, f)))
+
+  result.pipe = (f) ->
+    [ rest..., last ] = applicants
+    val(conjunction, conj(rest, internalCases.pipe(last, f)))
 
   result.asVarying = () ->
     [ rest..., last ] = applicants
@@ -75,37 +74,23 @@ build = (cases) ->
   conjunction()
 
 
+# a helper to improve the performance and reduce the wordiness of mappedPoint:
+mapVaryingOrRewrap = (kase, f) -> kase((inner, arg, point) ->
+  innerResult = mappedPoint(inner, point)
+  if ic.varying.match(innerResult) is true
+    ic.varying(f(innerResult.value, arg, point))
+  else
+    kase(inner, arg)
+)
+
 # helper for point() that processes our intermediate maps within one applicant chain.
 mappedPoint = match(
-  ic.map (inner, f, point) ->
-    match(
-      ic.varying (x) -> ic.varying(x.map(f))
-      otherwise -> ic.map(inner, f)
-    )(mappedPoint(inner, point))
-
-  ic.flatMap (inner, f, point) ->
-    match(
-      ic.varying (x) -> ic.varying(x.flatMap(f))
-      otherwise -> ic.flatMap(inner, f)
-    )(mappedPoint(inner, point))
-
-  ic.pipe (inner, f, point) ->
-    match(
-      ic.varying (x) -> ic.varying(f(x))
-      otherwise -> ic.pipe(inner, f)
-    )(mappedPoint(inner, point))
-
-  ic.resolve (inner, attr, point) ->
-    match(
-      ic.varying (x) -> ic.varying(x.flatMap((obj) -> point(from.default.app()).flatMap((app) -> obj.resolve(attr, app)) if obj?))
-      otherwise -> ic.resolve(inner, f)
-    )(mappedPoint(inner, point))
-
-  ic.unflat (inner, point) ->
-    match(
-      ic.varying (x) -> ic.varying(new Varying(x))
-      otherwise -> ic.unflat(inner)
-    )(mappedPoint(inner, point))
+  mapVaryingOrRewrap(ic.map, (x, f) -> x.map(f))
+  mapVaryingOrRewrap(ic.flatMap, (x, f) -> x.flatMap(f))
+  mapVaryingOrRewrap(ic.pipe, (x, f) -> f(x))
+  mapVaryingOrRewrap(ic.resolve, (x, attr, point) -> x.flatMap((obj) ->
+    point(from.default.app()).flatMap((app) -> obj.resolve(attr, app)) if obj?))
+  mapVaryingOrRewrap(ic.unflat, (x) -> new Varying(x))
 
   ic.varying (x) -> ic.varying(x) # TODO: rewrapping is slow.
 
@@ -117,13 +102,13 @@ mappedPoint = match(
       x
 )
 
-# matcher that's run in order to finalize.
+# matcher that's run in order to unwrap resolved varyings at the very end.
 matchFinal = match(
   ic.varying (x) -> x
   otherwise (x) -> new Varying(x)
 )
 
-# helper that applies accumulated maps across applicants to a varying.
+# helper that applies accumulated maps across applicants to get a final varying.
 # TODO: recompiling matches is slow. also, relies on weird side effects.
 applyMaps = (applicants, maps) ->
   [ first, rest... ] = maps
@@ -158,7 +143,7 @@ applyMaps = (applicants, maps) ->
   (v = apply(m)) for m in rest
   v
 
-# used for .all.plain
+# prebaked simple pointer which is used to make all.plain() work.
 plainMap = match(
   dc.dynamic (x) -> Varying.ly(x)
   dc.varying (x) -> Varying.ly(x)
@@ -167,6 +152,10 @@ plainMap = match(
 
 # terminus gives you a representation of the entire chain. mapping at this level
 # gives you all mapped values directly in the arg list.
+#
+# applicants is the array of individual data chains, wrapped with map cases where
+# relevant. maps is the array of lifted mapping functions to be applied across the
+# results of the applicant chains.
 terminus = (applicants, maps = []) ->
   result = (f) -> terminus(applicants, maps.concat([ ic.flatMap(f) ]))
   result.flatMap = (f) -> terminus(applicants, maps.concat([ ic.flatMap(f) ]))

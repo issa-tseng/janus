@@ -341,21 +341,6 @@ describe 'from', ->
 
       result.should.equal('no luck')
 
-  describe 'inline pipe', ->
-    it 'should apply a pipe after point resolution', ->
-      { dynamic } = from.default
-
-      result = null
-      from('a').pipe((v) -> v.map((x) -> x + 'b'))
-        .all.point(match(
-          dynamic (xs) -> new Varying(xs[0])
-          otherwise ->
-        ))
-        .map(id).react((x) -> result = x)
-
-      result.should.equal('ab')
-
-
   describe 'inline resolve', ->
     it 'should apply as a flatMap after point resolution', ->
       { dynamic, app } = from.default
@@ -391,6 +376,20 @@ describe 'from', ->
 
       called.should.equal('myattr')
       result.should.equal(42)
+
+  describe 'inline pipe', ->
+    it 'should apply a pipe after point resolution', ->
+      { dynamic } = from.default
+
+      result = null
+      from('a').pipe((v) -> v.map((x) -> x + 'b'))
+        .all.point(match(
+          dynamic (xs) -> new Varying(xs[0])
+          otherwise ->
+        ))
+        .map(id).react((x) -> result = x)
+
+      result.should.equal('ab')
 
   describe 'inline asVarying', ->
     { dynamic } = from.default
