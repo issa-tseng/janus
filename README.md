@@ -7,7 +7,7 @@ Janus is different from other FRP frameworks in two predominant ways: it is mean
 
 Of note should be the [Janus Standard Library](https://github.com/clint-tseng/janus-stdlib), which contains useful default implementations of core Janus components, and the [Janus Samples](https://github.com/clint-tseng/janus-samples) repository, which contains a growing library of illustrative Janus projects.
 
-Janus is nearing API stabilization. Some minor calls are still shifting around, but at this point the big conceptual changes are over with and new versions should necessitate only minor find-and-replace operations. Please see the below roadmap for further details. Authors are still cautioned to avoid using Collection folds until the completion of `0.4`.
+Janus is relatively mature and nearing API stabilization. Some minor calls are still shifting around, but at this point the big conceptual changes are over with and new versions should necessitate only minor find-and-replace operations. Please see the below roadmap for further details. Authors are still cautioned to avoid using Collection folds until the completion of `0.5`.
 
 [![Build Status](https://img.shields.io/travis/clint-tseng/janus.svg)](http://travis-ci.org/clint-tseng/janus) [![NPM version](https://img.shields.io/npm/v/janus.svg)](https://www.npmjs.com/package/janus)
 
@@ -36,17 +36,39 @@ Roadmap
 
 There remain three major blocs of work to be accomplished before a `1.x` release can be considered:
 
-* `0.4` will be a refactoring of `Collection`:
+* `0.5` will be a refactoring of `Collection`:
     * For the most part, the external collection API is entirely satisfactory, in that it resembles a standard collection API. But it merits a revisit.
     * Everything is eagerly-evaluated, which simplifies a lot of operations, but probably shouldn't be the only option.
     * The various `fold`-related operations are nearly unusable at the moment.
     * Alternative approaches to our current system, possibly including a greater focus on lazy evaluation and/or transducers, will be evaluated.
-    * `0.4` should be **almost entirely backward compatible**.
-* `0.5` serves as a release candidate for all of the above changes, as well as an umbrella milestone for improvements, changes, or removals to the `application` package.
+    * The use of such a lazy transducer system in a more-performant render system will be considered.
+    * `0.5` should be **almost entirely backward compatible**.
+* `0.6` serves as a release candidate for all of the above changes, as well as an umbrella milestone for improvements, changes, or removals to the `application` package.
 * `1.0` will follow, stabilizing the API for the first time.
 
 Major Changelog
 ---------------
+
+### [0.4](https://github.com/clint-tseng/janus/compare/0.3.1...0.4)
+
+Once again focused on two things. First, a huge number of small-scale quality of life improvements were implemented to provide better answers for awkward syntactical constructions and codify some common-in-practice patterns into simpler forms. Secondly, as part of an important effort to ensure broad language compatibility, the Model and DomView declaration systems were entirely refactored to move away from class-based definition, which were tightly bound with Coffeescript's classdef particulars. The new system also improves behavioural composition.
+
+* Quality of life improvements:
+    * Make `.react()` do what `.reactNow()` used to do, as it is the more common call. `reactLater` replaces the old `react`.
+    * `from(…).asVarying()` will now get you an unflat `Varying` mapping argument, in case it is better for performance, eg when creating things like filtered lists.
+    * Add `varying.pipe()` which makes stdlib Varying helpers easier to use; eg: `varying.map(…).pipe(throttle(30)).react(…)`.
+    * Allow `from.app('key')` to watch the given key. Previously, no arguments were taken.
+    * Add a curried form of `map.set('key')` which returns a function which sets that k/v data.
+    * `map.with({ attrs })` shortcut to shadow a Map with the given data override.
+    * `default()` and `transient()` Model attribute declaration shortcuts.
+* Big refactors:
+    * Rather than declaring a class with `@_dom` and `@_template` to create a DomView, the new `DomView.build(dom, template)` facility takes a DOM fragment and a `template()` and [constructs a DomView](https://github.com/clint-tseng/janus-samples/blob/master/todo/src/view/todo-list.coffee).
+        * Template mutator definitions can now chain, eg `find('.title').text(from('name')).classed('active', from('enabled'))`. This works even with interally-chaining mutators like `.render()`
+        * The new `.on()` declaration isn't technically an idempotent mutator like the others but enables much quicker event wiring definition without having to write a full `_wireEvents` method.
+    * `Model` no longer has classdef methods `@attribute` and `@bind`. Now these are declared via `Model.build(…)`.
+        * `attribute`, `bind`, `issue`, `default`, and `transient` are top-level package exports that can be used in `Model.build(…)` to define the Model.
+        * Class-based inheritance still works if so desired.
+        * But preferred is the new Trait system, which is essentially `template()` but for `Model`s, enabling eg `Model.build(TraitA, TraitB, bind(…), attribute(…))`. Traits may contain other Traits. Last write wins.
 
 ### [0.3](https://github.com/clint-tseng/janus/compare/0.2...0.3)
 
