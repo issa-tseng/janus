@@ -116,8 +116,10 @@ class Library extends Base
       # we have a set of possible matches. go through them.
       return record.book for record in contextShelf when match(obj, record, options.attributes)
 
-    if klass? and util.superClass(klass)?
-      this._get(obj, util.superClass(klass), context, options)
+    if klass?
+      superClass = util.superClass(klass)
+      if superClass?
+        this._get(obj, superClass, context, options)
 
   # Class-level internal tracking of object constructors.
   @classKey: "__janus_classId#{new Date().getTime()}"
