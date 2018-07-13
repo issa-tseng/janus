@@ -256,6 +256,8 @@ class List extends OrderedCollection
 
     new this.constructor(newArray, { parent: this })
 
+  @.prototype[Symbol.iterator] = -> this.list[Symbol.iterator]()
+
   @deserialize: (data) ->
     items =
       if this.modelClass? and util.isFunction(this.modelClass.deserialize)

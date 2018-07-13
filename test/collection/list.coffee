@@ -387,6 +387,13 @@ describe 'List', ->
       l.putAll([ 1, 3, 6, 10, 15, 4 ])
       events.should.eql([ 'rm', 2, 1, 'rm', 5, 3, 'mv', 6, 2, 3, 'add', 10, 3, 'add', 15, 4 ])
 
+  describe 'iteration', ->
+    it 'should allow ES for..of iteration directly', -> # gh102
+      result = []
+      l = new List([ 0, 1, 2 ])
+      `for (const x of l) result.push(x)`
+      result.should.eql([ 0, 1, 2 ])
+
   describe 'deserialize', ->
     it 'should use the provided modelClass if it has a deserialize class method', ->
       class TestModel extends Model
