@@ -61,12 +61,15 @@ util =
     (return false) for _ of obj
     return true
 
-  # Get the superclass of a class. Accounts for Coffeescript and Livescript.
+  # Get the superclass of a class. Accounts for ES6, Coffeescript, and Livescript.
   superClass: (klass) ->
-    if klass.superclass?
+    if Object.hasOwnProperty.call(klass, 'superclass')
       klass.superclass
-    else if klass.__super__?
+    else if Object.hasOwnProperty.call(klass, '__super__')
       klass.__super__.constructor
+    else
+      result = Object.getPrototypeOf(klass)
+      result if result.prototype?
 
 
   # Gets a deeply nested key from a hash. Falls back to `null` if it can't find

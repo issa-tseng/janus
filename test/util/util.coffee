@@ -130,6 +130,20 @@ describe 'Util', ->
 
       util.superClass(B).should.equal(A)
 
+    it 'should correctly identify the superclass of an es class', -> #gh99
+      # es6:
+      `class A {};
+      class B extends A {};`
+
+      util.superClass(B).should.equal(A)
+
+    it 'should not skip es classchain elements to coffee classes', -> #gh99
+      class A
+      class B extends A
+      `class C extends B {}
+      class D extends C {}`
+      util.superClass(D).should.equal(C)
+
   describe 'deepGet', ->
     it 'should work with dot syntax', ->
       util.deepGet({ a: { b: { c: 2 } } }, 'a.b.c').should.equal(2)
