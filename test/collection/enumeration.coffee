@@ -243,7 +243,7 @@ describe 'map enumeration', ->
       s = new Map( a: 1, b: 2, c: { d: { e: 3 }, f: 4 } )
       kl = Enumeration.map.watch(s)
       kl.should.be.an.instanceof(KeyList)
-      kl.map.should.equal(s)
+      kl.target.should.equal(s)
 
     it 'passes options through', ->
       s = new Map( a: 1, b: 2, c: { d: { e: 3 }, f: 4 } )
