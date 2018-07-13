@@ -31,7 +31,7 @@ class DomView extends View
 
     null
 
-  _destroy: ->
+  destroy: ->
     if this._bindings?
       for binding in this._bindings
         binding.view?.get()?.destroy()
@@ -43,6 +43,8 @@ class DomView extends View
     if this._artifact?
       this._artifact.trigger?('destroying')
       this._artifact.remove()
+
+    super()
 
   @build: (fragment, template, options = {}) ->
     class extends DomView
