@@ -32,12 +32,15 @@ class DomView extends View
     null
 
   _destroy: ->
-    if this._artifact?
+    if this._bindings?
       for binding in this._bindings
         binding.view?.get()?.destroy()
         binding.stop()
-      subwire.stop() for subwire in this._subwires if this._subwires?
 
+    if this._subwires?
+      subwire.stop() for subwire in this._subwires
+
+    if this._artifact?
       this._artifact.trigger?('destroying')
       this._artifact.remove()
 
