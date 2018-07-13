@@ -112,6 +112,17 @@ describe 'Map', ->
         setter(4)
         map.get('test').should.equal(4)
 
+      it 'should correctly fire nested reactions upon curry', ->
+        map = new Map()
+        setter = map.set('test')
+
+        results = []
+        map.watch('test.nested').react((x) -> results.push(x))
+        setter({ nested: 1 })
+        setter({ nested: 2 })
+
+        results.should.eql([ null, 1, 2 ])
+
     describe 'unset', ->
       it 'should be able to unset a key', ->
         map = new Map( cafe: { vivace: 'brix' } )

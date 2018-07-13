@@ -68,7 +68,7 @@ class Map extends Enumerable
   # **Returns** the value that was set.
   set: (x, y) ->
     if isString(x) and !y?
-      (y) => this._set(x, y)
+      (y) => this.set(x, y)
     else if y? and (!isPlainObject(y) or isEmptyObject(y))
       this._set(x, y)
     else if isPlainObject(y)
