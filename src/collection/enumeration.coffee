@@ -12,7 +12,7 @@
 { traverse, traverseAll, deepGet } = require('../util/util')
 
 class KeyList extends DerivedList
-  constructor: (@map, options = {}) ->
+  constructor: (@target, options = {}) ->
     super()
     this.scope = options.scope ? 'all'
     this.include = options.include ? 'values'
@@ -23,18 +23,18 @@ class KeyList extends DerivedList
     # add initial keys.
     scanMap = (map) => traverse(map.data, (key) => this._addKey(key.join('.')))
     if this.scope is 'all'
-      ptr = this.map
+      ptr = this.target
       while ptr?
         scanMap(ptr)
         ptr = ptr._parent
     else if this.scope is 'direct'
-      scanMap(this.map)
+      scanMap(this.target)
 
     # listen for future keys.
-    this.listenTo(this.map, 'anyChanged', (key, newValue, oldValue) =>
+    this.listenTo(this.target, 'anyChanged', (key, newValue, oldValue) =>
       if this.scope is 'direct'
         # TODO: is there a cleverer way to do this?
-        ownValue = deepGet(this.map.data, key)
+        ownValue = deepGet(this.target.data, key)
         return if ownValue isnt newValue
 
       if newValue? and not oldValue?
@@ -73,8 +73,8 @@ class KeyList extends DerivedList
     null
 
   # (flat)mapPairs takes f: (k, v) -> x and returns List[x]
-  mapPairs: (f) -> this.flatMap((key) => Varying.mapAll(f, new Varying(key), this.map.watch(key)))
-  flatMapPairs: (f) -> this.flatMap((key) => Varying.flatMapAll(f, new Varying(key), this.map.watch(key)))
+  mapPairs: (f) -> this.flatMap((key) => Varying.mapAll(f, new Varying(key), this.target.watch(key)))
+  flatMapPairs: (f) -> this.flatMap((key) => Varying.flatMapAll(f, new Varying(key), this.target.watch(key)))
 
 class IndexList extends DerivedList
   constructor: (@parent) ->
