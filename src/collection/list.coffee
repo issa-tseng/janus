@@ -56,7 +56,8 @@ class List extends OrderedCollection
       elem?.emit?('addedTo', this, idx + subidx)
 
       # If the item is destroyed, automatically remove it from our collection.
-      (do (elem) => this.listenTo(elem, 'destroying', => this.remove(elem))) if elem?.isBase is true
+      if (elem?.isBase is true) and (this.isDerivedList isnt true)
+        (do (elem) => this.listenTo(elem, 'destroying', => this.remove(elem)))
 
     elems
 
@@ -268,6 +269,8 @@ class List extends OrderedCollection
     @modelClass: modelClass
 
 class DerivedList extends List
+  isDerivedList: true
+
   constructor: ->
     # still call Base to set up important things, but skip List constructor as
     # it tries to add the initial items.
