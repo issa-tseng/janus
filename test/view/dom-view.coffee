@@ -361,9 +361,9 @@ describe 'DomView', ->
           find('.a').render(from(true))
           find('.b').render(from(true))
         ))
-        _destroy: -> destroyed.push(this); super()
+        destroy: -> destroyed.push(this); super()
       ChildView = class extends DomView.build($('<div/>'), inf)
-        _destroy: -> destroyed.push(this); super()
+        destroy: -> destroyed.push(this); super()
       app = { vendView: -> new ChildView() }
 
       view = new ParentView({}, { app })
