@@ -388,11 +388,9 @@ describe 'List', ->
       events.should.eql([ 'rm', 2, 1, 'rm', 5, 3, 'mv', 6, 2, 3, 'add', 10, 3, 'add', 15, 4 ])
 
   describe 'iteration', ->
-    it 'should allow ES for..of iteration directly', -> # gh102
-      result = []
-      l = new List([ 0, 1, 2 ])
-      `for (const x of l) result.push(x)`
-      result.should.eql([ 0, 1, 2 ])
+    it 'should conform to the ES6 iterator protocol for direct iteration', -> # gh102
+      return if typeof Symbol is 'undefined' # we aren't in ES6
+      (new List())[Symbol.iterator]().next.should.be.a.Function()
 
   describe 'deserialize', ->
     it 'should use the provided modelClass if it has a deserialize class method', ->

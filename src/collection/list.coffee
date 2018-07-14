@@ -256,7 +256,9 @@ class List extends OrderedCollection
 
     new this.constructor(newArray, { parent: this })
 
-  @.prototype[Symbol.iterator] = -> this.list[Symbol.iterator]()
+  # allow ES iterators but only if ES5+ is actually present.
+  if typeof Symbol isnt 'undefined'
+    @.prototype[Symbol.iterator] = -> this.list[Symbol.iterator]()
 
   @deserialize: (data) ->
     items =
