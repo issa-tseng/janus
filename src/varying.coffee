@@ -9,6 +9,8 @@ class ManagedObservation extends Base
   @with: (varying) -> -> new ManagedObservation(varying)
 
 varyingUtils = {
+  ManagedObservation
+
   sticky: (delays = {}, v) ->
     return ((v) -> varyingUtils.sticky(delays, v)) unless v?
 
