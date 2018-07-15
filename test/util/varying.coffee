@@ -1,7 +1,7 @@
 should = require('should')
 
 { Varying } = require('janus')
-{ sticky, debounce, throttle, fromEvent, fromEventNow } = require('../../lib/util/varying')
+{ sticky, debounce, throttle, filter, fromEvent, fromEventNow } = require('../../lib/varying')
 
 wait = (time, f) -> setTimeout(f, time)
 
@@ -225,6 +225,32 @@ describe 'varying utils', ->
       a.should.be.an.instanceof(Function)
       b = a(new Varying())
       b.should.be.an.instanceof(Varying)
+
+  describe 'filter', ->
+    it 'should return a varying', ->
+      filter((->), new Varying()).should.be.an.instanceof(Varying)
+
+    it 'should take an initial value if the filter accepts it', ->
+      result = null
+      filter((-> true), new Varying(42)).react((x) -> result = x)
+      result.should.equal(42)
+
+    it 'should not have an initial value if the filter rejects it', ->
+      result = {}
+      filter((-> false), new Varying(42)).react((x) -> result = x)
+      (result is undefined).should.equal(true)
+
+    it 'should pass the present value to the filter function', ->
+      passed = null
+      filter(((x) -> passed = x), new Varying(42)).react(->)
+      passed.should.equal(42)
+
+    it 'should passthrough only values that pass the filter', ->
+      results = []
+      v = new Varying(1)
+      filter(((x) -> (x % 2) is 0), v).react((x) -> results.push(x))
+      v.set(x) for x in [ 2, 3, 4, 5, 6 ]
+      results.should.eql([ undefined, 2, 4, 6 ])
 
   describe 'fromEvent binding', ->
     it 'should return a varying', ->

@@ -72,6 +72,19 @@ varyingUtils = {
       result
     )
 
+  filter: (predicate, v) ->
+    return ((v) -> varyingUtils.filter(predicate, v)) unless v?
+
+    Varying.managed(ManagedObservation.with(v), (mo) ->
+      result = new Varying(undefined) # not guaranteed an initial value!
+      lastObservation = null # manually manage chained varyings until we come up with something smarter.
+      mo.react((value) ->
+        lastObservation?.stop()
+        lastObservation = Varying.ly(predicate(value)).react((take) -> result.set(value) if take is true)
+      )
+      result
+    )
+
   fromEvent: (jq, event, f, immediate = false) ->
     destroyer = (d_) -> destroyer.destroy = d_
     Varying.managed((-> destroyer), ((destroyer) ->
