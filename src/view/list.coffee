@@ -57,11 +57,11 @@ class ListView extends DomView
     binding.view.get()?.wireEvents() for binding in this._mappedBindings.list
 
   # because we completely ignore how _render is normally done, we also need to
-  # do a little dance to get _destroy to work.
-  _destroy: ->
-    if this._artifact?
-      this._bindings = this._mappedBindings.list
-      super()
+  # do a little dance to get destroy to work.
+  destroy: ->
+    if this._mappedBindings?
+      this._bindings = this._mappedBindings.list.slice()
+    super()
 
 
 insertNode = (dom, itemDom, idx) ->
