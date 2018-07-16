@@ -61,16 +61,16 @@ class ModelAttribute extends Attribute
   @of: (modelClass) -> class extends this
     @modelClass: modelClass
 
-class CollectionAttribute extends Attribute
-  @collectionClass: List
+class ListAttribute extends Attribute
+  @listClass: List
 
   writeDefault: true
 
-  @deserialize: (data) -> this.collectionClass.deserialize(data)
-  serialize: -> this.constructor.collectionClass.prototype.serialize.call(this.getValue()) unless this.transient is true
+  @deserialize: (data) -> this.listClass.deserialize(data)
+  serialize: -> this.constructor.listClass.prototype.serialize.call(this.getValue()) unless this.transient is true
 
-  @of: (collectionClass) -> class extends this
-    @collectionClass: collectionClass
+  @of: (listClass) -> class extends this
+    @listClass: listClass
 
 class ReferenceAttribute extends Attribute
   isReference: true
@@ -118,7 +118,7 @@ module.exports = {
   Boolean: BooleanAttribute
   Date: DateAttribute
   Model: ModelAttribute
-  Collection: CollectionAttribute
+  List: ListAttribute
   Reference: ReferenceAttribute
 }
 
