@@ -59,7 +59,7 @@ describe 'DomView', ->
     it 'points dynamic string inputs correctly', ->
       attr = null
       v = new Varying('test')
-      subject = { resolve: (x) -> attr = x; v }
+      subject = { watch: (x) -> attr = x; v }
       TestView = DomView.build($('<div/>'), template(
         find('div').text(from('someattr'))
       ))
@@ -73,7 +73,7 @@ describe 'DomView', ->
 
     it 'points dynamic other inputs correctly', ->
       v = new Varying('test')
-      subject = { resolve: (x) -> attr = x; v }
+      subject = { watch: (x) -> attr = x; v }
       TestView = DomView.build($('<div/>'), template(
         find('div').text(from(42))
       ))
@@ -86,21 +86,6 @@ describe 'DomView', ->
       subject = { watch: (x) -> attr = x; v }
       TestView = DomView.build($('<div/>'), template(
         find('div').text(from.watch('someattr'))
-      ))
-
-      artifact = (new TestView(subject)).artifact()
-      attr.should.equal('someattr')
-      artifact.text().should.equal('test')
-
-      v.set('test 2')
-      artifact.text().should.equal('test 2')
-
-    it 'points resolve inputs correctly', ->
-      attr = null
-      v = new Varying('test')
-      subject = { resolve: (x) -> attr = x; v }
-      TestView = DomView.build($('<div/>'), template(
-        find('div').text(from.resolve('someattr'))
       ))
 
       artifact = (new TestView(subject)).artifact()
@@ -169,15 +154,15 @@ describe 'DomView', ->
       artifact.text().should.equal('test app')
 
     it 'points app with a key reference correctly', ->
-      rendered = resolvedWith = null
-      app = { toString: (-> 'test app'), on: (->), resolve: (key) -> resolvedWith = key; new Varying('resolved!') }
+      rendered = watchedWith = null
+      app = { toString: (-> 'test app'), on: (->), watch: (key) -> watchedWith = key; new Varying('watched!') }
       TestView = DomView.build($('<div/>'), template(
         find('div').text(from.app('testkey').map((x) -> x.toString()))
       ))
 
       artifact = (new TestView({}, { app })).artifact()
-      artifact.text().should.equal('resolved!')
-      resolvedWith.should.equal('testkey')
+      artifact.text().should.equal('watched!')
+      watchedWith.should.equal('testkey')
 
     it 'points self functions correctly', ->
       pointed = null
@@ -236,7 +221,7 @@ describe 'DomView', ->
         _wireEvents: -> wired.push(this)
       ChildView = class extends DomView.build($('<div/>'), inf)
         _wireEvents: -> wired.push(this)
-      app = { vendView: -> new ChildView() }
+      app = { view: -> new ChildView() }
 
       view = new ParentView({}, { app })
       wired.length.should.equal(0)
@@ -255,7 +240,7 @@ describe 'DomView', ->
         _wireEvents: -> wired.push(this)
       ChildView = class extends DomView.build($('<div/>'), inf)
         _wireEvents: -> wired.push(this)
-      app = { vendView: -> new ChildView() }
+      app = { view: -> new ChildView() }
 
       view = new ParentView({}, { app })
       view.wireEvents()
@@ -364,7 +349,7 @@ describe 'DomView', ->
         destroy: -> destroyed.push(this); super()
       ChildView = class extends DomView.build($('<div/>'), inf)
         destroy: -> destroyed.push(this); super()
-      app = { vendView: -> new ChildView() }
+      app = { view: -> new ChildView() }
 
       view = new ParentView({}, { app })
       view.artifact()
@@ -380,7 +365,7 @@ describe 'DomView', ->
         find('.b').render(from(true))
       ))
       ChildView = DomView.build($('<div/>'), inf)
-      app = { vendView: -> new ChildView() }
+      app = { view: -> new ChildView() }
 
       view = new ParentView({}, { app })
       view.wireEvents()

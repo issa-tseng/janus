@@ -50,6 +50,7 @@ class DomView extends View
     class extends DomView
       dom: -> fragment.clone()
       preboundTemplate: template(fragment)
+      resolve: options.resolve
       @viewModelClass: options.viewModelClass
       _wireEvents: -> options.wireEvents?(this.artifact(), this.subject, this)
 

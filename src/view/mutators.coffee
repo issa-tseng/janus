@@ -49,9 +49,10 @@ mutators =
     # TODO: eventually should analyze the view that may be already there and see if
     # it's already appropriate, in which case do nothing (for the attach case).
     result = (dom, point) ->
-      _vendView = (subject, context, app, criteria, options) -> app.vendView(subject, extendNew(criteria ? {}, { context, options }))
+      _getView = (subject, context, app, criteria, options) ->
+        app.view(subject, Object.assign({ context }, criteria), options)
 
-      Varying.flatMapAll(_vendView, data.all.point(point), doPoint(args.context, point), doPoint(from.app(), point), doPoint(args.criteria, point), doPoint(args.options, point)).react((view) ->
+      Varying.flatMapAll(_getView, data.all.point(point), doPoint(args.context, point), doPoint(from.app(), point), doPoint(args.criteria, point), doPoint(args.options, point)).react((view) ->
         this.view ?= new Varying()
         this.view.get()?.destroy()
         dom.empty()

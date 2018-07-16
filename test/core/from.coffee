@@ -22,7 +22,6 @@ should.Assertion.add('conjunction', (->
   this.params = { operator: 'to be a default conjunction' }
   this.obj.should.be.a.Function
   this.obj.watch.should.be.a.Function
-  this.obj.resolve.should.be.a.Function
   this.obj.attribute.should.be.a.Function
   this.obj.varying.should.be.a.Function
 ), true)
@@ -53,7 +52,6 @@ describe 'from', ->
 
     it 'should contain functions that return val-looking things', ->
       from.watch('b').should.be.a.val
-      from.resolve('b').should.be.a.val
       from.attribute('b').should.be.a.val
       from.varying('b').should.be.a.val
 
@@ -82,7 +80,6 @@ describe 'from', ->
 
       from('a')
         .and.watch('b')
-        .and.resolve('c')
         .and.attribute('d')
         .and.varying('e')
         .all.point((x) -> args.push(x); x)
@@ -93,17 +90,14 @@ describe 'from', ->
       args[1].type.should.eql('watch')
       args[1].value.should.equal('b')
 
-      args[2].type.should.eql('resolve')
-      args[2].value.should.equal('c')
+      args[2].type.should.eql('attribute')
+      args[2].value.should.equal('d')
 
-      args[3].type.should.eql('attribute')
-      args[3].value.should.equal('d')
-
-      args[4].type.should.eql('varying')
-      args[4].value.should.equal('e')
+      args[3].type.should.eql('varying')
+      args[3].value.should.equal('e')
 
     it 'should only point for things that have not resolved to varying', ->
-      { dynamic, watch, resolve, definition, varying } = from.default
+      { dynamic, watch, definition, varying } = from.default
 
       count = 0
       incr = (f) -> (args...) -> count += 1; f(args...)
@@ -168,7 +162,7 @@ describe 'from', ->
       called.should.be.true
 
     it 'should be called with resolved applicants', ->
-      { dynamic, watch, resolve, definition, varying } = from.default
+      { dynamic, watch, definition, varying } = from.default
       called = false
 
       v = from('a')
@@ -198,7 +192,7 @@ describe 'from', ->
   describe 'flatMapAll', ->
     # very condensed test because the mapAll tests should cover this.
     it 'should be called with appropriate applicants', ->
-      { dynamic, watch, resolve, definition, varying } = from.default
+      { dynamic, watch, definition, varying } = from.default
       called = false
 
       v = from('a')
@@ -226,7 +220,7 @@ describe 'from', ->
 
   describe 'direct reaction', ->
     it 'should return applicants as an array absent an allmapper', ->
-      { dynamic, watch, resolve, definition, varying } = from.default
+      { dynamic, watch, definition, varying } = from.default
       result = null
 
       v = from('a').and('b').and('c')
@@ -238,7 +232,7 @@ describe 'from', ->
       result.should.eql([ 'a', 'b', 'c' ])
 
     it 'should return a single applicant as the argument absent an allmapper', ->
-      { dynamic, watch, resolve, definition, varying } = from.default
+      { dynamic, watch, definition, varying } = from.default
       result = null
 
       v = from('a')
@@ -340,26 +334,6 @@ describe 'from', ->
         .map(id).react((x) -> result = x)
 
       result.should.equal('no luck')
-
-  describe 'inline resolve', ->
-    it 'should apply as a flatMap after point resolution', ->
-      { dynamic, app } = from.default
-
-      iv = new Varying(2)
-      myApp = {}
-      result = null
-      calledAttr = calledApp = null
-      from('a').resolve('myattr')
-        .all.point(match(
-          dynamic -> new Varying({ resolve: (attr, app) -> calledAttr = attr; calledApp = app; iv })
-          app -> new Varying(myApp)
-          otherwise ->
-        ))
-        .map(id).react((x) -> result = x)
-
-      result.should.equal(2)
-      calledAttr.should.equal('myattr')
-      calledApp.should.equal(myApp)
 
   describe 'inline attribute', ->
     it 'should apply as a map after point resolution', ->

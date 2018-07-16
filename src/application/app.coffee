@@ -1,32 +1,41 @@
-Model = require('../model/model').Model
-attribute = require('../model/attribute')
-List = require('../collection/list').List
+{ Model } = require('../model/model')
 { dfault } = require('../model/schema')
 { Library } = require('./library')
-util = require('../util/util')
+{ Resolver } = require('../model/resolver')
+{ isFunction, isArray } = require('../util/util')
 
 
 App = class extends Model.build(
   dfault('views', -> new Library())
-  dfault('stores', -> new Library())
-  dfault('stack', (-> new List()), attribute.Collection))
+  dfault('resolvers', -> new Library()))
 
-  vend: (type, obj, options = {}) ->
-    library = this.get(type)
-    return unless library?.isLibrary is true
+  view: (subject, criteria = {}, options = {}) ->
+    klass = this.get('views').get(subject, criteria)
+    return unless klass?
 
-    app = this.with( stack: new List(this.get('stack').list.concat([ obj ])) )
-    result = library.get(obj, util.extendNew(options, { options: util.extendNew({ app }, options.options) }))
+    # instantiate result; autoinject ourself as app.
+    view = new klass(subject, Object.assign({ app: this }, options))
+    this.emit('createdView', view)
 
-    this.emit('vended', type, result) if result?
+    # Handle reference resolution, both auto and manual.
+    if subject?
+      subject.autoResolveWith?(this)
+      resolveSource = options.resolve ? view.resolve
+      if resolveSource? and isFunction(subject.attribute)
+        resolve = if isFunction(resolveSource) then resolveSource() else resolveSource
+        attrs = if isArray(resolve) then resolve else [ resolve ]
+        for key in attrs when (attribute = subject.attribute(key))?
+          attribute.resolveWith(this) if attribute.isReference is true
+
+    view
+
+  resolve: (request) ->
+    return unless request?.isRequest is true
+    result = (this._resolver$ ?= this.resolver())(request)
+    this.emit('resolvedRequest', result) if result?
     result
 
-  vendView: (obj, options) -> this.vend('views', obj, options)
-  vendStore: (obj, options) -> this.vend('stores', obj, options)
-
-  stack: -> this.get('stack').shadow()
-
-  resolve: (key) -> super(key, this)
+  resolver: -> Resolver.fromLibrary(this.get('resolvers'))
 
 
 module.exports = { App }

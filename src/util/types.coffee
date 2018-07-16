@@ -6,8 +6,7 @@ types =
   result: defcase('org.janusjs.util.result', 'init', 'pending', 'progress', 'complete': [ 'success', 'failure' ])
   error: defcase('org.janusjs.util.error', 'denied', 'not_authorized', 'not_found', 'invalid', 'internal')
 
-  handling: defcase('org.janusjs.store.handling', 'handled', 'unhandled')
-  operation: defcase('org.janusjs.store.operation', 'fetch', 'mutate': [ 'create', 'update', 'delete' ])
+  operation: defcase('org.janusjs.reference.operation', 'fetch', 'mutate': [ 'create', 'update', 'delete' ])
 
   traversal: defcase('org.janusjs.collection.traversal': { arity: 2 }, 'recurse', 'delegate', 'defer', 'varying', 'value', 'nothing')
 

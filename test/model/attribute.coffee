@@ -1,6 +1,9 @@
 should = require('should')
 
-Model = require('../../lib/model/model').Model
+{ Varying } = require('../../lib/core/varying')
+from = require('../../lib/core/from')
+types = require('../../lib/util/types')
+{ Model } = require('../../lib/model/model')
 attribute = require('../../lib/model/attribute')
 
 { List } = require('../../lib/collection/list')
@@ -166,10 +169,102 @@ describe 'Attribute', ->
         MyAttribute.collectionClass.should.equal(MyList)
 
     describe 'reference type', ->
-      it 'should allow Reference.of(x) shortcut definition', ->
-        class MyModel extends Model
-        MyAttribute = attribute.Reference.of(MyModel)
-        MyAttribute.contains.should.equal(MyModel)
+      it 'should only try to resolve once', ->
+        called = 0
+        class TestModel
+          watch: -> called += 1; new Varying()
+        ref = new (attribute.Reference.to(6.626))(new TestModel())
+        ref.resolveWith()
+        ref.resolveWith()
+        called.should.equal(1)
 
-      # Reference types are mainly tested in Model#resolve() tests.
+      it 'should not try to do anything until the key is observed', ->
+        key = null
+        called = false
+        reacted = false
+        v = new Varying()
+        class TestModel
+          watch: (k) -> key = k; v
+
+        ref = new (attribute.Reference.to({ isRequest: true }))(new TestModel(), 1.055)
+        ref.resolveWith({ resolve: -> called = true; { react: -> reacted = true } })
+
+        key.should.equal(1.055)
+        called.should.equal(false)
+        reacted.should.equal(false)
+
+        v.react(->)
+        called.should.equal(true)
+        reacted.should.equal(true)
+
+      it 'should directly resolve bare requests', ->
+        calledWith = null
+        v = new Varying()
+        class TestModel
+          watch: -> v
+
+        ref = new (attribute.Reference.to({ isRequest: true, test: 4.136 }))(new TestModel())
+        ref.resolveWith({ resolve: (req) -> calledWith = req; new Varying() })
+        v.react(->)
+        calledWith.test.should.equal(4.136)
+
+      it 'should point fromchains containing requests, then resolve', ->
+        calledWith = null
+        v = new Varying()
+        class TestModel extends Model
+          watch: -> v
+
+        ref = new (attribute.Reference.to(from.varying(new Varying(6.582))))(new TestModel())
+        ref.resolveWith({ resolve: (req) -> calledWith = req; new Varying() })
+        v.react(->)
+        calledWith.should.equal(6.582)
+
+      it 'should set the model value given successful results', ->
+        vattr = new Varying()
+        vreq = new Varying()
+        class TestModel extends Model
+          watch: -> vattr
+
+        m = new TestModel()
+        ref = new (attribute.Reference.to({ isRequest: true }))(m, 'test')
+        ref.resolveWith({ resolve: -> vreq })
+        vattr.react(->)
+
+        vreq.set(types.result.success(3.14))
+        m.get('test').should.equal(3.14)
+        vreq.set(types.result.success(2.718))
+        m.get('test').should.equal(2.718)
+
+      it 'should not set the model value given unsuccessful results', ->
+        vattr = new Varying()
+        vreq = new Varying()
+        class TestModel extends Model
+          watch: -> vattr
+
+        m = new TestModel()
+        ref = new (attribute.Reference.to({ isRequest: true }))(m, 'test')
+        ref.resolveWith({ resolve: -> vreq })
+        vattr.react(->)
+
+        vreq.set(types.result.failure(12))
+        should.not.exist(m.get('test'))
+        vreq.set(types.result.success(24))
+        m.get('test').should.equal(24)
+
+      it 'should stop caring about the request result if nobody is watching', ->
+        vattr = new Varying()
+        vreq = new Varying()
+        class TestModel extends Model
+          watch: -> vattr
+
+        m = new TestModel()
+        ref = new (attribute.Reference.to({ isRequest: true }))(m, 'test')
+        ref.resolveWith({ resolve: -> vreq })
+        o = vattr.react(->)
+
+        vreq.set(types.result.success(36))
+        m.get('test').should.equal(36)
+        o.stop()
+        vreq.set(types.result.success(48))
+        m.get('test').should.equal(36)
 
