@@ -43,7 +43,7 @@ ListSelectItemView = class extends DomView.build($('
 # it simplifies the problem by quite a bit.
 EnumAttributeListEditView = DomView.build($('<div class="janus-enumSelect"/>'), template(
   find('div')
-    .render(from.self().flatMap((view) -> Varying.ly(view.subject.values()).map(asList)))
+    .render(from.self().flatMap((view) -> Varying.of(view.subject.values()).map(asList)))
       .options(from.self().map((view) ->
         # very very similar to ListEditView but with different default values. could
         # probably be combined.

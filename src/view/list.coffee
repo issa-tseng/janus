@@ -21,7 +21,7 @@ class ListView extends DomView
       # make a container and populate it with a view given the standard
       # pointed binding. remember the dom element so we can actually add it.
       itemDom = this.itemDom()
-      binding = this.options.renderItem(mutators.render(from.varying(Varying.ly(item))))(itemDom, point)
+      binding = this.options.renderItem(mutators.render(from.varying(Varying.of(item))))(itemDom, point)
 
       binding.dom = itemDom
       binding

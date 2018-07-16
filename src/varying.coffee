@@ -80,7 +80,7 @@ varyingUtils = {
       lastObservation = null # manually manage chained varyings until we come up with something smarter.
       mo.react((value) ->
         lastObservation?.stop()
-        lastObservation = Varying.ly(predicate(value)).react((take) -> result.set(value) if take is true)
+        lastObservation = Varying.of(predicate(value)).react((take) -> result.set(value) if take is true)
       )
       result
     )

@@ -24,7 +24,7 @@ class EnumAttributeEditView extends DomView
     this._textBindingsMap = {}
 
     # map our values onto options.
-    Varying.ly(this.subject.values()).map(asList).react((list) =>
+    Varying.of(this.subject.values()).map(asList).react((list) =>
       # we have a new list; anything we'd previously had is completely invalid.
       this._removeAll(select)
 

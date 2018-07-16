@@ -6,9 +6,9 @@
 # to call toString on the value otherwise.
 stringifier = (view) ->
   if view.options.stringify?
-    Varying.ly(view.options.stringify)
+    Varying.of(view.options.stringify)
   else if view.subject.stringify?
-    Varying.ly(view.subject.stringify)
+    Varying.of(view.subject.stringify)
   else
     new Varying((x) -> x?.toString() ? '')
 
