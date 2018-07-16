@@ -80,22 +80,6 @@ class View extends Base
     null
   _wireEvents: -> # implement me!
 
-  # Method that given an artifact will attach against it for live state, as if it
-  # were a render. For example, if the artifact is a DOM tree, and in the normal
-  # `_render()` the View would attach a text field against the model's `name`,
-  # then `_attach()` should find that text field and attach it against its current
-  # model.
-  #
-  # No implementation is provided, but the Templater built into Janus provides a
-  # option on instantiation that posits this behaviour.
-  #
-  # **Returns** nothing.
-  attach: (artifact) ->
-    this._artifact = artifact
-    this._attach(artifact)
-    null
-  _attach: ->
-
 
 module.exports = { View }
 
