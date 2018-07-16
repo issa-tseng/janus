@@ -420,3 +420,24 @@ describe 'Model', ->
 
       TestModel.deserialize( a: 1, b: { c: 2, d: 3 } ).data.should.eql({ a: 'a1', b: { c: 'bc2', d: 3 } })
 
+  describe 'lifecycle', ->
+    it 'should destroy any created attributes when destroyed', ->
+      destroyed = 0
+      class TestAttribute extends attributes.Attribute
+        destroy: ->
+          destroyed += 1
+          super()
+
+      TestModel = Model.build(
+        attribute('a', TestAttribute),
+        attribute('b', TestAttribute),
+        attribute('c', TestAttribute)
+      )
+
+      m = new TestModel()
+      m.attribute('a')
+      m.attribute('c')
+
+      m.destroy()
+      destroyed.should.equal(2)
+

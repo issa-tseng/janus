@@ -102,6 +102,15 @@ class Model extends Map
       .filter((issue) -> issue.map(types.validity.invalid.match))
       .watchLength().map((length) -> length is 0)
 
+  # Handles parent changes; mostly exists in Map but we wrap to additionally
+  # bail if the changed parent attribute is a bound value; we want that to
+  # update naturally from our own bindings.
+  _parentChanged: (key, newValue, oldValue) -> super(key, newValue, oldValue) unless this._bindings[key]?
+
+  destroy: ->
+    attribute.destroy() for _, attribute of this._attributes
+    super()
+
   # Overridden to define model characteristics like attributes, bindings, and issues.
   # Usually this is done through the Model.build mechanism rather than directly.
   @schema: { attributes: {}, bindings: {}, issues: [] }
@@ -117,11 +126,6 @@ class Model extends Map
       util.deepSet(data, key)(attribute.deserialize(prop)) if prop?
 
     new this(data)
-
-  # Handles parent changes; mostly exists in Map but we wrap to additionally
-  # bail if the changed parent attribute is a bound value; we want that to
-  # update naturally from our own bindings.
-  _parentChanged: (key, newValue, oldValue) -> super(key, newValue, oldValue) unless this._bindings[key]?
 
   # Quick shortcut to define the schema of this model.
   @build: (parts...) ->
