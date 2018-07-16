@@ -69,7 +69,7 @@ class Map extends Enumerable
   set: (x, y) ->
     if isString(x) and !y?
       (y) => this.set(x, y)
-    else if y? and (!isPlainObject(y) or isEmptyObject(y))
+    else if y? and (!isPlainObject(y) or isEmptyObject(y) or (y.isCaseInstance is true))
       this._set(x, y)
     else if isPlainObject(y)
       obj = {}
