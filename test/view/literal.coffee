@@ -38,7 +38,7 @@ describe 'view', ->
       library = new Library()
       registerWith(library)
 
-      library.get(42).should.be.an.instanceof(LiteralView)
-      library.get('test').should.be.an.instanceof(LiteralView)
-      library.get(true).should.be.an.instanceof(LiteralView)
+      library.get(42).should.equal(LiteralView)
+      library.get('test').should.equal(LiteralView)
+      library.get(true).should.equal(LiteralView)
 

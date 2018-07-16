@@ -143,9 +143,9 @@ describe 'view', ->
       library = new Library()
       registerWith(library)
 
-      library.get(1, context: 'select-wrapper').should.be.an.instanceof(ListSelectItemView)
-      library.get(true, context: 'select-wrapper').should.be.an.instanceof(ListSelectItemView)
-      library.get(false, context: 'select-wrapper').should.be.an.instanceof(ListSelectItemView)
-      library.get('test', context: 'select-wrapper').should.be.an.instanceof(ListSelectItemView)
-      library.get(new Model(), context: 'select-wrapper').should.be.an.instanceof(ListSelectItemView)
+      library.get(1, context: 'select-wrapper').should.equal(ListSelectItemView)
+      library.get(true, context: 'select-wrapper').should.equal(ListSelectItemView)
+      library.get(false, context: 'select-wrapper').should.equal(ListSelectItemView)
+      library.get('test', context: 'select-wrapper').should.equal(ListSelectItemView)
+      library.get(new Model(), context: 'select-wrapper').should.equal(ListSelectItemView)
 

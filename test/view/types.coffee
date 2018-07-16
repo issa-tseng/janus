@@ -34,6 +34,6 @@ describe 'view', ->
         library = new Library()
         registerWith(library)
 
-        library.get(types.result.success).should.be.an.instanceof(SuccessResultView)
-        library.get(types.result.success()).should.be.an.instanceof(SuccessResultView)
+        library.get(types.result.success).should.equal(SuccessResultView)
+        library.get(types.result.success()).should.equal(SuccessResultView)
 

@@ -69,18 +69,3 @@ describe 'view', ->
       dom.children('span.janus-test').length.should.equal(0)
       dom.children().length.should.equal(0)
 
-    it 'should attempt to pass its library context to its child', ->
-      NumberView = DomView.build($('<span class="janus-test"/>'), template(
-        find('span').text(from((subject) -> subject))
-      ))
-
-      library = new Library()
-      library.register(Number, NumberView, context: 'custom')
-      library.register(Varying, VaryingView)
-      app = new App( views: library )
-
-      v = new Varying(1)
-      view = library.get(v, context: 'custom', options: { app })
-      dom = view.artifact()
-      dom.children('span.janus-test').length.should.equal(1)
-
