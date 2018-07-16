@@ -34,13 +34,14 @@ module.exports = (window ? global)._janus$ ?=
 
   # model functionality.
   Model: require('./model/model').Model
+  Trait: schema.Trait
+
   attribute: attribute
   bind: schema.bind
   issue: schema.issue
   transient: schema.transient
-  default: schema.default
-  Trait: schema.Trait
   store: require('./model/store')
+  dfault: schema.dfault
 
   # view and templating functionality.
   View: require('./view/view').View
