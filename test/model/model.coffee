@@ -5,8 +5,7 @@ types = require('../../lib/util/types')
 
 Model = require('../../lib/model/model').Model
 attributes = require('../../lib/model/attribute')
-{ attribute, bind, issue, transient, Trait } = require('../../lib/model/schema')
-dfault = require('../../lib/model/schema')['default'] # silly coffeescript
+{ attribute, bind, dfault, issue, transient, Trait } = require('../../lib/model/schema')
 
 Varying = require('../../lib/core/varying').Varying
 { List } = require('../../lib/collection/list')
@@ -151,12 +150,6 @@ describe 'Model', ->
         m.set('a', 2)
         m.get('b').should.equal(2)
 
-      it 'should not point resolve names by default', ->
-        TestModel = Model.build(bind('b', from.resolve('a')))
-
-        m = new TestModel()
-        m.get('b').type.should.equal('resolve')
-
       it 'should point attribute objects', ->
         TestModel = Model.build(
           attribute('a', attributes.Number)
@@ -195,11 +188,11 @@ describe 'Model', ->
         Model.point(from.default.app(), m, app).get().should.equal(app)
 
       it 'should point into app subkeys if given', ->
-        resolvedWith = null
-        app = { resolve: (x) -> resolvedWith = x; 'resolved!' }
+        watchedWith = null
+        app = { watch: (x) -> watchedWith = x; 'watched!' }
         m = new Model()
-        Model.point(from.default.app('test'), m, app).should.equal('resolved!')
-        resolvedWith.should.equal('test')
+        Model.point(from.default.app('test'), m, app).should.equal('watched!')
+        watchedWith.should.equal('test')
 
       it 'should point self by function', ->
         calledWith = null
@@ -308,225 +301,36 @@ describe 'Model', ->
       TestModel = Model.build(transient('tempkey'))
       (new TestModel()).attribute('tempkey').transient.should.equal(true)
 
-  describe 'resolving', ->
-    it 'should behave like watch for non-reference attributes', ->
-      values = []
-      TestModel = Model.build(attribute('a', attributes.Number))
+  describe 'autoresolution', ->
+    it 'should call resolveWith on all known reference attributes', ->
+      calls = []
+      class TestReferenceAttribute extends attributes.Reference
+        resolveWith: (app) -> calls.push([ this.key, app ])
 
-      m = new TestModel()
-      m.resolve('a', null).react((x) -> values.push(x))
-
-      m.set('a', 2)
-      values.should.eql([ null, 2 ])
-
-    it 'should do nothing if no attribute is declared', ->
-      value = -1
-      m = new Model()
-      m.resolve('a', null).react((x) -> value = x)
-      should(value).equal(null)
-
-    it 'should return the proper value for a resolved reference attribute', ->
-      values = []
-
-      TestModel = Model.build(attribute('a', attributes.Reference))
-
-      m = new TestModel()
-      m.set('a', 1)
-
-      m.resolve('a', null).react((x) -> values.push(x))
-      m.set('a', 2)
-      values.should.eql([ 1, 2 ])
-
-    it 'should point the reference request from the store library given an app', ->
-      ourRequest = new Varying()
-      givenRequest = null
-      app = { vendStore: ((x) -> givenRequest = x; { handle: (->), destroy: (->) }) }
       TestModel = Model.build(
-        attribute('a', class extends attributes.Reference
-          request: -> ourRequest
-        )
+        attribute('one', TestReferenceAttribute)
+        attribute('two', attributes.Attribute)
+        attribute('three', TestReferenceAttribute)
+        attribute('four', attributes.Attribute)
       )
+      (new TestModel()).autoResolveWith('app')
+      calls.should.eql([ [ 'one', 'app' ], [ 'three', 'app' ] ])
 
-      m = new TestModel()
-      v = m.resolve('a', app)
-      should(givenRequest).equal(null) # doesn't actually point until reacted.
-      v.react(->)
-      givenRequest.should.equal(ourRequest)
+    it 'should not resolve any attributes not marked for autoresolve', ->
+      calls = []
+      class TestReferenceAttribute extends attributes.Reference
+        resolveWith: (app) -> calls.push([ this.key, app ])
+        @flagged: (x) -> class extends this
+          autoResolve: x
 
-    it 'calls handle on the store that handles the request', ->
-      called = false
-      app = { vendStore: (x) -> { handle: (-> called = true), destroy: (->) } }
       TestModel = Model.build(
-        attribute('a', class extends attributes.Reference
-          request: -> new Varying()
-        )
+        attribute('one', TestReferenceAttribute.flagged(false))
+        attribute('two', TestReferenceAttribute.flagged(true))
+        attribute('three', TestReferenceAttribute.flagged(true))
+        attribute('four', attributes.Attribute)
       )
-
-      m = new TestModel()
-      v = m.resolve('a', app)
-      called.should.equal(false) # doesn't actually point until reacted.
-      v.react(->)
-      called.should.equal(true)
-
-    it 'fails gracefully if no store is found to handle the request', ->
-      app = { vendStore: -> null }
-      TestModel = Model.build(
-        attribute('a', class extends attributes.Reference
-          request: -> new Varying()
-        )
-      )
-
-      m = new TestModel()
-      v = m.resolve('a', app)
-      v.react(->)
-      should(v.get()).equal(undefined)
-
-    it 'destroys the store if the refcount drops to zero', ->
-      destroyed = 0
-      app = { vendStore: -> { handle: (->), destroy: (-> destroyed++) } }
-      TestModel = Model.build(
-        attribute('a', class extends attributes.Reference
-          request: -> new Varying()
-        )
-      )
-
-      m = new TestModel()
-      v = m.resolve('a', app)
-      vda = v.react(->)
-      vdb = v.react(->)
-      destroyed.should.equal(0)
-      vda.stop()
-      vdb.stop()
-      destroyed.should.equal(1)
-
-    it 'immediately calls handle on the store that handles the request given resolveNow', ->
-      called = false
-      app = { vendStore: (x) -> { handle: (-> called = true), destroy: (->) } }
-      TestModel = Model.build(
-        attribute('a', class extends attributes.Reference
-          request: -> new Varying()
-        )
-      )
-
-      m = new TestModel()
-      m.resolveNow('a', app)
-      called.should.equal(true)
-
-    it 'relinquishes its hold on the resolveNow`d request if it reaches completion', (done) ->
-      called = false
-      request = null
-      app = { vendStore: (x) -> { handle: (-> request = x), destroy: (-> called = true) } }
-      TestModel = Model.build(
-        attribute('a', class extends attributes.Reference
-          request: -> new Varying()
-        )
-      )
-
-      m = new TestModel()
-      m.resolveNow('a', app)
-      request.set(types.result.failure(47))
-      setTimeout((->
-        called.should.equal(true)
-        done()
-      ), 0)
-
-    it 'gives the request\'s inner value as its own', ->
-      value = null
-      request = new Varying()
-      app = { vendStore: (x) -> { handle: (->), destroy: (->) } }
-      TestModel = Model.build(
-        attribute('a', class extends attributes.Reference
-          request: -> request
-        )
-      )
-
-      m = new TestModel()
-      m.resolve('a', app).react((x) -> value = x)
-      should(value).equal(undefined)
-
-      request.set(types.result.progress(26))
-      value.type.should.equal('progress')
-      value.value.should.equal(26)
-
-      request.set(types.result.success())
-      value.type.should.equal('success')
-      value.value.should.be.an.instanceof(Model)
-
-    it 'deserializes with the attribute\'s declared contained class deserializer', ->
-      called = false
-      value = null
-      request = new Varying()
-      app = { vendStore: (x) -> { handle: (->), destroy: (->) } }
-      class TestInner extends Model
-        @deserialize: (data) ->
-          called = true
-          super(data)
-      TestModel = Model.build(
-        attribute('a', class extends attributes.Reference
-          @contains: TestInner
-          request: -> request
-        )
-      )
-
-      m = new TestModel()
-      m.resolve('a', app).react((x) -> value = x)
-
-      request.set(types.result.success({ a: 42 }))
-      called.should.equal(true)
-      value.type.should.equal('success')
-      value.value.get('a').should.equal(42)
-
-    it 'resolves correctly when given a value in handle()', ->
-      value = null
-      app = { vendStore: (x) -> { handle: (-> x.set(types.result.success({ a: 42 }))), destroy: (->) } }
-      TestModel = Model.build(
-        attribute('a', class extends attributes.Reference
-          request: -> new Varying()
-        )
-      )
-
-      m = new TestModel()
-      m.resolve('a', app).react((x) -> value = x)
-      value.type.should.equal('success')
-      value.value.get('a').should.equal(42)
-
-    it 'sets a successful value concretely if found', ->
-      value = null
-      request = new Varying()
-      app = { vendStore: (x) -> { handle: (->), destroy: (->) } }
-      TestModel = Model.build(
-        attribute('a', class extends attributes.Reference
-          request: -> request
-        )
-      )
-
-      m = new TestModel()
-      m.resolve('a', app).react(->)
-      should(m.get('a')).equal(null)
-
-      request.set(types.result.progress(26))
-      should(m.get('a')).equal(null)
-
-      request.set(types.result.success({ b: 42 }))
-      m.get('a').should.be.an.instanceof(Model)
-      m.get('a').get('b').should.equal(42)
-
-    # TODO: many noncovered methods
-
-  describe 'issues', ->
-    it 'should return an empty list by default', ->
-      issues = (new Model()).issues()
-      issues.should.be.an.instanceof(Collection)
-      issues.list.length.should.equal(0)
-
-    it 'should contain issues from the Model level', ->
-      TestModel = Model.build(
-        issue(from(types.validity.valid()))
-        issue(from(types.validity.error()))
-      )
-
-      model = new TestModel()
-      model.issues().list.length.should.equal(2)
+      (new TestModel()).autoResolveWith('app')
+      calls.should.eql([ [ 'two', 'app' ], [ 'three', 'app' ] ])
 
   describe 'validity', ->
     it 'should return true if no active issues exist', ->

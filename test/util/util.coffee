@@ -140,6 +140,7 @@ describe 'Util', ->
     it 'should not skip es classchain elements to coffee classes', -> #gh99
       class A
       class B extends A
+      # es6:
       `class C extends B {}
       class D extends C {}`
       util.superClass(D).should.equal(C)

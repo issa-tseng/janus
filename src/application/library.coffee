@@ -19,29 +19,15 @@ class Library extends Base
   isLibrary: true
   _defaultContext: 'default'
 
-  # Initializes a `Library`. Libraries can be initialized with some options:
-  #
-  # - `handler`: Defines what to do with a registered book when it is
-  #   retrieved. By default, it assumes books are constructors with which a
-  #   new instance should be initialized with the target object as a parameter,
-  #   and returned to the user.
-  #   It is given `(obj, book, options)`, where `options` are the options given
-  #   the `get()` method.
-  #
-  constructor: (@options = {}) ->
+  constructor: () ->
     super()
-
     this.bookcase = {}
-
-    this.options.handler ?= (obj, book, options) -> new book(obj, util.extendNew(options.options, libraryContext: options.context))
 
   # Registers a book with the `Library`. It takes some fixed parameters:
   #
   # 1. `klass`: The class of target objects that ought to be matched with this
   #    book. The library will match contravariants of the given type.
-  # 2. `book`: The actual entity to return to the user upon match. By default,
-  #    this is assumed to be a constructor (see `handler` option in the
-  #    constructor), but it can be anything.
+  # 2. `book`: The actual entity to return to the user upon match.
   # 3. `options`: *Optional*: A hash with any of the following additional
   #    options:
   #    - `context`: A string denoting what sort of match we're looking
@@ -77,17 +63,16 @@ class Library extends Base
   # Takes the target `obj`, and optionally an `options` hash containing the
   # `context` and/or an `attributes` hash to match the registration.
   #
-  # **Returns** a registered book, processed by the Library's `handler`.
+  # **Returns** a registered book.
   get: (obj, options = {}) ->
     debugger if options.debug is true
 
-    book =
+    result =
       this._get(obj, obj?.constructor, options.context ? this._defaultContext, options) ?
       this._get(obj, obj?.constructor, 'default', options)
 
-    if book?
-      result = (options.handler ? this.options.handler)(obj, book, options)
-      this.emit('got', result, obj, book, options)
+    if result?
+      this.emit('got', obj, result, options)
     else
       this.emit('missed', obj, options)
 

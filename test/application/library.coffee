@@ -60,7 +60,7 @@ describe 'Library', ->
       class TestObj
       library.register(TestObj, TestBook)
 
-      library.get(new TestObj()).should.be.an.instanceof(TestBook)
+      library.get(new TestObj()).should.equal(TestBook)
 
     it 'should return a book for its superclass with no description', ->
       library = new Library()
@@ -70,7 +70,7 @@ describe 'Library', ->
       class TestSubObj extends TestObj
       library.register(TestObj, TestBook)
 
-      library.get(new TestSubObj()).should.be.an.instanceof(TestBook)
+      library.get(new TestSubObj()).should.equal(TestBook)
 
     it 'should return a book against a null registration', ->
       library = new Library()
@@ -78,7 +78,7 @@ describe 'Library', ->
       class TestBook
       library.register(null, TestBook)
 
-      library.get(null).should.be.an.instanceof(TestBook)
+      library.get(null).should.equal(TestBook)
 
     it 'should handle multiple available registrations', ->
       library = new Library()
@@ -91,8 +91,8 @@ describe 'Library', ->
       class TestObjB
       library.register(TestObjB, TestBookB)
 
-      library.get(new TestObjA()).should.be.an.instanceof(TestBookA)
-      library.get(new TestObjB()).should.be.an.instanceof(TestBookB)
+      library.get(new TestObjA()).should.equal(TestBookA)
+      library.get(new TestObjB()).should.equal(TestBookB)
 
     it 'should deal with contexts', ->
       library = new Library()
@@ -103,7 +103,7 @@ describe 'Library', ->
       library.register(TestObj, TestBook, context: 'edit')
 
       should.not.exist(library.get(new TestObj()))
-      library.get(new TestObj(), context: 'edit').should.be.an.instanceof(TestBook)
+      library.get(new TestObj(), context: 'edit').should.equal(TestBook)
 
     it 'should handle priority correctly', ->
       library = new Library()
@@ -111,15 +111,15 @@ describe 'Library', ->
 
       class TestBookA
       library.register(TestObj, TestBookA)
-      library.get(new TestObj()).should.be.an.instanceof(TestBookA)
+      library.get(new TestObj()).should.equal(TestBookA)
 
       class TestBookB
       library.register(TestObj, TestBookB, priority: 50)
-      library.get(new TestObj()).should.be.an.instanceof(TestBookB)
+      library.get(new TestObj()).should.equal(TestBookB)
 
       class TestBookC
       library.register(TestObj, TestBookC, priority: 25)
-      library.get(new TestObj()).should.be.an.instanceof(TestBookB)
+      library.get(new TestObj()).should.equal(TestBookB)
 
     it 'should handle attributes correctly', ->
       library = new Library()
@@ -128,8 +128,8 @@ describe 'Library', ->
       class TestBook
       library.register(TestObj, TestBook, attributes: { style: 'button' })
 
-      library.get(new TestObj()).should.be.an.instanceof(TestBook)
-      library.get(new TestObj(), attributes: { style: 'button' }).should.be.an.instanceof(TestBook)
+      library.get(new TestObj()).should.equal(TestBook)
+      library.get(new TestObj(), attributes: { style: 'button' }).should.equal(TestBook)
       should.not.exist(library.get(new TestObj(), attributes: { style: 'link' }))
 
 
@@ -144,7 +144,7 @@ describe 'Library', ->
 
       obj = new TestObj()
       obj.accept = true
-      library.get(obj).should.be.an.instanceof(TestBook)
+      library.get(obj).should.equal(TestBook)
 
 
     it 'should handle rejectors correctly', ->
@@ -158,7 +158,7 @@ describe 'Library', ->
 
       obj = new TestObj()
       obj.accept = true
-      library.get(obj).should.be.an.instanceof(TestBook)
+      library.get(obj).should.equal(TestBook)
 
     it 'should return lower priority results if higher ones fail', ->
       library = new Library()
@@ -172,10 +172,10 @@ describe 'Library', ->
 
       obj = new TestObj()
       obj.accept = true
-      library.get(obj).should.be.an.instanceof(TestBookA)
+      library.get(obj).should.equal(TestBookA)
 
       obj.accept = false
-      library.get(obj).should.be.an.instanceof(TestBookB)
+      library.get(obj).should.equal(TestBookB)
 
   describe 'case registration', ->
     it 'should store and retrieve cases correctly', ->
@@ -185,8 +185,8 @@ describe 'Library', ->
       class SuccessBook
       library.register(success, SuccessBook)
 
-      library.get(success(42)).should.be.an.instanceof(SuccessBook)
-      library.get(success).should.be.an.instanceof(SuccessBook)
+      library.get(success(42)).should.equal(SuccessBook)
+      library.get(success).should.equal(SuccessBook)
       should(library.get(fail)).equal(null)
 
     it 'should not conflate like-named cases from different sets', ->
@@ -212,10 +212,9 @@ describe 'Library', ->
       options = {}
 
       evented = false
-      library.on 'got', (result, obj2, book, options2) ->
-        result.should.be.an.instanceof(TestBook)
+      library.on 'got', (obj2, book, options2) ->
         obj2.should.equal(obj)
-        book.should.equal.TestBook
+        book.should.equal(TestBook)
         options2.should.equal(options)
         evented = true
 

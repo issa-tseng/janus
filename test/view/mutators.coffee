@@ -296,7 +296,7 @@ describe 'Mutator', ->
     it 'passes the subject to the library', ->
       subject = null
       dom = { append: (->), empty: (->), data: (->) }
-      app = { vendView: (x) -> subject = x; { artifact: (->) } }
+      app = { view: (x) -> subject = x; { artifact: (->) } }
       point = passthroughWithApp(app)
 
       mutators.render(from.varying(new Varying(1)))(dom, point)
@@ -306,7 +306,7 @@ describe 'Mutator', ->
       subject = null
       context = null
       dom = { append: (->), empty: (->), data: (->) }
-      app = { vendView: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
+      app = { view: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
       point = passthroughWithApp(app)
 
       mutators
@@ -319,7 +319,7 @@ describe 'Mutator', ->
       subject = null
       context = null
       dom = { append: (->), empty: (->), data: (->) }
-      app = { vendView: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
+      app = { view: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
       point = passthroughWithApp(app)
 
       mutators
@@ -332,7 +332,7 @@ describe 'Mutator', ->
     it 'passes bare criteria options to the library if provided', ->
       opts = null
       dom = { append: (->), empty: (->), data: (->) }
-      app = { vendView: (x, y) -> opts = y; { artifact: (->) } }
+      app = { view: (x, y) -> opts = y; { artifact: (->) } }
       point = passthroughWithApp(app)
 
       mutators
@@ -343,25 +343,26 @@ describe 'Mutator', ->
       opts.context.should.equal('edit')
 
     # also checks for appropriate criteria merging.
-    it 'passes constructor options to the library if provided', ->
+    it 'passes constructor options to the app if provided', ->
+      criteria = null
       opts = null
       dom = { append: (->), empty: (->), data: (->) }
-      app = { vendView: (x, y) -> opts = y; { artifact: (->) } }
+      app = { view: (x, y, z) -> criteria = y; opts = z; { artifact: (->) } }
       point = passthroughWithApp(app)
 
       mutators
         .render(from.varying(new Varying(1)))
         .criteria({ attrs: 2 })
         .options({ test: 3 })(dom, point)
-      opts.attrs.should.equal(2)
-      opts.options.should.eql({ test: 3 })
+      criteria.attrs.should.equal(2)
+      opts.should.eql({ test: 3 })
 
     it 'clears out the previous subview', ->
       views = []
       emptied = 0
       dom = { append: (->), empty: (-> emptied += 1), data: (->) }
       view = -> { artifact: (-> dom), destroy: -> (this.destroyed = true) }
-      app = { vendView: -> (v = view(); views.push(v); v) }
+      app = { view: -> (v = view(); views.push(v); v) }
       point = passthroughWithApp(app)
 
       varying = new Varying(1)
@@ -385,7 +386,7 @@ describe 'Mutator', ->
       dataValue = null
       newView = { artifact: -> 4 }
       dom = { append: ((x) -> appended = x), empty: (->) }
-      app = { vendView: (-> newView) }
+      app = { view: (-> newView) }
       point = passthroughWithApp(app)
 
       mutators.render(from.varying(new Varying(1)))(dom, point)
@@ -394,7 +395,7 @@ describe 'Mutator', ->
     it 'should return a Varied that can stop mutation', ->
       value = null
       dom = { append: ((x) -> value = x), empty: (->), data: (->) }
-      app = { vendView: (x) -> { artifact: -> x } }
+      app = { view: (x) -> { artifact: -> x } }
       point = passthroughWithApp(app)
 
       v = new Varying(1)
@@ -500,7 +501,7 @@ describe 'Mutator', ->
       subject = null
       context = null
       dom = { append: (->), empty: (->), data: (->) }
-      app = { vendView: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
+      app = { view: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
       point = passthroughWithApp(app)
 
       mutators

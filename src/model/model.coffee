@@ -43,49 +43,19 @@ class Model extends Map
     # drop undef to null
     value ?= null
 
-  # Like `#watch(key)`, but if the attribute in question is an unresolved
-  # `ReferenceAttribute` then we take the given app object and kick off the
-  # appropriate actions. The resulting `Varying` from this call contains
-  # wrapped `types.result` cases. The actual property key will be populated
-  # with a successful value if it comes.
-  resolve: (key, app) ->
-    if !this.get(key)? and (attribute = this.attribute(key))?.isReference is true
-      result = new Varying(attribute.resolver().all
-        .point((x) => this.constructor.point(x, this, app))
-        .map((x) => x?.mapSuccess((y) -> attribute.constructor.deserialize(y)) ? x)
-      ).flatten()
-
-      # snoop on the result if someone else reacts on it, and set successful
-      # values to the attribute.
-      varied = null
-      result.refCount().reactLater((count) =>
-        if count is 1
-          if varied?
-            varied.stop()
-            varied = null
-          else
-            varied = result.react((x) => types.result.success.match(x, (y) => this.set(key, y)))
-      )
-
-      result
-    else
-      this.watch(key)
-
-  # Like `#resolve(key, app)`, but calls react on the resulting request on
-  # your behalf.
-  # TODO: can we push this to the bottom of the stack without a timeout? is
-  # it inviting trouble if we introduce reaction priority, or a concept of
-  # a cleanup/finally reaction?
-  # or perhaps in addition to #stop we have a #wrapup that allows queued reactions
-  # to complete first.
-  resolveNow: (key, app) -> this.resolve(key, app).react((x) -> setTimeout((=> this.stop()), 0) if types.result.complete.match(x))
-
   # Get an attribute for this model.
   #
   # **Returns** an `Attribute` object wrapping an attribute for the attribute
   # at the given key.
   attribute: (key) -> this._attributes[key] ?=
     new (this.constructor.schema.attributes[key])?(this, key)
+
+
+  autoResolveWith: (app) ->
+    for key of this.constructor.schema.attributes
+      attribute = this.attribute(key)
+      attribute.resolveWith(app) if attribute.isReference is attribute.autoResolve is true
+    null
 
   # Actually set up our binding.
   # **Returns** nothing.
@@ -104,15 +74,14 @@ class Model extends Map
       else if util.isString(x)
         self.watch(x)
       else
-        Varying.ly(x) # i guess? TODO
+        Varying.ly(x)
     from.default.watch (x, self) -> self.watch(x)
-    from.default.resolve (x, self, app) -> if app? then self.resolve(x, app) else from.default.resolve(x)
     from.default.attribute (x, self) -> new Varying(self.attribute(x))
     from.default.varying (x, self) -> if util.isFunction(x) then Varying.ly(x(self)) else Varying.ly(x)
     from.default.app (x, self, app) ->
       app ?= self.options.app
       if app?
-        if x? then app.resolve(x) else new Varying(app)
+        if x? then app.watch(x) else new Varying(app)
       else from.default.app()
     from.default.self (x, self) -> if util.isFunction(x) then Varying.ly(x(self)) else Varying.ly(self)
   )

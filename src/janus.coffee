@@ -4,6 +4,7 @@ util = require('./util/util')
 kase = require('./core/case')
 template = require('./view/template')
 collection = require('./collection/collection')
+resolver = require('./model/resolver')
 
 # integrate these bits into one object:
 schema = require('./model/schema')
@@ -40,8 +41,11 @@ module.exports = (window ? global)._janus$ ?=
   bind: schema.bind
   issue: schema.issue
   transient: schema.transient
-  store: require('./model/store')
   dfault: schema.dfault
+
+  Request: resolver.Request
+  Resolver: resolver.Resolver
+  MemoryCacheResolver: resolver.MemoryCacheResolver
 
   # view and templating functionality.
   View: require('./view/view').View

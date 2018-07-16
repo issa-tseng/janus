@@ -47,15 +47,16 @@ class View extends Base
     dynamic (x, view) ->
       if isFunction(x)
         Varying.ly(x(view.subject))
-      else if isString(x) and view.subject.resolve?
-        view.subject.resolve(x, view.options.app)
+      else if isString(x) and view.subject.watch?
+        view.subject.watch(x)
       else
-        Varying.ly(x) # i guess? TODO
+        Varying.ly(x)
     watch (x, view) -> view.subject.watch(x)
-    resolve (x, view) -> view.subject.resolve(x, view.options.app)
     attribute (x, view) -> new Varying(view.subject.attribute(x))
     varying (x, view) -> if isFunction(x) then Varying.ly(x(view.subject)) else Varying.ly(x)
-    app (x, view) -> if x? then view.options.app.resolve(x) else new Varying(view.options.app)
+    app (x, view) ->
+      if x? then view.options.app.watch(x)
+      else new Varying(view.options.app)
     self (x, view) -> if isFunction(x) then Varying.ly(x(view)) else Varying.ly(view)
   )
 

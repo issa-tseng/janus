@@ -1,4 +1,5 @@
 from = require('../core/from')
+types = require('../util/types')
 { Model } = require('./model')
 { Map } = require('../collection/map')
 { Varying } = require('../core/varying')
@@ -74,28 +75,38 @@ class CollectionAttribute extends Attribute
 class ReferenceAttribute extends Attribute
   isReference: true
   transient: true
+  autoResolve: true
 
-  # By default, you should only have to provide a request-given-a-model and the
-  # default resolver implementation will take care of everything just fine. But
-  # if you need custom handling you can go the other way around and just write a
-  # custom resolver.
-  request: -> null
-  resolver: ->
-    from.varying(new Varying(this.request()))
-      .and.app()
-      .all.flatMap((request, app) ->
-        Varying.managed((->
-          store = app.vendStore(request)
-          store?.handle?()
-          store
-        ), (-> request))
-      )
+  # either a plain request or a from() chain which gives one.
+  request: null
 
-  @contains: Model
-  @deserialize: (data) -> this.contains.deserialize(data)
+  resolveWith: (app) ->
+    return if this._resolving is true
+    this._resolving = true
+    return unless (request = this.request)?
 
-  @of: (inner) -> class extends this
-    @contains: inner
+    # snoop on the actual model watcher to see if anybody cares, and if so actually
+    # run the requestchain and set the result if we get it.
+    # TODO: or should we just do it right away, if someone is .get()ing?
+    observation = null
+    this.reactTo(this.model.watch(this.key).refCount(), (count) =>
+      if count is 0 and observation?
+        observation.stop()
+        observation = null
+      else if count > 0 and !observation?
+        result =
+          if request.isRequest is true
+            app.resolve(request)
+          else if request.all?
+            request.all.point(this.model.pointer()).flatMap((request) -> app.resolve(request))
+        return unless result?
+        observation = this.reactTo(result, (x) => types.result.success.match(x, (y) => this.setValue(y)))
+    )
+
+    null
+
+  @to: (x) -> class extends this
+    request: x
 
 
 module.exports = {

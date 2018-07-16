@@ -1,8 +1,6 @@
 types = require('../util/types')
 Base = require('../core/base').Base
 
-Request = require('../model/store').Request
-
 
 class Manifest extends Base
   constructor: ->
