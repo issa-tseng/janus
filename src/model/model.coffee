@@ -70,20 +70,20 @@ class Model extends Map
   @point: match(
     from.default.dynamic (x, self) ->
       if util.isFunction(x)
-        Varying.ly(x(self))
+        Varying.of(x(self))
       else if util.isString(x)
         self.watch(x)
       else
-        Varying.ly(x)
+        Varying.of(x)
     from.default.watch (x, self) -> self.watch(x)
     from.default.attribute (x, self) -> new Varying(self.attribute(x))
-    from.default.varying (x, self) -> if util.isFunction(x) then Varying.ly(x(self)) else Varying.ly(x)
+    from.default.varying (x, self) -> if util.isFunction(x) then Varying.of(x(self)) else Varying.of(x)
     from.default.app (x, self, app) ->
       app ?= self.options.app
       if app?
         if x? then app.watch(x) else new Varying(app)
       else from.default.app()
-    from.default.self (x, self) -> if util.isFunction(x) then Varying.ly(x(self)) else Varying.ly(self)
+    from.default.self (x, self) -> if util.isFunction(x) then Varying.of(x(self)) else Varying.of(self)
   )
 
   pointer: -> (x) => this.constructor.point(x, this)

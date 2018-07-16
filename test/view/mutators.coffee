@@ -8,17 +8,17 @@ mutators = require('../../lib/view/mutators')
 # TODO: no tests for from.[...].all, only from.x directly.
 
 passthrough = match(
-  from.default.varying (x) -> Varying.ly(x)
+  from.default.varying (x) -> Varying.of(x)
   otherwise ->
 )
 passthroughWithApp = (given) ->
   match(
-    from.default.app -> Varying.ly(given)
+    from.default.app -> Varying.of(given)
     otherwise (x) -> passthrough(x)
   )
 passthroughWithSelf = (given) ->
   match(
-    from.default.self -> Varying.ly(given)
+    from.default.self -> Varying.of(given)
     otherwise (x) -> passthrough(x)
   )
 

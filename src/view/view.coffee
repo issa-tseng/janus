@@ -46,18 +46,18 @@ class View extends Base
   @point: match(
     dynamic (x, view) ->
       if isFunction(x)
-        Varying.ly(x(view.subject))
+        Varying.of(x(view.subject))
       else if isString(x) and view.subject.watch?
         view.subject.watch(x)
       else
-        Varying.ly(x)
+        Varying.of(x)
     watch (x, view) -> view.subject.watch(x)
     attribute (x, view) -> new Varying(view.subject.attribute(x))
-    varying (x, view) -> if isFunction(x) then Varying.ly(x(view.subject)) else Varying.ly(x)
+    varying (x, view) -> if isFunction(x) then Varying.of(x(view.subject)) else Varying.of(x)
     app (x, view) ->
       if x? then view.options.app.watch(x)
       else new Varying(view.options.app)
-    self (x, view) -> if isFunction(x) then Varying.ly(x(view)) else Varying.ly(view)
+    self (x, view) -> if isFunction(x) then Varying.of(x(view)) else Varying.of(view)
   )
 
   # Since View@point() wants two parameters, the target and the view instance,

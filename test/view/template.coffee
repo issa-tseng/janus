@@ -155,10 +155,10 @@ describe 'templater', ->
 
       it 'intermixes mutator/multi-mutator chaining', ->
         chainingMutator = (args = {}) ->
-          result = -> Varying.ly(args).react(->)
+          result = -> Varying.of(args).react(->)
           result.chain = (moreArgs) -> chainingMutator(extendNew(args, moreArgs))
           result
-        makeMutator = (id) -> (x) -> () -> Varying.ly(x).react(->)
+        makeMutator = (id) -> (x) -> () -> Varying.of(x).react(->)
 
         myfind = find.build({ chaining: chainingMutator, a: makeMutator('a'), b: makeMutator('b') })
         fragment = $('<div/>')
@@ -173,10 +173,10 @@ describe 'templater', ->
 
       it 'does not clobber mutator chaining', ->
         chainingMutator = (args = {}) ->
-          result = -> Varying.ly(args).react(->)
+          result = -> Varying.of(args).react(->)
           result.chain = (moreArgs) -> chainingMutator(extendNew(args, moreArgs))
           result
-        makeMutator = (id) -> (x) -> () -> Varying.ly(x).react(->)
+        makeMutator = (id) -> (x) -> () -> Varying.of(x).react(->)
 
         myfind = find.build({ chaining: chainingMutator, x: makeMutator('x'), chain: makeMutator('chain') })
         fragment = $('<div/>')

@@ -9,7 +9,7 @@ from = require('../../lib/core/from')
 { List } = require('../../lib/collection/list')
 $ = require('jquery')(require('domino').createWindow())
 
-mockfrom = (v) -> { all: { point: -> Varying.ly(v) } }
+mockfrom = (v) -> { all: { point: -> Varying.of(v) } }
 inf = -> inf
 
 describe 'DomView', ->

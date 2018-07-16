@@ -16,11 +16,11 @@ describe 'Varying', ->
       (new Varying(4)).get().should.equal(4)
 
     it 'should allow flat creation', ->
-      v = Varying.ly(1)
+      v = Varying.of(1)
       v.should.be.an.instanceof(Varying)
       v.get().should.equal(1)
 
-      v = Varying.ly(new Varying(2))
+      v = Varying.of(new Varying(2))
       v.should.be.an.instanceof(Varying)
       v.get().should.equal(2)
 
