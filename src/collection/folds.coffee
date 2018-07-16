@@ -81,7 +81,7 @@ folds =
   # dangerous (stack depth)
   fold: (collection, memo, f) ->
     intermediate = []
-    intermediate[-1] = Varying.ly(memo)
+    intermediate[-1] = Varying.of(memo)
 
     update = (value, idx, collection) ->
       start = Math.min(intermediate.length, idx)
@@ -93,7 +93,7 @@ folds =
 
   scanl: (collection, memo, f) ->
     intermediate = new (require('./list').List)()
-    intermediate.add(Varying.ly(memo))
+    intermediate.add(Varying.of(memo))
 
     collection.watchLength().react (length) ->
       intermediateLength = intermediate.list.length - 1

@@ -9,7 +9,7 @@ class TakenList extends DerivedList
   constructor: (@parent, @number) ->
     super()
 
-    this.number = Varying.ly(this.number)
+    this.number = Varying.of(this.number)
     this.number.reactLater(=> this._rebalance())
 
     take = this._take()

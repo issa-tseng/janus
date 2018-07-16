@@ -144,7 +144,7 @@ class Varying
   # convenience constructor to ensure a Varying. wraps nonVaryings, and returns
   # Varyings given to it.
   # (Varying v) => a -> v a
-  @ly: (x) -> if x?.isVarying is true then x else new Varying(x)
+  @of: (x) -> if x?.isVarying is true then x else new Varying(x)
 
 class Observation
   constructor: (@parent, @id, @f_, @_stop) ->

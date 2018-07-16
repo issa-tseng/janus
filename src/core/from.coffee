@@ -139,8 +139,8 @@ applyMaps = (applicants, maps) ->
 
 # prebaked simple pointer which is used to make all.plain() work.
 plainMap = match(
-  dc.dynamic (x) -> Varying.ly(x)
-  dc.varying (x) -> Varying.ly(x)
+  dc.dynamic (x) -> Varying.of(x)
+  dc.varying (x) -> Varying.of(x)
   otherwise (x) -> x
 )
 

@@ -23,7 +23,7 @@ doPoint = (x, point) ->
   else if x?.all?
     x.all.point(point)
   else
-    Varying.ly(x)
+    Varying.of(x)
 
 mutators =
   attr: (prop, data) -> (dom, point) -> data.all.point(point).react((x) -> dom.attr(prop, safe(x)))
