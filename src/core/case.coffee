@@ -94,7 +94,7 @@ defcase = (namespace, inTypes...) ->
       props = extendNew(defaultProps, setProps, caseProps)
 
       # make and cache an instance prototype:
-      instance = { type }
+      instance = { type, isCaseInstance: true }
       # decorate set-based methods:
       for fType of types
         do (fType) ->

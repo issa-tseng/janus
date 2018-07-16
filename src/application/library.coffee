@@ -98,7 +98,7 @@ class Library extends Base
     bookId =
       if !obj?
         'null'
-      else if obj.case?
+      else if obj.isCaseInstance is true
         "case@#{obj.case.namespace}.#{obj.type}"
       else if obj.isCase is true
         "case@#{obj.namespace}.#{obj.type}"
@@ -129,7 +129,7 @@ class Library extends Base
   @_classId: (klass) ->
     if !klass?
       'null'
-    else if klass.case?
+    else if klass.isCaseInstance is true
       "case@#{klass.case.namespace}.#{klass.type}"
     else if klass.isCase is true
       "case@#{klass.namespace}.#{klass.type}"

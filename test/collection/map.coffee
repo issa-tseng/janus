@@ -1,6 +1,7 @@
 should = require('should')
 
 { Varying } = require('../../lib/core/varying')
+types = require('../../lib/util/types')
 { Map } = require('../../lib/collection/map')
 { KeyList } = require('../../lib/collection/enumeration')
 
@@ -122,6 +123,16 @@ describe 'Map', ->
         setter({ nested: 2 })
 
         results.should.eql([ null, 1, 2 ])
+
+      it 'should correctly set and fire given a case', ->
+        result = null
+        map = new Map()
+        map.watch('test').react((x) -> result = x)
+
+        kase = types.result.success()
+        map.set('test', kase)
+        result.should.equal(kase)
+        map.get('test').should.equal(kase) # the key is that we are ref-checking
 
     describe 'unset', ->
       it 'should be able to unset a key', ->
