@@ -10,7 +10,7 @@ module.exports = {
   issue: (binding) -> (schema) -> schema.issues.push(binding)
 
   transient: (key) -> (schema) -> schema.attributes[key] = TransientAttribute
-  default: (key, value, klass = Attribute) -> (schema) ->
+  dfault: (key, value, klass = Attribute) -> (schema) ->
     wrapped = if isFunction(value) then value else (-> value)
     schema.attributes[key] = class extends klass
       default: wrapped

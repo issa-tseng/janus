@@ -1,7 +1,7 @@
 Model = require('../model/model').Model
-dfault = require('../model/schema').default
 attribute = require('../model/attribute')
 List = require('../collection/list').List
+{ dfault } = require('../model/schema')
 { Library } = require('./library')
 util = require('../util/util')
 
