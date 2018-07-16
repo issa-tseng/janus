@@ -81,15 +81,6 @@ class Collection extends Enumerable
   # See if any element in this list qualifies for the condition.
   any: (f) -> folds.any(new (require('./derived/mapped-list').FlatMappedList)(this, f))
 
-  # fold left across the list.
-  fold: (memo, f) -> folds.fold(this, memo, f)
-
-  # scan left across the list. (alt implementation)
-  scanl: (memo, f) -> folds.scanl(this, memo, f)
-
-  # fold left across the list. (alt implementation)
-  foldl: (memo, f) -> folds.foldl(this, memo, f)
-
   # get the minimum number on the list.
   min: -> folds.min(this)
 
@@ -98,9 +89,6 @@ class Collection extends Enumerable
 
   # get the sum of this list.
   sum: -> folds.sum(this)
-
-  # return the index of an item in the list. value may be Varying[x].
-  indexOf: (value) -> IndexOfFold.indexOf(this, value)
 
 
 # An `OrderedCollection` provides `add` and `remove` events for every element
@@ -124,6 +112,18 @@ class OrderedCollection extends Collection
 
   # get the strings of this list joined by some string.
   join: (joiner) -> folds.join(this, joiner)
+
+  # fold left across the list.
+  fold: (memo, f) -> folds.fold(this, memo, f)
+
+  # scan left across the list. (alt implementation)
+  scanl: (memo, f) -> folds.scanl(this, memo, f)
+
+  # fold left across the list. (alt implementation)
+  foldl: (memo, f) -> folds.foldl(this, memo, f)
+
+  # return the index of an item in the list. value may be Varying[x].
+  indexOf: (value) -> IndexOfFold.indexOf(this, value)
 
 
 module.exports = { Enumerable, Collection, OrderedCollection }
