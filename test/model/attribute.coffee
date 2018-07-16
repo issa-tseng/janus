@@ -135,38 +135,38 @@ describe 'Attribute', ->
         MyAttribute = attribute.Model.of(MyModel)
         MyAttribute.modelClass.should.equal(MyModel)
 
-    describe 'collection type', ->
-      it 'should delegate deserialization to the collection class', ->
+    describe 'list type', ->
+      it 'should delegate deserialization to the list class', ->
         called = false
-        class TestCollection extends List
+        class TestList extends List
           @deserialize: -> called = true; 42
-        class TestAttribute extends attribute.Collection
-          @collectionClass: TestCollection
+        class TestAttribute extends attribute.List
+          @listClass: TestList
 
         TestAttribute.deserialize({}).should.equal(42)
         called.should.equal(true)
 
-      it 'should delegate serialization to the collection class', ->
+      it 'should delegate serialization to the list class', ->
         called = false
-        class TestCollection extends List
+        class TestList extends List
           serialize: -> called = true; 42
-        class TestAttribute extends attribute.Collection
-          @collectionClass: TestCollection
+        class TestAttribute extends attribute.List
+          @listClass: TestList
 
         (new TestAttribute(new Model(), 'whatever')).serialize().should.equal(42)
         called.should.equal(true)
 
       it 'should not serialize if transient', ->
-        class TestAttribute extends attribute.Collection
-          @collectionClass: List
+        class TestAttribute extends attribute.List
+          @listClass: List
           transient: true
 
         should((new TestAttribute(new Model(), 'whatever')).serialize()).equal(undefined)
 
-      it 'should allow Collection.of(x) shortcut definition', ->
+      it 'should allow List.of(x) shortcut definition', ->
         class MyList extends List
-        MyAttribute = attribute.Collection.of(MyList)
-        MyAttribute.collectionClass.should.equal(MyList)
+        MyAttribute = attribute.List.of(MyList)
+        MyAttribute.listClass.should.equal(MyList)
 
     describe 'reference type', ->
       it 'should only try to resolve once', ->
