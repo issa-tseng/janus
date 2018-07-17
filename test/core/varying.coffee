@@ -137,29 +137,6 @@ describe 'Varying', ->
       v.react(-> this.stop())
       results.should.eql([ 0, 1, 2, 1 ])
 
-  describe 'bind', ->
-    it 'should adopt the initial other value', ->
-      vx = new Varying(3)
-      vy = new Varying()
-
-      vy.bind(vx)
-      vy.get().should.equal(3)
-
-    it 'should update with the other value', ->
-      vx = new Varying(3)
-      vy = new Varying()
-      vy.bind(vx)
-
-      result = null
-      vy.react((x) -> result = x)
-      vx.set(6)
-      result.should.equal(6)
-
-    it 'should disable the ability to set', ->
-      v = new Varying()
-      v.bind(new Varying())
-      should(v.set).equal(undefined)
-
   describe 'map', ->
     it 'should return a MappedVarying when map is called', ->
       (new Varying()).map().should.be.an.instanceof(MappedVarying)

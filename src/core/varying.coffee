@@ -97,14 +97,6 @@ class Varying
   # (Varying v, Int b) => v a -> v b
   refCount: -> this.refCount$ ?= new Varying(this._refCount)
 
-  # forever binds this varying to the value of another.
-  # TODO: is this absolutely awful? maybe.
-  # TODO: this is confusingly named next to _bind, as they are not related, but
-  #       _bind is internal so we'll ignore it for now.
-  bind: (other) ->
-    (this[k] = v) for k, v of FlatMappedVarying.prototype
-    FlatMappedVarying.call(this, other)
-
   # we have two very similar behaviours, `pure` and `flatMapAll`, that differ only
   # in a parameter passed to the returned class. so we implement it once and
   # partially apply with that difference immedatiely.
