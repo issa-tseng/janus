@@ -49,12 +49,6 @@ util =
   # Basic shallow copy in emulation of simplest jQuery extend case. warning: mutates!
   extend: (dest, srcs...) -> (dest[k] = v for k, v of src) for src in srcs; null
 
-  # Nonmutating version of extend; extends into a new obj that's returned.
-  extendNew: (srcs...) ->
-    obj = {}
-    util.extend(obj, srcs...)
-    obj
-
   # Check if an object has any k/v pairs at all.
   isEmptyObject: (obj) ->
     return false unless obj?

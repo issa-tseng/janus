@@ -23,7 +23,7 @@
 # So, we have this heavier, more featureful version, because hey we're already
 # out of simplicity-land so why not?
 
-{ extendNew, capitalize, isPlainObject, isFunction, isArray } = require('../util/util')
+{ capitalize, isPlainObject, isFunction, isArray } = require('../util/util')
 
 
 # otherwise is a case that like the others can be referenced by string or used
@@ -91,7 +91,7 @@ defcase = (namespace, inTypes...) ->
           else
             x
       }
-      props = extendNew(defaultProps, setProps, caseProps)
+      props = Object.assign({}, defaultProps, setProps, caseProps)
 
       # make and cache an instance prototype:
       instance = { type, isCaseInstance: true }
