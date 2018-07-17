@@ -11,6 +11,11 @@ class DomView extends View
     this._bindings = this.preboundTemplate(dom, this.pointer())
     dom
 
+  attach: (dom) ->
+    this._artifact = dom
+    this._bindings = this.preboundTemplate(dom, this.pointer(), false)
+    dom
+
   wireEvents: ->
     return if this._wired is true
     this._wired = true

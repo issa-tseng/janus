@@ -26,39 +26,51 @@ doPoint = (x, point) ->
     Varying.of(x)
 
 mutators =
-  attr: (prop, data) -> (dom, point) -> data.all.point(point).react((x) -> dom.attr(prop, safe(x)))
+  attr: (prop, data) -> (dom, point, immediate = true) ->
+    data.all.point(point).react(immediate, (x) -> dom.attr(prop, safe(x)))
 
-  classGroup: (prefix, data) -> (dom, point) ->
-    data.all.point(point).react((x) ->
-      existing = dom.attr('class')?.split(/[ ]+/) ? []
-      dom.removeClass(y) for y in existing when y.indexOf(prefix) is 0
+  classGroup: (prefix, data) -> (dom, point, immediate = true) ->
+    data.all.point(point).react(immediate, (x) ->
+      existing = dom.attr('class')?.split(/ +/) ? []
+      dom.removeClass(y) for y in existing when y.startsWith(prefix)
       dom.addClass("#{prefix}#{safe(x)}")
     )
 
-  classed: (name, data) -> (dom, point) -> data.all.point(point).react((x) -> dom.toggleClass(name, x is true))
+  classed: (name, data) -> (dom, point, immediate = true) ->
+    data.all.point(point).react(immediate, (x) -> dom.toggleClass(name, x is true))
 
-  css: (prop, data) -> (dom, point) -> data.all.point(point).react((x) -> dom.css(prop, safe(x)))
+  css: (prop, data) -> (dom, point, immediate = true) ->
+    data.all.point(point).react(immediate, (x) -> dom.css(prop, safe(x)))
 
-  text: (data) -> (dom, point) -> data.all.point(point).react((x) -> dom.text(safe(x)))
+  text: (data) -> (dom, point, immediate = true) ->
+    data.all.point(point).react(immediate, (x) -> dom.text(safe(x)))
 
-  html: (data) -> (dom, point) -> data.all.point(point).react((x) -> dom.html(safe(x)))
+  html: (data) -> (dom, point, immediate = true) ->
+    data.all.point(point).react(immediate, (x) -> dom.html(safe(x)))
 
-  prop: (prop, data) -> (dom, point) -> data.all.point(point).react((x) -> dom.prop(prop, x))
+  prop: (prop, data) -> (dom, point, immediate = true) ->
+    data.all.point(point).react(immediate, (x) -> dom.prop(prop, x))
 
   render: (data, args = {}) ->
-    # TODO: eventually should analyze the view that may be already there and see if
-    # it's already appropriate, in which case do nothing (for the attach case).
-    result = (dom, point) ->
+    result = (dom, point, immediate = true) ->
       _getView = (subject, context, app, criteria, options) ->
         app.view(subject, Object.assign({ context }, criteria), options)
 
-      Varying.flatMapAll(_getView, data.all.point(point), doPoint(args.context, point), doPoint(from.app(), point), doPoint(args.criteria, point), doPoint(args.options, point)).react((view) ->
+      # despite the nomenclature we /always/ react normally here, since
+      # we do need to initialize the entire dom tree. instead the flag
+      # gates whether we render or attach the first view we see.
+      Varying.flatMapAll(_getView, data.all.point(point), doPoint(args.context, point), doPoint(from.app(), point), doPoint(args.criteria, point), doPoint(args.options, point)).react(true, (view) ->
+        runBefore = this.view?
         this.view ?= new Varying()
         this.view.get()?.destroy()
-        dom.empty()
 
-        dom.append(view.artifact()) if view?
-        this.view.set(view)
+        if (immediate is false) and (runBefore is false)
+          view.attach(dom.children())
+        else
+          dom.empty()
+          dom.append(view.artifact()) if view?
+
+        this.view.set(view) # we wait to set so that the dom is part of the tree when events go.
       )
 
     result.context = (context) -> mutators.render(data, Object.assign({}, args, { context }))

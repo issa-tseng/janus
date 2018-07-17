@@ -50,7 +50,7 @@ describe 'Mutator', ->
       v.set(null)
       value.should.equal('')
 
-    it 'should return a Varied that can stop mutation', ->
+    it 'should return an Observation that can stop mutation', ->
       value = null
       dom = { attr: (_, x) -> value = x }
       v = new Varying(null)
@@ -62,6 +62,17 @@ describe 'Mutator', ->
       m.stop()
       v.set('test 2')
       value.should.equal('test')
+
+    it 'should react non-immediately if requested', ->
+      value = null
+      dom = { attr: (_, x) -> value = x }
+      v = new Varying('test')
+      mutators.attr(null, from.varying(v))(dom, passthrough, false)
+
+      (value is null).should.equal(true)
+
+      v.set('test 2')
+      value.should.equal('test 2')
 
   describe 'classGroup', ->
     it 'should attempt to add the new class', ->
@@ -86,7 +97,7 @@ describe 'Mutator', ->
 
       removedClasses.should.eql([ 'type-old' ])
 
-    it 'should return a Varied that can stop mutation', ->
+    it 'should return an Observation that can stop mutation', ->
       run = 0
       dom =
         attr: -> ''
@@ -101,6 +112,17 @@ describe 'Mutator', ->
       m.stop()
       v.set('test 2')
       run.should.equal(2)
+
+    it 'should react non-immediately if requested', ->
+      value = null
+      dom = { addClass: ((x) -> value = x), removeClass: (->), attr: (-> '') }
+      v = new Varying('test')
+      m = mutators.classGroup('test-', from.varying(v))(dom, passthrough, false)
+
+      (value is null).should.equal(true)
+
+      v.set('test2')
+      value.should.equal('test-test2')
 
   describe 'classed', ->
     it 'should call toggleClass with the class name', ->
@@ -126,7 +148,7 @@ describe 'Mutator', ->
       v.set(null)
       truthy.should.equal(false)
 
-    it 'should return a Varied that can stop mutation', ->
+    it 'should return an Observation that can stop mutation', ->
       result = null
       dom = { toggleClass: (_, x) -> result = x }
 
@@ -139,6 +161,17 @@ describe 'Mutator', ->
 
       v.set(false)
       result.should.equal(true)
+
+    it 'should react non-immediately if requested', ->
+      className = null
+      dom = { toggleClass: (x, _) -> className = x }
+
+      v = new Varying(true)
+      mutators.classed('hide', from.varying(v))(dom, passthrough, false)
+      (className is null).should.equal(true)
+
+      v.set(false)
+      className.should.equal('hide')
 
   describe 'css', ->
     it 'should call css on the dom obj correctly', ->
@@ -167,7 +200,7 @@ describe 'Mutator', ->
       v.set(null)
       value.should.equal('')
 
-    it 'should return a Varied that can stop mutation', ->
+    it 'should return an Observation that can stop mutation', ->
       value = null
       dom = { css: (_, x) -> value = x }
       v = new Varying(null)
@@ -179,6 +212,17 @@ describe 'Mutator', ->
       m.stop()
       v.set('test 2')
       value.should.equal('test')
+
+    it 'should react non-immediately if requested', ->
+      value = null
+
+      dom = { css: (_, y) -> value = y }
+      v = new Varying('block')
+      mutators.css('display', from.varying(v))(dom, passthrough, false)
+      (value is null).should.equal(true)
+
+      v.set('inline')
+      value.should.equal('inline')
 
   describe 'text', ->
     it 'should call text on the dom obj correctly', ->
@@ -205,7 +249,7 @@ describe 'Mutator', ->
       v.set(null)
       value.should.equal('')
 
-    it 'should return a Varied that can stop mutation', ->
+    it 'should return an Observation that can stop mutation', ->
       value = null
       dom = { text: (x) -> value = x }
       v = new Varying(null)
@@ -217,6 +261,16 @@ describe 'Mutator', ->
       m.stop()
       v.set('test 2')
       value.should.equal('test')
+
+    it 'should react non-immediately if requested', ->
+      value = null
+      dom = { text: (x) -> value = x }
+      v = new Varying('test')
+      mutators.text(from.varying(v))(dom, passthrough, false)
+      (value is null).should.equal(true)
+
+      v.set('test 2')
+      value.should.equal('test 2')
 
   describe 'html', ->
     it 'should call html on the dom obj correctly', ->
@@ -243,7 +297,7 @@ describe 'Mutator', ->
       v.set(null)
       value.should.equal('')
 
-    it 'should return a Varied that can stop mutation', ->
+    it 'should return an Observation that can stop mutation', ->
       value = null
       dom = { html: (x) -> value = x }
       v = new Varying(null)
@@ -255,6 +309,16 @@ describe 'Mutator', ->
       m.stop()
       v.set('test 2')
       value.should.equal('test')
+
+    it 'should react non-immediately if requested', ->
+      value = null
+      dom = { html: (x) -> value = x }
+      v = new Varying('test')
+      mutators.html(from.varying(v))(dom, passthrough, false)
+      (value is null).should.equal(true)
+
+      v.set('test 2')
+      value.should.equal('test 2')
 
   describe 'prop', ->
     it 'should call prop on the dom obj correctly', ->
@@ -277,7 +341,7 @@ describe 'Mutator', ->
       param.should.equal('checked')
       value.should.equal(true)
 
-    it 'should return a Varied that can stop mutation', ->
+    it 'should return an Observation that can stop mutation', ->
       param = null
       value = null
 
@@ -291,6 +355,16 @@ describe 'Mutator', ->
       m.stop()
       v.set(false)
       value.should.equal(true)
+
+    it 'should react non-immediately if requested', ->
+      value = null
+      dom = { prop: (_, x) -> value = x }
+      v = new Varying('test')
+      mutators.prop('prop', from.varying(v))(dom, passthrough, false)
+      (value is null).should.equal(true)
+
+      v.set('test 2')
+      value.should.equal('test 2')
 
   describe 'render', ->
     it 'passes the subject to the library', ->
@@ -382,8 +456,6 @@ describe 'Mutator', ->
 
     it 'drops in the new subview', ->
       appended = null
-      dataKey = null
-      dataValue = null
       newView = { artifact: -> 4 }
       dom = { append: ((x) -> appended = x), empty: (->) }
       app = { view: (-> newView) }
@@ -392,7 +464,7 @@ describe 'Mutator', ->
       mutators.render(from.varying(new Varying(1)))(dom, point)
       appended.should.equal(4)
 
-    it 'should return a Varied that can stop mutation', ->
+    it 'should return an Observation that can stop mutation', ->
       value = null
       dom = { append: ((x) -> value = x), empty: (->), data: (->) }
       app = { view: (x) -> { artifact: -> x } }
@@ -405,6 +477,35 @@ describe 'Mutator', ->
       m.stop()
       v.set(2)
       value.should.equal(1)
+
+    it 'should attach instead of render the child view if reacting non-immediately', ->
+      attached = null
+      newView = { attach: (x) -> attached = x }
+      dom = { children: (-> 4) }
+      app = { view: (-> newView) }
+      point = passthroughWithApp(app)
+
+      mutators.render(from.varying(new Varying(1)))(dom, point, false)
+      attached.should.equal(4)
+
+    it 'should render instead of attach upon a second mutation', ->
+      attached = appended = null
+      emptied = false
+      view = -> { attach: ((x) -> attached = x), artifact: (-> 8), destroy: (->) }
+      dom = { children: (-> 4), empty: (-> emptied = true), append: ((x) -> appended = x) }
+      app = { view }
+      point = passthroughWithApp(app)
+
+      v = new Varying(1)
+      m = mutators.render(from.varying(v))(dom, point, false)
+      attached.should.equal(4)
+      emptied.should.equal(false)
+      (appended is null).should.equal(true)
+
+      v.set(2)
+      attached.should.equal(4)
+      emptied.should.equal(true)
+      appended.should.equal(8)
 
   describe 'on', ->
     it 'should do nothing initially', ->
