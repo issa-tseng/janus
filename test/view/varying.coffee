@@ -1,7 +1,6 @@
 should = require('should')
 
-{ Varying, DomView, template, find, from } = require('janus')
-{ App, Library } = require('janus').application
+{ Varying, DomView, template, find, from, App, Library } = require('janus')
 { VaryingView } = require('../../lib/view/varying')
 
 $ = require('../../lib/util/dollar')

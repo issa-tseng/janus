@@ -1,7 +1,6 @@
 should = require('should')
 
-{ Varying, Model, DomView, template, find, from, List, attribute } = require('janus')
-{ App, Library } = require('janus').application
+{ Varying, Model, DomView, template, find, from, List, attribute, App, Library } = require('janus')
 { LiteralView } = require('../../lib/view/literal')
 { ListView } = require('../../lib/view/list')
 { ListSelectItemView, EnumAttributeListEditView, registerWith } = require('../../lib/view/enum-attribute-list')
