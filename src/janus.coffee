@@ -58,9 +58,7 @@ module.exports = (window ? global)._janus$ ?=
   application:
     App: require('./application/app').App
     Library: require('./application/library').Library
-    endpoint: require('./application/endpoint')
-    handler: require('./application/handler')
-    manifest: require('./application/manifest')
+    Manifest: require('./application/manifest').Manifest
 
   # maybe folks could use these.
   util: util
