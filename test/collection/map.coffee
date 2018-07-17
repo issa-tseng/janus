@@ -271,7 +271,7 @@ describe 'Map', ->
         shadow = map.shadow()
 
         evented = false
-        shadow.watch('test').reactLater((value) ->
+        shadow.watch('test').react(false, (value) ->
           evented = true
           value.should.equal('y')
         )
@@ -286,7 +286,7 @@ describe 'Map', ->
         shadow.set('test', 'y')
 
         evented = false
-        shadow.watch('test').reactLater(-> evented = true)
+        shadow.watch('test').react(false, -> evented = true)
 
         map.set('test', 'z')
         evented.should.equal(false)

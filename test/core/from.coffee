@@ -42,7 +42,6 @@ should.Assertion.add('varying', (->
   this.obj.map.should.be.a.Function
 
   this.obj.react.should.be.a.Function
-  this.obj.reactLater.should.be.a.Function
 ), true)
 
 describe 'from', ->
@@ -442,7 +441,7 @@ describe 'from', ->
       from.build(custom).should.not.be.a.Function
 
   describe 'deferred point calling order', ->
-    it 'should work with reactLater', ->
+    it 'should work with non-immediate react', ->
       { dynamic } = from.default
 
       f = from('a').and('b')
@@ -455,7 +454,7 @@ describe 'from', ->
       ))
 
       result = null
-      v.reactLater((x) -> result = x)
+      v.react(false, (x) -> result = x)
       (result is null).should.be.true
 
       iv.set('d')

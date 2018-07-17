@@ -43,12 +43,12 @@ describe 'base', ->
       result.should.equal(2)
       v.refCount().get().should.equal(1)
 
-    it 'should reactLater to a Varying', ->
+    it 'should non-immediate react to a Varying', ->
       a = new Base()
       v = new Varying(2)
 
       result = null
-      a.reactLaterTo(v, (x) -> result = x)
+      a.reactTo(v, false, (x) -> result = x)
       should(result).equal(null)
 
       v.set(3)
@@ -62,7 +62,7 @@ describe 'base', ->
 
       result = null
       a.reactTo(v, (x) -> result = x)
-      a.reactLaterTo(v, (x) -> result = x)
+      a.reactTo(v, false, (x) -> result = x)
 
       a.destroy()
       v.refCount().get().should.equal(0)

@@ -53,9 +53,7 @@ class Varying
   # (Varying v) => v a -> (a -> v b) -> v b
   flatMap: (f) -> new FlatMappedVarying(this, f)
 
-  # returns the `Observation` representing this reaction.
-  # (Varying v, Observation w) => v a -> (a -> ()) -> w
-  reactLater: (f_) ->
+  _react: (f_) ->
     id = uniqueId()
     this._refCount += 1
     this.refCount$?.set(this._refCount)
@@ -66,11 +64,21 @@ class Varying
       this.refCount$?.set(this._refCount)
     )
 
-  # (Varying v, Observation w) => v a -> (a -> ()) -> w
-  react: (f_) ->
-    observation = this.reactLater(f_)
+  _reactImmediate: (f_) ->
+    observation = this._react(f_)
     f_.call(observation, this.get())
     observation
+
+  # returns the `Observation` representing this reaction.
+  # (Varying v, Observation w) => v a -> (a -> ()) -> w
+  # (Boolean b, Varying v, Observation w) => v a -> b -> (a -> ()) -> w
+  react: (x, y) ->
+    if x is false
+      this._react(y)
+    else if x is true
+      this._reactImmediate(y)
+    else
+      this._reactImmediate(x)
 
   # gets and stores a value, and triggers any reactions upon it. returns nothing.
   # impure! (Varying v) => v a -> b -> ()
@@ -158,8 +166,13 @@ class FlatMappedVarying extends Varying
   # be correctly bound to with that method when react gets called. so we override
   # the default implementation and parameterize _react to handle it internally if
   # necessary.
-  react: (f_) -> this._react(f_, true)
-  reactLater: (f_) -> this._react(f_, false)
+  react: (x, y) ->
+    if x is false
+      this._react(y, false)
+    else if x is true
+      this._react(y, true)
+    else
+      this._react(x, true)
 
   _react: (callback, immediate) ->
     # create the consumer Observation that will be returned.
@@ -227,7 +240,7 @@ class FlatMappedVarying extends Varying
   #
   # mapping is handled here because the implementation of applying it varies depending
   # on whether there is one parent or many.
-  _bind: -> this._parent.reactLater((raw) => this._onValue(this._parentObservation, this._f.call(null, raw)))
+  _bind: -> this._parent.react(false, (raw) => this._onValue(this._parentObservation, this._f.call(null, raw)))
 
   # used internally; essentially get() w/out flatten.
   _immediate: ->
@@ -258,7 +271,7 @@ class MappedVarying extends FlatMappedVarying
 # ComposedVarying has some odd implications. It's not valid to apply our map
 # without all the values present, and trying to fulfill that kind of interface
 # leads to huge oddities with side effects and call orders.
-# So, we always react on our parents, even if we simply are reactLatered.
+# So, we always react on our parents, even if we simply are reacted (no immediate).
 class ComposedVarying extends FlatMappedVarying
   constructor: (@_applicants, @_f = identity, @_flatten = false) ->
     this._observers = {}
@@ -302,7 +315,7 @@ class ManagedVarying extends FlatMappedVarying
 
     this._awake = false
     resources = null
-    this.refCount().reactLater((count) =>
+    this.refCount().react(false, (count) =>
       if count > 0 and this._awake is false
         this._awake = true
         resources = (f() for f in this._resources)

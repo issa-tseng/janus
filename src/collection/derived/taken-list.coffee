@@ -10,7 +10,7 @@ class TakenList extends DerivedList
     super()
 
     this.number = Varying.of(this.number)
-    this.number.reactLater(=> this._rebalance())
+    this.number.react(false, => this._rebalance())
 
     take = this._take()
     this._add(elem, idx, take) for elem, idx in this.parent.list when idx < take
