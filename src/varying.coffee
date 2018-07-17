@@ -4,8 +4,7 @@ nothing = {}
 
 class ManagedObservation extends Base
   constructor: (@varying) -> super()
-  react: (f_) -> this.reactTo(this.varying, f_)
-  reactLater: (f_) -> this.reactLaterTo(this.varying, f_)
+  react: (x, y) -> this.reactTo(this.varying, x, y)
   @with: (varying) -> -> new ManagedObservation(varying)
 
 varyingUtils = {
@@ -56,7 +55,7 @@ varyingUtils = {
 
       timer = null
       pendingValue = nothing
-      mo.reactLater((value) ->
+      mo.react(false, (value) ->
         if timer?
           pendingValue = value
         else
