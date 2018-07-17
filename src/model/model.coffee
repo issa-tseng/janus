@@ -109,9 +109,9 @@ class Model extends Map
   # update naturally from our own bindings.
   _parentChanged: (key, newValue, oldValue) -> super(key, newValue, oldValue) unless this._bindings[key]?
 
-  destroy: ->
+  __destroy: ->
     attribute.destroy() for _, attribute of this._attributes
-    super()
+    null
 
   # Overridden to define model characteristics like attributes, bindings, and validations.
   # Usually this is done through the Model.build mechanism rather than directly.

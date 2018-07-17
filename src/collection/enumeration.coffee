@@ -92,9 +92,7 @@ class IndexList extends DerivedList
   mapPairs: (f) -> this.flatMap((idx) => Varying.mapAll(f, new Varying(idx), this.parent.watchAt(idx)))
   flatMapPairs: (f) -> this.flatMap((idx) => Varying.flatMapAll(f, new Varying(idx), this.parent.watchAt(idx)))
 
-  destroy: ->
-    super()
-    this._lengthVaried.stop()
+  __destroy: -> this._lengthVaried.stop(); null
 
 _dynamic = (f) -> (obj, options) ->
   Enumeration[if obj.isMappable is true then 'list' else if obj.isMap is true then 'map'][f](obj, options)

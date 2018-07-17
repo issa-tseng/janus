@@ -43,9 +43,7 @@ class IndexOfFold extends Base
     this._lastIdx = idx
     this._varying.set(idx)
 
-  destroy: ->
-    this._targetObservation.stop()
-    super()
+  __destroy: -> this._targetObservation.stop(); null
 
   @indexOf: (list, x) -> Varying.managed((-> new IndexOfFold(list, x)), ((iof) -> iof._varying))
 
