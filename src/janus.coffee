@@ -42,7 +42,6 @@ module.exports = (window ? global)._janus$ ?=
 
   Request: resolver.Request
   Resolver: resolver.Resolver
-  MemoryCacheResolver: resolver.MemoryCacheResolver
 
   # view and templating functionality.
   View: require('./view/view').View
