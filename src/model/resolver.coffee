@@ -97,5 +97,8 @@ class MemoryCacheResolver
       setTimeout((=> this._cache[signature] = null), after * 1000) if isNumber(after)
     null
 
+# for the export, don't have multiple toplevel Resolver things:
+Resolver.MemoryCache = MemoryCacheResolver
+
 module.exports = { Request, Resolver, MemoryCacheResolver }
 
