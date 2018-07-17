@@ -1,13 +1,17 @@
 { Model } = require('../model/model')
-{ dfault } = require('../model/schema')
+{ attribute } = require('../model/schema')
+attributes = require('../model/attribute')
 { Library } = require('./library')
 { Resolver } = require('../model/resolver')
 { isFunction, isArray } = require('../util/util')
 
+class LibraryAttribute extends attributes.Attribute
+  default: -> new Library()
+  writeDefault: true
 
 App = class extends Model.build(
-  dfault('views', -> new Library())
-  dfault('resolvers', -> new Library()))
+  attribute('views', LibraryAttribute)
+  attribute('resolvers', LibraryAttribute))
 
   view: (subject, criteria = {}, options = {}) ->
     klass = this.get('views').get(subject, criteria)
