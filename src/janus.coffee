@@ -40,7 +40,7 @@ module.exports = (window ? global)._janus$ ?=
 
   attribute: attribute
   bind: schema.bind
-  issue: schema.issue
+  validate: schema.validate
   transient: schema.transient
   dfault: schema.dfault
 
