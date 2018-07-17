@@ -196,6 +196,9 @@ class Map extends Enumerable
     this.emit("changed:#{key}", newValue, oldValue)
     this.emit('anyChanged', key, newValue, oldValue)
 
+  keys: Enumerable.prototype.enumerate
+  watchKeys: Enumerable.prototype.enumeration
+
   # Maps this map's values onto a new one, with the same key structure. The
   # mapping functions are passed (key, value) as the arguments.
   #
