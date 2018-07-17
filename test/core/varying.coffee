@@ -25,20 +25,20 @@ describe 'Varying', ->
       v.get().should.equal(2)
 
   describe 'react', ->
-    it 'should react to new values on reactLater()', ->
+    it 'should react to new values on non-immediate react()', ->
       results = []
       v = new Varying(1)
-      v.reactLater((x) -> results.push(x))
+      v.react(false, (x) -> results.push(x))
 
       v.set(2)
       v.set(3)
 
       results.should.eql([ 2, 3 ])
 
-    it 'should not re-react to old values on reactLater()', ->
+    it 'should not re-react to old values on non-immediate react()', ->
       results = []
       v = new Varying(1)
-      v.reactLater((x) -> results.push(x))
+      v.react(false, (x) -> results.push(x))
 
       v.set(2)
       v.set(2)
@@ -55,8 +55,8 @@ describe 'Varying', ->
 
       results.should.eql([ 1, 2, 3 ])
 
-    it 'should return an instance of Observation on reactLater()', ->
-      (new Varying()).reactLater().should.be.an.instanceof(Observation)
+    it 'should return an instance of Observation on non-immediate react()', ->
+      (new Varying()).react(false).should.be.an.instanceof(Observation)
 
     it 'should bind this to the Observation within the handler', ->
       v = new Varying(1)
@@ -72,7 +72,7 @@ describe 'Varying', ->
       runCount = 0
       v = new Varying(1)
 
-      r = v.reactLater(-> runCount += 1)
+      r = v.react(false, -> runCount += 1)
       v.set(2)
       runCount.should.equal(1)
 
@@ -96,7 +96,7 @@ describe 'Varying', ->
     it 'should return a Varying with the number of reactions', ->
       v = new Varying(true)
       v.react(->)
-      v.reactLater(->)
+      v.react(false, ->)
 
       result = v.refCount()
       result.get().should.equal(2)
@@ -108,7 +108,7 @@ describe 'Varying', ->
       v.refCount().react((x) -> results.push(x))
 
       v.react(-> this.stop())
-      v.reactLater()
+      v.react(false, )
       results.should.eql([ 0, 1, 0, 1 ])
 
     it 'should account for chained references', ->
@@ -123,7 +123,7 @@ describe 'Varying', ->
       results = []
       vv.refCount().react((x) -> results.push(x))
 
-      vv.reactLater(->)
+      vv.react(false, ->)
       vv.react(-> this.stop())
       results.should.eql([ 0, 1, 2, 1 ])
 
@@ -133,7 +133,7 @@ describe 'Varying', ->
       results = []
       v.refCount().react((x) -> results.push(x))
 
-      v.reactLater(->)
+      v.react(false, ->)
       v.react(-> this.stop())
       results.should.eql([ 0, 1, 2, 1 ])
 
@@ -152,7 +152,7 @@ describe 'Varying', ->
       m = v.map((x) -> x * 2)
 
       result = 0
-      m.reactLater((x) -> result = x)
+      m.react(false, (x) -> result = x)
 
       v.set(2)
       result.should.equal(4)
@@ -205,7 +205,7 @@ describe 'Varying', ->
       m = v.map((x) -> x * 2)
 
       runCount = 0
-      r = m.reactLater(-> runCount += 1)
+      r = m.react(false, -> runCount += 1)
 
       v.set(2)
       runCount.should.equal(1)
@@ -218,7 +218,7 @@ describe 'Varying', ->
       v = new Varying(1)
       m = v.map((x) -> x * 2)
 
-      m.reactLater(->).stop()
+      m.react(false, ->).stop()
 
       countObservers(v).should.equal(0)
 
@@ -240,7 +240,7 @@ describe 'Varying', ->
       f = v.flatten()
 
       result = null
-      f.reactLater((x) -> result = x)
+      f.react(false, (x) -> result = x)
 
       v.set(2)
       result.should.equal(2)
@@ -368,7 +368,7 @@ describe 'Varying', ->
       m = v.flatMap((x) -> new Varying(x * 2))
 
       result = 0
-      m.reactLater((x) -> result = x)
+      m.react(false, (x) -> result = x)
 
       v.set(2)
       result.should.equal(4)
@@ -400,7 +400,7 @@ describe 'Varying', ->
       m = v.flatMap((x) -> x * 2)
 
       runCount = 0
-      r = m.reactLater(-> runCount += 1)
+      r = m.react(false, -> runCount += 1)
 
       v.set(2)
       runCount.should.equal(1)
@@ -455,7 +455,7 @@ describe 'Varying', ->
       v2 = new Varying(2)
 
       result = null
-      v.flatMap((x) -> v2.map((y) -> x * y)).reactLater((z) -> result = z)
+      v.flatMap((x) -> v2.map((y) -> x * y)).react(false, (z) -> result = z)
       should(result).equal(null)
 
       v2.set(3)
@@ -506,12 +506,12 @@ describe 'Varying', ->
       v.set(2)
       results.should.eql([ 2, 3 ])
 
-    it 'should dedupe intermediate results for reactLater', -> # gh40
+    it 'should dedupe intermediate results for non-immediate react', -> # gh40
       v = new Varying(1)
       vv = new Varying(0)
 
       results = []
-      vv.flatMap((x) -> v.map((y) -> y)).map((z) -> z + 1).reactLater((w) -> results.push(w))
+      vv.flatMap((x) -> v.map((y) -> y)).map((z) -> z + 1).react(false, (w) -> results.push(w))
 
       vv.set(2)
       vv.set(3)
@@ -524,11 +524,11 @@ describe 'Varying', ->
 
       # first, set up a reaction that causes a cyclic set.
       hasRetriggered = false
-      v.reactLater(-> v.set(2) unless hasRetriggered)
+      v.react(false, -> v.set(2) unless hasRetriggered)
 
       # next, set up a reaction later in the chain. count its executions.
       runCount = 0
-      v.reactLater(-> runCount += 1)
+      v.react(false, -> runCount += 1)
 
       # now go.
       v.set(1)
@@ -538,10 +538,10 @@ describe 'Varying', ->
       v = new Varying()
 
       hasRetriggered = false
-      v.reactLater(-> v.set(2) unless hasRetriggered)
+      v.react(false, -> v.set(2) unless hasRetriggered)
 
       result = null
-      v.reactLater((x) -> result = x)
+      v.react(false, (x) -> result = x)
 
       v.set(1)
       result.should.equal(2)
@@ -570,13 +570,13 @@ describe 'Varying', ->
       it 'should not flatten on get', ->
         Varying.pure(((x, y) -> new Varying(x + y)), new Varying(1), new Varying(2)).get().should.be.an.instanceof(Varying)
 
-      it 'should callback with a mapped value when reactLater is called', ->
+      it 'should callback with a mapped value when non-immediate react is called', ->
         va = new Varying(1)
         vb = new Varying(2)
         m = Varying.pure(((x, y) -> x + y), va, vb)
 
         result = 0
-        m.reactLater((x) -> result = x)
+        m.react(false, (x) -> result = x)
 
         va.set(3)
         result.should.equal(5)
@@ -623,7 +623,7 @@ describe 'Varying', ->
         m = Varying.pure(((x, y) -> new Varying(x + y)), va, vb)
 
         runCount = 0
-        r = m.reactLater((x) -> runCount += 1)
+        r = m.react(false, (x) -> runCount += 1)
         runCount.should.equal(0)
 
         va.set(2)
@@ -667,7 +667,7 @@ describe 'Varying', ->
         m = Varying.flatMapAll(((x, y) -> new Varying(x + y)), va, vb)
 
         result = 0
-        m.reactLater((x) -> result = x)
+        m.react(false, (x) -> result = x)
 
         va.set(3)
         result.should.equal(5)
@@ -780,7 +780,7 @@ describe 'Varying', ->
       results = null
       v = Varying.managed((-> 1), (-> 2), (-> 3), (xs...) -> results = xs)
       should(results).equal(null)
-      v.reactLater(->)
+      v.react(false, ->)
       results.should.eql([ 1, 2, 3 ])
 
     it 'should use the result of the computation generator as its own result', ->
