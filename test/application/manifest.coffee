@@ -5,7 +5,7 @@ types = require('../../lib/util/types')
 { App } = require('../../lib/application/app')
 { Model } = require('../../lib/model/model')
 from = require('../../lib/core/from')
-{ attribute, issue, Trait } = require('../../lib/model/schema')
+{ attribute, validate, Trait } = require('../../lib/model/schema')
 attributes = require('../../lib/model/attribute')
 
 
@@ -115,11 +115,11 @@ describe 'manifest', ->
       types.result.failure.match(m.requests.at(1).result.get()).should.equal(true)
       done()
 
-  it 'should return success if all issues are valid', (done) ->
+  it 'should return success if all validations are valid', (done) ->
     result = null
     trait = Trait(
-      issue(from('failone').map(failIfTrue()))
-      issue(from('failtwo').map(failIfTrue()))
+      validate(from('failone').map(failIfTrue()))
+      validate(from('failtwo').map(failIfTrue()))
     )
     { TestModel, TestView, app } = env({ trait })
     m = Manifest.run(app, new TestModel())
@@ -130,11 +130,11 @@ describe 'manifest', ->
       result.value.should.be.an.instanceof(TestView)
       done()
 
-  it 'should return the failure if an issue is invalid', (done) ->
+  it 'should return the failure if an validation is invalid', (done) ->
     result = null
     trait = Trait(
-      issue(from('failone').map(failIfTrue(1)))
-      issue(from('failtwo').map(failIfTrue(2)))
+      validate(from('failone').map(failIfTrue(1)))
+      validate(from('failtwo').map(failIfTrue(2)))
     )
     { TestModel, TestView, app } = env({ trait })
     m = Manifest.run(app, new TestModel( failone: true ))
@@ -150,9 +150,9 @@ describe 'manifest', ->
   it 'should return all failures if many happen', (done) ->
     result = null
     trait = Trait(
-      issue(from('failone').map(failIfTrue(1)))
-      issue(from('failtwo').map(failIfTrue(2)))
-      issue(from('failthree').map(failIfTrue(3)))
+      validate(from('failone').map(failIfTrue(1)))
+      validate(from('failtwo').map(failIfTrue(2)))
+      validate(from('failthree').map(failIfTrue(3)))
     )
     { TestModel, TestView, app } = env({ trait })
     m = Manifest.run(app, new TestModel( failone: true, failthree: true ))

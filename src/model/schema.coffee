@@ -7,7 +7,7 @@ TransientAttribute = class extends Attribute
 module.exports = {
   attribute: (key, klass) -> (schema) -> schema.attributes[key] = klass
   bind: (key, binding) -> (schema) -> schema.bindings[key] = binding
-  issue: (binding) -> (schema) -> schema.issues.push(binding)
+  validate: (binding) -> (schema) -> schema.validations.push(binding)
 
   transient: (key) -> (schema) -> schema.attributes[key] = TransientAttribute
   dfault: (key, value, klass = Attribute) -> (schema) ->

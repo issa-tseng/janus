@@ -88,20 +88,21 @@ class Model extends Map
 
   pointer: -> (x) => this.constructor.point(x, this)
 
-  # Returns a list of the issue results that have been bound against this model.
-  issues: -> this._issues$ ?= do =>
+  # Returns a list of the validation results that have been bound against this model.
+  validations: -> this._validations$ ?= do =>
     { List } = require('../collection/list')
-    new List(this.constructor.schema.issues)
+    new List(this.constructor.schema.validations)
       .flatMap((binding) => binding.all.point(this.pointer()))
+
+  # Returns a list of the currently failing validation results.
+  issues: -> this._issues$ ?= this.validations().filter(types.validity.invalid.match)
 
   # Returns a `Varying` of `true` or `false` depending on whether this model is
   # valid or not.
   #
   # **Returns** `Varying[Boolean]` indicating current validity.
   valid: -> this._valid$ ?=
-    this.issues()
-      .filter(types.validity.invalid.match)
-      .watchLength().map((length) -> length is 0)
+    this.issues().watchLength().map((length) -> length is 0)
 
   # Handles parent changes; mostly exists in Map but we wrap to additionally
   # bail if the changed parent attribute is a bound value; we want that to
@@ -112,9 +113,9 @@ class Model extends Map
     attribute.destroy() for _, attribute of this._attributes
     super()
 
-  # Overridden to define model characteristics like attributes, bindings, and issues.
+  # Overridden to define model characteristics like attributes, bindings, and validations.
   # Usually this is done through the Model.build mechanism rather than directly.
-  @schema: { attributes: {}, bindings: {}, issues: [] }
+  @schema: { attributes: {}, bindings: {}, validations: [] }
 
   # Takes in a data hash and relies upon attribute definition to provide a sane
   # default deserialization methodology.
@@ -131,9 +132,9 @@ class Model extends Map
   # Quick shortcut to define the schema of this model.
   @build: (parts...) ->
     schema = {
-      attributes: util.extendNew({}, this.schema.attributes),
-      bindings: util.extendNew({}, this.schema.bindings),
-      issues: this.schema.issues.slice()
+      attributes: Object.assign({}, this.schema.attributes),
+      bindings: Object.assign({}, this.schema.bindings),
+      validations: this.schema.validations.slice()
     }
     part(schema) for part in parts
 
