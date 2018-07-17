@@ -165,13 +165,14 @@ describe 'base App model', ->
       should.not.exist((new TestApp()).resolve({ isRequest: true }))
 
     it 'should emit an event if successful', ->
-      result = null
+      req = res = null
       class TestApp extends App
         resolver: -> -> 42
       app = new TestApp()
-      app.on('resolvedRequest', (x) -> result = x)
-      app.resolve({ isRequest: true })
-      result.should.equal(42)
+      app.on('resolvedRequest', (x, y) -> req = x; res = y)
+      app.resolve({ isRequest: true, test: 8 })
+      req.test.should.equal(8)
+      res.should.equal(42)
 
   describe 'default resolver', ->
     it 'should come with a resolver library by default', ->
