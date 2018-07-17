@@ -32,8 +32,10 @@ mutators =
   classGroup: (prefix, data) -> (dom, point, immediate = true) ->
     data.all.point(point).react(immediate, (x) ->
       existing = dom.attr('class')?.split(/ +/) ? []
-      dom.removeClass(y) for y in existing when y.startsWith(prefix)
-      dom.addClass("#{prefix}#{safe(x)}")
+      desired = ''
+      (desired += "#{str} ") for str in existing when !str.startsWith(prefix)
+      desired += "#{prefix}#{safe(x)}"
+      dom.attr('class', desired)
     )
 
   classed: (name, data) -> (dom, point, immediate = true) ->

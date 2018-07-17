@@ -76,46 +76,36 @@ describe 'Mutator', ->
 
   describe 'classGroup', ->
     it 'should attempt to add the new class', ->
-      addedClass = null
-      dom =
-        removeClass: ->
-        attr: ->
-        addClass: (x) -> addedClass = x
+      setClass = null
+      dom = { attr: (x, y) -> x.should.equal('class'); setClass = y }
 
       mutators.classGroup('type-', from.varying(new Varying('test')))(dom, passthrough)
-
-      addedClass.should.equal('type-test')
+      setClass.should.equal('type-test')
 
     it 'should attempt to remove old classes', ->
-      removedClasses = []
-      dom =
-        removeClass: (x) -> removedClasses.push(x)
-        attr: -> 'type-old otherclass some-type-here'
-        addClass: ->
+      setClass = null
+      dom = { attr: (x, y) -> setClass = y; 'type-old otherclass some-type-here' }
 
       mutators.classGroup('type-', from.varying(new Varying('test')))(dom, passthrough)
-
-      removedClasses.should.eql([ 'type-old' ])
+      setClass.should.eql('otherclass some-type-here type-test')
 
     it 'should return an Observation that can stop mutation', ->
       run = 0
-      dom =
-        attr: -> ''
-        addClass: -> run += 1
+      dom = { attr: -> run += 1; '' }
 
       v = new Varying(null)
       m = mutators.classGroup('whatever-', from.varying(v))(dom, passthrough)
 
       v.set('test')
-      run.should.equal(2)
+      run.should.equal(4)
 
       m.stop()
       v.set('test 2')
-      run.should.equal(2)
+      run.should.equal(4)
 
     it 'should react non-immediately if requested', ->
       value = null
-      dom = { addClass: ((x) -> value = x), removeClass: (->), attr: (-> '') }
+      dom = { attr: ((x, y) -> value = y) }
       v = new Varying('test')
       m = mutators.classGroup('test-', from.varying(v))(dom, passthrough, false)
 
