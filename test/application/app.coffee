@@ -1,6 +1,15 @@
 { App } = require('../../lib/application/app')
 
 describe 'base App model', ->
+  describe 'library instantiation', ->
+    it 'should preserve default library instance constancy', ->
+      app = new App()
+      app.get('views').register(String, 1)
+      app.get('views').get('').should.equal(1)
+
+      app.get('resolvers').register(String, 1)
+      app.get('resolvers').get('').should.equal(1)
+
   describe 'view handling', ->
     it 'should come with a view library by default', ->
       (new App()).get('views').isLibrary.should.equal(true)
