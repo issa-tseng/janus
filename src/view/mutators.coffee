@@ -12,7 +12,7 @@
 
 { Varying } = require('../core/varying')
 from = require('../core/from')
-{ isFunction, extendNew } = require('../util/util')
+{ isFunction } = require('../util/util')
 
 
 # util.
@@ -61,9 +61,9 @@ mutators =
         this.view.set(view)
       )
 
-    result.context = (context) -> mutators.render(data, extendNew(args, { context }))
-    result.criteria = (criteria) -> mutators.render(data, extendNew(args, { criteria }))
-    result.options = (options) -> mutators.render(data, extendNew(args, { options }))
+    result.context = (context) -> mutators.render(data, Object.assign({}, args, { context }))
+    result.criteria = (criteria) -> mutators.render(data, Object.assign({}, args, { criteria }))
+    result.options = (options) -> mutators.render(data, Object.assign({}, args, { options }))
 
     result
 

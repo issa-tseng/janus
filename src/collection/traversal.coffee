@@ -1,5 +1,5 @@
 { Varying } = require('../core/varying')
-{ identity, isFunction, extendNew, deepSet } = require('../util/util')
+{ identity, isFunction, deepSet } = require('../util/util')
 
 { match, otherwise } = require('../core/case')
 { recurse, delegate, defer, varying, value, nothing } = require('../util/types').traversal
@@ -14,10 +14,10 @@ matcher = match(
 
   delegate (to, context, local) ->
     matcher(to(local.key, local.value, local.obj, local.attribute, context ? local.context),
-      extendNew(local, { context }))
+      Object.assign({}, local, { context }))
   defer (to, context, local) ->
     matcher(to(local.key, local.value, local.obj, local.attribute, context ? local.context),
-      extendNew(local, { context, map: to }))
+      Object.assign({}, local, { context, map: to }))
 
   varying (v, _, local) ->
     # we can indiscriminately flatMap because the only valid final values here
@@ -33,12 +33,12 @@ matcher = match(
 processNode = (general) -> (key, value) ->
   obj = general.obj
   attribute = obj.attribute(key) if obj.isModel is true
-  local = extendNew(general, { key, value, attribute })
+  local = Object.assign({}, general, { key, value, attribute })
   matcher(general.map(key, value, obj, attribute, general.context), local)
 
 # match the result of userland recurse.
 prematcher = match(
-  recurse (into, context, general, process) -> process(extendNew(general, { obj: into, context }))
+  recurse (into, context, general, process) -> process(Object.assign({}, general, { obj: into, context }))
   varying (v, context, general, process) ->
     mapped = v.flatMap((x) -> prematcher(x, general, process))
     if general.immediate is true then mapped.get() else mapped
@@ -56,11 +56,11 @@ reducer = (general, resource) -> ->
 
 Traversal =
   asNatural: (obj, fs, context = {}) ->
-    general = extendNew(fs, { obj, context, root: Traversal.asNatural })
+    general = Object.assign({}, fs, { obj, context, root: Traversal.asNatural })
     preprocess(general, (general) -> general.obj.flatMapPairs(processNode(general)))
 
   asList: (obj, fs, context = {}) ->
-    general = extendNew(fs, { obj, context, root: Traversal.asList })
+    general = Object.assign({}, fs, { obj, context, root: Traversal.asList })
     preprocess(general, reducer(general, (general) -> -> general.obj.enumeration().flatMapPairs(processNode(general))))
 
   # these two inner blocks are rather repetitive but i'm reluctant to pull them into a
@@ -73,7 +73,7 @@ Traversal =
     for key in obj.enumerate()
       val = obj.get(key)
       attribute = obj.attribute(key) if obj.isModel is true
-      local = extendNew(fs, { obj, key, val, attribute, context, immediate: true, root: Traversal.getNatural })
+      local = Object.assign({}, fs, { obj, key, val, attribute, context, immediate: true, root: Traversal.getNatural })
       set(key, matcher(local.map(key, val, obj, attribute, context), local))
     result
 
@@ -82,7 +82,7 @@ Traversal =
       for key in obj.enumerate() 
         val = obj.get(key)
         attribute = obj.attribute(key) if obj.isModel is true
-        local = extendNew(fs, { obj, key, val, attribute, context, immediate: true, root: Traversal.getArray })
+        local = Object.assign({}, fs, { obj, key, val, attribute, context, immediate: true, root: Traversal.getArray })
         matcher(local.map(key, val, obj, attribute, context), local)
     )
 

@@ -7,7 +7,7 @@
 
 { Enumerable } = require('./collection')
 { Varying } = require('../core/varying')
-{ deepGet, deepSet, deepDelete, extendNew, isArray, isString, isPlainObject, isEmptyObject, traverse, traverseAll } = require('../util/util')
+{ deepGet, deepSet, deepDelete, isArray, isString, isPlainObject, isEmptyObject, traverse, traverseAll } = require('../util/util')
 
 
 # sentinel value to record a child-nulled value. instantiate a class instance
@@ -144,7 +144,7 @@ class Map extends Enumerable
   # know about.
   #
   # **Returns** a new shadow copy, which is an instance of `Model`.
-  shadow: (klass) -> new (klass ? this.constructor)({}, extendNew(this.options, { parent: this }))
+  shadow: (klass) -> new (klass ? this.constructor)({}, Object.assign({}, this.options, { parent: this }))
 
   # Shadow-copies a model, inserting the data given. Really just syntactic sugar.
   #

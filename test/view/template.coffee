@@ -1,6 +1,5 @@
 should = require('should')
 
-{ extendNew } = require('../../lib/util/util')
 { Varying } = require('../../lib/core/varying')
 { find, template } = require('../../lib/view/template')
 $ = require('jquery')(require('domino').createWindow())
@@ -79,7 +78,7 @@ describe 'templater', ->
         mymutator = (args = {}) ->
           result = (->)
           result.chain = (moreArgs) ->
-            allArgs = extendNew(args, moreArgs)
+            allArgs = Object.assign({}, args, moreArgs)
             mymutator(allArgs)
           result
 
@@ -90,7 +89,7 @@ describe 'templater', ->
       it 'always returns a function1 in chaining', ->
         mymutator = (args = {}) ->
           result = (->)
-          result.chain = (moreArgs) -> mymutator(extendNew(args, moreArgs))
+          result.chain = (moreArgs) -> mymutator(Object.assign({}, args, moreArgs))
           result
 
         myfind = find.build({ test: mymutator })
@@ -156,7 +155,7 @@ describe 'templater', ->
       it 'intermixes mutator/multi-mutator chaining', ->
         chainingMutator = (args = {}) ->
           result = -> Varying.of(args).react(->)
-          result.chain = (moreArgs) -> chainingMutator(extendNew(args, moreArgs))
+          result.chain = (moreArgs) -> chainingMutator(Object.assign({}, args, moreArgs))
           result
         makeMutator = (id) -> (x) -> () -> Varying.of(x).react(->)
 
@@ -174,7 +173,7 @@ describe 'templater', ->
       it 'does not clobber mutator chaining', ->
         chainingMutator = (args = {}) ->
           result = -> Varying.of(args).react(->)
-          result.chain = (moreArgs) -> chainingMutator(extendNew(args, moreArgs))
+          result.chain = (moreArgs) -> chainingMutator(Object.assign({}, args, moreArgs))
           result
         makeMutator = (id) -> (x) -> () -> Varying.of(x).react(->)
 

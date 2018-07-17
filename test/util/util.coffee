@@ -84,10 +84,6 @@ describe 'Util', ->
       should(util.extend(target, { b: 2, c: 3 }, { d: 4, e: 5})).equal(null)
       target.should.eql({ a: 1, b: 2, c: 3, d: 4, e: 5 })
 
-  describe 'extendNew', ->
-    it 'should copy properties from the sources onto a new object', ->
-      util.extendNew({ a: 1 }, { b: 2, c: 3 }, { d: 4, e: 5}).should.eql({ a: 1, b: 2, c: 3, d: 4, e: 5 })
-
   describe 'isEmptyObject', ->
     it 'should return true only for plain, empty objects', ->
       util.isEmptyObject(null).should.equal(false)
