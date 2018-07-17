@@ -13,12 +13,12 @@ class FlattenedList extends DerivedList
     this.parent.on('moved', (obj, idx, oldIdx) => this._moveObj(obj, oldIdx, idx))
     this.parent.on('removed', (obj, idx) => this._removeObj(obj, idx))
 
-  sizeof = (x) -> if x?.isCollection is true then x.length else 1
+  sizeof = (x) -> if x?.isMappable is true then x.length else 1
   _getOverallIdx: (parentIdx, offset = 0) ->
     util.foldLeft(0)(this.parent.list[0...parentIdx], (length, x) -> length + sizeof(x)) + offset
 
   _addObj: (obj, idx) ->
-    if obj?.isCollection is true
+    if obj?.isMappable is true
       listeners = {
         added: (elem, offset) =>
           this._add(elem, this._getOverallIdx(this._listListeners.list.indexOf(listeners), offset))
@@ -41,7 +41,7 @@ class FlattenedList extends DerivedList
     mOldIdx = this._getOverallIdx(oldIdx)
     mNewIdx = this._getOverallIdx(newIdx)
 
-    if obj?.isCollection is true
+    if obj?.isMappable is true
       # our parent list has already changed, so the mapped indices need another
       # adjustment in order to reflect the pre-move indices in our own list:
       if newIdx > oldIdx
@@ -65,7 +65,7 @@ class FlattenedList extends DerivedList
     objStartIdx = this._getOverallIdx(idx)
     listeners = this._listListeners.removeAt(idx)
 
-    if obj?.isCollection is true
+    if obj?.isMappable is true
       obj.off(event, handler) for event, handler of listeners
       this._removeAt(objStartIdx) for _ in obj.list
     else

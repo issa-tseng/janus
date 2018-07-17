@@ -171,7 +171,7 @@ describe 'traversal', ->
     it 'should work with nested lists', ->
       s = new Map( a: 1, b: new List([ 2, 3 ]), d: 4 )
       l = Traversal.asList(s, map: (k, v) ->
-        if v.isCollection is true
+        if v.isMappable is true
           recurse(v)
         else
           value("#{k}#{v}")

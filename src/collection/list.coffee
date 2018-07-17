@@ -13,12 +13,12 @@
 #   position.
 
 { Varying } = require('../core/varying')
-{ OrderedCollection } = require('./collection')
+{ OrderedMappable } = require('./collection')
 util = require('../util/util')
 
 
 # We derive off of Model so that we have free access to attributes.
-class List extends OrderedCollection
+class List extends OrderedMappable
   isList: true
 
   # We take a list of elements, and initialize to empty list if nothing is given.
@@ -278,7 +278,7 @@ class DerivedList extends List
   constructor: ->
     # still call Base to set up important things, but skip List constructor as
     # it tries to add the initial items.
-    OrderedCollection.call(this)
+    OrderedMappable.call(this)
     this.list = []
     this._initialize?()
 

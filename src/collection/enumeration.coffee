@@ -97,7 +97,7 @@ class IndexList extends DerivedList
     this._lengthVaried.stop()
 
 _dynamic = (f) -> (obj, options) ->
-  Enumeration[if obj.isCollection is true then 'list' else if obj.isMap is true then 'map'][f](obj, options)
+  Enumeration[if obj.isMappable is true then 'list' else if obj.isMap is true then 'map'][f](obj, options)
 Enumeration =
   get: _dynamic('get')
   watch: _dynamic('watch')
