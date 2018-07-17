@@ -5,7 +5,7 @@ types = require('../../lib/util/types')
 
 Model = require('../../lib/model/model').Model
 attributes = require('../../lib/model/attribute')
-{ attribute, bind, dfault, issue, transient, Trait } = require('../../lib/model/schema')
+{ attribute, bind, dfault, validate, transient, Trait } = require('../../lib/model/schema')
 
 Varying = require('../../lib/core/varying').Varying
 { List } = require('../../lib/collection/list')
@@ -332,24 +332,50 @@ describe 'Model', ->
       (new TestModel()).autoResolveWith('app')
       calls.should.eql([ [ 'two', 'app' ], [ 'three', 'app' ] ])
 
-  describe 'validity', ->
-    it 'should return true if no active issues exist', ->
+  describe 'validation', ->
+    it 'should return all defined validations on validations()', ->
       v1 = new Varying(types.validity.valid())
       v2 = new Varying(types.validity.valid())
       TestModel = Model.build(
-        issue(from(v1))
-        issue(from(v2))
+        validate(from(v1))
+        validate(from(v2))
+      )
+
+      model = new TestModel()
+      model.validations().length.should.equal(2)
+      types.validity.valid.match(model.validations().at(0)).should.equal(true)
+      types.validity.valid.match(model.validations().at(1)).should.equal(true)
+
+    it 'should return failing validations on issues()', ->
+      v1 = new Varying(types.validity.valid())
+      v2 = new Varying(types.validity.invalid('test'))
+      TestModel = Model.build(
+        validate(from(v1))
+        validate(from(v2))
+      )
+
+      model = new TestModel()
+      model.issues().length.should.equal(1)
+      types.validity.invalid.match(model.issues().at(0)).should.equal(true)
+      model.issues().at(0).value.should.equal('test')
+
+    it 'should return true if no active issues exist on valid()', ->
+      v1 = new Varying(types.validity.valid())
+      v2 = new Varying(types.validity.valid())
+      TestModel = Model.build(
+        validate(from(v1))
+        validate(from(v2))
       )
 
       model = new TestModel()
       model.valid().get().should.equal(true)
 
-    it 'should return false if one or more active issues exist', ->
+    it 'should return false if one or more active issues exist on valid()', ->
       v1 = new Varying(types.validity.error())
       v2 = new Varying(types.validity.error())
       TestModel = Model.build(
-        issue(from(v1))
-        issue(from(v2))
+        validate(from(v1))
+        validate(from(v2))
       )
 
       model = new TestModel()
