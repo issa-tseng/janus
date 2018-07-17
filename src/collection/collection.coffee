@@ -41,10 +41,10 @@ class Enumerable extends Base
   watchModified: -> if this._parent? then this.watchDiff(this._parent) else new Varying(false)
   watchDiff: (other) -> Traversal.asList(this, Traversal.default.diff, { other })
 
-# A `Collection` provides `add` and `remove` events for every element that is
-# added or removed from the list.
-class Collection extends Enumerable
-  isCollection: true
+# A `Mappable` provides map-like functions (map, filter, etc) and fires `add`
+# and `remove` events for every element that is added or removed from the list.
+class Mappable extends Enumerable
+  isMappable: true
 
   # Create a new FilteredList based on this list, with the member check
   # function `f`.
@@ -63,10 +63,6 @@ class Collection extends Enumerable
   #
   # **Returns** a `MappedList`
   flatMap: (f) -> new (require('./derived/mapped-list').FlatMappedList)(this, f)
-
-  # Rely on enumeration to give us mapPairs and flatMapPairs:
-  mapPairs: (f) -> this.enumeration().mapPairs(f)
-  flatMapPairs: (f) -> this.enumeration().flatMapPairs(f)
 
   # Create a new FlattenedList based on this List.
   #
@@ -91,10 +87,14 @@ class Collection extends Enumerable
   sum: -> folds.sum(this)
 
 
-# An `OrderedCollection` provides `add` and `remove` events for every element
+# An `OrderedMappable` provides `add` and `remove` events for every element
 # that is added or removed from the list, along with a positional argument.
-class OrderedCollection extends Collection
-  isOrderedCollection: true
+class OrderedMappable extends Mappable
+  isOrderedMappable: true
+
+  # Rely on enumeration to give us mapPairs and flatMapPairs:
+  mapPairs: (f) -> this.enumeration().mapPairs(f)
+  flatMapPairs: (f) -> this.enumeration().flatMapPairs(f)
 
   # Create a list that always takes the first x elements of this collection,
   # where x may be a number or a Varying[Int].
@@ -126,5 +126,5 @@ class OrderedCollection extends Collection
   indexOf: (value) -> IndexOfFold.indexOf(this, value)
 
 
-module.exports = { Enumerable, Collection, OrderedCollection }
+module.exports = { Enumerable, Mappable, OrderedMappable }
 

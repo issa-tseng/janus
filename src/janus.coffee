@@ -30,10 +30,6 @@ module.exports = (window ? global)._janus$ ?=
 
   Traversal: require('./collection/traversal').Traversal
 
-  Enumerable: collection.Enumerable
-  Collection: collection.Collection
-  OrderedCollection: collection.OrderedCollection
-
   # model functionality.
   Model: require('./model/model').Model
   Trait: schema.Trait

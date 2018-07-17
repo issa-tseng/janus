@@ -68,8 +68,8 @@ Traversal =
   #
   # n.b. val instead of value because coffeescript scoping is a mess.
   getNatural: (obj, fs, context = {}) ->
-    result = if obj.isCollection is true then [] else {}
-    set = if obj.isCollection is true then ((k, v) -> result[k] = v) else ((k, v) -> deepSet(result, k)(v))
+    result = if obj.isMappable is true then [] else {}
+    set = if obj.isMappable is true then ((k, v) -> result[k] = v) else ((k, v) -> deepSet(result, k)(v))
     for key in obj.enumerate()
       val = obj.get(key)
       attribute = obj.attribute(key) if obj.isModel is true
@@ -106,7 +106,7 @@ Traversal.default =
 
   diff:
     recurse: (obj, { other }) ->
-      if (obj?.isEnumerable is true and other?.isEnumerable is true) and (obj.isCollection is other.isCollection)
+      if (obj?.isEnumerable is true and other?.isEnumerable is true) and (obj.isMappable is other.isMappable)
         varying(Varying.mapAll(obj.watchLength(), other.watchLength(), (la, lb) ->
           if la isnt lb then value(true) else recurse(obj, { other })
         ))
@@ -115,7 +115,7 @@ Traversal.default =
     map: (k, va, obj, attribute, { other }) ->
       varying(other.watch(k).map((vb) ->
         if va? and vb?
-          if (va?.isEnumerable is true and vb?.isEnumerable is true) and (va.isCollection is vb.isCollection)
+          if (va?.isEnumerable is true and vb?.isEnumerable is true) and (va.isMappable is vb.isMappable)
             recurse(va, { other: vb })
           else
             value(va isnt vb)

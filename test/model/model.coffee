@@ -9,7 +9,6 @@ attributes = require('../../lib/model/attribute')
 
 Varying = require('../../lib/core/varying').Varying
 { List } = require('../../lib/collection/list')
-{ Collection } = require('../../lib/collection/collection')
 
 describe 'Model', ->
   describe 'core', ->
