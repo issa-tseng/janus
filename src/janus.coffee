@@ -55,11 +55,10 @@ module.exports = (window ? global)._janus$ ?=
   template: template.template
   mutators: require('./view/mutators')
 
-  # application stuff is nested to reduce clutter.
-  application:
-    App: require('./application/app').App
-    Library: require('./application/library').Library
-    Manifest: require('./application/manifest').Manifest
+  # application classes.
+  App: require('./application/app').App
+  Library: require('./application/library').Library
+  Manifest: require('./application/manifest').Manifest
 
   # maybe folks could use these.
   util: util
