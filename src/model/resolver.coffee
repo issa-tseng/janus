@@ -1,6 +1,6 @@
 { Varying } = require('../core/varying')
 { identity, isFunction, isNumber } = require('../util/util')
-types = require('../util/types')
+types = require('../core/types')
 
 # a plain data storage class. really, there is no need to derive from this or
 # pay it any attention at all.
@@ -8,7 +8,7 @@ class Request
   isRequest: true
   constructor: (@options) ->
 
-  type: types.operation.fetch()
+  type: types.operation.read()
   signature: undefined # caching signature.
   cacheable: true # for mutation requests, can opt not to save the result.
   expires: undefined
@@ -49,7 +49,7 @@ Resolver = {
     cacheNode = dom.children("##{signature}")
     return if cacheNode.length is 0
 
-    if types.operation.fetch.match(request.type)
+    if types.operation.read.match(request.type)
       new Varying(types.result.success(deserialize(cacheNode.text())))
     else
       cacheNode.remove()
@@ -70,7 +70,7 @@ class MemoryCacheResolver
     signature = request.signature?()
     return unless signature?
 
-    if types.operation.fetch.match(request.type) and this._cache[signature] isnt result
+    if types.operation.read.match(request.type) and this._cache[signature] isnt result
       this._set(signature, result, request.expires)
 
     else if types.operation.mutate.match(request.type)

@@ -3,7 +3,7 @@
 
 from = require('../core/from')
 { match, otherwise } = require('../core/case')
-types = require('../util/types')
+types = require('../core/types')
 
 { Null, Map } = require('../collection/map')
 { Varying } = require('../core/varying')

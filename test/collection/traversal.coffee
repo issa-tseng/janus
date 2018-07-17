@@ -8,7 +8,7 @@ should = require('should')
 attributes = require('../../lib/model/attribute')
 { sum } = require('../../lib/collection/folds')
 { Traversal } = require('../../lib/collection/traversal')
-{ recurse, delegate, defer, varying, value, nothing } = require('../../lib/util/types').traversal
+{ recurse, delegate, defer, varying, value, nothing } = require('../../lib/core/types').traversal
 
 # util
 shadowWith = (s, obj) ->

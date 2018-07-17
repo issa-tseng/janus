@@ -1,7 +1,7 @@
 should = require('should')
 
 { Varying } = require('../../lib/core/varying')
-types = require('../../lib/util/types')
+types = require('../../lib/core/types')
 { Map } = require('../../lib/collection/map')
 { KeyList } = require('../../lib/collection/enumeration')
 

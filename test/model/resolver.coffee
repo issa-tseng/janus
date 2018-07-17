@@ -1,4 +1,4 @@
-types = require('../../lib/util/types')
+types = require('../../lib/core/types')
 { Varying } = require('../../lib/core/varying')
 { Request, Resolver, MemoryCacheResolver } = require('../../lib/model/resolver')
 { oneOf, caching, fromLibrary, fromDom } = Resolver

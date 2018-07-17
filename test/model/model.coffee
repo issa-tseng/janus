@@ -1,7 +1,7 @@
 should = require('should')
 
 from = require('../../lib/core/from')
-types = require('../../lib/util/types')
+types = require('../../lib/core/types')
 
 Model = require('../../lib/model/model').Model
 attributes = require('../../lib/model/attribute')

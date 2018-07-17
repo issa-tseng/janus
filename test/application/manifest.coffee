@@ -1,5 +1,5 @@
 should = require('should')
-types = require('../../lib/util/types')
+types = require('../../lib/core/types')
 { Varying } = require('../../lib/core/varying')
 { Manifest } = require('../../lib/application/manifest')
 { App } = require('../../lib/application/app')
