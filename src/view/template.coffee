@@ -4,7 +4,7 @@
 # * aggregation of subtemplates.
 # * learning and execution of selectors against dom fragments.
 # Between Templates and Mutators, the total function signature is as follows:
-# (Template|Mutator p, Varied v) => (p...) -> (dom) -> (dom, point) -> v
+# (Template|Mutator p, Varied v) => (p...) -> (dom) -> (dom, point, immediate) -> v
 
 defaultMutators = require('./mutators')
 
@@ -45,9 +45,9 @@ walk = (dom, walks) ->
   )
 
 # allow find() to perform chaining of the mutator if provided, returning
-# (fragment) -> (dom, point) -> Varied. we give the fragment (the canonical html
-# as defined by the template) followed separately by the actual dom instance so that
-# we can learn the walks, then apply them against the actual dom.
+# (fragment) -> (dom, point, immediate) -> Varied. we give the fragment (the canonical
+# html as defined by the template) followed separately by the actual dom instance so
+# that we can learn the walks, then apply them against the actual dom.
 #
 # TODO: we wrap our fragment here so that the behavior works even if find() is used
 # on its own. but that means we're redoing the work many times.
@@ -55,9 +55,9 @@ rechain = (chains, mutators, selector) ->
   # prebind if called with fragment (locks the chain).
   result = (fragment) ->
     walks = selectorToWalks(wrap(fragment), selector)
-    (dom, point) ->
+    (dom, point, immediate) ->
       target = walk(dom, walks)
-      chain(target, point) for chain in chains
+      chain(target, point, immediate) for chain in chains
 
   # first decorate anything specific to the present chain.
   [ head..., tail ] = chains
@@ -83,7 +83,7 @@ find.build = build
 # them all later. after pointing, it returns an array of the resulting `Varied`s.
 template = (xs...) -> (fragment) ->
   prebound = (x(fragment) for x in xs)
-  (dom, point) -> Array.prototype.concat.apply([], (f(dom, point) for f in prebound))
+  (dom, point, immediate) -> Array.prototype.concat.apply([], (f(dom, point, immediate) for f in prebound))
 
 
 module.exports = { find, template }

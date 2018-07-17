@@ -29,6 +29,74 @@ describe 'DomView', ->
       artifact.find('.title').text().should.equal('mytitle')
       artifact.find('.body').text().should.equal('mybody')
 
+  describe 'fragment attachment', ->
+    it 'should trust the existing content', ->
+      html = '<div><div class="title">title!</div><div class="body">body!</div></div>'
+      TestView = DomView.build($(html), template(
+        find('.title').text(mockfrom('mytitle'))
+        find('.body').text(mockfrom('mybody'))
+      ))
+
+      fragment = $(html)
+      (new TestView({})).attach(fragment)
+      fragment.find('.title').text().should.equal('title!')
+      fragment.find('.body').text().should.equal('body!')
+
+    it 'should still update the existing content when it changes', ->
+      html = '<div><div class="title">title!</div><div class="body">body!</div></div>'
+      v = new Varying('mytitle')
+      TestView = DomView.build($(html), template(
+        find('.title').text(mockfrom(v))
+        find('.body').text(mockfrom('mybody'))
+      ))
+
+      fragment = $(html)
+      (new TestView({})).attach(fragment)
+      fragment.find('.title').text().should.equal('title!')
+      v.set('test title')
+      fragment.find('.title').text().should.equal('test title')
+
+    it 'should also attach child fragments', ->
+      html = '<div><div class="child"><div class="title">title!</div></div></div>'
+      v = new Varying('test title')
+      TestOuter = DomView.build($(html), template(
+        find('.child').render(mockfrom(new Model()))
+      ))
+      TestInner = DomView.build($('<div class="title"/>'), template(
+        find('.title').text(mockfrom(v))
+      ))
+      app = { view: (-> new TestInner({})) }
+
+      fragment = $(html)
+      (new TestOuter({}, { app })).attach(fragment)
+      fragment.find('.title').length.should.equal(1)
+      fragment.find('.title').text().should.equal('title!')
+
+      v.set('changed title')
+      fragment.find('.title').text().should.equal('changed title')
+
+    it 'should wire attached views', ->
+      wired = []
+      html = '<div><div class="child"><div class="title">title!</div></div></div>'
+      v = new Varying('test title')
+      class TestOuter extends DomView.build($(html), template(
+          find('.child').render(mockfrom(new Model()))
+        ))
+        _wireEvents: -> wired.push('outer')
+      class TestInner extends DomView.build($('<div class="title"/>'), template(
+          find('.title').text(mockfrom(v))
+        ))
+        _wireEvents: -> wired.push('inner')
+      app = { view: (-> new TestInner({})) }
+
+      fragment = $(html)
+      view = new TestOuter({}, { app })
+      view.attach(fragment)
+
+      wired.should.eql([])
+      view.wireEvents()
+      wired.should.eql([ 'outer', 'inner' ])
+
   describe 'template pointing', ->
     it 'applies a point function correctly', ->
       called = false
@@ -376,7 +444,7 @@ describe 'DomView', ->
       view._subwires[1].stopped.should.equal(true)
 
   describe 'viewModel declaration', ->
-    it 'should wrap in ViewModel if one is provided via options', ->
+    it 'should wrap in ViewModel if one is provided via builder options', ->
       class MyModel extends Model
         id: 'real mccoy'
       class MyViewModel extends Model
