@@ -91,7 +91,8 @@ class Model extends Map
   # Returns a list of the issue results that have been bound against this model.
   issues: -> this._issues$ ?= do =>
     { List } = require('../collection/list')
-    new List(this.constructor.schema.issues.map((binding) => binding.all.point(this.pointer())))
+    new List(this.constructor.schema.issues)
+      .flatMap((binding) => binding.all.point(this.pointer()))
 
   # Returns a `Varying` of `true` or `false` depending on whether this model is
   # valid or not.
@@ -99,7 +100,7 @@ class Model extends Map
   # **Returns** `Varying[Boolean]` indicating current validity.
   valid: -> this._valid$ ?=
     this.issues()
-      .filter((issue) -> issue.map(types.validity.invalid.match))
+      .filter(types.validity.invalid.match)
       .watchLength().map((length) -> length is 0)
 
   # Handles parent changes; mostly exists in Map but we wrap to additionally
