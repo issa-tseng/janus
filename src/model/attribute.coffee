@@ -95,10 +95,10 @@ class ReferenceAttribute extends Attribute
         observation = null
       else if count > 0 and !observation?
         result =
-          if request.isRequest is true
-            app.resolve(request)
-          else if request.all?
+          if request.all?
             request.all.point(this.model.pointer()).flatMap((request) -> app.resolve(request))
+          else
+            app.resolve(request)
         return unless result?
         observation = this.reactTo(result, (x) => types.result.success.match(x, (y) => this.setValue(y)))
     )
