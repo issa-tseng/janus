@@ -2,36 +2,43 @@
 # other core functionality.
 
 EventEmitter = require('eventemitter2').EventEmitter2
-util = require('../util/util')
 
 
-# Extend EventEmitter into pretty much everything we do.
-class Base extends EventEmitter
-  isBase: true
-
-  # We have some things to keep track of; do so here.
+class Base
   constructor: ->
-    # Set some defaults on EventEmitter2.
-    super(
-      delimiter: ':'
-      maxListeners: 0
-    )
-
-    # set max listeners for real
-    this.setMaxListeners(0)
-
     # Keep track of who we're listening to so we can stop doing so later.
     this._outwardListeners = []
     this._outwardReactions = []
 
-    # Assign ourselves a globally-within-Janus unique id.
-    this._id = util.uniqueId()
-
     # Assume we have one dependency on this resource by default.
     this._refCount = 1
 
-    # **Returns** nothing.
-    null
+  # provide a lazy eventemitter-like interface.
+  _events: ->
+    return this.events if this.events?
+    this.events
+
+  # provide a lazy eventemitter-like interface.
+  # only coerce an eventemitter into reality if someone actually listens.
+  # ignore all other requests to do anything.
+  on: (type, listener) ->
+    this.events ?= new EventEmitter({ delimeter: ':', maxListeners: 0 })
+    this.events.on(type, listener)
+    this
+  off: (type, listener) -> this.events?.off(type, listener); this
+  emit: (e, x, y) -> # falls through as the original returns boolean.
+    return false unless this.events?
+    # mimic the EE2 internal arg-counting logic for perf.
+    length = arguments.length
+    if length is 2
+      this.events.emit(e, x)
+    else if length is 3
+      this.events.emit(e, x, y)
+    else
+      EventEmitter.prototype.emit.apply(this.events, arguments)
+
+  listeners: -> this.events?.listeners() ? []
+  removeAllListeners: -> this.events?.removeAllListeners()
 
   # Listen to another object for only the lifecycle of this object.
   #
@@ -67,6 +74,7 @@ class Base extends EventEmitter
       target?.off?(event, handler) for { 0: target, 1: event, 2: handler } in this._outwardListeners
       o.stop() for o in this._outwardReactions
       this.removeAllListeners()
+      this.__destroy?() # for framework internals
       this._destroy?()
 
   # Quick shortcut for expressing that this object's existence depends purely on

@@ -56,7 +56,7 @@ class List extends OrderedMappable
       elem?.emit?('addedTo', this, idx + subidx)
 
       # If the item is destroyed, automatically remove it from our collection.
-      if (elem?.isBase is true) and (this.isDerivedList isnt true)
+      if util.isFunction(elem?.destroy) and (this.isDerivedList isnt true)
         (do (elem) => this.listenTo(elem, 'destroying', => this.remove(elem)))
 
     elems
@@ -182,8 +182,8 @@ class List extends OrderedMappable
   watchLength: ->
     result = new Varying(this.list.length)
 
-    this.on('added', -> result.set(this.list.length))
-    this.on('removed', -> result.set(this.list.length))
+    this.on('added', => result.set(this.list.length))
+    this.on('removed', => result.set(this.list.length))
 
     result
 
