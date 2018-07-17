@@ -34,7 +34,6 @@ App = class extends Model.build(
     view
 
   resolve: (request) ->
-    return unless request?.isRequest is true
     result = (this._resolver$ ?= this.resolver())(request)
     this.emit('resolvedRequest', result) if result?
     result
