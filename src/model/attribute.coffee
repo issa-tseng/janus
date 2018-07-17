@@ -1,5 +1,5 @@
 from = require('../core/from')
-types = require('../util/types')
+types = require('../core/types')
 { Model } = require('./model')
 { Map } = require('../collection/map')
 { Varying } = require('../core/varying')

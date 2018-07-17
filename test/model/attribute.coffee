@@ -2,7 +2,7 @@ should = require('should')
 
 { Varying } = require('../../lib/core/varying')
 from = require('../../lib/core/from')
-types = require('../../lib/util/types')
+types = require('../../lib/core/types')
 { Model } = require('../../lib/model/model')
 attribute = require('../../lib/model/attribute')
 

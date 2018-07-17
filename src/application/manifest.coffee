@@ -1,4 +1,4 @@
-types = require('../util/types')
+types = require('../core/types')
 { Base } = require('../core/base')
 { Varying } = require('../core/varying')
 { List } = require('../collection/list')

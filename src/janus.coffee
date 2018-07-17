@@ -19,6 +19,7 @@ module.exports = (window ? global)._janus$ ?=
   match: kase.match
   otherwise: kase.otherwise
   from: require('./core/from')
+  types: require('./core/types')
 
   # collection functionality.
   Base: require('./core/base').Base
@@ -62,5 +63,4 @@ module.exports = (window ? global)._janus$ ?=
 
   # maybe folks could use these.
   util: util
-  types: require('./util/types')
 

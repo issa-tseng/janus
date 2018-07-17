@@ -2,7 +2,7 @@
 { identity, isFunction, deepSet } = require('../util/util')
 
 { match, otherwise } = require('../core/case')
-{ recurse, delegate, defer, varying, value, nothing } = require('../util/types').traversal
+{ recurse, delegate, defer, varying, value, nothing } = require('../core/types').traversal
 
 
 # core mechanism:
