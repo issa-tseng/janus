@@ -1,55 +1,76 @@
 types = require('../util/types')
-Base = require('../core/base').Base
+{ Base } = require('../core/base')
+{ Varying } = require('../core/varying')
+{ List } = require('../collection/list')
 
 
+# all things being equal, i'd rather this just be a function that returns
+# Varying[types.result[x]]. but we also want to track and return what requests
+# were made and their results, so we make a class as a holding box.
 class Manifest extends Base
-  constructor: ->
+  constructor: (@app, @model, criteria, options) ->
     super()
+    self = this
 
-    this._requestCount = 0
-    this.requests = []
-    this.objects = []
+    this.result = new Varying(types.result.init())
+    this.requests = new List()
+    this._valid = true
 
-    this._setHook()
-
-  requested: (request) ->
-    this._requestCount += 1
-
-    this.requests.push(request)
-    this.emit('requestStart', request)
-
-    handleChange = (state) =>
-      if types.result.success.match(state) or types.result.failure.match(state)
-        types.result.success.match(state, (x) => this.objects.push(x))
-
-        this.emit('requestComplete', request, state.value)
-
-        this._requestCount -= 1
-        this._setHook()
-
-    request.on('changed', handleChange)
-    handleChange(request.value)
-
-    null
-
-  _setHook: ->
-    # prevent multiple sets per loop
-    return if this._hookSet is true
-    this._hookSet = true
-
-    setTimeout(( =>
-      this._hookSet = false
-      this.emit('allComplete') if this._requestCount is 0
-    ), 0)
-
-class StoreManifest extends Manifest
-  constructor: (@app) ->
-    super()
-
-    this.listenTo(this.app, 'vended', (type, store) =>
-      store.on('requesting', (request) => this.requested(request)) if type is 'stores'
+    # track app request resolution. set hook if we might be done.
+    this._pending = 0
+    this.listenTo(this.app, 'resolvedRequest', (request, result) =>
+      this._pending += 1
+      this.requests.add({ request, result })
+      this.reactTo(result, (inner) ->
+        return unless types.result.complete.match(inner)
+        self._pending -= 1
+        self._hook()
+        this.stop()
+      )
     )
 
+    # track model issue state. if anything is actually wrong we'll pick it up
+    # and return it when the hook fires.
+    if this.model.valid?
+      this.reactTo(this.model.valid(), (isValid) => this._valid = isValid)
 
-module.exports = { Manifest, StoreManifest }
+    # now vend the view; fault if we can't find one.
+    this.view = this.app.view(this.model, criteria, options)
+    if !this.view?
+      return this._fault('internal: could not find view for model')
+
+    # finally set the hook if we might be done, and report that we're working.
+    this._hook()
+    this.result.set(types.result.pending())
+
+  # set speculatively when we might be done with all pending requests. will not
+  _hook: ->
+    return if this._pending > 0
+    return if this._hooked is true
+    this._hooked = true
+
+    setTimeout((=>
+      this._hooked = false
+      return if this._fault is true
+      return if this._pending > 0
+
+      if this._valid is true
+        this.result.set(types.result.success(this.view))
+      else
+        this.result.set(types.result.failure(this.model.issues()
+          .filter(types.validity.invalid.match)))
+
+      this.destroy()
+    ), 0)
+
+  _fault: (x) ->
+    this._fault = true
+    this.result.set(types.result.failure(x))
+    this.destroy() # immediately stop listening to things.
+    null
+
+  @run: (app, model, criteria, options) -> new this(app, model, criteria, options)
+
+
+module.exports = { Manifest }
 

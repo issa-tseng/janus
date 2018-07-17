@@ -35,7 +35,7 @@ App = class extends Model.build(
 
   resolve: (request) ->
     result = (this._resolver$ ?= this.resolver())(request)
-    this.emit('resolvedRequest', result) if result?
+    this.emit('resolvedRequest', request, result) if result?
     result
 
   resolver: -> Resolver.fromLibrary(this.get('resolvers'))
