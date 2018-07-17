@@ -20,3 +20,6 @@ module.exports = {
     null
 }
 
+# in case some people prefer the consistent syntax:
+module.exports.Trait.build = module.exports.Trait
+
