@@ -167,7 +167,7 @@ describe 'manifest', ->
       result.value.at(1).value.should.equal(3)
       done()
 
-  it 'should only result once', ->
+  it 'should only result once', (done) ->
     result = null
     resolvers = []
     { TestModel, TestView, app } = env({ resolvers, watch: [ 'one', 'two' ] })
