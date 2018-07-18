@@ -6,17 +6,18 @@
 # unavailable.
 
 { Varying } = require('../core/varying')
+{ Mappable } = require('./collection')
 { List } = require('./list')
 util = require('../util/util')
 
-# TODO: by derivation this inheritance implies Set: OrderedCollection which is
-# obviously wrong. But we don't currenty really rely on that identity yet, so
-# we can punt the question.
-class Set extends List
-  _initialize: ->
-    # TODO: someday WeakMaps will be better.
+class Set extends Mappable
+  constructor: (init) ->
     this._watched = []
     this._watchers = []
+    this._list = new List()
+    this.list = this._list.list
+
+    this.add(init)
 
   add: (elems) ->
     # Normalize the argument to an array, then add each elem if possible.
@@ -24,7 +25,8 @@ class Set extends List
     for elem in elems when not this.has(elem)
       widx = this._watched.indexOf(elem)
       this._watchers[widx].set(true) if widx >= 0
-      List.prototype.add.call(this, elem) # using super here breaks the cs compiler (??)
+      this._list.add(elem)
+      this.emit('added', elem)
     elems
 
   remove: (elem) ->
@@ -33,12 +35,12 @@ class Set extends List
 
     idx = this.list.indexOf(elem)
     return undefined unless idx >= 0
-    List.prototype.removeAt.call(this, idx)
+    this._list.removeAt(idx)
+    this.emit('removed', elem)
+    null
 
   putAll: (elems) ->
-    list = this.list.slice(0)
-    elems = [ elems ] unless util.isArray(elems)
-    this.remove(x) for x in list when elems.indexOf(x) < 0
+    this.remove(x) for x in this.list.slice() when elems.indexOf(x) < 0
     this.add(elems)
 
   has: (elem) -> this.list.indexOf(elem) >= 0
@@ -48,12 +50,26 @@ class Set extends List
     this._watchers.push(v)
     v
 
-  at: undefined
-  watchAt: undefined
-  removeAt: undefined
-  move: undefined
-  moveAt: undefined
-  put: undefined
+  Object.defineProperty(@prototype, 'length', get: -> this.list.length)
+
+  flatten: -> this._flatten$ ?= new (require('./derived/flattened-set').FlattenedSet)(this)
+
+  # a Set is already its own enumeration; it is unordered, unindexed, and the
+  # only addressing method is the things in it.
+  enumerate: -> this.list.slice()
+  enumeration: -> this # or should it be this._list?
+
+  # all the list-like functions can get implemented based on our captive list. this
+  # does mean that the resulting derivedlists will impose an ordering and indices
+  # but i feel like we can live with that. maybe someday we do this custom. (defining
+  # Set#map as returning OrderedMappable solves some philosophical issues anyway.)
+  filter: (f) -> this._list.filter(f)
+  map: (f) -> this._list.map(f)
+  flatMap: (f) -> this._list.flatMap(f)
+  uniq: -> this # lol
+  any: (f) -> this._list.any(f)
+
+  # we don't bother with the folds yet because they're not officially supported yet.
 
 
 module.exports = { Set }
