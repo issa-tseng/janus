@@ -1,6 +1,6 @@
 should = require('should')
 
-{ Model } = require('../../lib/model/model')
+{ Varying } = require('../../lib/core/varying')
 { Set } = require('../../lib/collection/set')
 
 describe 'collection', ->
@@ -60,8 +60,31 @@ describe 'collection', ->
       for elem in [ 1, 2, 3 ]
         s.has(elem).should.equal(false)
 
-    it 'should not have index-related methods', ->
-      s = new Set()
-      for method in [ 'at', 'watchAt', 'removeAt', 'move', 'moveAt', 'put' ]
-        should(s[method]).equal(undefined)
+    it 'should return itself as its own enumeration', ->
+      s = new Set([ 1, 2, 3, 3, 4, 2 ])
+      s.enumerate().should.eql([ 1, 2, 3, 4 ])
+      s.enumeration().should.equal(s)
+
+    # these are dirt simple because they just pass through to list right now:
+    it 'should provide filter', ->
+      s = new Set([ 1, 2, 3, 3, 4, 2 ])
+      s.filter((x) -> (x % 2) is 0).list.should.eql([ 2, 4 ])
+
+    it 'should provide map', ->
+      s = new Set([ 1, 2, 3, 3, 4, 2 ])
+      s.map((x) -> x + 1).list.should.eql([ 2, 3, 4, 5 ])
+
+    it 'should provide flatMap', ->
+      v1 = new Varying(1)
+      v2 = new Varying(2)
+      s = new Set([ v1, v2, v1 ])
+      s.flatMap((x) -> x).list.should.eql([ 1, 2 ])
+
+    it 'should provide uniq', ->
+      s = new Set([ 1, 2, 3, 3, 4, 2 ])
+      s.uniq().should.equal(s)
+
+    it 'should provide any', ->
+      s = new Set([ 1, 2, 3, 3, 4, 2 ])
+      s.any((x) -> x > 3).get().should.equal(true)
 
