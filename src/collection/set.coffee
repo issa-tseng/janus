@@ -12,12 +12,14 @@ util = require('../util/util')
 
 class Set extends Mappable
   constructor: (init) ->
+    super()
+
     this._watched = []
     this._watchers = []
     this._list = new List()
     this.list = this._list.list
 
-    this.add(init)
+    this.add(init) if init?
 
   add: (elems) ->
     # Normalize the argument to an array, then add each elem if possible.
