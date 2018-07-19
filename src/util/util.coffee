@@ -18,7 +18,7 @@ asList = (x) ->
     new List()
   else if isArray(x)
     new List(x)
-  else if x.isCollection
+  else if x.isMappable
     x
   else
     console.error('got an unexpected value for EnumAttribute#values')
