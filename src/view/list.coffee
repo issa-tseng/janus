@@ -1,4 +1,4 @@
-{ Varying, DomView, mutators, from, List } = require('janus')
+{ Varying, DomView, mutators, from, List, Set } = require('janus')
 { identity } = require('janus').util
 
 $ = require('../util/dollar')
@@ -101,6 +101,9 @@ class ListView extends DomView
 
     this._wireObservations?.destroy()
 
+class SetView extends ListView
+  constructor: (set, options) -> super(set?._list, options)
+
 
 insertNode = (dom, itemDom, idx) ->
   children = dom.children()
@@ -111,5 +114,11 @@ insertNode = (dom, itemDom, idx) ->
   else
     children.eq(idx).before(itemDom)
 
-module.exports = { ListView, registerWith: (library) -> library.register(List, ListView) }
+module.exports = {
+  ListView
+  SetView
+  registerWith: (library) ->
+    library.register(List, ListView)
+    library.register(Set, SetView)
+}
 

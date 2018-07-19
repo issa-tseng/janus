@@ -1,7 +1,7 @@
 should = require('should')
 
-{ Varying, DomView, template, find, from, List, App, Library } = require('janus')
-{ ListView } = require('../../lib/view/list')
+{ Varying, DomView, template, find, from, List, Set, App, Library } = require('janus')
+{ ListView, SetView } = require('../../lib/view/list')
 
 $ = require('../../lib/util/dollar')
 
@@ -207,4 +207,18 @@ describe 'view', ->
 
       view.destroy()
       destroyed.should.equal(3)
+
+  describe 'set', ->
+    # this is all really just a plumbing check; the SetView renders entirely
+    # using the captive List within the Set, which is canonical.
+    it 'should render with the internal set list', ->
+      dom = (new SetView(new Set([ 1, 2, 3 ]), { app: testApp })).artifact()
+      dom.children().length.should.equal(3)
+
+      for i in [0..2]
+        child = dom.children().eq(i)
+        child.is('li').should.equal(true)
+        child.children().length.should.equal(1)
+
+        checkLiteral(child.children(':first-child'), i + 1)
 
