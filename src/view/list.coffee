@@ -49,19 +49,23 @@ class ListView extends DomView
     return if this._wired is true
     super()
 
-    # now actually bind whatever we currently have.
-    #
-    # note that because a change in the list would result in a item remove/append
-    # cycle rather than any kind of in-place re-render, it is unnecessary to actually
-    # watch on the binding.view and continue to rewire new view result.
+    # actually wire whatever we currently have, then make sure if any flattened
+    # Varyings change we also wire those new views.
     binding.view.get()?.wireEvents() for binding in this._mappedBindings.list
+    this._wireObservations = this._mappedBindings.map((binding) =>
+      this.reactTo(binding.view, false, (view) -> view.wireEvents()))
+    this.listenTo(this._wireObservations, 'removed', (obs) -> obs.stop())
+    return
 
   # because we completely ignore how _render is normally done, we also need to
   # do a little dance to get destroy to work.
-  destroy: ->
+  __destroy: ->
     if this._mappedBindings?
       this._bindings = this._mappedBindings.list.slice()
-    super()
+      super()
+      this._mappedBindings.destroy()
+
+    this._wireObservations?.destroy()
 
 
 insertNode = (dom, itemDom, idx) ->

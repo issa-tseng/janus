@@ -136,6 +136,17 @@ describe 'view', ->
       l.add(3)
       dom.children().eq(2).children().data('view')._wired.should.equal(true)
 
+    it 'should wire events on changing flattened varying children when added', ->
+      v = new Varying(1)
+      l = new List([ v ])
+      view = new ListView(l, { app: testApp })
+      dom = view.artifact()
+      view.wireEvents()
+
+      dom.children().eq(0).children().data('view')._wired.should.equal(true)
+      v.set(2)
+      dom.children().eq(0).children().data('view')._wired.should.equal(true)
+
     it 'should destroy all child views when destroyed', ->
       l = new List([ 1, 2, 3 ])
       view = new ListView(l, { app: testApp })
