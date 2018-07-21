@@ -202,3 +202,75 @@ describe 'view', ->
       select.children().length.should.equal(4)
       checkText(select, [ '', 'alpha', 'bravo', 'charlie' ])
 
+    describe 'attach', ->
+      it 'should leave the initial markup alone', ->
+        class TestAttribute extends attribute.Enum
+          values: -> [ 'alpha', 'bravo', 'charlie' ]
+
+        dom = $('<select><option value="alpha">a</option><option value="bravo">b</option><option value="charlie">c</option></select>')
+        (new EnumAttributeEditView(new TestAttribute(new Model(), 'test'))).attach(dom)
+        dom.children().eq(0).text().should.equal('a')
+        dom.children().eq(1).text().should.equal('b')
+        dom.children().eq(2).text().should.equal('c')
+
+      it 'should still set the correct model values on change', ->
+        class TestAttribute extends attribute.Enum
+          values: -> [ 'alpha', 'bravo', 'charlie' ]
+
+        select = $('<select><option value="alpha">a</option><option value="bravo">b</option><option value="charlie">c</option></select>')
+        m = new Model()
+        view = new EnumAttributeEditView(new TestAttribute(m, 'test'))
+        view.attach(select)
+        view.wireEvents()
+
+        select.val('bravo')
+        select.trigger('change')
+        m.get('test').should.equal('bravo')
+
+      it 'should replace options correctly', ->
+        l = new List([ 'alpha', 'bravo', 'charlie' ])
+        class TestAttribute extends attribute.Enum
+          values: -> l
+
+        select = $('<select><option value="alpha">a</option><option value="bravo">b</option><option value="charlie">c</option></select>')
+        view = (new EnumAttributeEditView(new TestAttribute(new Model(), 'test')))
+        view.attach(select)
+        l.remove('bravo')
+        select.children().length.should.equal(2)
+        select.children().eq(1).attr('value').should.equal('charlie')
+        select.children().eq(1).text().should.equal('c')
+
+        l.add('delta')
+        select.children().length.should.equal(3)
+        select.children().eq(2).attr('value').should.equal('delta')
+        select.children().eq(2).text().should.equal('delta')
+
+      it 'should update label text on stringify change', ->
+        l = new List([ 'alpha', 'bravo', 'charlie' ])
+        class TestAttribute extends attribute.Enum
+          values: -> l
+
+        select = $('<select><option value="alpha">a</option><option value="bravo">b</option><option value="charlie">c</option></select>')
+        btext = new Varying('bravo')
+        stringify = (x) -> if x is 'bravo' then btext else x
+        view = (new EnumAttributeEditView(new TestAttribute(new Model(), 'test'), { stringify }))
+        view.attach(select)
+
+        btext.set('bueno')
+        select.children().eq(1).text().should.equal('bueno')
+
+      it 'should bind new options correctly', ->
+        l = new List([ 'alpha', 'bravo', 'charlie' ])
+        class TestAttribute extends attribute.Enum
+          values: -> l
+
+        select = $('<select><option value="alpha">a</option><option value="bravo">b</option><option value="charlie">c</option></select>')
+        dtext = new Varying('delta')
+        stringify = (x) -> if x is 'delta' then dtext else x
+        view = (new EnumAttributeEditView(new TestAttribute(new Model(), 'test'), { stringify }))
+        view.attach(select)
+
+        l.add('delta')
+        dtext.set('delightful')
+        select.children().eq(3).text().should.equal('delightful')
+
