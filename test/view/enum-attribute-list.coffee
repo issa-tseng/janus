@@ -148,3 +148,28 @@ describe 'view', ->
       library.get('test', context: 'select-wrapper').should.equal(ListSelectItemView)
       library.get(new Model(), context: 'select-wrapper').should.equal(ListSelectItemView)
 
+    describe 'attach', ->
+      it 'should leave the existing elements alone', ->
+        class TestAttribute extends attribute.Enum
+          values: -> new List([ 1, 2, 3, 4, 5 ])
+        view = new EnumAttributeListEditView(new TestAttribute(new Model(), 'test'), { app: testApp })
+        dom = $('<div><ul><li>dummy 1</li><li>dummy 2</li><li>dummy 3</li><li>dummy 4</li><li>dummy 5</li></ul></div>')
+        view.attach(dom)
+
+        dom.children().children().eq(0).text().should.equal('dummy 1')
+        dom.children().children().eq(4).text().should.equal('dummy 5')
+
+      it 'should replace appropriate elements', ->
+        v = new Varying(3)
+        l = new List([ 1, 2, v, 4, 5 ])
+        class TestAttribute extends attribute.Enum
+          values: -> l
+        view = new EnumAttributeListEditView(new TestAttribute(new Model(), 'test'), { app: testApp })
+        selectDom = (new ListSelectItemView()).dom()
+        dom = $('<div><ul><li>dummy 1</li><li>dummy 2</li><li></li><li>dummy 4</li><li>dummy 5</li></ul></div>')
+        dom.children().eq(2).append(selectDom)
+        view.attach(dom)
+
+        v.set(33)
+        dom.children().children().eq(2).find('.janus-literal').text().should.equal('33')
+

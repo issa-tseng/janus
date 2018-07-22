@@ -19,15 +19,21 @@ ListSelectItemView = class extends DomView.build($('
       .on('click', (_, subject, view) -> view.options.enum.setValue(subject))
   ))
 
-  _render: ->
-    # much like ListEditItemView again. but again, with a different string literal.
-    # TODO: is there some way to do this without breaking into the class?
+  _render: -> this._doRender(true)
+
+  attach: (dom) ->
+    this._artifact = dom
+    this._doRender(false)
+    return
+
+  _doRender: (immediate) ->
+    # much like ListEditItemView again. but again, with a different int literal.
     dom = this.dom()
     contentWrapper = dom.children().eq(1) # faster
     point = this.pointer()
 
     # render our inner contents.
-    contentBinding = this.options.renderItem(mutators.render(from(this.subject)))(contentWrapper, point)
+    contentBinding = this.options.renderItem(mutators.render(from(this.subject)))(contentWrapper, point, immediate)
 
     # now render the bindings actually defined in our own template.
     this._bindings = this.preboundTemplate(dom, point)

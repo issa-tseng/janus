@@ -206,3 +206,25 @@ describe 'view', ->
       for label, idx in [ 3, 1, 2, 4, 5 ]
         checkLiteral(targets.eq(idx), label.toString())
 
+    describe 'attach', ->
+      it 'should leave the existing elements alone', ->
+        l = new List([ 1, 2, 3, 4, 5 ])
+        view = new ListEditView(l, { app: testApp })
+        dom = $('<ul><li>dummy 1</li><li>dummy 2</li><li>dummy 3</li><li>dummy 4</li><li>dummy 5</li></ul>')
+        view.attach(dom)
+
+        dom.children().eq(0).text().should.equal('dummy 1')
+        dom.children().eq(4).text().should.equal('dummy 5')
+
+      it 'should replace appropriate elements', ->
+        v = new Varying(3)
+        l = new List([ 1, 2, v, 4, 5 ])
+        view = new ListEditView(l, { app: testApp })
+        editDom = (new ListEditItemView()).dom()
+        dom = $("<ul><li>dummy 1</li><li>dummy 2</li><li></li><li>dummy 4</li><li>dummy 5</li></ul>")
+        dom.children().eq(2).append(editDom)
+        view.attach(dom)
+
+        v.set(33)
+        dom.children().eq(2).find('.janus-literal').text().should.equal('33')
+

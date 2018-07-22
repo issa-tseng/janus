@@ -52,16 +52,23 @@ ListEditItemView = class extends DomView.build($('
     )
   ))
 
+  # TODO: is there some way to do this without breaking into the class?
+  _render: -> this._doRender(true)
+
+  attach: (dom) ->
+    this._artifact = dom
+    this._doRender(false)
+    return
+
   # we have to render ourselves, as we need to enable options.renderItem().
   # but, it's really not that bad. we just rely on a mutator anyway.
-  # TODO: is there some way to do this without breaking into the class?
-  _render: ->
+  _doRender: (immediate) ->
     dom = this.dom()
     content = dom.children().eq(4) # faster
     point = this.pointer()
 
     # render our inner contents.
-    contentBinding = this.options.renderItem(mutators.render(from(this.subject)))(content, point)
+    contentBinding = this.options.renderItem(mutators.render(from(this.subject)))(content, point, immediate)
 
     # now render the bindings actually defined in our own template.
     this._bindings = this.preboundTemplate(dom, point)
