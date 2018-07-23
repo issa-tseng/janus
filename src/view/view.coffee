@@ -7,7 +7,7 @@
 
 Base = require('../core/base').Base
 { Varying } = require('../core/varying')
-{ dynamic, watch, resolve, attribute, varying, app, self } = require('../core/from').default
+{ dynamic, watch, resolve, attribute, varying, app, self } = require('../core/types').from
 { match } = require('../core/case')
 { isFunction, isString } = require('../util/util')
 

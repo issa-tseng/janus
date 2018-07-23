@@ -179,18 +179,18 @@ describe 'Model', ->
         TestModel = Model.build(bind('b', from.app()))
 
         m = new TestModel()
-        m.get('b').type.should.equal('app')
+        m.get('b').should.be.a.Function()
 
       it 'should point apps if given', ->
         app = {}
         m = new Model()
-        Model.point(from.default.app(), m, app).get().should.equal(app)
+        Model.point(types.from.app(), m, app).get().should.equal(app)
 
       it 'should point into app subkeys if given', ->
         watchedWith = null
         app = { watch: (x) -> watchedWith = x; 'watched!' }
         m = new Model()
-        Model.point(from.default.app('test'), m, app).should.equal('watched!')
+        Model.point(types.from.app('test'), m, app).should.equal('watched!')
         watchedWith.should.equal('test')
 
       it 'should point self by function', ->

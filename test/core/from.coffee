@@ -1,6 +1,7 @@
 should = require('should')
 
 from = require('../../lib/core/from')
+cases = require('../../lib/core/types').from
 { defcase, match, otherwise } = require('../../lib/core/case')
 Varying = require('../../lib/core/varying').Varying
 
@@ -96,7 +97,7 @@ describe 'from', ->
       args[3].value.should.equal('e')
 
     it 'should only point for things that have not resolved to varying', ->
-      { dynamic, watch, definition, varying } = from.default
+      { dynamic, watch, definition, varying } = cases
 
       count = 0
       incr = (f) -> (args...) -> count += 1; f(args...)
@@ -123,25 +124,7 @@ describe 'from', ->
 
       count.should.equal(3)
 
-  describe 'plain', ->
-    it 'should automatically resolve Varyings', ->
-      v1 = new Varying('a')
-      v2 = new Varying('b')
-
-      result = null
-      from(v1).and.varying(v2).all.plain().map((x, y) -> x + y).react((x) -> result = x)
-      result.should.equal('ab')
-
-      v1.set('x')
-      result.should.equal('xb')
-
-      v2.set('y')
-      result.should.equal('xy')
-
   describe 'mapAll', ->
-    it 'should return a Varying-looking thing', ->
-      from('a').and('b').all.map(->).should.be.a.varying
-
     it 'should be called with unresolved applicants', ->
       called = false
 
@@ -152,16 +135,16 @@ describe 'from', ->
 
           xs.length.should.equal(2)
 
-          xs[0].type.should.eql('dynamic')
-          xs[1].type.should.eql('watch')
+          xs[0].should.be.a.Function()
+          xs[1].should.be.a.Function()
 
-      called.should.be.false
+      called.should.equal(false)
 
-      v.react(->)
-      called.should.be.true
+      v.point().react(->)
+      called.should.equal(true)
 
     it 'should be called with resolved applicants', ->
-      { dynamic, watch, definition, varying } = from.default
+      { dynamic, watch, definition, varying } = cases
       called = false
 
       v = from('a')
@@ -180,18 +163,18 @@ describe 'from', ->
         )
 
       v.react(->)
-      called.should.be.true
+      called.should.equal(true)
 
     it 'should not flatten the result', ->
       result = null
-      from('a').all.map(-> new Varying(2)).react((x) -> result = x)
-      result.isVarying.should.be.true
+      from('a').all.map(-> new Varying(2)).point().react((x) -> result = x)
+      result.isVarying.should.equal(true)
       result.get().should.equal(2)
 
   describe 'flatMapAll', ->
     # very condensed test because the mapAll tests should cover this.
     it 'should be called with appropriate applicants', ->
-      { dynamic, watch, definition, varying } = from.default
+      { dynamic, watch, definition, varying } = cases
       called = false
 
       v = from('a')
@@ -205,33 +188,32 @@ describe 'from', ->
           xs.length.should.equal(2)
 
           xs[0].should.equal('dynamic: a')
-
-          xs[1].type.should.eql('watch')
+          xs[1].should.be.a.Function()
         )
 
       v.react(->)
-      called.should.be.true
+      called.should.equal(true)
 
     it 'should flatten the result', ->
       result = null
-      from('a').all.flatMap(-> new Varying(3)).react((x) -> result = x)
+      from('a').all.point().flatMap(-> new Varying(3)).react((x) -> result = x)
       result.should.equal(3)
 
   describe 'direct reaction', ->
-    it 'should return applicants as an array absent an allmapper', ->
-      { dynamic, watch, definition, varying } = from.default
+    it 'should apply applicants as args', ->
+      { dynamic, watch, definition, varying } = cases
       result = null
 
       v = from('a').and('b').and('c')
         .all.point(match(
           dynamic (x) -> new Varying(x)
           otherwise id
-        )).react((x) -> result = x)
+        )).react((xs...) -> result = xs)
 
       result.should.eql([ 'a', 'b', 'c' ])
 
     it 'should return a single applicant as the argument absent an allmapper', ->
-      { dynamic, watch, definition, varying } = from.default
+      { dynamic, watch, definition, varying } = cases
       result = null
 
       v = from('a')
@@ -244,7 +226,7 @@ describe 'from', ->
 
   describe 'inline map', ->
     it 'should apply a map after point resolution', ->
-      { dynamic } = from.default
+      { dynamic } = cases
 
       result = null
       from('a').map((x) -> x + 'b')
@@ -257,7 +239,7 @@ describe 'from', ->
       result.should.equal('ab')
 
     it 'should apply chained maps in the right order', ->
-      { dynamic } = from.default
+      { dynamic } = cases
 
       result = null
       from('a').map((x) -> x + 'b').map((x) -> x + 'c')
@@ -270,7 +252,7 @@ describe 'from', ->
       result.should.equal('abc')
 
     it 'should not flatten', -> # gh41
-      { dynamic } = from.default
+      { dynamic } = cases
 
       result = null
       v = new Varying('b')
@@ -285,7 +267,7 @@ describe 'from', ->
 
   describe 'inline flatmap', ->
     it 'should apply a flatMap after point resolution', ->
-      { dynamic } = from.default
+      { dynamic } = cases
 
       # we have to do a v ?= here because the pure function gets called twice
       # assuming no side-effects, and therefore the ref we side-effect out gets
@@ -306,7 +288,7 @@ describe 'from', ->
 
   describe 'inline watch', ->
     it 'should apply as a flatMap after point resolution', ->
-      { dynamic } = from.default
+      { dynamic } = cases
 
       called = null
       result = null
@@ -321,22 +303,9 @@ describe 'from', ->
       called.should.equal('myattr')
       result.should.equal(2)
 
-    it 'should use the fallback value if the obj is null', ->
-      { dynamic } = from.default
-
-      result = null
-      from('a').watch('myattr', 'no luck')
-        .all.point(match(
-          dynamic -> new Varying()
-          otherwise ->
-        ))
-        .map(id).react((x) -> result = x)
-
-      result.should.equal('no luck')
-
   describe 'inline attribute', ->
     it 'should apply as a map after point resolution', ->
-      { dynamic } = from.default
+      { dynamic } = cases
 
       called = null
       result = null
@@ -352,7 +321,7 @@ describe 'from', ->
 
   describe 'inline pipe', ->
     it 'should apply a pipe after point resolution', ->
-      { dynamic } = from.default
+      { dynamic } = cases
 
       result = null
       from('a').pipe((v) -> v.map((x) -> x + 'b'))
@@ -365,7 +334,7 @@ describe 'from', ->
       result.should.equal('ab')
 
   describe 'inline asVarying', ->
-    { dynamic } = from.default
+    { dynamic } = cases
     idmatch = match(
       dynamic (x) -> x
       otherwise ->
@@ -381,7 +350,7 @@ describe 'from', ->
       result.isVarying.should.equal(true)
 
     it 'should provide the correct inner value', ->
-      { dynamic } = from.default
+      { dynamic } = cases
 
       v = new Varying(1)
       results = []
@@ -392,7 +361,7 @@ describe 'from', ->
       results.should.eql([ 2, 8 ])
 
     it 'should supply a varying parameter to inline-map', ->
-      { dynamic } = from.default
+      { dynamic } = cases
 
       v = new Varying(1)
       result = null
@@ -442,7 +411,7 @@ describe 'from', ->
 
   describe 'deferred point calling order', ->
     it 'should work with non-immediate react', ->
-      { dynamic } = from.default
+      { dynamic } = cases
 
       f = from('a').and('b')
         .all.map((a, b) -> a + b)
@@ -455,13 +424,13 @@ describe 'from', ->
 
       result = null
       v.react(false, (x) -> result = x)
-      (result is null).should.be.true
+      (result is null).should.equal(true)
 
       iv.set('d')
       result.should.equal('adbd')
 
     it 'should work with react', ->
-      { dynamic } = from.default
+      { dynamic } = cases
 
       f = from('a').and('d')
         .all.map((a, b) -> a + b)

@@ -3,6 +3,8 @@
 
 
 types =
+  from: defcase('org.janusjs.core.from.default', 'dynamic', 'watch', 'attribute', 'varying', 'app', 'self')
+
   result: defcase('org.janusjs.util.result', 'init', 'pending', 'progress', 'complete': [ 'success', 'failure' ])
 
   validity: defcase('org.janusjs.model.validity', 'valid', 'invalid': [ 'warning', 'error' ])
