@@ -30,7 +30,7 @@
 # the binding to the parent, and only listen once to them for every map or
 # reaction bound outward. We use refcounting to manage this.
 
-{ isFunction, fix, uniqueId } = require('../util/util')
+{ isFunction, fix, uniqueId, identity } = require('../util/util')
 
 
 class Varying
@@ -135,6 +135,9 @@ class Varying
   # (Varying v) => v a -> v b -> (a -> b -> v c) -> v c
   @flatMapAll: _pure(true)
 
+  # gives an UnreducedComposedVarying given an array of varyings.
+  @all: (vs) -> new UnreducedComposedVarying(vs)
+
   # simple lift operation for a pure function:
   # (Varying v) => (a -> b -> c) -> v a -> v b -> v c
   @lift: (f) -> (args...) -> new ComposedVarying(args, f, false)
@@ -152,7 +155,6 @@ class Observation
     this.stopped = true # for debugging.
     this._stop()
 
-identity = (x) -> x
 nothing = { isNothing: true }
 
 class FlatMappedVarying extends Varying
@@ -188,7 +190,7 @@ class FlatMappedVarying extends Varying
       this.refCount$?.set(this._refCount)
     )
 
-    # track our own refcount, an only bind upwards once on initial requirement.
+    # track our own refcount, and only bind upwards once on initial requirement.
     if this._refCount is 0
       this._lastInnerObservation = null
       this._generation = 0
@@ -251,7 +253,6 @@ class FlatMappedVarying extends Varying
 
   # can't set a derived varying.
   set: undefined
-  bind: undefined
 
   # gets immediate, then flattens if we should.
   get: ->
@@ -271,41 +272,89 @@ class MappedVarying extends FlatMappedVarying
 # ComposedVarying has some odd implications. It's not valid to apply our map
 # without all the values present, and trying to fulfill that kind of interface
 # leads to huge oddities with side effects and call orders.
-# So, we always react on our parents, even if we simply are reacted (no immediate).
+# So, we always react immediate on our parents, even if we are non-immediate.
 class ComposedVarying extends FlatMappedVarying
   constructor: (@_applicants, @_f = identity, @_flatten = false) ->
     this._observers = {}
     this._refCount = 0
     this._value = nothing
-    this._allBound = false
 
     this._partial = [] # track the current mapping arguments.
-    this._parentObservations = [] # track our observers watching for mapping arguments.
+    this._bound = false
 
   # as noted above, we reimplement here because there are many parents, and we
   # have to implement the mapping application differently.
   _bind: ->
     # listen to all our parents if we must.
-    this._parentObservations = for a, idx in this._applicants
+    parentObservations = for a, idx in this._applicants
       do (a, idx) => a.react((value) =>
         # update our arguments list, then trigger internal observers in turn.
         # note that this doesn't happen for the very first call, since internal
         # observers is not updated until the end of this method.
         this._partial[idx] = value
-        this._onValue(this._parentObservation, this._f.apply(this._parentObservations[idx], this._partial)) if this._allBound is true
-        null
+        this._onValue(this._parentObservation, this._f.apply(null, this._partial)) if this._bound is true
+        return
       )
 
     # release lock on callback firing and return an agglomerated observation.
-    this._allBound = true
-    new Observation(this, uniqueId(), null, => v.stop() for v in this._parentObservations)
+    this._bound = true
+
+    o = new Observation(this, uniqueId(), null, => o.stop() for o in parentObservations)
+    o.parentObservations = parentObservations # for debuggability
+    o
 
   _immediate: ->
     if this._value is nothing
-      if this._allBound is true
+      if this._bound is true
         this._f.apply(null, this._partial)
       else
         this._f.apply(null, (a.get() for a in this._applicants))
+    else
+      this._value
+
+# ComposedVarying is limited in that it is bound to a reducing function to take
+# the total arity back to 1 in order to exist. It will almost always be the case
+# that such a function exists to do useful work (eg using a mutator), but having
+# an artifact that isn't bound allows that reducer definition to be deferred, and
+# we also gain a simple way to react directly on multiple Varyings.
+#
+# This one is a bit internally unique in that its value is almost entirely
+# irrelevant; we produce an array to fulfill the contract but map/flatMap shunt
+# to ComposedVarying and react is valueless.
+class UnreducedComposedVarying extends FlatMappedVarying
+  constructor: (@_applicants) ->
+    this._observers = {}
+    this._refCount = 0
+    this._value = nothing
+
+  map: (f) -> new ComposedVarying(this._applicants, f)
+  flatMap: (f) -> new ComposedVarying(this._applicants, f, true)
+  flatten: undefined # doesn't make sense.
+
+  _bind: ->
+    bound = false
+    partial = []
+    parentObservations = for a, idx in this._applicants
+      do (a, idx) => a.react((value) =>
+        partial[idx] = value
+        this._onValue(this._parentObservation, partial) if bound is true
+        return
+      )
+
+    bound = true # same as ComposedVarying, release lock.
+    o = new Observation(this, uniqueId(), null, => o.stop() for o in parentObservations)
+    o.parentObservations = parentObservations
+    o
+
+  _onValue: (observation, value, silent = false) ->
+    return if silent is true
+    generation = (this._generation += 1)
+    o.f_(value...) for _, o of this._observers when generation is this._generation
+    return
+
+  _immediate: ->
+    if this._value is nothing
+      (a.get() for a in this._applicants)
     else
       this._value
 
