@@ -1,6 +1,7 @@
 should = require('should')
 
 from = require('../../lib/core/from')
+types = require('../../lib/core/types')
 { match, otherwise } = require('../../lib/core/case')
 { Varying } = require('../../lib/core/varying')
 mutators = require('../../lib/view/mutators')
@@ -8,17 +9,17 @@ mutators = require('../../lib/view/mutators')
 # TODO: no tests for from.[...].all, only from.x directly.
 
 passthrough = match(
-  from.default.varying (x) -> Varying.of(x)
+  types.from.varying (x) -> Varying.of(x)
   otherwise ->
 )
 passthroughWithApp = (given) ->
   match(
-    from.default.app -> Varying.of(given)
+    types.from.app -> Varying.of(given)
     otherwise (x) -> passthrough(x)
   )
 passthroughWithSelf = (given) ->
   match(
-    from.default.self -> Varying.of(given)
+    types.from.self -> Varying.of(given)
     otherwise (x) -> passthrough(x)
   )
 

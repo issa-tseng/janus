@@ -1,7 +1,7 @@
 # **Model**s contain primarily an attribute bag, a schema for said bag, and
 # eventing around modifications to it.
 
-from = require('../core/from')
+cases = require('../core/types').from
 { match, otherwise } = require('../core/case')
 types = require('../core/types')
 
@@ -68,22 +68,22 @@ class Model extends Map
     null
 
   @point: match(
-    from.default.dynamic (x, self) ->
+    cases.dynamic (x, self) ->
       if util.isFunction(x)
         Varying.of(x(self))
       else if util.isString(x)
         self.watch(x)
       else
         Varying.of(x)
-    from.default.watch (x, self) -> self.watch(x)
-    from.default.attribute (x, self) -> new Varying(self.attribute(x))
-    from.default.varying (x, self) -> if util.isFunction(x) then Varying.of(x(self)) else Varying.of(x)
-    from.default.app (x, self, app) ->
+    cases.watch (x, self) -> self.watch(x)
+    cases.attribute (x, self) -> new Varying(self.attribute(x))
+    cases.varying (x, self) -> if util.isFunction(x) then Varying.of(x(self)) else Varying.of(x)
+    cases.app (x, self, app) ->
       app ?= self.options.app
       if app?
         if x? then app.watch(x) else new Varying(app)
-      else from.default.app()
-    from.default.self (x, self) -> if util.isFunction(x) then Varying.of(x(self)) else Varying.of(self)
+      else cases.app()
+    cases.self (x, self) -> if util.isFunction(x) then Varying.of(x(self)) else Varying.of(self)
   )
 
   pointer: -> (x) => this.constructor.point(x, this)
