@@ -739,6 +739,80 @@ describe 'Varying', ->
         vz.set(4)
         result.should.equal(5)
 
+    describe 'all', ->
+      it 'should apply maps correctly', ->
+        va = new Varying(2)
+        vb = new Varying(3)
+        m = Varying.all([ va, vb ]).map((a, b) -> a + b)
+
+        result = null
+        m.react((x) -> result = x)
+        result.should.equal(5)
+
+      it 'should apply flatMaps correctly', ->
+        va = new Varying(1)
+        vb = new Varying(2)
+        vx = null
+        m = Varying.all([ va, vb ]).flatMap((x, y) -> vx = new Varying(x + y))
+
+        result = null
+        m.react((x) -> result = x)
+
+        va.set(1)
+        vz = vx
+
+        va.set(3)
+        vz.set(4)
+        result.should.equal(5)
+
+      it 'should provide applicants as arguments upon react', ->
+        args = null
+        va = new Varying(2)
+        vb = new Varying(3)
+        Varying.all([ va, vb ]).react((a, b) -> args = [ a, b ])
+
+        args.should.eql([ 2, 3 ])
+        va.set(4)
+        args.should.eql([ 4, 3 ])
+        vb.set(5)
+        args.should.eql([ 4, 5 ])
+
+      it 'should work on a single parent', ->
+        arg = null
+        v = new Varying(1)
+        Varying.all([ v ]).react((x) -> arg = x)
+
+        arg.should.equal(1)
+        v.set(4)
+        arg.should.equal(4)
+
+      it 'should react non-immediately if asked', ->
+        args = null
+        va = new Varying(2)
+        vb = new Varying(3)
+        Varying.all([ va, vb ]).react(false, (a, b) -> args = [ a, b ])
+
+        (args is null).should.equal(true)
+        va.set(5)
+        args.should.eql([ 5, 3 ])
+
+      it 'should cease listening to parent on stop', ->
+        count = null
+        v = new Varying(1)
+        v.refCount().react((c) -> count = c)
+
+        o = Varying.all([ v ]).react(->)
+        count.should.equal(1)
+
+        o2 = Varying.all([ v ]).react(->)
+        count.should.equal(2)
+
+        o.stop()
+        count.should.equal(1)
+
+        o2.stop()
+        count.should.equal(0)
+
   describe 'lift', ->
     it 'should take a pure function and arguments and return a mapped varying', ->
       va = new Varying(2)
