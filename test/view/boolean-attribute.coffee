@@ -3,7 +3,7 @@ should = require('should')
 { Varying, Model, attribute, App, Library  } = require('janus')
 { BooleanAttributeEditView, BooleanButtonAttributeEditView } = require('../../lib/view/boolean-attribute')
 
-$ = require('../../lib/util/dollar')
+$ = require('janus-dollar')
 
 describe 'view', ->
   describe 'boolean attribute', ->

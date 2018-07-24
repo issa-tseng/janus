@@ -3,7 +3,7 @@ should = require('should')
 { Model, attribute } = require('janus')
 { NumberAttributeEditView } = require('../../lib/view/number-attribute')
 
-$ = require('../../lib/util/dollar')
+$ = require('janus-dollar')
 
 describe 'view', ->
   describe 'number attribute', ->

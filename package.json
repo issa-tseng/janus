@@ -19,14 +19,14 @@
     "test": "make test"
   },
   "peerDependencies": {
-    "janus": "~0.4"
+    "janus": "~0.4",
+    "janus-dollar": ">=0"
   },
   "devDependencies": {
     "coffee-script": "~1.11",
-    "domino": "~2.0",
-    "jquery": "~3",
+    "janus-dollar": "git+https://github.com/clint-tseng/janus-dollar-jquery",
     "mocha": "~5",
-    "should": "~11",
+    "should": "~13",
     "istanbul": "~0.4"
   }
 }

@@ -1,7 +1,7 @@
 { Varying, DomView, from, template, find, Base } = require('janus')
 { Text } = require('janus').attribute
 
-$ = require('../util/dollar')
+$ = require('janus-dollar')
 
 TextAttributeEditView = DomView.build($('<input/>'), template(
   find('input')

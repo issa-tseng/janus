@@ -3,7 +3,7 @@
 { isArray, isPrimitive, uniqueId } = require('janus').util
 { stringifier, asList } = require('../util/util')
 
-$ = require('../util/dollar')
+$ = require('janus-dollar')
 
 class EnumAttributeEditView extends DomView
   dom: -> $('<select/>')

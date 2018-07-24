@@ -3,7 +3,7 @@ should = require('should')
 { Varying, DomView, template, find, from, List, Set, App, Library } = require('janus')
 { ListView, SetView } = require('../../lib/view/list')
 
-$ = require('../../lib/util/dollar')
+$ = require('janus-dollar')
 
 # register LiteralView for our tests to make our lives easier.
 testLibrary = new Library()

@@ -1,6 +1,6 @@
 { DomView, template, find, from, types } = require('janus')
 
-$ = require('../util/dollar')
+$ = require('janus-dollar')
 
 SuccessResultView = DomView.build($('<div class="janus-successResult"/>'), template(
   find('div').render(from.self().map((view) -> view.subject.value))

@@ -3,7 +3,7 @@ should = require('should')
 { Varying, DomView, template, find, from, types, App, Library } = require('janus')
 { SuccessResultView, registerWith } = require('../../lib/view/types')
 
-$ = require('../../lib/util/dollar')
+$ = require('janus-dollar')
 
 dummyApp = new App()
 

@@ -3,7 +3,7 @@
 { identity } = require('janus').util
 { asList } = require('../util/util')
 
-$ = require('../util/dollar')
+$ = require('janus-dollar')
 
 ListSelectItemView = class extends DomView.build($('
     <div class="janus-list-selectItem">

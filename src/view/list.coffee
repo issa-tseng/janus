@@ -1,7 +1,7 @@
 { Varying, DomView, mutators, from, List, Set } = require('janus')
 { identity } = require('janus').util
 
-$ = require('../util/dollar')
+$ = require('janus-dollar')
 
 class ListView extends DomView
   dom: -> $('<ul class="janus-list"/>')
