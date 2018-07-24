@@ -12,7 +12,7 @@ attribute = schema.attribute
 util.extend(attribute, require('./model/attribute'))
 
 # TODO: once we're sure the global is superfluous, remove.
-module.exports = (window ? global)._janus$ ?=
+module.exports =
   # core functionality.
   Varying: require('./core/varying').Varying
   defcase: kase.defcase
