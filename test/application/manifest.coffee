@@ -55,7 +55,7 @@ describe 'manifest', ->
     Manifest.run(app, new TestModel()).result.react((x) -> result = x)
     defer ->
       types.result.success.match(result).should.equal(true)
-      result.value.should.be.an.instanceof(TestView)
+      result.get().should.be.an.instanceof(TestView)
       done()
 
   it 'should return a fault if a view cannot be found', ->
@@ -63,7 +63,7 @@ describe 'manifest', ->
     { app } = env()
     Manifest.run(app, 42).result.react((x) -> result = x)
     types.result.failure.match(result).should.equal(true)
-    result.value.should.match(/internal/)
+    result.get().should.match(/internal/)
 
   it 'should wait until pending requests are fulfilled', (done) ->
     result = null
@@ -77,7 +77,7 @@ describe 'manifest', ->
       r() for r in resolvers
       defer ->
         types.result.success.match(result).should.equal(true)
-        result.value.should.be.an.instanceof(TestView)
+        result.get().should.be.an.instanceof(TestView)
         done()
 
   it 'should wait for chained requests', (done) ->
@@ -96,7 +96,7 @@ describe 'manifest', ->
 
       defer ->
         types.result.success.match(result).should.equal(true)
-        result.value.should.be.an.instanceof(TestView)
+        result.get().should.be.an.instanceof(TestView)
         done()
 
   it 'should have a record of all resolved requests', (done) ->
@@ -127,7 +127,7 @@ describe 'manifest', ->
 
     defer ->
       types.result.success.match(result).should.equal(true)
-      result.value.should.be.an.instanceof(TestView)
+      result.get().should.be.an.instanceof(TestView)
       done()
 
   it 'should return the failure if an validation is invalid', (done) ->
@@ -142,9 +142,9 @@ describe 'manifest', ->
 
     defer ->
       types.result.failure.match(result).should.equal(true)
-      result.value.length.should.equal(1)
-      types.validity.invalid.match(result.value.at(0)).should.equal(true)
-      result.value.at(0).value.should.equal(1)
+      result.get().length.should.equal(1)
+      types.validity.invalid.match(result.get().at(0)).should.equal(true)
+      result.get().at(0).get().should.equal(1)
       done()
 
   it 'should return all failures if many happen', (done) ->
@@ -160,11 +160,11 @@ describe 'manifest', ->
 
     defer ->
       types.result.failure.match(result).should.equal(true)
-      result.value.length.should.equal(2)
-      types.validity.invalid.match(result.value.at(0)).should.equal(true)
-      result.value.at(0).value.should.equal(1)
-      types.validity.invalid.match(result.value.at(1)).should.equal(true)
-      result.value.at(1).value.should.equal(3)
+      result.get().length.should.equal(2)
+      types.validity.invalid.match(result.get().at(0)).should.equal(true)
+      result.get().at(0).get().should.equal(1)
+      types.validity.invalid.match(result.get().at(1)).should.equal(true)
+      result.get().at(1).get().should.equal(3)
       done()
 
   it 'should only result once', (done) ->

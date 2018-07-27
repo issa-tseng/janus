@@ -102,9 +102,9 @@ describe 'DomView', ->
       called = false
       TestView = class extends DomView.build($('<div/>'),
         template(
-          find('.title').text(from((x) -> passed = x; v))
+          find('.title').text(from(->))
         ))
-        @point: (-> called = true)
+        pointer: -> -> called = true
 
       (new TestView({})).artifact()
       called.should.equal(true)

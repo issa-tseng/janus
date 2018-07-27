@@ -183,14 +183,14 @@ describe 'Model', ->
 
       it 'should point apps if given', ->
         app = {}
-        m = new Model()
-        Model.point(types.from.app(), m, app).get().should.equal(app)
+        m = new Model(null, { app })
+        m.pointer()(types.from.app(), m, app).get().should.equal(app)
 
       it 'should point into app subkeys if given', ->
         watchedWith = null
         app = { watch: (x) -> watchedWith = x; 'watched!' }
-        m = new Model()
-        Model.point(types.from.app('test'), m, app).should.equal('watched!')
+        m = new Model(null, { app })
+        m.pointer()(types.from.app('test'), m, app).should.equal('watched!')
         watchedWith.should.equal('test')
 
       it 'should point self by function', ->
@@ -356,7 +356,7 @@ describe 'Model', ->
       model = new TestModel()
       model.issues().length.should.equal(1)
       types.validity.invalid.match(model.issues().at(0)).should.equal(true)
-      model.issues().at(0).value.should.equal('test')
+      model.issues().at(0).get().should.equal('test')
 
     it 'should return true if no active issues exist on valid()', ->
       v1 = new Varying(types.validity.valid())

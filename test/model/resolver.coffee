@@ -80,11 +80,11 @@ describe 'Resolver', ->
       result = fromDom({ children: -> { length: 1, text: -> 'cached' } })(new SignaturedRequest())
       result.isVarying.should.equal(true)
       types.result.success.match(result.get()).should.equal(true)
-      result.get().value.should.equal('cached')
+      result.get().get().should.equal('cached')
 
     it 'should use the given deserializer if it exists', ->
       result = fromDom({ children: -> { length: 1, text: -> 'cached' } }, (x) -> { x })(new SignaturedRequest())
-      result.get().value.should.eql({ x: 'cached' })
+      result.get().get().should.eql({ x: 'cached' })
 
     it 'should remove the node and return nothing if found and the request modifies', ->
       removed = false
