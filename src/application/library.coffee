@@ -83,10 +83,6 @@ class Library extends Base
     bookId =
       if !obj?
         'null'
-      else if obj.isCaseInstance is true
-        "case@#{obj.case.namespace}.#{obj.type}"
-      else if obj.isCase is true
-        "case@#{obj.namespace}.#{obj.type}"
       else if util.isNumber(obj)
         'number'
       else if util.isString(obj)
@@ -114,10 +110,6 @@ class Library extends Base
   @_classId: (klass) ->
     if !klass?
       'null'
-    else if klass.isCaseInstance is true
-      "case@#{klass.case.namespace}.#{klass.type}"
-    else if klass.isCase is true
-      "case@#{klass.namespace}.#{klass.type}"
     else if klass is Number
       'number'
     else if klass is String
@@ -125,6 +117,8 @@ class Library extends Base
     else if klass is Boolean
       'boolean'
     else
+      klass = klass.type if klass.isCase is true
+
       id = klass[this.classKey]
 
       if id? and this.classMap[id] is klass
@@ -137,7 +131,7 @@ class Library extends Base
 # Internal util func for processing a potential match against its advanced
 # options.
 match = (obj, record, attributes) ->
-  return false unless record.options.rejector?(obj) isnt true
+  return false if record.options.rejector?(obj) is true
   return false if record.options.acceptor? and (record.options.acceptor(obj) isnt true)
 
   isMatch = true

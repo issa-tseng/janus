@@ -40,30 +40,23 @@ class View extends Base
   artifact: -> this._artifact ?= this._render()
   _render: -> # implement me!
 
-  # Standard point implementation that all subclasses can typically use
-  # unaltered. It is provided as a top-level class method so that it is
-  # "compiled" as few times as possible.
-  @point: match(
-    dynamic (x, view) ->
+  # Standard point implementation that all subclasses can typically use unaltered.
+  pointer: -> this.pointer$ ?= match(
+    dynamic (x) =>
       if isFunction(x)
-        Varying.of(x(view.subject))
-      else if isString(x) and view.subject.watch?
-        view.subject.watch(x)
+        Varying.of(x(this.subject))
+      else if isString(x) and this.subject.watch?
+        this.subject.watch(x)
       else
         Varying.of(x)
-    watch (x, view) -> view.subject.watch(x)
-    attribute (x, view) -> new Varying(view.subject.attribute(x))
-    varying (x, view) -> if isFunction(x) then Varying.of(x(view.subject)) else Varying.of(x)
-    app (x, view) ->
-      if x? then view.options.app.watch(x)
-      else new Varying(view.options.app)
-    self (x, view) -> if isFunction(x) then Varying.of(x(view)) else Varying.of(view)
+    watch (x) => this.subject.watch(x)
+    attribute (x) => new Varying(this.subject.attribute(x))
+    varying (x) => if isFunction(x) then Varying.of(x(this.subject)) else Varying.of(x)
+    app (x) =>
+      if x? then this.options.app.watch(x)
+      else new Varying(this.options.app)
+    self (x) => if isFunction(x) then Varying.of(x(this)) else Varying.of(this)
   )
-
-  # Since View@point() wants two parameters, the target and the view instance,
-  # it gets tedious to write (x) => this.constructor.point(x, this) all the time.
-  # So all this instance method really does is perform that boilerplate for you.
-  pointer: -> (x) => this.constructor.point(x, this)
 
   # Wires events against the artifact in question. This method is separate so
   # that:

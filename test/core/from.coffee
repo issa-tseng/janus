@@ -84,17 +84,17 @@ describe 'from', ->
         .and.varying('e')
         .all.point((x) -> args.push(x); x)
 
-      args[0].type.should.eql('dynamic')
-      args[0].value.should.equal('a')
+      args[0].should.be.an.instanceof(cases.dynamic.type)
+      args[0].get().should.equal('a')
 
-      args[1].type.should.eql('watch')
-      args[1].value.should.equal('b')
+      args[1].should.be.an.instanceof(cases.watch.type)
+      args[1].get().should.equal('b')
 
-      args[2].type.should.eql('attribute')
-      args[2].value.should.equal('d')
+      args[2].should.be.an.instanceof(cases.attribute.type)
+      args[2].get().should.equal('d')
 
-      args[3].type.should.eql('varying')
-      args[3].value.should.equal('e')
+      args[3].should.be.an.instanceof(cases.varying.type)
+      args[3].get().should.equal('e')
 
     it 'should only point for things that have not resolved to varying', ->
       { dynamic, watch, definition, varying } = cases
@@ -375,7 +375,7 @@ describe 'from', ->
 
   describe 'builder', ->
     it 'should accept custom cases as intermediate methods/applicants', ->
-      { alpha, beta, gamma } = custom = defcase('org.janusjs.test', 'alpha', 'beta', 'gamma')
+      { alpha, beta, gamma } = custom = defcase('alpha', 'beta', 'gamma')
 
       v = from.build(custom).alpha('one')
         .and.beta('two')
@@ -391,7 +391,7 @@ describe 'from', ->
       result.should.equal('aone btwo cthree')
 
     it 'should use the dynamic case if present', ->
-      { dynamic, other } = custom = defcase('org.janusjs.test', 'dynamic', 'other')
+      { dynamic, other } = custom = defcase('dynamic', 'other')
 
       v = from.build(custom)('one')
         .and.other('two')
@@ -405,7 +405,7 @@ describe 'from', ->
       result.should.equal('aone btwo')
 
     it 'should not use the dynamic case if not present', ->
-      { a, b } = custom = defcase('org.janusjs.test', 'a', 'b')
+      { a, b } = custom = defcase('a', 'b')
 
       from.build(custom).should.not.be.a.Function
 

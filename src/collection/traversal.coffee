@@ -1,5 +1,5 @@
 { Varying } = require('../core/varying')
-{ identity, isFunction, deepSet } = require('../util/util')
+{ identity, isFunction, deepSet, fix } = require('../util/util')
 
 { match, otherwise } = require('../core/case')
 { recurse, delegate, defer, varying, value, nothing } = require('../core/types').traversal
@@ -7,61 +7,68 @@
 
 # core mechanism:
 
-# TODO: the mechanism of passing state here is far from my favourite. someone
+# TODO: the method of passing state here is far from my favourite. someone
 # please come up with something smarter/faster/cleaner.
-matcher = match(
-  recurse (into, context, local) -> local.root(into, local, context ? local.context)
 
-  delegate (to, context, local) ->
-    matcher(to(local.key, local.value, local.obj, local.attribute, context ? local.context),
-      Object.assign({}, local, { context }))
-  defer (to, context, local) ->
-    matcher(to(local.key, local.value, local.obj, local.attribute, context ? local.context),
-      Object.assign({}, local, { context, map: to }))
+# called to process the action given by the caller in their map() function.
+# calls on the local context to perform various concrete actions. used by
+# both the live traversals up here and the static ones at the bottom.
+matchAction = (local) -> fix((rematch) -> match(
+  recurse (into, context) -> local.root(into, local, context ? local.context)
 
-  varying (v, _, local) ->
+  delegate (to, context) ->
+    newlocal = Object.assign({}, local, { context })
+    matchAction(newlocal)(to(local.key, local.value, local.obj, local.attribute, context ? local.context))
+  defer (to, context) ->
+    newlocal = Object.assign({}, local, { context, map: to })
+    matchAction(newlocal)(to(local.key, local.value, local.obj, local.attribute, context ? local.context))
+
+  varying (v) ->
     # we can indiscriminately flatMap because the only valid final values here
     # are case instances anyway, so we can't squash anything we oughtn't.
-    mapped = v.flatMap((x) -> matcher(x, local))
+    mapped = v.flatMap((x) -> rematch(x))
     if local.immediate is true then mapped.get() else mapped
 
   value (x) -> x
   nothing -> undefined
-)
+))
 
 # the general param should supply: root, obj, map, context, [reduce, recurse].
-processNode = (general) -> (key, value) ->
+processElem = (general) -> (key, value) ->
   obj = general.obj
   attribute = obj.attribute(key) if obj.isModel is true
   local = Object.assign({}, general, { key, value, attribute })
-  matcher(general.map(key, value, obj, attribute, general.context), local)
+  matchAction(local)(general.map(key, value, obj, attribute, general.context))
 
-# match the result of userland recurse.
-prematcher = match(
-  recurse (into, context, general, process) -> process(Object.assign({}, general, { obj: into, context }))
-  varying (v, context, general, process) ->
-    mapped = v.flatMap((x) -> prematcher(x, general, process))
-    if general.immediate is true then mapped.get() else mapped
-  otherwise (x, general) -> matcher(x, general)
-)
-
-# called top-level before actually traversing a data structure.
-preprocess = (general, process) ->
-  prematcher((general.recurse ? recurse)(general.obj, general.context), general, process)
+# entrypoint; called top-level before actually traversing a data structure, so
+# the first recurse() call enters the structure itself.
+processRoot = (general, process) ->
+  matchRootAction = match(
+    recurse (into, context) -> process(Object.assign({}, general, { obj: into, context }))
+    varying (v, context) ->
+      mapped = v.flatMap((x) -> matchRootAction(x))
+      if general.immediate is true then mapped.get() else mapped
+    otherwise (x) -> matchAction(general)(x)
+  )
+  matchRootAction((general.recurse ? recurse)(general.obj, general.context))
 
 # wraps reduction in a managed varying for resource management.
 # TODO: the double-call is not my favourite. same for the resource func.
 reducer = (general, resource) -> ->
-  if general.reduce? then Varying.managed(resource(general), general.reduce) else resource(general)()
+  if general.reduce? then Varying.managed(resource(), general.reduce) else resource()()
 
+# the actual runners that set state and call into the above. the first two return
+# live traversals; the second two just do the work. both depend on matchAction above.
 Traversal =
   asNatural: (obj, fs, context = {}) ->
     general = Object.assign({}, fs, { obj, context, root: Traversal.asNatural })
-    preprocess(general, (general) -> general.obj.flatMapPairs(processNode(general)))
+    fmapper = processElem(general) # init first to save calls.
+    processRoot(general, -> general.obj.flatMapPairs(fmapper))
 
   asList: (obj, fs, context = {}) ->
     general = Object.assign({}, fs, { obj, context, root: Traversal.asList })
-    preprocess(general, reducer(general, (general) -> -> general.obj.enumeration().flatMapPairs(processNode(general))))
+    fmapper = processElem(general) # ditto saving calls.
+    processRoot(general, reducer(general, -> -> general.obj.enumeration().flatMapPairs(fmapper)))
 
   # these two inner blocks are rather repetitive but i'm reluctant to pull them into a
   # function for perf reasons.
@@ -74,7 +81,7 @@ Traversal =
       val = obj.get(key)
       attribute = obj.attribute(key) if obj.isModel is true
       local = Object.assign({}, fs, { obj, key, val, attribute, context, immediate: true, root: Traversal.getNatural })
-      set(key, matcher(local.map(key, val, obj, attribute, context), local))
+      set(key, matchAction(local)(local.map(key, val, obj, attribute, context)))
     result
 
   getArray: (obj, fs, context = {}) ->
@@ -83,7 +90,7 @@ Traversal =
         val = obj.get(key)
         attribute = obj.attribute(key) if obj.isModel is true
         local = Object.assign({}, fs, { obj, key, val, attribute, context, immediate: true, root: Traversal.getArray })
-        matcher(local.map(key, val, obj, attribute, context), local)
+        matchAction(local)(local.map(key, val, obj, attribute, context))
     )
 
 

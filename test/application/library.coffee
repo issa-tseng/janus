@@ -32,10 +32,9 @@ describe 'Library', ->
 
     it 'should return "null" for null', ->
       Library._classId(null).should.equal('null')
-    it 'should return "case@#ns" for a case', ->
-      { success, fail } = defcase('org.janusjs.test', 'success', 'fail')
-      Library._classId(success).should.equal('case@org.janusjs.test.success')
-      Library._classId(success(42)).should.equal('case@org.janusjs.test.success')
+    it 'should return int for a case', ->
+      { success, fail } = defcase('success', 'fail')
+      Library._classId(success).should.be.a.Number()
     it 'should return "number" for Number', ->
       Library._classId(Number).should.equal('number')
     it 'should return "string" for String', ->
@@ -180,19 +179,19 @@ describe 'Library', ->
   describe 'case registration', ->
     it 'should store and retrieve cases correctly', ->
       library = new Library()
-      { success, fail } = defcase('org.janusjs.test', 'success', 'fail')
+      { success, fail } = defcase('success', 'fail')
 
       class SuccessBook
       library.register(success, SuccessBook)
+      console.log(Library._classId(success))
 
       library.get(success(42)).should.equal(SuccessBook)
-      library.get(success).should.equal(SuccessBook)
       should(library.get(fail)).equal(null)
 
     it 'should not conflate like-named cases from different sets', ->
       library = new Library()
-      set1 = defcase('org.janusjs.test', 'success', 'fail')
-      set2 = defcase('org.janusjs.test2', 'success', 'fail')
+      set1 = defcase('success', 'fail')
+      set2 = defcase('success', 'fail')
 
       class SuccessBook
       library.register(set1.success, SuccessBook)

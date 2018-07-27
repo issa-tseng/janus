@@ -67,26 +67,23 @@ class Model extends Map
         .react(this.set(key))
     null
 
-  @point: match(
-    cases.dynamic (x, self) ->
+  pointer: -> this.pointer$ ?= match(
+    cases.dynamic (x) =>
       if util.isFunction(x)
-        Varying.of(x(self))
+        Varying.of(x(this))
       else if util.isString(x)
-        self.watch(x)
+        this.watch(x)
       else
         Varying.of(x)
-    cases.watch (x, self) -> self.watch(x)
-    cases.attribute (x, self) -> new Varying(self.attribute(x))
-    cases.varying (x, self) -> if util.isFunction(x) then Varying.of(x(self)) else Varying.of(x)
-    cases.app (x, self, app) ->
-      app ?= self.options.app
-      if app?
+    cases.watch (x) => this.watch(x)
+    cases.attribute (x) => new Varying(this.attribute(x))
+    cases.varying (x) => if util.isFunction(x) then Varying.of(x(this)) else Varying.of(x)
+    cases.app (x) =>
+      if (app = this.options.app)?
         if x? then app.watch(x) else new Varying(app)
       else cases.app()
-    cases.self (x, self) -> if util.isFunction(x) then Varying.of(x(self)) else Varying.of(self)
+    cases.self (x) => if util.isFunction(x) then Varying.of(x(this)) else Varying.of(this)
   )
-
-  pointer: -> (x) => this.constructor.point(x, this)
 
   # Returns a list of the validation results that have been bound against this model.
   validations: -> this._validations$ ?= do =>
