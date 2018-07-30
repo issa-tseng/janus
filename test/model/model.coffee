@@ -466,3 +466,9 @@ describe 'Model', ->
       m.destroy()
       destroyed.should.equal(2)
 
+    it 'should not attempt to destroy nonattributes', ->
+      m = new Model()
+      m.attribute('a')
+      m.attribute('b')
+      should.doesNotThrow(-> m.destroy())
+
