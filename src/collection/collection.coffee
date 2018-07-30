@@ -16,9 +16,11 @@ Enumeration$ = null
 # keys/indices, and all classes implementing Enumerable are expected to also
 # provide:
 # * get: (key) -> value
-# * set: (key, value) -> void
+# * set: (key, value) -> value
 # * watch: (key) -> Varying[value]
 # * shadow: -> Enumerable
+#
+# Most classes (not Set) also provide these:
 # * mapPairs: ((key, value) -> T) -> [T]
 # * flatMapPairs: ((key, value) -> Varying?[T]) -> [T]
 class Enumerable extends Base
@@ -46,44 +48,17 @@ class Enumerable extends Base
 class Mappable extends Enumerable
   isMappable: true
 
-  # Create a new FilteredList based on this list, with the member check
-  # function `f`.
-  #
-  # **Returns** a `FilteredList`
-  filter: (f) -> new (require('./derived/filtered-list').FilteredList)(this, f)
-
-  # Create a new mapped List based on this list, with the mapping function `f`.
-  #
-  # **Returns** a `MappedList`
+  # map-like operations:
   map: (f) -> new (require('./derived/mapped-list').MappedList)(this, f)
-
-  # Create a new mapped List based on this list, with the mapping function `f`.
-  # Due to the flatMap, `f` may return a `Varying` that changes, which will in
-  # turn change the value in the resulting list.
-  #
-  # **Returns** a `MappedList`
   flatMap: (f) -> new (require('./derived/mapped-list').FlatMappedList)(this, f)
-
-  # Create a new FlattenedList based on this List.
-  #
-  # **Returns** a `FlattenedList`
+  filter: (f) -> new (require('./derived/filtered-list').FilteredList)(this, f)
   flatten: -> new (require('./derived/flattened-list').FlattenedList)(this)
-
-  # Create a new UniqList based on this List.
-  #
-  # **Returns** a `UniqList`
   uniq: -> new (require('./derived/uniq-list').UniqList)(this)
 
-  # See if any element in this list qualifies for the condition.
+  # fold-like operations:
   any: (f) -> folds.any(new (require('./derived/mapped-list').FlatMappedList)(this, f))
-
-  # get the minimum number on the list.
   min: -> folds.min(this)
-
-  # get the maximum number on the list.
   max: -> folds.max(this)
-
-  # get the sum of this list.
   sum: -> folds.sum(this)
 
 
@@ -96,34 +71,20 @@ class OrderedMappable extends Mappable
   mapPairs: (f) -> this.enumeration().mapPairs(f)
   flatMapPairs: (f) -> this.enumeration().flatMapPairs(f)
 
-  # Create a list that always takes the first x elements of this collection,
-  # where x may be a number or a Varying[Int].
-  #
-  # **Returns** a `TakenList`
   take: (x) -> new (require('./derived/taken-list').TakenList)(this, x)
 
-  # Create a new concatenated List based on this List, along with the other
-  # Lists provided in the call. Can be passed in either as an arg list of Lists
-  # or as an array of Lists.
-  #
-  # **Returns** a `CattedList`
+  # Can be passed in either as an arg list of Lists or as an array of Lists.
   concat: (lists...) ->
     new (require('./derived/catted-list').CattedList)([ this ].concat(lists))
 
-  # get the strings of this list joined by some string.
-  join: (joiner) -> folds.join(this, joiner)
-
-  # fold left across the list.
-  fold: (memo, f) -> folds.fold(this, memo, f)
-
-  # scan left across the list. (alt implementation)
-  scanl: (memo, f) -> folds.scanl(this, memo, f)
-
-  # fold left across the list. (alt implementation)
-  foldl: (memo, f) -> folds.foldl(this, memo, f)
-
-  # return the index of an item in the list. value may be Varying[x].
+  # value may be Varying[x].
   indexOf: (value) -> IndexOfFold.indexOf(this, value)
+
+  # fold-like operations (ALPHA):
+  join: (joiner) -> folds.join(this, joiner)
+  fold: (memo, f) -> folds.fold(this, memo, f)
+  scanl: (memo, f) -> folds.scanl(this, memo, f)
+  foldl: (memo, f) -> folds.foldl(this, memo, f)
 
 
 module.exports = { Enumerable, Mappable, OrderedMappable }

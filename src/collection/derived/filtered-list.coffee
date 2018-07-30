@@ -24,7 +24,7 @@ class FilteredList extends DerivedList
     filtered = this.reactTo(Varying.of(this.filterer(elem)), (result) =>
       result = result is true # force boolean because otherwise lastResult check fails.
       cidx = this._filtereds.indexOf(filtered)
-      cidx = idx if cidx < 0 # this gets called once before we store away the Varied.
+      cidx = idx if cidx < 0 # this gets called once before we store away the Observation.
 
       if result isnt lastResult
         lastResult = (result is true)

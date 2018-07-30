@@ -4,7 +4,9 @@
 # * aggregation of subtemplates.
 # * learning and execution of selectors against dom fragments.
 # Between Templates and Mutators, the total function signature is as follows:
-# (Template|Mutator p, Varied v) => (p...) -> (dom) -> (dom, point, immediate) -> v
+# (Template|Mutator p, Observation o) => (p...) -> (dom) -> (dom, point, immediate) -> o
+# where the first dom teaches the template how to resolve selectors, and the
+# second dom will actually get bound.
 
 defaultMutators = require('./mutators')
 
@@ -45,7 +47,7 @@ walk = (dom, walks) ->
   )
 
 # allow find() to perform chaining of the mutator if provided, returning
-# (fragment) -> (dom, point, immediate) -> Varied. we give the fragment (the canonical
+# (fragment) -> (dom, point, immediate) -> Observation. we give the fragment (the canonical
 # html as defined by the template) followed separately by the actual dom instance so
 # that we can learn the walks, then apply them against the actual dom.
 #
@@ -80,7 +82,7 @@ find.build = build
 
 # templates are collections of mutations. they are immutable and just declarative.
 # in fact, all template() does remember a bunch of functions and recursively call
-# them all later. after pointing, it returns an array of the resulting `Varied`s.
+# them all later. after pointing, it returns an array of the resulting `Observation`s.
 template = (xs...) -> (fragment) ->
   prebound = (x(fragment) for x in xs)
   (dom, point, immediate) -> Array.prototype.concat.apply([], (f(dom, point, immediate) for f in prebound))

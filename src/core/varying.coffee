@@ -34,13 +34,13 @@
 
 
 class Varying
-  # flag to enable duck-typed detection of this class. thanks, npm.
+  # flag to enable duck-typed detection of this class.
   isVarying: true
 
   constructor: (value) ->
     this.set(value) # immediately set our internal value.
     this._observers = {} # track our observers so we can notify on change.
-    this._refCount = 0
+    this._refCount = 0 # tracks observer count.
 
     this._generation = 0 # keeps track of which propagation cycle we're on.
 
@@ -69,9 +69,10 @@ class Varying
     f_.call(observation, this.get())
     observation
 
-  # returns the `Observation` representing this reaction.
-  # (Varying v, Observation w) => v a -> (a -> ()) -> w
-  # (Boolean b, Varying v, Observation w) => v a -> b -> (a -> ()) -> w
+  # pass false as the first arg to not immediately call the handler with the
+  # initial value. returns the `Observation` representing this reaction.
+  # (Varying v, Observation o) => v a -> (a -> impure!) -> o
+  # (Boolean b, Varying v, Observation w) => v a -> b -> (a -> impure!) -> o
   react: (x, y) ->
     if x is false
       this._react(y)
@@ -81,7 +82,7 @@ class Varying
       this._reactImmediate(x)
 
   # gets and stores a value, and triggers any reactions upon it. returns nothing.
-  # impure! (Varying v) => v a -> b -> ()
+  # (Varying v) => v a -> b -> impure!
   set: (value) ->
     return if value is this._value
 
@@ -98,7 +99,7 @@ class Varying
 
   # simple chaining tool to allow eg myvarying.pipe(throttle(50)), which is easier to
   # read in a chain order than throttle(50, myvarying).
-  # (Varying v, Any w) => v a -> (v b -> w b) -> w b
+  # (Varying v) => v a -> (v b -> v+ b) -> v+ b
   pipe: (f) -> f(this)
 
   # (Varying v, Int b) => v a -> v b
@@ -134,18 +135,20 @@ class Varying
   # (Varying v) => v a -> v b -> (a -> b -> v c) -> v c
   @flatMapAll: _pure(true)
 
-  # gives an UnreducedComposedVarying given an array of varyings.
+  # gives an UnreducedComposedVarying given an array of varyings. it can then
+  # be map/flatMap/reacted on as needed.
   @all: (vs) -> new UnreducedComposedVarying(vs)
 
   # simple lift operation for a pure function:
   # (Varying v) => (a -> b -> c) -> v a -> v b -> v c
   @lift: (f) -> (args...) -> new ComposedVarying(args, f, false)
 
+  # Resource management based on refCount. See ManagedVarying impl below for details.
   @managed: (resources..., computation) -> new ManagedVarying(resources, computation)
 
   # convenience constructor to ensure a Varying. wraps nonVaryings, and returns
   # Varyings given to it.
-  # (Varying v) => a -> v a
+  # (Varying v) => a -> v b
   @of: (x) -> if x?.isVarying is true then x else new Varying(x)
 
 class Observation
@@ -358,6 +361,9 @@ class UnreducedComposedVarying extends FlatMappedVarying
     else
       this._value
 
+# only when a ManagedVarying is actually reacted upon will it marshall the
+# declared dependency resources given at construction-time. and vice versa:
+# destroys resources if the Varying goes dormant.
 class ManagedVarying extends FlatMappedVarying
   constructor: (@_resources, @_computation) ->
     super(new Varying())

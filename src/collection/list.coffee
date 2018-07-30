@@ -1,16 +1,6 @@
 # **Lists** are ordered lists of objects. The base `List` implementation
-# is pretty simple; one can add and remove elements to and from it.
-#
-# **Events**:
-#
-# - `added`: `(item, idx)` the item that was added and its position.
-# - `removed`: `(item, idx)` the item that was removed and its position.
-#
-# **Member Events**:
-#
-# - `addedTo`: `(collection, idx)` this collection and the member's position.
-# - `removedFrom`: `(collection, idx)` this collection and the member's
-#   position.
+# is pretty simple; one can add and remove elements to and from it, and
+# it will emit added/removed events with (item, idx) params.
 
 { Varying } = require('../core/varying')
 { OrderedMappable } = require('./collection')
@@ -33,10 +23,7 @@ class List extends OrderedMappable
     this.add(list)
 
   # Add one or more items to this collection. Optionally takes a second `index`
-  # parameter indicating what position in the list all the items should be
-  # spliced in at.
-  #
-  # **Returns** the added items as an array.
+  # arg defining where in the list all the items should be spliced in at.
   add: (elems, idx = this.list.length) ->
     # Normalize the argument to an array, then dump in our items.
     elems = [ elems ] unless util.isArray(elems)
@@ -49,10 +36,8 @@ class List extends OrderedMappable
       Array.prototype.splice.apply(this.list, [ idx, 0 ].concat(elems))
 
     for elem, subidx in elems
-      # Event on ourself for each item we added
+      # fire events:
       this.emit('added', elem, idx + subidx) 
-
-      # Event on the item for each item we added
       elem?.emit?('addedTo', this, idx + subidx)
 
       # If the item is destroyed, automatically remove it from our collection.
@@ -61,19 +46,13 @@ class List extends OrderedMappable
 
     elems
 
-  # Remove one item from the collection. Takes a reference to the element
-  # to be removed.
-  #
-  # **Returns** the removed member.
+  # Removes one item from the collection by reference and returns it.
   remove: (which) ->
     idx = this.list.indexOf(which)
     return undefined unless idx >= 0
     this.removeAt(idx)
 
-  # Remove one item from the collection. Takes a reference to the element
-  # to be removed.
-  #
-  # **Returns** the removed member.
+  # Removes one item from the collection by index and returns it.
   removeAt: (idx) ->
     idx = this.list.length + idx if idx < 0
     return if idx < 0 or idx >= this.list.length
@@ -90,13 +69,12 @@ class List extends OrderedMappable
     removed?.emit?('removedFrom', this, idx)
     removed
 
-  # Move an item to an index in the collection. This will trigger `moved`
-  # events for only the shifted element. But, it will give the new and old
-  # indices so that ranges can be correctly dealt with if necessary.
+  # Move an item by reference to an index in the collection. This will trigger
+  # `moved` events for only the shifted element. But, it will give the new and
+  # old indices so that ranges can be correctly dealt with if necessary.
   #
   # Does _not_ trigger `add` or `remove` events.
   move: (elem, idx) ->
-
     # If we don't already know about the element, bail.
     oldIdx = this.list.indexOf(elem)
     return unless oldIdx >= 0
@@ -116,9 +94,7 @@ class List extends OrderedMappable
 
     elem
 
-  # Removes all elements from a collection.
-  #
-  # **Returns** the removed elements.
+  # Removes and returns (as array) all elements from a collection.
   removeAll: ->
     while this.list.length > 0
       elem = this.list.shift()
@@ -142,7 +118,7 @@ class List extends OrderedMappable
 
     result = new Varying(this.at(idx))
 
-    this.on('added', (elem, midx) =>
+    this.listenTo(this, 'added', (elem, midx) =>
       if idx is midx
         result.set(elem)
       else if (idx > 0) and (midx < idx)
@@ -151,7 +127,7 @@ class List extends OrderedMappable
         result.set(this.at(idx))
     )
 
-    this.on('moved', (elem, newIdx, oldIdx) =>
+    this.listenTo(this, 'moved', (elem, newIdx, oldIdx) =>
       tidx = if idx < 0 then this.list.length + idx else idx
       if tidx is newIdx
         result.set(elem)
@@ -163,7 +139,7 @@ class List extends OrderedMappable
         result.set(this.at(tidx))
     )
 
-    this.on('removed', (_, midx) =>
+    this.listenTo(this, 'removed', (_, midx) =>
       if (idx >= 0) and (midx <= idx)
         result.set(this.at(idx))
       else if (idx < 0) and (midx >= (this.list.length + idx))
@@ -188,13 +164,12 @@ class List extends OrderedMappable
 
       result
 
-  # Set an index of this collection to the given member.
+  # Set an index of this collection to the given member and return the replaced
+  # element, if any.
   #
   # This is internally modelled as if the previous item at the index was removed
   # and the new one was added in succession, but without the later members of
   # the collection slipping around.
-  #
-  # **Returns** the replaced element, if any.
   put: (list, idx) ->
     # normalize input.
     list = [ list ] unless util.isArray(list)
@@ -223,6 +198,7 @@ class List extends OrderedMappable
 
   # Somewhat smartly resets the entire list to a new one. Does a merge of the
   # two such that adds/removes are limited.
+  # TODO: maybe deprecate. seems too fancy.
   putAll: (list) ->
     # first remove all existing models that should no longer exist.
     (this.remove(elem) unless list.indexOf(elem) >= 0) for elem in this.list.slice()
@@ -244,9 +220,9 @@ class List extends OrderedMappable
   # can determine later if it has changed. We could copy-on-write, but that
   # seems like an unpredictable behaviour to build against.
   #
-  # We also shadow all Models we contain at time-of-copy.
-  #
-  # **Returns** a copy of this list with its parent reference set.
+  # We also shadow all Models we contain at time-of-copy. This is really the
+  # primary reason we implement shadow; so that when a Model is shadowed the
+  # entire data tree does so with it.
   shadow: ->
     newArray =
       for item in this.list
