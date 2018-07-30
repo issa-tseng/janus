@@ -1,14 +1,7 @@
-# Mutators have gone through a few revisions; philosophy on where state management
-# should occur shifts back and forth between Mutators and Templates fairly readily.
-# The current approach is heavily biased towards having Templates manage most of
-# the work. This is largely based on the notion that it's dom fragment creation and
-# selector search that is computationally expensive, not the creation of work
-# against that dom node.
-#
-# This means Mutators become simply functions that, after declarative definition
-# (eg `attr('href', from('someproperty'))`) they simply return a function of
-# signature (dom, point) -> Varied. Thus they're repeatedly callable with units of
-# side effect computation that can be easily canceled.
+# Mutators are dirt simple: they are simply functions that, after declarative
+# definition (eg `attr('href', from('someproperty'))`), return a function of
+# signature (dom, point, immediate) -> Observation. Thus they're repeatedly
+# callable with units of side effect computation that can be easily canceled.
 
 { Varying } = require('../core/varying')
 from = require('../core/from')
@@ -58,8 +51,8 @@ mutators =
       _getView = (subject, context, app, criteria, options) ->
         app.view(subject, Object.assign({ context }, criteria), options)
 
-      # despite the nomenclature we /always/ react normally here, since
-      # we do need to initialize the entire dom tree. instead the flag
+      # despite the nomenclature we /always/ react immediately here, since
+      # we do need to initialize the entire dom tree. instead, the immediate flag
       # gates whether we render or attach the first view we see.
       Varying.flatMapAll(_getView, data.all.point(point), doPoint(args.context, point), doPoint(from.app(), point), doPoint(args.criteria, point), doPoint(args.options, point)).react(true, (view) ->
         runBefore = this.view?

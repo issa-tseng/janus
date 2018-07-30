@@ -13,7 +13,9 @@ class Base
     # Assume we have one dependency on this resource by default.
     this._refCount = 1
 
-  # provide a lazy eventemitter-like interface.
+
+  ################################################################################
+  # EVENTS (eventemitter-like interface, but lazy):
   # only coerce an eventemitter into reality if someone actually listens.
   # ignore all other requests to do anything.
   on: (type, listener) ->
@@ -35,34 +37,29 @@ class Base
   listeners: -> this.events?.listeners() ? []
   removeAllListeners: -> this.events?.removeAllListeners()
 
-  # Listen to another object for only the lifecycle of this object.
-  #
-  # **Returns** self.
+
+  ################################################################################
+  # RESOURCE MANAGEMENT
+
+  # Listen to another object for only the lifecycle of this object. Chains.
   listenTo: (target, event, handler) ->
     this._outwardListeners.push(arguments)
     target?.on?(event, handler)
     this
 
-  # Unlisten entirely to another object immediately.
-  #
-  # **Returns** self.
+  # Unlisten entirely to another object immediately. Chains.
   unlistenTo: (tgt) ->
     target?.off?(event, handler) for { 0: target, 1: event, 2: handler } in this._outwardListeners when target is tgt
     this
 
-  # Perform and track a reaction such that it is halted if this object is
-  # destroyed.
-  #
-  # **Returns** the Observation of the reaction.
+  # Perform and track a reaction such that it is halted if this object is destroyed.
   reactTo: (varying, x, y) ->
     observation = varying.react(x, y)
     this._outwardReactions.push(observation)
     observation
 
-  # `destroy()` removes all listeners this object has on others via
-  # `listenTo()`, and removes all listeners other objects have on this one.
-  #
-  # **Returns** self.
+  # `destroy()` removes all listeners this object has on others via `listenTo()`/`reactTo()`,
+  # and removes all listeners other objects have on this one.
   destroy: ->
     if (this._refCount -= 1) is 0
       this.emit('destroying')
@@ -77,13 +74,9 @@ class Base
   # another, so it should self-destruct if the other does.
   # Normally, the garbage collector would handle this sort of thing, but with
   # listeners flying around it can be a little hard to reason out.
-  #
-  # **Returns** self.
   destroyWith: (other) -> this.listenTo(other, 'destroying', => this.destroy()); return
 
   # Increase the number of dependencies on this resource, which delays destruction.
-  #
-  # **Returns** self.
   tap: ->
     this._refCount += 1
     this

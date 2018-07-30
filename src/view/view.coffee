@@ -36,8 +36,6 @@ class View extends Base
   # Returns the artifact this View is managing. If it has not yet created one,
   # the View will delegate to `_render()` to create one. That method has no
   # default implementation.
-  #
-  # **Returns** artifact object.
   artifact: -> this._artifact ?= this._render()
   _render: -> # implement me!
 
@@ -59,16 +57,7 @@ class View extends Base
     self (x) => if isFunction(x) then Varying.of(x(this)) else Varying.of(this)
   )
 
-  # Wires events against the artifact in question. This method is separate so
-  # that:
-  #
-  # 1. It doesn't need to be needless run on the server.
-  # 2. It can be deferred even on the client until it might be necessary.
-  #
-  # Delegates to `_wireEvents()` to do the actual wiring. Only allows it to be
-  # run once. And of course, there is no default implementation.
-  #
-  # **Returns** nothing.
+  # Wires events against the artifact in question.
   wireEvents: ->
     this._wireEvents() unless this._wired
     this._wired = true

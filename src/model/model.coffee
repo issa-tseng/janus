@@ -20,45 +20,33 @@ class Model extends Map
     super(data, options)
     this._bind() # kick off bindings only after basic init.
 
-  # Get an data about this model. The key can be a dot-separated path into
-  # a nested plain model. We do not traverse into submodels.
-  #
-  # If we are a shadow copy, we'll delegate to parent if we find nothing.
-  #
-  # **Returns** the value of the given key.
+  # Get an data about this model. Differs from Map#get only in that it looks at
+  # attributes for default values (and potentially writes them).
   get: (key) ->
-    # see what Map says; it handles basic attrs and shadowing.
-    value = super(key)
+    value = super(key) # see what Map says; it handles basic attrs and shadowing.
 
-    # if that fails, check the attribute.
+    # if that fails, check the attribute and write if requested.
     if !value? and (attribute = this.attribute(key))?
       value =
         if attribute.writeDefault is true
-          # first, check forceDefault, and set-on-write if present.
           this.set(key, attribute.default())
         else
-          # failing that, call default in general.
           attribute.default()
 
-    # drop undef to null
-    value ? null
+    value ? null # drop undef to null
 
-  # Get an attribute for this model.
-  #
-  # **Returns** an `Attribute` object wrapping an attribute for the attribute
-  # at the given key.
+  # Get an attribute class instance for this model by key.
   attribute: (key) -> this._attributes[key] ?=
     new (this.constructor.schema.attributes[key])?(this, key)
 
-
+  # resolves all resolveable attributes with the given app.
   autoResolveWith: (app) ->
     for key of this.constructor.schema.attributes
       attribute = this.attribute(key)
       attribute.resolveWith(app) if attribute.isReference is attribute.autoResolve is true
     return
 
-  # Actually set up our binding.
-  # **Returns** nothing.
+  # Actually set up our bindings.
   _bind: ->
     this._bindings = {}
     for key, binding of this.constructor.schema.bindings
@@ -96,8 +84,6 @@ class Model extends Map
 
   # Returns a `Varying` of `true` or `false` depending on whether this model is
   # valid or not.
-  #
-  # **Returns** `Varying[Boolean]` indicating current validity.
   valid: -> this._valid$ ?=
     this.issues().watchLength().map((length) -> length is 0)
 
@@ -116,9 +102,6 @@ class Model extends Map
 
   # Takes in a data hash and relies upon attribute definition to provide a sane
   # default deserialization methodology.
-  #
-  # **Returns** a `Model` or subclass of `Model`, depending on invocation, with
-  # the data populated.
   @deserialize: (data) ->
     for key, attribute of this.schema.attributes
       prop = util.deepGet(data, key)

@@ -22,21 +22,10 @@ class Library extends Base
     super()
     this.bookcase = {}
 
-  # Registers a book with the `Library`. It takes some fixed parameters:
-  #
-  # 1. `klass`: The class of target objects that ought to be matched with this
-  #    book. The library will match contravariants of the given type.
-  # 2. `book`: The actual entity to return to the user upon match.
-  # 3. `options`: *Optional*: A hash with any of the following additional
-  #    options:
-  #    - `context`: A string denoting what sort of match we're looking
-  #      for. This can be anything; recommended usages involve logical rather
-  #      than physical differences; eg "default" vs "edit" is best practice,
-  #      whereas "client" vs "server" is better resolved by registration itself.
-  #    - `priority`: A positive integer denoting the priority of this
-  #      registration. The higher the value, the higher the priority.
-  #    - (any): Any other k/v pairs specify additional properties of the book
-  #      that may be freely matched against upon search.
+  # Registers a book with the `Library`. Book is the thing that should be handed
+  # back when we try to .get(klass). It can be anything. Options can be context,
+  # priority (bigger is higher pri), and any arbitrary other k/v pairs for
+  # matching on .get().
   register: (klass, book, options = {}) ->
     bookId = Library._classId(klass)
 

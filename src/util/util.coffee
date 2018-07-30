@@ -17,10 +17,7 @@ util =
   _uniqueId: 0
 
   # Provision a unique serial id.
-  #
   # TODO: possibly return an alphanumeric identifier instead.
-  #
-  # **Returns** a unique integer.
   uniqueId: -> util._uniqueId++
 
   #### Array Utils
@@ -68,8 +65,6 @@ util =
 
   # Gets a deeply nested key from a hash. Falls back to `null` if it can't find
   # the key in question.
-  #
-  # **Returns** the value in question, or else `null`.
   deepGet: (obj, path) ->
     path = if util.isArray(path) then path else if util.isString(path) then path.split('.') else [ path.toString() ]
 
@@ -77,10 +72,8 @@ util =
     obj = obj[path[idx++]] while obj? and idx < path.length
     obj ? null # Return null rather than undef here
 
-  # Sets a deeply nested key in a hash. Generates nested hashes along the way
-  # if it encounters undef keys.
-  #
-  # **Returns** a function that takes a value and sets the requested key
+  # Gives a function to set a deeply nested key in a hash. Eagerly generates
+  # nested objects along the way if it encounters undef keys.
   deepSet: (obj, path) ->
     path = if util.isArray(path) then path else if util.isString(path) then path.split('.') else [ path.toString() ]
 
@@ -91,8 +84,6 @@ util =
 
   # Deletes a deeply nested key in a hash. Aborts if it can't navigate to the
   # path in question.
-  #
-  # **Returns** the deleted value
   deepDelete: (obj, path) ->
     path = if util.isArray(path) then path else path.split('.')
 
@@ -109,8 +100,6 @@ util =
 
   # Traverses a hash, calling a passed-in function with the current path and
   # value for leaves.
-  #
-  # **Returns** The original hash.
   traverse: (obj, f, path = []) ->
     for k, v of obj
       subpath = path.concat([ k ])
@@ -119,21 +108,17 @@ util =
         util.traverse(v, f, subpath)
       else
         f(subpath, v)
-
-    obj
+    return
 
   # Traverses a hash, calling a passed-in function with the current path and
   # value for every node.
-  #
-  # **Returns** The original hash.
   traverseAll: (obj, f, path = []) ->
     for k, v of obj
       subpath = path.concat([ k ])
 
       f(subpath, v)
       util.traverseAll(obj[k], f, subpath) if obj[k]? and util.isPlainObject(obj[k])
-
-    obj
+    return
 
 # Bulk add a bunch of detection functions; thanks to Underscore.js.
 toString = Object.prototype.toString

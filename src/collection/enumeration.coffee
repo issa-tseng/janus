@@ -81,7 +81,7 @@ class IndexList extends DerivedList
   constructor: (@parent) ->
     super()
 
-    this._lengthVaried = this.reactTo(this.parent.watchLength(), (length) =>
+    this._lengthObservation = this.reactTo(this.parent.watchLength(), (length) =>
       ourLength = this.length
       if length > ourLength
         this._add(idx) for idx in [ourLength...length]
@@ -94,7 +94,7 @@ class IndexList extends DerivedList
   mapPairs: (f) -> this.flatMap((idx) => Varying.mapAll(f, new Varying(idx), this.parent.watchAt(idx)))
   flatMapPairs: (f) -> this.flatMap((idx) => Varying.flatMapAll(f, new Varying(idx), this.parent.watchAt(idx)))
 
-  __destroy: -> this._lengthVaried.stop(); return
+  __destroy: -> this._lengthObservation.stop(); return
 
 _dynamic = (f) -> (obj, options) ->
   Enumeration[if obj.isMappable is true then 'list' else if obj.isMap is true then 'map'][f](obj, options)
