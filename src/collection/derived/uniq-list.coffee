@@ -10,8 +10,8 @@ class UniqList extends DerivedList
     this.counts = []
 
     this._tryAdd(elem) for elem in this.parent.list
-    this.parent.on('added', (elem) => this._tryAdd(elem))
-    this.parent.on('removed', (elem) => this._tryRemove(elem))
+    this.listenTo(this.parent, 'added', (elem) => this._tryAdd(elem))
+    this.listenTo(this.parent, 'removed', (elem) => this._tryRemove(elem))
 
   _tryAdd: (elem) ->
     idx = this.list.indexOf(elem)
@@ -21,6 +21,7 @@ class UniqList extends DerivedList
     else
       this.counts[this.counts.length] = 1
       this._add(elem)
+    return
 
   _tryRemove: (elem) ->
     idx = this.list.indexOf(elem)
@@ -31,6 +32,7 @@ class UniqList extends DerivedList
       if this.counts[idx] is 0
         this.counts.splice(idx, 1)
         this._removeAt(idx)
+    return
 
 
 module.exports = { UniqList }

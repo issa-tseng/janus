@@ -1,5 +1,5 @@
-# The base class used by Janus that provides events, behavior composition, and
-# other core functionality.
+# The base class used by Janus that provides events, but is almost entirely
+# focused on resource and memory management.
 
 EventEmitter = require('eventemitter2').EventEmitter2
 
@@ -83,7 +83,7 @@ class Base
   # listeners flying around it can be a little hard to reason out.
   #
   # **Returns** self.
-  destroyWith: (other) -> this.listenTo(other, 'destroying', => this.destroy())
+  destroyWith: (other) -> this.listenTo(other, 'destroying', => this.destroy()); return
 
   # Increase the number of dependencies on this resource, which delays destruction.
   #

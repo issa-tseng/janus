@@ -41,6 +41,7 @@ class KeyList extends DerivedList
         this._addKey(key)
       else if oldValue? and not newValue?
         this._removeKey(key)
+      return
     )
 
   _addKey: (key) ->
@@ -56,6 +57,7 @@ class KeyList extends DerivedList
     else
       this._trackedKeys[key] = true
       this._add(key)
+    return
 
   _removeKey: (key) ->
     idx = this.list.indexOf(key)
@@ -69,8 +71,7 @@ class KeyList extends DerivedList
       for k, idx in this.list when k.indexOf(key) is 0
         delete this._trackedKeys[k]
         this._removeAt(idx)
-
-    null
+    return
 
   # (flat)mapPairs takes f: (k, v) -> x and returns List[x]
   mapPairs: (f) -> this.flatMap((key) => Varying.mapAll(f, new Varying(key), this.target.watch(key)))
@@ -80,19 +81,20 @@ class IndexList extends DerivedList
   constructor: (@parent) ->
     super()
 
-    this._lengthVaried = this.parent.watchLength().react((length) =>
+    this._lengthVaried = this.reactTo(this.parent.watchLength(), (length) =>
       ourLength = this.length
       if length > ourLength
         this._add(idx) for idx in [ourLength...length]
       else if length < ourLength
         this._removeAt(idx - 1) for idx in [ourLength...length] by -1
+      return
     )
 
   # (flat)mapPairs takes f: (k, v) -> x and returns List[x]
   mapPairs: (f) -> this.flatMap((idx) => Varying.mapAll(f, new Varying(idx), this.parent.watchAt(idx)))
   flatMapPairs: (f) -> this.flatMap((idx) => Varying.flatMapAll(f, new Varying(idx), this.parent.watchAt(idx)))
 
-  __destroy: -> this._lengthVaried.stop(); null
+  __destroy: -> this._lengthVaried.stop(); return
 
 _dynamic = (f) -> (obj, options) ->
   Enumeration[if obj.isMappable is true then 'list' else if obj.isMap is true then 'map'][f](obj, options)

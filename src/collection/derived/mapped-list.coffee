@@ -8,11 +8,11 @@ class MappedList extends DerivedList
 
     # add initial items then keep track of membership changes.
     this._add(elem) for elem in this.parent.list
-    this.parent.on('added', (elem, idx) => this._add(elem, idx))
-    this.parent.on('moved', (_, idx, oldIdx) => this._moveAt(oldIdx, idx))
-    this.parent.on('removed', (_, idx) => this._removeAt(idx))
+    this.listenTo(this.parent, 'added', (elem, idx) => this._add(elem, idx))
+    this.listenTo(this.parent, 'moved', (_, idx, oldIdx) => this._moveAt(oldIdx, idx))
+    this.listenTo(this.parent, 'removed', (_, idx) => this._removeAt(idx))
 
-  _add: (elem, idx) -> super(this.mapper(elem), idx)
+  _add: (elem, idx) -> super(this.mapper(elem), idx); return
 
 class FlatMappedList extends DerivedList
   constructor: (@parent, @mapper, @options = {}) ->
@@ -23,16 +23,16 @@ class FlatMappedList extends DerivedList
 
     # add initial items then keep track of membership changes.
     this._add(elem, idx) for elem, idx in this.parent.list
-    this.parent.on('added', (elem, idx) => this._add(elem, idx))
-    this.parent.on('removed', (_, idx) => this._removeAt(idx))
-    this.parent.on('moved', (_, idx, oldIdx) => this._moveAt(oldIdx, idx))
+    this.listenTo(this.parent, 'added', (elem, idx) => this._add(elem, idx))
+    this.listenTo(this.parent, 'removed', (_, idx) => this._removeAt(idx))
+    this.listenTo(this.parent, 'moved', (_, idx, oldIdx) => this._moveAt(oldIdx, idx))
 
   _add: (elem, idx) ->
     wrapped = new Varying(elem)
 
     initial = null
     mapping = wrapped.flatMap(this.mapper)
-    binding = mapping.react((newValue) =>
+    binding = this.reactTo(mapping, (newValue) =>
       initial ?= newValue # perf: saves us one mapping.get()
       bidx = this._bindings.list.indexOf(binding)
       this._put(newValue, bidx) if bidx >= 0
@@ -40,14 +40,17 @@ class FlatMappedList extends DerivedList
 
     this._bindings.add(binding, idx)
     super(initial, idx)
+    return
 
   _removeAt: (idx) ->
     this._bindings.removeAt(idx).stop()
     super(idx)
+    return
 
   _moveAt: (oldIdx, idx) ->
     this._bindings.moveAt(oldIdx, idx)
     super(oldIdx, idx)
+    return
 
 
 module.exports = { MappedList, FlatMappedList }

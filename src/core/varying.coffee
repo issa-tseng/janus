@@ -91,8 +91,7 @@ class Varying
     for _, observer of this._observers
       observer.f_(this._value)
       return if generation isnt this._generation # we've re-triggered setValue. abort.
-
-    null
+    return
 
   # (Varying v) => v a -> a
   get: -> this._value
@@ -154,6 +153,7 @@ class Observation
   stop: ->
     this.stopped = true # for debugging.
     this._stop()
+    return
 
 nothing = { isNothing: true }
 
@@ -236,7 +236,7 @@ class FlatMappedVarying extends Varying
 
     this._value = value
     silent = false
-    null
+    return
 
   # actually listens to the parent(s) and returns the Observation that represents it.
   #
@@ -364,7 +364,7 @@ class ManagedVarying extends FlatMappedVarying
 
     this._awake = false
     resources = null
-    this.refCount().react(false, (count) =>
+    this.refCount().react(false, (count) => # TODO: leak?
       if count > 0 and this._awake is false
         this._awake = true
         resources = (f() for f in this._resources)
