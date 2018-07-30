@@ -9,71 +9,72 @@ id = (x) -> x
 
 should.Assertion.add('val', (->
   this.params = { operator: 'to be a val' }
-  this.obj.should.be.an.Object
+  this.obj.should.be.an.Object()
 
-  this.obj.map.should.be.a.Function
-  this.obj.flatMap.should.be.a.Function
-  this.obj.and.should.be.a.Function
-  this.obj.all.should.be.a.Function
+  this.obj.map.should.be.a.Function()
+  this.obj.flatMap.should.be.a.Function()
+  this.obj.and.should.be.a.Function()
+  this.obj.all.should.be.an.Object()
 ), true)
 
-# this only checks default conjunctions! custom-built chainers will have a
-# different shape.
+# this only checks (some) default conjunctions! custom-built chainers will have
+# a different shape.
 should.Assertion.add('conjunction', (->
   this.params = { operator: 'to be a default conjunction' }
-  this.obj.should.be.a.Function
-  this.obj.watch.should.be.a.Function
-  this.obj.attribute.should.be.a.Function
-  this.obj.varying.should.be.a.Function
+  this.obj.should.be.a.Function()
+  this.obj.watch.should.be.a.Function()
+  this.obj.attribute.should.be.a.Function()
+  this.obj.varying.should.be.a.Function()
 ), true)
 
 should.Assertion.add('terminus', (->
   this.params = { operator: 'to be a terminus' }
-  this.obj.should.be.a.Function
+  this.obj.should.be.an.Object()
 
-  this.obj.point.should.be.a.Function
-  this.obj.flatMap.should.be.a.Function
-  this.obj.map.should.be.a.Function
+  this.obj.point.should.be.a.Function()
+  this.obj.flatMap.should.be.a.Function()
+  this.obj.map.should.be.a.Function()
+  this.obj.all.should.equal(this.obj)
 ), true)
 
 should.Assertion.add('varying', (->
   this.params = { operator: 'to be a Varying' }
 
-  this.obj.flatMap.should.be.a.Function
-  this.obj.map.should.be.a.Function
+  this.obj.flatMap.should.be.a.Function()
+  this.obj.map.should.be.a.Function()
 
-  this.obj.react.should.be.a.Function
+  this.obj.react.should.be.a.Function()
 ), true)
 
 describe 'from', ->
   describe 'initial val', ->
     it 'should return a val-looking thing', ->
-      from('a').should.be.a.val
+      from('a').should.be.a.val()
 
     it 'should contain functions that return val-looking things', ->
-      from.watch('b').should.be.a.val
-      from.attribute('b').should.be.a.val
-      from.varying('b').should.be.a.val
+      from.watch('b').should.be.a.val()
+      from.attribute('b').should.be.a.val()
+      from.varying('b').should.be.a.val()
 
     it 'should not contain function called dynamic', ->
-      (from.dynamic?).should.be.false
+      (from.dynamic?).should.equal(false)
 
   describe 'val', ->
     it 'should return a val-looking thing on map', ->
-      from('a').map(->).should.be.a.val
+      from('a').map(->).should.be.a.val()
 
     it 'should return a val-looking thing on flatMap', ->
-      from('a').flatMap(->).should.be.a.val
+      from('a').flatMap(->).should.be.a.val()
 
     it 'should return a conjunction-looking thing on and', ->
-      from('a').and.should.be.a.conjuction
+      from('a').and.should.be.a.conjunction()
 
     it 'should return a terminus-looking thing on all', ->
-      from('a').all.should.be.a.terminus
+      from('a').all.should.be.a.terminus()
 
   describe 'point', ->
-    it 'should return a terminus-looking thing', ->
-      from('a').all.point(->).should.be.a.terminus
+    it 'should return a true varying', ->
+      from('a').all.point(->).isVarying.should.equal(true)
 
     it 'should execute a pointing function with the case', ->
       args = []
@@ -407,7 +408,7 @@ describe 'from', ->
     it 'should not use the dynamic case if not present', ->
       { a, b } = custom = defcase('a', 'b')
 
-      from.build(custom).should.not.be.a.Function
+      from.build(custom).should.not.be.a.Function()
 
   describe 'deferred point calling order', ->
     it 'should work with non-immediate react', ->

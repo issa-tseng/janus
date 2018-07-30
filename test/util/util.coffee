@@ -45,7 +45,7 @@ describe 'Util', ->
     it 'should return monotonically increasing numbers', ->
       last = -1
       next = (cur) ->
-        cur.should.be.a.Number
+        cur.should.be.a.Number()
         (cur > last).should.equal(true)
         last = cur
 
@@ -157,7 +157,7 @@ describe 'Util', ->
 
   describe 'deepSet', ->
     it 'should return a function', ->
-      util.deepSet({}, 'a.b.c').should.be.a.Function
+      util.deepSet({}, 'a.b.c').should.be.a.Function()
 
     it 'should set the requested key when the second order function is called', ->
       obj = {}

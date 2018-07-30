@@ -41,8 +41,8 @@ describe 'Map', ->
 
       it 'should return null on nonexistent keys', ->
         map = new Map( broad: 'way' )
-        (map.get('vivace') is null).should.be.true
-        (map.get('cafe.vivace') is null).should.be.true
+        (map.get('vivace') is null).should.equal(true)
+        (map.get('cafe.vivace') is null).should.equal(true)
 
     describe 'set', ->
       it 'should be able to set a shallow key', ->
@@ -139,14 +139,14 @@ describe 'Map', ->
         map = new Map( cafe: { vivace: 'brix' } )
         map.unset('cafe.vivace')
 
-        (map.get('cafe.vivace') is null).should.be.true
+        (map.get('cafe.vivace') is null).should.equal(true)
 
       it 'should be able to unset a key tree', ->
         map = new Map( cafe: { vivace: 'brix' } )
         map.unset('cafe')
 
-        (map.get('cafe.vivace') is null).should.be.true
-        (map.get('cafe') is null).should.be.true
+        (map.get('cafe.vivace') is null).should.equal(true)
+        (map.get('cafe') is null).should.equal(true)
 
     describe 'setAll', ->
       it 'should set all data in the given bag', ->
@@ -164,9 +164,9 @@ describe 'Map', ->
         map.setAll( tazza: { of: 'cafe' } )
 
         should.not.exist(map.data.una)
-        (map.get('una') is null).should.be.true
+        (map.get('una') is null).should.equal(true)
         should.not.exist(map.data.tazza.di)
-        (map.get('tazza.di') is null).should.be.true
+        (map.get('tazza.di') is null).should.equal(true)
 
         map.data.tazza.of.should.equal('cafe')
         map.get('tazza.of').should.equal('cafe')

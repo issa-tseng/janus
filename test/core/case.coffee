@@ -11,8 +11,8 @@ describe 'case', ->
     describe 'definition', ->
       it 'should return a list of functions', ->
         { success, fail } = defcase('success', 'fail')
-        success.should.be.a.Function
-        fail.should.be.a.Function
+        success.should.be.a.Function()
+        fail.should.be.a.Function()
 
       it 'should return a list of functions that return case objects', ->
         { mycase } = defcase('mycase')
@@ -20,22 +20,22 @@ describe 'case', ->
 
       it 'should take a mix of decorated and undecorated cases: (str, obj)', ->
         { success, fail } = defcase('success', fail: unapply2)
-        success.should.be.a.Function
-        fail.should.be.a.Function
+        success.should.be.a.Function()
+        fail.should.be.a.Function()
         fail.length.should.equal(2)
 
       it 'should take a mix of decorated and undecorated cases: (obj, str)', ->
         { success, fail } = defcase(success: unapply2, 'fail')
-        success.should.be.a.Function
+        success.should.be.a.Function()
         success.length.should.equal(2)
-        fail.should.be.a.Function
+        fail.should.be.a.Function()
 
       it 'should take a mix of decorated and undecorated cases: (str, obj, str)', ->
         { dunno, success, fail } = defcase('dunno', success: unapply2, 'fail')
-        dunno.should.be.a.Function
-        success.should.be.a.Function
+        dunno.should.be.a.Function()
+        success.should.be.a.Function()
         success.length.should.equal(2)
-        fail.should.be.a.Function
+        fail.should.be.a.Function()
 
       it 'should take arity global option and use it throughout', ->
         { success, fail } = defcase.withOptions({ arity: 2 })('success', 'fail' )
@@ -217,8 +217,8 @@ describe 'case', ->
           otherwise -> null
         )
 
-        m(success(true)).should.be.true
-        matched.should.be.true
+        m(success(true)).should.equal(true)
+        matched.should.equal(true)
 
       it 'should work correctly for the default arity option', ->
         a = b = c = null
@@ -242,8 +242,8 @@ describe 'case', ->
           otherwise -> null
         )
 
-        m(success(true)).should.be.true
-        matched.should.be.true
+        m(success(true)).should.equal(true)
+        matched.should.equal(true)
 
       it 'should return the whole case for otherwise unapply', ->
         result = null

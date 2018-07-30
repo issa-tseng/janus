@@ -135,7 +135,7 @@ describe 'List', ->
     it 'should not remove destroying Base elements if the list is derived', -> # gh97
       l = new List(new Model() for _ in [0..4])
       m = l.map((x) -> x.shadow())
-      should.doesNotThrow -> m.at(0).destroy()
+      should.doesNotThrow(-> m.at(0).destroy())
       # in the wild, this occurs when views self-destroy; we just destroy m to simulate this.
 
   describe 'removal (reference)', ->

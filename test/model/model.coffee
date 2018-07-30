@@ -105,7 +105,7 @@ describe 'Model', ->
         )
 
         new TestModel()
-        called.should.be.true
+        called.should.equal(true)
 
     describe 'pointing', ->
       it 'should point dynamic varying functions', ->

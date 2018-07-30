@@ -11,7 +11,7 @@ describe 'Library', ->
   describe 'class identification', ->
     it 'should return an integer', ->
       class TestClass
-      (typeof Library._classId(TestClass) is 'number').should.be.true
+      (typeof Library._classId(TestClass) is 'number').should.equal(true)
 
     it 'should tag the class with the id', ->
       class TestClass
@@ -189,7 +189,7 @@ describe 'Library', ->
         evented = true
 
       library.get(obj, options)
-      evented.should.be.true
+      evented.should.equal(true)
 
     it 'should emit a missed event when nothing is retrieved', ->
       library = new Library()
@@ -209,5 +209,5 @@ describe 'Library', ->
         evented = true
 
       library.get(obj, options)
-      evented.should.be.true
+      evented.should.equal(true)
 

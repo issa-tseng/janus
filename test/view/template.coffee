@@ -7,12 +7,12 @@ $ = require('jquery')(require('domino').createWindow())
 describe 'templater', ->
   describe 'find', ->
     it 'returns an object with mutator functions first-order', ->
-      find('a').attr.should.be.a.Function
-      find('a').render.should.be.a.Function
+      find('a').attr.should.be.a.Function()
+      find('a').render.should.be.a.Function()
 
     it 'returns a function1 when a mutator is called', ->
       result = find('a').css()
-      result.should.be.a.Function
+      result.should.be.a.Function()
       result.length.should.equal(1)
 
     describe 'selection', ->
@@ -51,8 +51,8 @@ describe 'templater', ->
       it 'mixes in our mutators', ->
         mutators = { test: (->), zebra: (->) }
         myfind = find.build(mutators)
-        myfind('a').test.should.be.a.Function
-        myfind('a').zebra.should.be.a.Function
+        myfind('a').test.should.be.a.Function()
+        myfind('a').zebra.should.be.a.Function()
 
       it 'ignores the default mutators', ->
         mutators = { test: (->), zebra: (->) }
@@ -94,7 +94,7 @@ describe 'templater', ->
 
         myfind = find.build({ test: mymutator })
         result = myfind('a').test({ a: 1 }).chain({ b: 2 }).chain({ c: 3 })
-        result.should.be.a.Function
+        result.should.be.a.Function()
         result.length.should.equal(1)
 
     # tests chaining across different mutators.
@@ -209,7 +209,7 @@ describe 'templater', ->
 
         myfind('a').test()(dom)(dom, point)
         givenDom[0].should.equal(dom[0])
-        givenPoint.should.be.a.Function
+        givenPoint.should.be.a.Function()
         givenPoint().should.equal(2)
 
       it 'should call the final order on mutator with the correct first-order arguments', ->
@@ -228,8 +228,8 @@ describe 'templater', ->
       (point) -> cb(point)
 
     it 'returns a function', ->
-      template().should.be.a.Function
-      template(->).should.be.a.Function
+      template().should.be.a.Function()
+      template(->).should.be.a.Function()
 
     it 'calls all directly passed mutators (first-order)', ->
       all = []
