@@ -32,11 +32,7 @@ class Library extends Base
     classShelf = this.bookcase[bookId] ?= {}
     contextShelf = classShelf[options.context ? 'default'] ?= []
 
-    contextShelf.push(
-      book: book
-      options: options
-    )
-
+    contextShelf.push({ book: book, options: options })
     contextShelf.sort((a, b) -> (b.options.priority ? 0) - (a.options.priority ? 0)) if options.priority?
 
     book

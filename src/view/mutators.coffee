@@ -80,11 +80,15 @@ mutators =
     g_ = (event) -> f_(event, view.subject, view, view.artifact())
     thisArgs = args.slice(0, -1)
     thisArgs.push(g_)
-    this.start = =>
+    this.start = (=>
       dom.on(thisArgs...)
-      this.stop = ->
+      this.stop = (->
         dom.off(thisArgs[0], g_)
         this.constructor.prototype.stop.call(this)
+        return
+      )
+    )
+    return
   )
 
 

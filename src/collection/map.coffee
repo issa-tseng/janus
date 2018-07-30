@@ -22,7 +22,7 @@ class Map extends Enumerable
     super()
 
     this.data = {}
-    this._watches = {}
+    this._watches$ = {}
 
     # If we have a designated shadow parent, set it and track its events.
     if this.options.parent?
@@ -131,11 +131,10 @@ class Map extends Enumerable
   original: -> this._parent?.original() ? this
 
   # Get a `Varying` object for a particular key. Uses events to set. Caches.
-  watch: (key) ->
-    this._watches[key] ?= do =>
-      varying = new Varying(this.get(key))
-      this.listenTo(this, "changed:#{key}", (newValue) -> varying.set(newValue))
-      varying
+  watch: (key) -> this._watches$[key] ?= do =>
+    varying = new Varying(this.get(key))
+    this.listenTo(this, "changed:#{key}", (newValue) -> varying.set(newValue))
+    varying
 
   # Helper to generate change events.
   _changed: (key, newValue, oldValue) ->
@@ -206,7 +205,7 @@ class Map extends Enumerable
     result
 
   # Gets the number of k/v pairs in this Map. Depends on enumeration.
-  watchLength: -> this.watchLength$ ?= Varying.managed((=> this.enumeration()), (it) -> it.watchLength())
+  watchLength: -> this._watchLength$ ?= Varying.managed((=> this.enumeration()), (it) -> it.watchLength())
 
   # Takes in a data hash and populates a new Map (or Map covariant) with its data.
   @deserialize: (data) -> new this(data)
