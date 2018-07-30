@@ -14,11 +14,6 @@ class Base
     this._refCount = 1
 
   # provide a lazy eventemitter-like interface.
-  _events: ->
-    return this.events if this.events?
-    this.events
-
-  # provide a lazy eventemitter-like interface.
   # only coerce an eventemitter into reality if someone actually listens.
   # ignore all other requests to do anything.
   on: (type, listener) ->
@@ -74,8 +69,9 @@ class Base
       target?.off?(event, handler) for { 0: target, 1: event, 2: handler } in this._outwardListeners
       o.stop() for o in this._outwardReactions
       this.removeAllListeners()
-      this.__destroy?() # for framework internals
       this._destroy?()
+      this.__destroy?() # for framework internals
+    return
 
   # Quick shortcut for expressing that this object's existence depends purely on
   # another, so it should self-destruct if the other does.
