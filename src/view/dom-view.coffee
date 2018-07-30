@@ -32,9 +32,8 @@ class DomView extends View
 
       # then run our children forever:
       this._subwires = for binding in this._bindings when binding.view?
-        binding.view.react((view) -> view?.wireEvents())
-
-    null
+        this.reactTo(binding.view, (view) -> view?.wireEvents())
+    return
 
   __destroy: ->
     if this._bindings?
@@ -48,8 +47,7 @@ class DomView extends View
     if this._artifact?
       this._artifact.trigger?('destroying')
       this._artifact.remove()
-
-    null
+    return
 
   @build: (fragment, template, options = {}) ->
     class extends DomView

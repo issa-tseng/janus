@@ -12,9 +12,10 @@ class Manifest extends Base
     super()
     self = this
 
+    this._valid = true
     this.result = new Varying(types.result.init())
     this.requests = new List()
-    this._valid = true
+    this.requests.destroyWith(this)
 
     # track app request resolution. set hook if we might be done.
     this._pending = 0
@@ -54,20 +55,22 @@ class Manifest extends Base
       return if this._fault is true
       return if this._pending > 0
 
+      # we are definitely done, just figure out in what state:
       if this._valid is true
         this.result.set(types.result.success(this.view))
       else
-        this.result.set(types.result.failure(this.model.issues()
-          .filter(types.validity.invalid.match)))
+        this.result.set(types.result.failure(this.model.issues()))
 
       this.destroy()
+      return
     ), 0)
+    return
 
   _fault: (x) ->
     this._fault = true
     this.result.set(types.result.failure(x))
     this.destroy() # immediately stop listening to things.
-    null
+    return
 
   @run: (app, model, criteria, options) -> new this(app, model, criteria, options)
 

@@ -13,15 +13,15 @@ class FilteredList extends DerivedList
 
     this._add(elem, idx) for elem, idx in this.parent.list
 
-    this.parent.on('added', (elem, idx) => this._add(elem, idx))
-    this.parent.on('moved', (_, idx, oldIdx) => this._moveAt(oldIdx, idx))
-    this.parent.on('removed', (elem, idx) => this._removeAt(idx))
+    this.listenTo(this.parent, 'added', (elem, idx) => this._add(elem, idx))
+    this.listenTo(this.parent, 'moved', (_, idx, oldIdx) => this._moveAt(oldIdx, idx))
+    this.listenTo(this.parent, 'removed', (elem, idx) => this._removeAt(idx))
 
   _add: (elem, idx) ->
     this._idxMap.splice(idx, 0, this._idxMap[idx - 1] ? -1)
 
     lastResult = false
-    filtered = Varying.of(this.filterer(elem)).react((result) =>
+    filtered = this.reactTo(Varying.of(this.filterer(elem)), (result) =>
       result = result is true # force boolean because otherwise lastResult check fails.
       cidx = this._filtereds.indexOf(filtered)
       cidx = idx if cidx < 0 # this gets called once before we store away the Varied.
@@ -42,8 +42,9 @@ class FilteredList extends DerivedList
           super(this.parent.at(cidx), this._idxMap[cidx])
     )
 
-    # can't add this til after we have the Varied reference.
+    # can't add this til after we have the Observation reference.
     this._filtereds.splice(idx, 0, filtered)
+    return
 
   _removeAt: (idx) ->
     # first adjust our reified list and index mapping.
@@ -57,8 +58,7 @@ class FilteredList extends DerivedList
     # then we can pull out the dead entries in our tracking lists.
     this._filtereds.splice(idx, 1)[0].stop()
     this._idxMap.splice(idx, 1)
-
-    null
+    return
 
   _moveAt: (oldIdx, newIdx) ->
     # adjust filterers.
@@ -79,6 +79,7 @@ class FilteredList extends DerivedList
 
     # adjust our reified list, but only if it was actually in the list at all.
     super(oldMappedIdx, this._idxMap[newIdx]) if delta is 1
+    return
 
 
 module.exports = { FilteredList }

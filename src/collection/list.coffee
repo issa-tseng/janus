@@ -180,12 +180,13 @@ class List extends OrderedMappable
 
   # Watch the length of this collection.
   watchLength: ->
-    result = new Varying(this.list.length)
+    this.watchLength$ ?= do =>
+      result = new Varying(this.list.length)
 
-    this.on('added', => result.set(this.list.length))
-    this.on('removed', => result.set(this.list.length))
+      this.on('added', => result.set(this.list.length))
+      this.on('removed', => result.set(this.list.length))
 
-    result
+      result
 
   # Set an index of this collection to the given member.
   #

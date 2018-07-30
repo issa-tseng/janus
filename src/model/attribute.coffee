@@ -87,7 +87,6 @@ class ReferenceAttribute extends Attribute
 
     # snoop on the actual model watcher to see if anybody cares, and if so actually
     # run the requestchain and set the result if we get it.
-    # TODO: or should we just do it right away, if someone is .get()ing?
     observation = null
     this.reactTo(this.model.watch(this.key).refCount(), (count) =>
       if count is 0 and observation?
@@ -102,8 +101,7 @@ class ReferenceAttribute extends Attribute
         return unless result?
         observation = this.reactTo(result, (x) => types.result.success.match(x, (y) => this.setValue(y)))
     )
-
-    null
+    return
 
   @to: (x) -> class extends this
     request: x

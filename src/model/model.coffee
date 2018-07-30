@@ -41,7 +41,7 @@ class Model extends Map
           attribute.default()
 
     # drop undef to null
-    value ?= null
+    value ? null
 
   # Get an attribute for this model.
   #
@@ -55,17 +55,15 @@ class Model extends Map
     for key of this.constructor.schema.attributes
       attribute = this.attribute(key)
       attribute.resolveWith(app) if attribute.isReference is attribute.autoResolve is true
-    null
+    return
 
   # Actually set up our binding.
   # **Returns** nothing.
   _bind: ->
     this._bindings = {}
     for key, binding of this.constructor.schema.bindings
-      this._bindings[key] = binding.all
-        .point(this.pointer())
-        .react(this.set(key))
-    null
+      this._bindings[key] = this.reactTo(binding.all.point(this.pointer()), this.set(key))
+    return
 
   pointer: -> this.pointer$ ?= match(
     cases.dynamic (x) =>
@@ -88,8 +86,10 @@ class Model extends Map
   # Returns a list of the validation results that have been bound against this model.
   validations: -> this._validations$ ?= do =>
     { List } = require('../collection/list')
-    new List(this.constructor.schema.validations)
+    result = new List(this.constructor.schema.validations)
       .flatMap((binding) => binding.all.point(this.pointer()))
+    result.destroyWith(this)
+    result
 
   # Returns a list of the currently failing validation results.
   issues: -> this._issues$ ?= this.validations().filter(types.validity.invalid.match)
@@ -108,7 +108,7 @@ class Model extends Map
 
   __destroy: ->
     attribute.destroy() for _, attribute of this._attributes
-    null
+    return
 
   # Overridden to define model characteristics like attributes, bindings, and validations.
   # Usually this is done through the Model.build mechanism rather than directly.

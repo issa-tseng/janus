@@ -85,7 +85,7 @@ class Library extends Base
     # no match found; go up the inheritance tree and retry.
     if klass?
       if (superClass = util.superClass(klass))?
-        this._get(obj, superClass, context, criteria)
+        return this._get(obj, superClass, context, criteria)
 
   # Class-level internal tracking of object constructors.
   @classKey: "__janus_classId#{new Date().getTime()}"

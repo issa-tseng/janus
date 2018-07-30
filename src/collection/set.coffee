@@ -39,7 +39,7 @@ class Set extends Mappable
     return undefined unless idx >= 0
     this._list.removeAt(idx)
     this.emit('removed', elem)
-    null
+    elem
 
   putAll: (elems) ->
     this.remove(x) for x in this.list.slice() when elems.indexOf(x) < 0
@@ -59,7 +59,7 @@ class Set extends Mappable
   # a Set is already its own enumeration; it is unordered, unindexed, and the
   # only addressing method is the things in it.
   enumerate: -> this.list.slice()
-  enumeration: -> this # or should it be this._list?
+  enumeration: -> this
 
   # all the list-like functions can get implemented based on our captive list. this
   # does mean that the resulting derivedlists will impose an ordering and indices

@@ -17,7 +17,7 @@ module.exports = {
 
   Trait: (parts...) -> (schema) ->
     part(schema) for part in parts
-    null
+    return
 }
 
 # in case some people prefer the consistent syntax:

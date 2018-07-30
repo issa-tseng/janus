@@ -101,8 +101,7 @@ class Map extends Enumerable
       this.unset(path.join('.')) unless deepGet(attrs, path)?
     )
     this.set(attrs)
-
-    null
+    return
 
   # Clear the value of some key. If we are a shadow copy, we'll actually
   # leave behind a sentinel so that we know not to read into our parent.
@@ -135,7 +134,6 @@ class Map extends Enumerable
     oldValue = deepDelete(this.data, key)
     newValue = this.get(key)
     this._changed(key, newValue, oldValue) unless newValue is oldValue
-
     oldValue
 
   # Shadow-copies a model. This allows a second copy of the model to function
@@ -185,8 +183,7 @@ class Map extends Enumerable
     # now emit direct events:
     this.emit("changed:#{key}", newValue, oldValue)
     this.emit('anyChanged', key, newValue, oldValue)
-
-    null
+    return
 
   # Handles our parent's changes and judiciously vends those events ourselves.
   _parentChanged: (key, newValue, oldValue) ->
@@ -195,7 +192,9 @@ class Map extends Enumerable
 
     this.emit("changed:#{key}", newValue, oldValue)
     this.emit('anyChanged', key, newValue, oldValue)
+    return
 
+  # Simple shortcuts with familiar names.
   keys: Enumerable.prototype.enumerate
   watchKeys: Enumerable.prototype.enumeration
 
