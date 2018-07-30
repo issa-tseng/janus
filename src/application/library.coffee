@@ -17,7 +17,6 @@ Base = require('../core/base').Base
 
 class Library extends Base
   isLibrary: true
-  _defaultContext: 'default'
 
   constructor: () ->
     super()
@@ -36,14 +35,8 @@ class Library extends Base
   #      whereas "client" vs "server" is better resolved by registration itself.
   #    - `priority`: A positive integer denoting the priority of this
   #      registration. The higher the value, the higher the priority.
-  #    - `attributes`: An additional set of descriptive attributes in hash
-  #      form. This can be arbitrarily nested, but values will be compared with
-  #      strict equality.
-  #    - `rejector`: After a basic match, the `rejector` is called and passed in
-  #      the target object. Returning `true` will fail the match.
-  #    - `acceptor`: After a basic match, the `acceptor` is called and passed in
-  #      the target object. Returning anything but `true` will fail the match.
-  #
+  #    - (any): Any other k/v pairs specify additional properties of the book
+  #      that may be freely matched against upon search.
   register: (klass, book, options = {}) ->
     bookId = Library._classId(klass)
 
@@ -59,48 +52,40 @@ class Library extends Base
 
     book
 
-  # The big show. Given some object, returns the first match in the Library.
-  # Takes the target `obj`, and optionally an `options` hash containing the
-  # `context` and/or an `attributes` hash to match the registration.
-  #
-  # **Returns** a registered book.
-  get: (obj, options = {}) ->
-    debugger if options.debug is true
-
+  # Given some object, returns the first match in the Library.
+  # Takes the target `obj`, and optionally a `criteria` hash containing the
+  # `context` and/or attributes pairs to match the registration.
+  get: (obj, criteria = {}) ->
     result =
-      this._get(obj, obj?.constructor, options.context ? this._defaultContext, options) ?
-      this._get(obj, obj?.constructor, 'default', options)
+      this._get(obj, obj?.constructor, criteria.context ? 'default', criteria) ?
+      this._get(obj, obj?.constructor, 'default', criteria)
 
     if result?
-      this.emit('got', obj, result, options)
+      this.emit('got', obj, result, criteria)
     else
-      this.emit('missed', obj, options)
+      this.emit('missed', obj, criteria)
 
     result ? null
 
   # Internal recursion method for searching the library.
-  _get: (obj, klass, context, options) ->
-    bookId =
-      if !obj?
-        'null'
-      else if util.isNumber(obj)
-        'number'
-      else if util.isString(obj)
-        'string'
-      else if obj is true or obj is false
-        'boolean'
-      else
-        Library._classId(klass)
+  _get: (obj, klass, context, criteria) ->
+    bookId = Library._instanceClassId(obj) ? Library._classId(klass)
     contextShelf = this.bookcase[bookId]?[context]
 
+    # possible matches; return the first true match.
     if contextShelf?
-      # we have a set of possible matches. go through them.
-      return record.book for record in contextShelf when match(obj, record, options.attributes)
+      for record in contextShelf
+        isMatch = true
+        for k, v of criteria when k not in [ 'context', 'priority' ]
+          if record.options[k] isnt v
+            isMatch = false
+            break
+        return record.book if isMatch is true
 
+    # no match found; go up the inheritance tree and retry.
     if klass?
-      superClass = util.superClass(klass)
-      if superClass?
-        this._get(obj, superClass, context, options)
+      if (superClass = util.superClass(klass))?
+        this._get(obj, superClass, context, criteria)
 
   # Class-level internal tracking of object constructors.
   @classKey: "__janus_classId#{new Date().getTime()}"
@@ -128,17 +113,17 @@ class Library extends Base
         this.classMap[id] = klass
         klass[this.classKey] = id
 
-# Internal util func for processing a potential match against its advanced
-# options.
-match = (obj, record, attributes) ->
-  return false if record.options.rejector?(obj) is true
-  return false if record.options.acceptor? and (record.options.acceptor(obj) isnt true)
-
-  isMatch = true
-  util.traverse(attributes, (subpath, value) -> isMatch = false unless util.deepGet(record.options.attributes, subpath) is value) if attributes
-
-  isMatch
-
+  # Class-level method for determining the tag of some special-case object
+  # instances.
+  @_instanceClassId: (obj) ->
+    if !obj?
+      'null'
+    else if util.isNumber(obj)
+      'number'
+    else if util.isString(obj)
+      'string'
+    else if obj is true or obj is false
+      'boolean'
 
 module.exports = { Library }
 
