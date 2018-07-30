@@ -3,7 +3,7 @@
 $ = require('janus-dollar')
 
 SuccessResultView = DomView.build($('<div class="janus-successResult"/>'), template(
-  find('div').render(from.self().map((view) -> view.subject.value))
+  find('div').render(from.self().map((view) -> view.subject.get()))
 ))
 
 module.exports = {

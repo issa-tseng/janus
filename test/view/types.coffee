@@ -11,7 +11,7 @@ describe 'view', ->
   describe 'types', ->
     describe 'success', ->
       it 'renders its container div', ->
-        view = new SuccessResultView(types.result.success, { app: dummyApp })
+        view = new SuccessResultView(types.result.success(47), { app: dummyApp })
 
         dom = view.artifact()
         dom.is('div').should.equal(true)
@@ -32,7 +32,5 @@ describe 'view', ->
       it 'registers the case class correctly', ->
         library = new Library()
         registerWith(library)
-
-        library.get(types.result.success).should.equal(SuccessResultView)
         library.get(types.result.success()).should.equal(SuccessResultView)
 
