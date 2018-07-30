@@ -120,61 +120,32 @@ describe 'Library', ->
       library.register(TestObj, TestBookC, priority: 25)
       library.get(new TestObj()).should.equal(TestBookB)
 
-    it 'should handle attributes correctly', ->
+    it 'should match against custom attributes correctly', ->
       library = new Library()
 
       class TestObj
       class TestBook
-      library.register(TestObj, TestBook, attributes: { style: 'button' })
+      library.register(TestObj, TestBook, { style: 'button' })
 
       library.get(new TestObj()).should.equal(TestBook)
-      library.get(new TestObj(), attributes: { style: 'button' }).should.equal(TestBook)
-      should.not.exist(library.get(new TestObj(), attributes: { style: 'link' }))
-
-
-    it 'should handle acceptors correctly', ->
-      library = new Library()
-
-      class TestObj
-      class TestBook
-      library.register(TestObj, TestBook, acceptor: (obj) -> obj.accept is true)
-
-      should.not.exist(library.get(new TestObj()))
-
-      obj = new TestObj()
-      obj.accept = true
-      library.get(obj).should.equal(TestBook)
-
-
-    it 'should handle rejectors correctly', ->
-      library = new Library()
-
-      class TestObj
-      class TestBook
-      library.register(TestObj, TestBook, rejector: (obj) -> obj.accept isnt true)
-
-      should.not.exist(library.get(new TestObj()))
-
-      obj = new TestObj()
-      obj.accept = true
-      library.get(obj).should.equal(TestBook)
+      library.get(new TestObj(), { style: 'button' }).should.equal(TestBook)
+      should.not.exist(library.get(new TestObj(), { style: 'link' }))
 
     it 'should return lower priority results if higher ones fail', ->
       library = new Library()
       class TestObj
 
+      class TestBookX
+      library.register(TestObj, TestBookX, priority: 1)
+
       class TestBookA
-      library.register(TestObj, TestBookA, priority: 10, acceptor: (obj) -> obj.accept is true)
+      library.register(TestObj, TestBookA, priority: 10, condition: 'value')
 
       class TestBookB
-      library.register(TestObj, TestBookB, priority: 5)
+      library.register(TestObj, TestBookB, priority: 5, condition: 'else')
 
-      obj = new TestObj()
-      obj.accept = true
-      library.get(obj).should.equal(TestBookA)
-
-      obj.accept = false
-      library.get(obj).should.equal(TestBookB)
+      library.get(new TestObj()).should.equal(TestBookA)
+      library.get(new TestObj(), { condition: 'else' }).should.equal(TestBookB)
 
   describe 'case registration', ->
     it 'should store and retrieve cases correctly', ->
