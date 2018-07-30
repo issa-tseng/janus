@@ -280,13 +280,14 @@ class ComposedVarying extends FlatMappedVarying
     this._value = nothing
 
     this._partial = [] # track the current mapping arguments.
+    this._parentObservations = null
     this._bound = false
 
   # as noted above, we reimplement here because there are many parents, and we
   # have to implement the mapping application differently.
   _bind: ->
     # listen to all our parents if we must.
-    parentObservations = for a, idx in this._applicants
+    this._parentObservations = for a, idx in this._applicants
       do (a, idx) => a.react((value) =>
         # update our arguments list, then trigger internal observers in turn.
         # note that this doesn't happen for the very first call, since internal
@@ -298,10 +299,10 @@ class ComposedVarying extends FlatMappedVarying
 
     # release lock on callback firing and return an agglomerated observation.
     this._bound = true
-
-    o = new Observation(this, uniqueId(), null, => o.stop() for o in parentObservations)
-    o.parentObservations = parentObservations # for debuggability
-    o
+    new Observation(this, uniqueId(), null, =>
+      this._bound = false # if we lose our parents, we will need to rebind.
+      o.stop() for o in this._parentObservations
+    )
 
   _immediate: ->
     if this._value is nothing
@@ -325,6 +326,7 @@ class UnreducedComposedVarying extends FlatMappedVarying
   constructor: (@_applicants) ->
     this._observers = {}
     this._refCount = 0
+    this._parentObservations = null
     this._value = nothing
 
   map: (f) -> new ComposedVarying(this._applicants, f)
@@ -334,7 +336,7 @@ class UnreducedComposedVarying extends FlatMappedVarying
   _bind: ->
     bound = false
     partial = []
-    parentObservations = for a, idx in this._applicants
+    this._parentObservations = for a, idx in this._applicants
       do (a, idx) => a.react((value) =>
         partial[idx] = value
         this._onValue(this._parentObservation, partial) if bound is true
@@ -342,9 +344,7 @@ class UnreducedComposedVarying extends FlatMappedVarying
       )
 
     bound = true # same as ComposedVarying, release lock.
-    o = new Observation(this, uniqueId(), null, => o.stop() for o in parentObservations)
-    o.parentObservations = parentObservations
-    o
+    new Observation(this, uniqueId(), null, => o.stop() for o in this._parentObservations)
 
   _onValue: (observation, value, silent = false) ->
     return if silent is true
