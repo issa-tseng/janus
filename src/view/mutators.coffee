@@ -48,19 +48,20 @@ mutators =
 
   render: (data, args = {}) ->
     result = (dom, point, immediate = true) ->
-      _getView = (subject, context, app, criteria, options) ->
+      getView = Varying.lift((subject, context, app, criteria, options) ->
         app.view(subject, Object.assign({ context }, criteria), options)
+      )
 
       # despite the nomenclature we /always/ react immediately here, since
       # we do need to initialize the entire dom tree. instead, the immediate flag
       # gates whether we render or attach the first view we see.
-      Varying.flatMapAll(_getView, data.all.point(point), doPoint(args.context, point), doPoint(from.app(), point), doPoint(args.criteria, point), doPoint(args.options, point)).react(true, (view) ->
+      getView(data.all.point(point), doPoint(args.context, point), doPoint(from.app(), point), doPoint(args.criteria, point), doPoint(args.options, point)).react(true, (view) ->
         runBefore = this.view?
         this.view ?= new Varying()
         this.view.get()?.destroy()
 
         if (immediate is false) and (runBefore is false)
-          view.attach(dom.children())
+          view.attach(dom.children()) if view?
         else
           dom.empty()
           dom.append(view.artifact()) if view?
