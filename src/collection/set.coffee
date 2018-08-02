@@ -73,6 +73,9 @@ class Set extends Mappable
 
   # we don't bother with the folds yet because they're not officially supported yet.
 
+  @deserialize: List.deserialize # eventually calls new this(items) so we are fine.
+  @of: List.of
+
 
 module.exports = { Set }
 
