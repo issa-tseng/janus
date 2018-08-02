@@ -242,7 +242,7 @@ class List extends OrderedMappable
       if this.modelClass? and util.isFunction(this.modelClass.deserialize)
         this.modelClass.deserialize(datum) for datum in data
       else
-        data.slice()
+        data
 
     new this(items)
 
