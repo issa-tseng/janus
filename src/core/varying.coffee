@@ -105,10 +105,10 @@ class Varying
   # (Varying v, Int b) => v a -> v b
   refCount: -> this.refCount$ ?= new Varying(this._refCount)
 
-  # we have two very similar behaviours, `pure` and `flatMapAll`, that differ only
-  # in a parameter passed to the returned class. so we implement it once and
-  # partially apply with that difference immedatiely.
-  _pure = (flat) -> (args...) ->
+  # we have two very similar behaviours, `flatMap` and `flatMapAll`, that differ
+  # only in a parameter passed to the returned class. so we implement it once
+  # and partially apply with that difference immedatiely.
+  _mapAll = (flat) -> (args...) ->
     if isFunction(args[0]) and not args[0].react?
       f = args[0]
 
@@ -125,15 +125,12 @@ class Varying
   # overloaded, flexible argument count a/b/c/d/etc:
   # (Varying v) => (a -> b -> c) -> v a -> v b -> v c
   # (Varying v) => v a -> v b -> (a -> b -> c) -> v c
-  @pure: _pure(false)
-
-  # Synonym for `pure`, in case it's too haskell-y for people to understand.
-  @mapAll: @pure
+  @mapAll: _mapAll(false)
 
   # overloaded, flexible argument count a/b/c/d/etc:
   # (Varying v) => (a -> b -> v c) -> v a -> v b -> v c
   # (Varying v) => v a -> v b -> (a -> b -> v c) -> v c
-  @flatMapAll: _pure(true)
+  @flatMapAll: _mapAll(true)
 
   # gives an UnreducedComposedVarying given an array of varyings. it can then
   # be map/flatMap/reacted on as needed.
