@@ -546,34 +546,34 @@ describe 'Varying', ->
       v.set(1)
       result.should.equal(2)
 
-  describe 'pure', ->
+  describe 'mapAll', ->
     describe 'application', ->
       it 'should return a ComposedVarying given a, b, c, f', ->
-        Varying.pure(new Varying(), new Varying(), new Varying(), ->).should.be.an.instanceof(ComposedVarying)
+        Varying.mapAll(new Varying(), new Varying(), new Varying(), ->).should.be.an.instanceof(ComposedVarying)
 
       it 'should return a ComposedVarying given f, a, b, c', ->
-        Varying.pure(((a, b, c) ->), new Varying(), new Varying(), new Varying()).should.be.an.instanceof(ComposedVarying)
+        Varying.mapAll(((a, b, c) ->), new Varying(), new Varying(), new Varying()).should.be.an.instanceof(ComposedVarying)
 
       it 'should return a curryable function given (a -> b -> c -> x), a, b', ->
-        f = Varying.pure(((a, b, c) ->), new Varying(), new Varying())
+        f = Varying.mapAll(((a, b, c) ->), new Varying(), new Varying())
         f.should.be.a.Function
 
         f(new Varying()).should.be.an.instanceof(ComposedVarying)
 
-      it 'should expose mapAll as a synonym for pure', ->
+      it 'should expose mapAll as a synonym for mapAll', ->
         Varying.mapAll(new Varying(), new Varying(), new Varying(), ->).should.be.an.instanceof(ComposedVarying)
 
     describe 'mapAll', ->
       it 'should be able to directly get a value', ->
-        Varying.pure(((x, y) -> x + y), new Varying(1), new Varying(2)).get().should.equal(3)
+        Varying.mapAll(((x, y) -> x + y), new Varying(1), new Varying(2)).get().should.equal(3)
 
       it 'should not flatten on get', ->
-        Varying.pure(((x, y) -> new Varying(x + y)), new Varying(1), new Varying(2)).get().should.be.an.instanceof(Varying)
+        Varying.mapAll(((x, y) -> new Varying(x + y)), new Varying(1), new Varying(2)).get().should.be.an.instanceof(Varying)
 
       it 'should callback with a mapped value when non-immediate react is called', ->
         va = new Varying(1)
         vb = new Varying(2)
-        m = Varying.pure(((x, y) -> x + y), va, vb)
+        m = Varying.mapAll(((x, y) -> x + y), va, vb)
 
         result = 0
         m.react(false, (x) -> result = x)
@@ -587,7 +587,7 @@ describe 'Varying', ->
       it 'should callback immediately with a mapped value when react is called', ->
         va = new Varying(1)
         vb = new Varying(2)
-        m = Varying.pure(((x, y) -> x + y), va, vb)
+        m = Varying.mapAll(((x, y) -> x + y), va, vb)
 
         result = 0
         m.react((x) -> result = x)
@@ -597,7 +597,7 @@ describe 'Varying', ->
         result.should.equal(5)
 
       it 'should not flatten on react', ->
-        m = Varying.pure(((x, y) -> new Varying(x + y)), new Varying(1), new Varying(2))
+        m = Varying.mapAll(((x, y) -> new Varying(x + y)), new Varying(1), new Varying(2))
 
         result = null
         m.react((x) -> result = x)
@@ -608,7 +608,7 @@ describe 'Varying', ->
       it 'should bind this to the Observation within the handler', ->
         va = new Varying(1)
         vb = new Varying(2)
-        m = Varying.pure(((x, y) -> new Varying(x + y)), va, vb)
+        m = Varying.mapAll(((x, y) -> new Varying(x + y)), va, vb)
         t = null
 
         r = m.react(-> t = this)
@@ -620,7 +620,7 @@ describe 'Varying', ->
       it 'should cease reacting on stopped handlers', ->
         va = new Varying(1)
         vb = new Varying(2)
-        m = Varying.pure(((x, y) -> new Varying(x + y)), va, vb)
+        m = Varying.mapAll(((x, y) -> new Varying(x + y)), va, vb)
 
         runCount = 0
         r = m.react(false, (x) -> runCount += 1)
@@ -636,7 +636,7 @@ describe 'Varying', ->
       it 'should stop reacting internally on the parent when something stops reacting to it', ->
         va = new Varying(1)
         vb = new Varying(2)
-        m = Varying.pure(((x, y) -> x + y), va, vb)
+        m = Varying.mapAll(((x, y) -> x + y), va, vb)
 
         m.react(->).stop()
 
