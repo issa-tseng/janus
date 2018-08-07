@@ -208,6 +208,20 @@ describe 'Attribute', ->
         v.react(->)
         calledWith.test.should.equal(4.136)
 
+      it 'should call request if it is a function', ->
+        calledWith = null
+        v = new Varying()
+        class TestModel
+          watch: -> v
+
+        class TestReference extends attribute.Reference
+          request: -> { isRequest: true, test: 4.136 }
+
+        ref = new TestReference(new TestModel())
+        ref.resolveWith({ resolve: (req) -> calledWith = req; new Varying() })
+        v.react(->)
+        calledWith.test.should.equal(4.136)
+
       it 'should point fromchains containing requests, then resolve', ->
         calledWith = null
         v = new Varying()

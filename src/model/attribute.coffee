@@ -4,6 +4,7 @@ types = require('../core/types')
 { Map } = require('../collection/map')
 { Varying } = require('../core/varying')
 { List } = require('../collection/list')
+{ isFunction } = require('../util/util')
 
 
 # This derivation theoretically means that `Attributes` can contain schemas,
@@ -77,13 +78,14 @@ class ReferenceAttribute extends Attribute
   transient: true
   autoResolve: true
 
-  # either a plain request or a from() chain which gives one.
+  # a plain request, a function that gives a plain request, or a from() chain which gives one.
   request: null
 
   resolveWith: (app) ->
     return if this._resolving is true
     this._resolving = true
-    return unless (request = this.request)?
+    request = if isFunction(this.request) then this.request() else this.request
+    return unless request?
 
     # snoop on the actual model watcher to see if anybody cares, and if so actually
     # run the requestchain and set the result if we get it.
