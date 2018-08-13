@@ -82,6 +82,7 @@ class OrderedMappable extends Mappable
 
   # fold-like operations (ALPHA):
   join: (joiner) -> folds.join(this, joiner)
+  apply: (f) -> folds.apply(this, f)
   fold: (memo, f) -> folds.fold(this, memo, f)
   scanl: (memo, f) -> folds.scanl(this, memo, f)
   foldl: (memo, f) -> folds.foldl(this, memo, f)
