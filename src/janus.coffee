@@ -39,6 +39,7 @@ module.exports =
   validate: schema.validate
   transient: schema.transient
   dfault: schema.dfault
+  dēfault: schema.dēfault
 
   Request: resolver.Request
   Resolver: resolver.Resolver

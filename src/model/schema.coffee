@@ -23,3 +23,11 @@ module.exports = {
 # in case some people prefer the consistent syntax:
 module.exports.Trait.build = module.exports.Trait
 
+# and another handy shortcut for a writing default:
+module.exports.dfault.writing = (key, value, klass = Attribute) ->
+  module.exports.dfault(key, value, class extends klass
+    writeDefault: true)
+
+# and "dfault" is super annoying..
+module.exports.dēfault = module.exports.dfault
+
