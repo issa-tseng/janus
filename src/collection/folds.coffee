@@ -25,6 +25,9 @@ folds =
     else
       true
 
+  apply: (collection, f) ->
+    collection.watchLength().map(-> f.apply(null, collection.list))
+
   find: foldBase (value, idx, collection) ->
     if value is true
       collection.list[idx]
