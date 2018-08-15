@@ -551,12 +551,18 @@ describe 'Varying', ->
       it 'should return a ComposedVarying given a, b, c, f', ->
         Varying.mapAll(new Varying(), new Varying(), new Varying(), ->).should.be.an.instanceof(ComposedVarying)
 
+      it 'should return a curryable function given a, b, c', ->
+        Varying.mapAll(new Varying(), new Varying(), new Varying()).should.be.a.Function()
+
+      it 'should return a ComposedVarying once a function is curried in', ->
+        Varying.mapAll(new Varying(), new Varying())(new Varying())(->).should.be.an.instanceof(ComposedVarying)
+
       it 'should return a ComposedVarying given f, a, b, c', ->
         Varying.mapAll(((a, b, c) ->), new Varying(), new Varying(), new Varying()).should.be.an.instanceof(ComposedVarying)
 
       it 'should return a curryable function given (a -> b -> c -> x), a, b', ->
         f = Varying.mapAll(((a, b, c) ->), new Varying(), new Varying())
-        f.should.be.a.Function
+        f.should.be.a.Function()
 
         f(new Varying()).should.be.an.instanceof(ComposedVarying)
 
