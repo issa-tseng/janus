@@ -151,6 +151,9 @@ class Varying
   # (Varying v) => a -> v b
   @of: (x) -> if x?.isVarying is true then x else new Varying(x)
 
+  # alias for the constructor, in case people don't like the new syntax.
+  @box: (x) -> new Varying(x)
+
 class Observation
   constructor: (@parent, @id, @f_, @_stop) ->
   stop: ->
