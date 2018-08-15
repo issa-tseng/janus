@@ -109,7 +109,7 @@ class Varying
   # only in a parameter passed to the returned class. so we implement it once
   # and partially apply with that difference immedatiely.
   _mapAll = (flat) -> (args...) ->
-    if isFunction(args[0]) and not args[0].react?
+    if isFunction(args[0])
       f = args[0]
 
       (fix (curry) -> (args) ->
@@ -118,9 +118,12 @@ class Varying
         else
           new ComposedVarying(args, f, flat)
       )(args.slice(1))
-    else # TODO: can't we curry here too until we see a function?
-      f = args.pop()
-      new ComposedVarying(args, f, flat)
+    else
+      if isFunction(args[args.length - 1])
+        f = args.pop()
+        new ComposedVarying(args, f, flat)
+      else
+        (more...) -> _mapAll(flat)(args.concat(more)...)
 
   # overloaded, flexible argument count a/b/c/d/etc:
   # (Varying v) => (a -> b -> c) -> v a -> v b -> v c
