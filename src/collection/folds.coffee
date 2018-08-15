@@ -26,7 +26,8 @@ folds =
       true
 
   apply: (collection, f) ->
-    collection.watchLength().map(-> f.apply(null, collection.list))
+    collection.watchLength().flatMap((length) ->
+      Varying.all(collection.watchAt(idx) for idx in [0..collection.length]).map(f))
 
   find: foldBase (value, idx, collection) ->
     if value is true
