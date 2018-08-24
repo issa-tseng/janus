@@ -87,7 +87,7 @@ fullDefcase = (options) -> (args...) ->
     Object.assign(ctor, { isCase: true, type, match: singleMatch(type) })
 
   # decorate methods now that we have the full type and ctors set:
-  for name, type of types
+  for name, type of types when type.prototype.abstract isnt true
     Name = capitalize(name) # still just a string but name/Name reflect cap'z'n
     self = -> this
     typeArity = ctors[name].length
