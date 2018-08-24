@@ -30,7 +30,7 @@ class Case
   isCaseInstance: true
   constructor: (@x1, @unapply) ->
   map: (f) -> new this.constructor(undefined, (g) => g(this.unapply(f)))
-  toString: -> "case[#{this.name}]: #{this.x1}"
+  toString: -> "case[#{this.name}]: #{this.get()}"
 
 # used to decorate ctors below:
 singleMatch = (type) -> (x, f_) ->
