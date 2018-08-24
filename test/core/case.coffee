@@ -207,6 +207,18 @@ describe 'case', ->
         )
         should.not.exist(m(complete()))
 
+      it 'should not decorate methods for abstract superclasses', ->
+        { pending, complete, success, fail } = defcase('pending', 'complete': [ 'success', 'fail' ])
+        should.not.exist(pending().completeOrElse)
+        should.not.exist(pending().getComplete)
+        should.not.exist(pending().mapComplete)
+
+      it 'should not fulfill methods on abstract superclasses', ->
+        { pending, complete, success, fail } = defcase('pending', 'complete': [ 'success', 'fail' ])
+        complete(42).getSuccess().should.be.an.instanceof(complete.type)
+        complete(42).successOrElse(0).should.equal(0)
+        complete(42).mapSuccess().should.be.an.instanceof(complete.type)
+
     describe 'unapplying', ->
       it 'should call the result handler with the inner value', ->
         matched = false
