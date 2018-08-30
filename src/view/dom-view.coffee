@@ -34,6 +34,7 @@ class DomView extends View
       this._subwires = for binding in this._bindings when binding.view?
         this.reactTo(binding.view, (view) -> view?.wireEvents())
     return
+  _wireEvents: -> # implement me!
 
   __destroy: ->
     if this._bindings?
