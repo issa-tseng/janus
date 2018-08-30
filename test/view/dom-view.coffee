@@ -367,6 +367,12 @@ describe 'DomView', ->
     (new TestView()).markup().should.equal('<div><div>123</div><div>abc</div></div>')
 
   describe 'lifecycle', ->
+    it 'will never produce an artifact if destroyed prior', ->
+      TestView = DomView.build($('<div/>'), inf)
+      view = new TestView()
+      view.destroy()
+      should.not.exist(view.artifact().html)
+
     it 'triggers a `destroying` event on the dom fragment root', ->
       evented = false
       TestView = DomView.build($('<div/>'), inf)
