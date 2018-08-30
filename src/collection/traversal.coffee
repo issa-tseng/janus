@@ -9,6 +9,8 @@
 
 # TODO: the method of passing state here is far from my favourite. someone
 # please come up with something smarter/faster/cleaner.
+# TODO: if someone can come up with a clever way to implement diff etc without
+# relying on context, all of this gets way simpler.
 
 # called to process the action given by the caller in their map() function.
 # calls on the local context to perform various concrete actions. used by
