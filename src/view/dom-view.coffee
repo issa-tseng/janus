@@ -47,6 +47,9 @@ class DomView extends View
     if this._artifact?
       this._artifact.trigger?('destroying')
       this._artifact.remove()
+    else
+      this._artifact = '' # never allow an artifact to be created.
+
     return
 
   @build: (fragment, template, options = {}) ->
