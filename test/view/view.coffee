@@ -71,25 +71,6 @@ describe 'View', ->
       view.artifact().should.equal(artifact)
       called.should.equal(1)
 
-    describe 'event wiring', ->
-      it 'should call _wireEvents', ->
-        called = false
-        class TestView extends View
-          _wireEvents: -> called = true
-
-        (new TestView()).wireEvents()
-        called.should.equal(true)
-
-      it 'should call _wireEvents only once', ->
-        called = 0
-        class TestView extends View
-          _wireEvents: -> called += 1
-
-        view = new TestView()
-        view.wireEvents()
-        view.wireEvents()
-        called.should.equal(1)
-
   # @point is tested in DomView's tests, as the concrete implementation yields
   # an easier test harness.
 

@@ -57,13 +57,6 @@ class View extends Base
     self (x) => if isFunction(x) then Varying.of(x(this)) else Varying.of(this)
   )
 
-  # Wires events against the artifact in question.
-  wireEvents: ->
-    this._wireEvents() unless this._wired
-    this._wired = true
-    return
-  _wireEvents: -> # implement me!
-
 
 module.exports = { View }
 

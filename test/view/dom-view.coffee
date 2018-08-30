@@ -263,6 +263,14 @@ describe 'DomView', ->
       artifact.text().should.equal('test 2')
 
   describe 'client event wiring', ->
+    it 'should call _wireEvents', ->
+      called = false
+      TestView = class extends DomView.build($('<div/>'), inf)
+        _wireEvents: -> called = true
+
+      (new TestView()).wireEvents()
+      called.should.equal(true)
+
     it 'only wires events once', ->
       count = 0
       TestView = class extends DomView.build($('<div/>'), inf)
