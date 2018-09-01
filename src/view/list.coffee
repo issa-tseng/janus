@@ -33,8 +33,7 @@ class ListView extends DomView
   # it is theoretically possible to do some heuristic checks (eg do the lengths
   # match up?) but apart from complaining it's not clear what we can do to fix
   # it; part of attach() is completely faith-based.
-  attach: (dom) ->
-    this._artifact = dom
+  _attach: (dom) ->
     point = this.pointer()
 
     # first, and attach views for each extant node+element.

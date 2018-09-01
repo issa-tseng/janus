@@ -210,7 +210,7 @@ describe 'view', ->
       it 'should leave the existing elements alone', ->
         l = new List([ 1, 2, 3, 4, 5 ])
         view = new ListEditView(l, { app: testApp })
-        dom = $('<ul><li>dummy 1</li><li>dummy 2</li><li>dummy 3</li><li>dummy 4</li><li>dummy 5</li></ul>')
+        dom = $('<ul><li><span>dummy 1</span></li><li><span>dummy 2</span></li><li><span>dummy 3</span></li><li><span>dummy 4</span></li><li><span>dummy 5</span></li></ul>')
         view.attach(dom)
 
         dom.children().eq(0).text().should.equal('dummy 1')

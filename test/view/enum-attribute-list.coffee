@@ -153,7 +153,7 @@ describe 'view', ->
         class TestAttribute extends attribute.Enum
           values: -> new List([ 1, 2, 3, 4, 5 ])
         view = new EnumAttributeListEditView(new TestAttribute(new Model(), 'test'), { app: testApp })
-        dom = $('<div><ul><li>dummy 1</li><li>dummy 2</li><li>dummy 3</li><li>dummy 4</li><li>dummy 5</li></ul></div>')
+        dom = $('<div><ul><li><span>dummy 1</span></li><li><span>dummy 2</span></li><li><span>dummy 3</span></li><li><span>dummy 4</span></li><li><span>dummy 5</span></li></ul></div>')
         view.attach(dom)
 
         dom.children().children().eq(0).text().should.equal('dummy 1')

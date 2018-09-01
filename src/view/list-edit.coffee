@@ -55,8 +55,7 @@ ListEditItemView = class extends DomView.build($('
   # TODO: is there some way to do this without breaking into the class?
   _render: -> this._doRender(true)
 
-  attach: (dom) ->
-    this._artifact = dom
+  _attach: (dom) ->
     this._doRender(false)
     return
 

@@ -21,8 +21,7 @@ ListSelectItemView = class extends DomView.build($('
 
   _render: -> this._doRender(true)
 
-  attach: (dom) ->
-    this._artifact = dom
+  _attach: (dom) ->
     this._doRender(false)
     return
 

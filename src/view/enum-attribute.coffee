@@ -50,9 +50,7 @@ class EnumAttributeEditView extends DomView
     select # return artifact.
 
   # TODO: long and repetitive with the above. but also not.
-  attach: (select) ->
-    this._artifact = select
-
+  _attach: (select) ->
     initial = true
     this._optionsList().react((list) =>
       this._removeAll(select) unless initial is true
