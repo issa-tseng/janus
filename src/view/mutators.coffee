@@ -60,8 +60,9 @@ mutators =
         this.view ?= new Varying()
         this.view.get()?.destroy()
 
-        if (immediate is false) and (runBefore is false)
-          view.attach(dom.children()) if view?
+        children = dom.children()
+        if (immediate is false) and (runBefore is false) and (children.length > 0)
+          view.attach(children) if view?
         else
           dom.empty()
           dom.append(view.artifact()) if view?

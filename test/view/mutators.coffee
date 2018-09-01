@@ -360,7 +360,7 @@ describe 'Mutator', ->
   describe 'render', ->
     it 'passes the subject to the library', ->
       subject = null
-      dom = { append: (->), empty: (->), data: (->) }
+      dom = { append: (->), empty: (->), data: (->), children: (->) }
       app = { view: (x) -> subject = x; { artifact: (->) } }
       point = passthroughWithApp(app)
 
@@ -370,7 +370,7 @@ describe 'Mutator', ->
     it 'passes bare context to the library if provided', ->
       subject = null
       context = null
-      dom = { append: (->), empty: (->), data: (->) }
+      dom = { append: (->), empty: (->), data: (->), children: (->) }
       app = { view: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
       point = passthroughWithApp(app)
 
@@ -383,7 +383,7 @@ describe 'Mutator', ->
     it 'passes varying context to the library if provided', ->
       subject = null
       context = null
-      dom = { append: (->), empty: (->), data: (->) }
+      dom = { append: (->), empty: (->), data: (->), children: (->) }
       app = { view: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
       point = passthroughWithApp(app)
 
@@ -396,7 +396,7 @@ describe 'Mutator', ->
     # also checks for appropriate context merging.
     it 'passes bare criteria options to the library if provided', ->
       opts = null
-      dom = { append: (->), empty: (->), data: (->) }
+      dom = { append: (->), empty: (->), data: (->), children: (->) }
       app = { view: (x, y) -> opts = y; { artifact: (->) } }
       point = passthroughWithApp(app)
 
@@ -411,7 +411,7 @@ describe 'Mutator', ->
     it 'passes constructor options to the app if provided', ->
       criteria = null
       opts = null
-      dom = { append: (->), empty: (->), data: (->) }
+      dom = { append: (->), empty: (->), data: (->), children: (->) }
       app = { view: (x, y, z) -> criteria = y; opts = z; { artifact: (->) } }
       point = passthroughWithApp(app)
 
@@ -425,7 +425,7 @@ describe 'Mutator', ->
     it 'clears out the previous subview', ->
       views = []
       emptied = 0
-      dom = { append: (->), empty: (-> emptied += 1), data: (->) }
+      dom = { append: (->), empty: (-> emptied += 1), data: (->), children: (->) }
       view = -> { artifact: (-> dom), destroy: -> (this.destroyed = true) }
       app = { view: -> (v = view(); views.push(v); v) }
       point = passthroughWithApp(app)
@@ -448,7 +448,7 @@ describe 'Mutator', ->
     it 'drops in the new subview', ->
       appended = null
       newView = { artifact: -> 4 }
-      dom = { append: ((x) -> appended = x), empty: (->) }
+      dom = { append: ((x) -> appended = x), empty: (->), children: (->) }
       app = { view: (-> newView) }
       point = passthroughWithApp(app)
 
@@ -457,7 +457,7 @@ describe 'Mutator', ->
 
     it 'should return an Observation that can stop mutation', ->
       value = null
-      dom = { append: ((x) -> value = x), empty: (->), data: (->) }
+      dom = { append: ((x) -> value = x), empty: (->), data: (->), children: (->) }
       app = { view: (x) -> { artifact: -> x } }
       point = passthroughWithApp(app)
 
@@ -472,29 +472,40 @@ describe 'Mutator', ->
     it 'should attach instead of render the child view if reacting non-immediately', ->
       attached = null
       newView = { attach: (x) -> attached = x }
-      dom = { children: (-> 4) }
+      dom = { children: (-> { length: 1, _test: 42 }) }
       app = { view: (-> newView) }
       point = passthroughWithApp(app)
 
       mutators.render(from.varying(new Varying(1)))(dom, point, false)
-      attached.should.equal(4)
+      attached._test.should.equal(42)
+
+    it 'should render instead of attach if nothing is there', ->
+      emptied = false
+      appended = null
+      dom = { append: ((x) -> appended = x), empty: (-> emptied = true), data: (->), children: -> { length: 0 } }
+      app = { view: (x) -> { artifact: -> x } }
+      point = passthroughWithApp(app)
+
+      v = new Varying(1)
+      m = mutators.render(from.varying(v))(dom, point)
+      emptied.should.equal(true)
+      appended.should.equal(1)
 
     it 'should render instead of attach upon a second mutation', ->
       attached = appended = null
       emptied = false
       view = -> { attach: ((x) -> attached = x), artifact: (-> 8), destroy: (->) }
-      dom = { children: (-> 4), empty: (-> emptied = true), append: ((x) -> appended = x) }
+      dom = { children: (-> { length: 1, _test: 42 }), empty: (-> emptied = true), append: ((x) -> appended = x) }
       app = { view }
       point = passthroughWithApp(app)
 
       v = new Varying(1)
       m = mutators.render(from.varying(v))(dom, point, false)
-      attached.should.equal(4)
+      attached._test.should.equal(42)
       emptied.should.equal(false)
       (appended is null).should.equal(true)
 
       v.set(2)
-      attached.should.equal(4)
       emptied.should.equal(true)
       appended.should.equal(8)
 
@@ -592,7 +603,7 @@ describe 'Mutator', ->
     it 'should work in chains if passed an all-terminated from', ->
       subject = null
       context = null
-      dom = { append: (->), empty: (->), data: (->) }
+      dom = { append: (->), empty: (->), data: (->), children: (->) }
       app = { view: (x, opts) -> subject = x; context = opts.context; { artifact: (->) } }
       point = passthroughWithApp(app)
 
