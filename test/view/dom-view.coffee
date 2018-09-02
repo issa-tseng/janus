@@ -326,20 +326,6 @@ describe 'DomView', ->
       wired.length.should.equal(3)
       wired[2].should.be.an.instanceof(ChildView)
 
-    it 'accepts a wireEvents via options, and gives it the appropriate parameters', ->
-      called = false
-      subject = {}
-      TestView = DomView.build($('<div/>'), inf, {
-        wireEvents: (partifact, psubject, pview) ->
-          partifact.is('div').should.equal(true)
-          psubject.should.equal(subject)
-          pview.should.equal(view)
-          called = true
-      })
-      view = new TestView(subject)
-      view.wireEvents()
-      called.should.equal(true)
-
     it 'runs template .on declarations', ->
       called = []
       TestView = DomView.build($('<div/>'), template(
@@ -464,10 +450,10 @@ describe 'DomView', ->
       class MyViewModel extends Model
         id: 'just a viewmodel'
 
-      WithViewModel = DomView.build($('<div/>'), template(
+      WithViewModel = DomView.withOptions({ viewModelClass: MyViewModel }).build(
+        $('<div/>'),
         find('div').text(from.self((view) -> view.subject.id))
-      ), { viewModelClass: MyViewModel })
-
+      )
 
       model = new MyModel()
       view = new WithViewModel(model)
