@@ -1,0 +1,35 @@
+{
+  "name": "janus-inspect",
+  "description": "inspection and debugging tools for janus primitives",
+  "version": "0.1.0",
+  "author": "Clint Tseng <clint@dontexplain.com>",
+  "homepage": "http://janusjs.org",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/clint-tseng/janus-inspect.git"
+  },
+  "bugs": {
+    "url": "https://github.com/clint-tseng/janus-inspect/issues"
+  },
+  "license": "WTFPL",
+  "main": "lib/export",
+  "scripts": {
+    "test": "make test"
+  },
+  "engines": {
+    "node": ">= 6.0"
+  },
+  "peerDependencies": {
+    "janus": "~0",
+    "janus-dollar": "git+https://github.com/clint-tseng/janus-dollar-jquery"
+  },
+  "dependencies": {
+    "luxon": "~1"
+  },
+  "devDependencies": {
+    "coffee-script": "~1.12",
+    "node-sass": "~3",
+    "mocha": "~5",
+    "should": "~11"
+  }
+}
