@@ -1,0 +1,74 @@
+@import 'styles/util'
+
+@mixin bubble-num
+  background-color: #d4d4d4
+  border-radius: 9999px
+  font-size: 0.8em
+  padding: 0.3em 0.4em
+
+.janus-inspect-entity
+  display: inline-block
+
+  .entity-title
+    font-weight: bold
+
+  .entity-content
+    margin-left: -0.2em
+
+    &:before, &:after
+      font-weight: bold
+    &:before
+      content: '['
+    &:after
+      content: ']'
+
+  .entity-title:hover
+    color: red
+
+    + .entity-content
+      &:before, &:after
+        color: red
+
+      .entity-title
+        color: inherit
+      .entity-content
+        &:before, &:after
+          color: inherit
+
+.janus-inspect-model.janus-inspect-entity
+  .model-pairs
+    color: #777
+
+.janus-inspect-varying.janus-inspect-entity
+  //.varying-rxn-count
+    @include bubble-num
+
+.janus-inspect-kvPair
+  overflow: hidden
+
+  .kvPair-key
+    float: left
+    font-weight: bold
+    padding-right: 0.4em
+
+    &:after
+      content: ':'
+      font-weight: normal
+
+  .kvPair-valueBlock
+    overflow: hidden
+    position: relative
+
+    .kvPair-edit input
+      @include bare-textbox
+      @include fill
+      background: #fff
+      border-radius: 0.2em
+      opacity: 0
+      pointer-events: none
+      top: -0.1em
+      width: 100%
+      &:focus
+        opacity: 1
+        pointer-events: auto
+
