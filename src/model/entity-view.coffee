@@ -3,15 +3,7 @@ $ = require('janus-dollar')
 { WrappedModel } = require('./inspector')
 
 
-ModelEntityVM = Model.build(
-  bind('model', from('subject').watch('model'))
-
-  attribute('expand.shown', attribute.Boolean)
-  bind('expand.object', from('subject').and('expand.shown')
-    .all.map((subject, show) -> subject if show))
-)
-
-ModelEntityView = DomView.withOptions({ viewModelClass: ModelEntityVM }).build($('
+ModelEntityView = DomView.build($('
   <div class="janus-inspect-entity janus-inspect-model">
     <span class="entity-title"><span class="model-type"/><span class="model-subtype"/></span>
     <span class="entity-content">
@@ -20,10 +12,10 @@ ModelEntityView = DomView.withOptions({ viewModelClass: ModelEntityVM }).build($
     </span>
   </div>'), template(
 
-  find('.model-type').text(from('subject').watch('type'))
-  find('.model-subtype').text(from('subject').watch('subtype'))
+  find('.model-type').text(from('type'))
+  find('.model-subtype').text(from('subtype'))
 
-  find('.model-identifier').text(from('subject').watch('identifier'))
+  find('.model-identifier').text(from('identifier'))
   find('.model-count').text(from('model').flatMap((model) -> model.watchLength()))
 ))
 
