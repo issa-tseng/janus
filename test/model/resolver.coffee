@@ -172,3 +172,30 @@ describe 'Resolver', ->
       v.set(types.result.failure(42))
       should.not.exist(cache.resolve(new SignaturedRequest()))
 
+    # sort of the crux of why MemoryCacheResolver exists; if multiple references
+    # path to the same request at once we should only make the request once.
+    it 'should cache multiple identical simultaneous requests', ->
+      count = 0
+      result = new Varying(types.result.pending())
+      resolver = ->
+        count += 1
+        result
+
+      cache = new MemoryCacheResolver()
+      assembled = Resolver.caching(cache, resolver)
+
+      request = new SignaturedRequest()
+      res0 = assembled(request)
+      res1 = assembled(request)
+      res2 = assembled(request)
+
+      count.should.equal(1)
+      result.set(types.result.success(42))
+
+      types.result.success.match(res0.get()).should.equal(true)
+      types.result.success.match(res1.get()).should.equal(true)
+      types.result.success.match(res2.get()).should.equal(true)
+      res0.get().get().should.equal(42)
+      res1.get().get().should.equal(42)
+      res2.get().get().should.equal(42)
+
