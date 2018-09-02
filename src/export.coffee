@@ -8,6 +8,7 @@ module.exports = {
     common:
       textAttribute: require('./common/text-attribute')
     model:
+      panel: require('./model/panel-view')
       entity: require('./model/entity-view')
     varying:
       entity: require('./varying/entity-view')
