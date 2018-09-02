@@ -56,13 +56,15 @@ class DomView extends View
 
     return
 
-  @build: (fragment, template, options = {}) ->
-    class extends DomView
-      dom: -> fragment.clone()
-      preboundTemplate: template(fragment)
+  @withOptions: (options) ->
+    class extends this
       resolve: options.resolve
       @viewModelClass: options.viewModelClass
-      _wireEvents: -> options.wireEvents?(this.artifact(), this.subject, this)
+
+  @build: (fragment, template) ->
+    class extends this
+      dom: -> fragment.clone()
+      preboundTemplate: template(fragment)
 
 module.exports = { DomView }
 
