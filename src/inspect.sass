@@ -35,6 +35,25 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// VARYING BASE STYLES
+
+.janus-inspect-varying.janus-inspect-entity
+  .varying-unknown
+    display: none
+
+    &.unknown
+      border: 1px dotted #888
+      border-radius: 99px
+      color: #888
+      cursor: pointer
+      display: inline
+      padding: 2px 3px
+
+      + .varying-value
+        display: none
+
+
+////////////////////////////////////////////////////////////////////////////////
 // MODEL BASE STYLES
 
 .janus-inspect-model.janus-inspect-entity
