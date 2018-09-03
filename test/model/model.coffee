@@ -76,6 +76,16 @@ describe 'Model', ->
         model.set('master', 'commander')
         model.get('slave').should.equal('commander')
 
+      it 'should unset a value if its bound value nulls out', ->
+        TestModel = Model.build(bind('inner_id', from('inner').watch('id')))
+        model = new TestModel( inner: new Model( id: 42 ) )
+        console.log(model.get('inner_id'))
+        model.get('inner_id').should.equal(42)
+
+        model.unset('inner')
+        console.log(model.get('inner_id'))
+        (model.get('inner_id') is null).should.equal(true)
+
       it 'should map multiple value together', ->
         TestModel = Model.build(bind('c', from('a').and('b').all.map((a, b) -> a + b)))
 

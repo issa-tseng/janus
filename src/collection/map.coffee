@@ -56,19 +56,25 @@ class Map extends Enumerable
 
   # Set a data value on this model. Takes any of:
   # 1. .set(k, v) sets v at k. if v is a plain object. all k/v pairs will be set.
+  #                            if v is === null, k will be .unset().
   # 2. .set(obj) sets each k/v pair in obj.
   # 3. .set(k) returns a function (v) -> v that will set v at k.
   set: (x, y) ->
-    if isString(x) and !y?
+    xIsString = isString(x)
+    if xIsString and (y is null)
+      this.unset(x)
+    else if xIsString and !y?
       (y) => this.set(x, y)
-    else if y? and (!isPlainObject(y) or isEmptyObject(y))
-      this._set(x, y)
-    else if isPlainObject(y)
-      obj = {}
-      deepSet(obj, x)(y)
-      traverse(obj, (path, value) => this._set(path, value))
-    else if isPlainObject(x)
-      traverse(x, (path, value) => this._set(path, value))
+    else
+      yIsPlainObject = isPlainObject(y)
+      if y? and (!yIsPlainObject or isEmptyObject(y))
+        this._set(x, y)
+      else if yIsPlainObject
+        obj = {}
+        deepSet(obj, x)(y)
+        traverse(obj, (path, value) => this._set(path, value))
+      else if isPlainObject(x)
+        traverse(x, (path, value) => this._set(path, value))
 
   # The actual setter for a k/v pair. We isolate this so that after our sorting
   # out of parameters above each k/v pair may be assessed and manipulated by

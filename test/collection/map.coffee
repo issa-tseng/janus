@@ -90,6 +90,14 @@ describe 'Map', ->
         map.set('test', 42)
         evented.should.equal(true)
 
+      it 'should unset the key if given null (but not undef)', ->
+        map = new Map( test: 22 )
+        map.set('test', undefined)
+        map.get('test').should.equal(22)
+
+        map.set('test', null)
+        (map.get('test')?).should.equal(false)
+
       it 'should deep write all data in a given bag', ->
         map = new Map( the: { stranger: 'seattle' } )
         map.set( the: { joule: 'apartments' }, black: 'dog' )
