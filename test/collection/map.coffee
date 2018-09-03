@@ -179,6 +179,16 @@ describe 'Map', ->
         map.data.tazza.of.should.equal('cafe')
         map.get('tazza.of').should.equal('cafe')
 
+    describe 'watch', ->
+      it 'should null out dead keys', ->
+        map = new Map( una: 'bella', tazza: { di: 'caffe' } )
+
+        result = null
+        map.watch('tazza.di').react((v) -> result = v)
+        result.should.equal('caffe')
+        map.unset('tazza')
+        (result?).should.equal(false)
+
   describe 'shadowing', ->
     describe 'creation', ->
       it 'should create a new instance of the same map class', ->
