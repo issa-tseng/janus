@@ -304,6 +304,19 @@ describe 'from', ->
       called.should.equal('myattr')
       result.should.equal(2)
 
+    it 'should return null (not undef) if the watch fails', ->
+      { dynamic } = cases
+
+      result = null
+      iv = new Varying(2)
+      from('a').watch('myattr')
+        .all.point(match(
+          dynamic -> new Varying()
+        ))
+        .map(id).react((x) -> result = x)
+
+      (result is null).should.equal(true)
+
   describe 'inline attribute', ->
     it 'should apply as a map after point resolution', ->
       { dynamic } = cases
@@ -319,6 +332,19 @@ describe 'from', ->
 
       called.should.equal('myattr')
       result.should.equal(42)
+
+    it 'should return null (not undef) if the attribute cannot be found', ->
+      { dynamic } = cases
+
+      result = null
+      iv = new Varying(2)
+      from('a').attribute('myattr')
+        .all.point(match(
+          dynamic -> new Varying()
+        ))
+        .map(id).react((x) -> result = x)
+
+      (result is null).should.equal(true)
 
   describe 'inline pipe', ->
     it 'should apply a pipe after point resolution', ->
