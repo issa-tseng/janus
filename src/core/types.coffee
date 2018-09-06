@@ -1,17 +1,17 @@
 { extend } = require('../util/util')
-{ defcase } = require('../core/case')
+{ Case } = require('../core/case')
 
 
 types =
-  from: defcase('dynamic', 'watch', 'attribute', 'varying', 'app', 'self')
+  from: Case.build('dynamic', 'watch', 'attribute', 'varying', 'app', 'self')
 
-  result: defcase('init', 'pending', 'progress', 'complete': [ 'success', 'failure' ])
+  result: Case.build('init', 'pending', 'progress', 'complete': [ 'success', 'failure' ])
 
-  validity: defcase('valid', 'invalid': [ 'warning', 'error' ])
+  validity: Case.build('valid', 'invalid': [ 'warning', 'error' ])
 
-  operation: defcase('read', 'mutate': [ 'create', 'update', 'delete' ])
+  operation: Case.build('read', 'mutate': [ 'create', 'update', 'delete' ])
 
-  traversal: defcase.withOptions({ arity: 2 })('recurse', 'delegate', 'defer', 'varying', 'value', 'nothing')
+  traversal: Case.withOptions({ arity: 2 }).build('recurse', 'delegate', 'defer', 'varying', 'value', 'nothing')
 
 
 module.exports = types

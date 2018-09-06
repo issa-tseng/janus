@@ -15,7 +15,7 @@ util.extend(attribute, require('./model/attribute'))
 module.exports =
   # core functionality.
   Varying: require('./core/varying').Varying
-  defcase: kase.defcase
+  Case: kase.Case
   match: kase.match
   otherwise: kase.otherwise
   from: require('./core/from')

@@ -53,7 +53,7 @@ deftype = (base, name, abstract) -> class extends base
 
 # the bulk of the work is here, defining the case set.
 defaultOptions = { arity: 1 }
-fullDefcase = (options) -> (args...) ->
+defcase = (options) -> { build: (args...) ->
   options = Object.assign({}, defaultOptions, options)
 
   types = {}
@@ -109,10 +109,11 @@ fullDefcase = (options) -> (args...) ->
 
   # hand back the constructors only.
   ctors
+}
 
-# form the final output defcase (defaults to no options):
-defcase = fullDefcase()
-defcase.withOptions = fullDefcase
+# form the final output builder (defaults to no options):
+Case.build = defcase().build
+Case.withOptions = defcase
 
 # matches anything, but will not unapply; returns the case itself.
 class Otherwise
@@ -127,5 +128,5 @@ match = (conds...) -> (kase) ->
     return cond.x1(kase) if cond instanceof Otherwise
   return
 
-module.exports = { defcase, match, otherwise }
+module.exports = { Case, match, otherwise }
 
