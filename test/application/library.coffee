@@ -1,7 +1,7 @@
 should = require('should')
 
 Library = require('../../lib/application/library').Library
-{ defcase } = require('../../lib/core/case')
+{ Case } = require('../../lib/core/case')
 
 describe 'Library', ->
   describe 'core', ->
@@ -33,7 +33,7 @@ describe 'Library', ->
     it 'should return "null" for null', ->
       Library._classId(null).should.equal('null')
     it 'should return int for a case', ->
-      { success, fail } = defcase('success', 'fail')
+      { success, fail } = Case.build('success', 'fail')
       Library._classId(success).should.be.a.Number()
     it 'should return "number" for Number', ->
       Library._classId(Number).should.equal('number')
@@ -150,7 +150,7 @@ describe 'Library', ->
   describe 'case registration', ->
     it 'should store and retrieve cases correctly', ->
       library = new Library()
-      { success, fail } = defcase('success', 'fail')
+      { success, fail } = Case.build('success', 'fail')
 
       class SuccessBook
       library.register(success, SuccessBook)
@@ -161,8 +161,8 @@ describe 'Library', ->
 
     it 'should not conflate like-named cases from different sets', ->
       library = new Library()
-      set1 = defcase('success', 'fail')
-      set2 = defcase('success', 'fail')
+      set1 = Case.build('success', 'fail')
+      set2 = Case.build('success', 'fail')
 
       class SuccessBook
       library.register(set1.success, SuccessBook)
