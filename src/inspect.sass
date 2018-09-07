@@ -42,7 +42,36 @@
     content: '.'
 
 
+////////////////////////////////////////////////////////////////////////////////
+// LIST BASE STYLES
 
+.janus-inspect-list.janus-inspect-entity
+  .entity-subtitle.has-subtitle:before
+    content: '.'
+
+  .list-values > ul
+    display: inline
+
+    > li
+      display: inline
+
+      &:after
+        content: ','
+        padding-right: 0.3em
+      &:last-child:after
+        content: ''
+
+  .list-more
+    background: none
+    border: none
+      bottom: 1px dotted #777
+    display: none
+    margin: 0
+    outline: none
+    padding: 0
+
+  .list-more.has-more
+    display: inline
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,7 +79,7 @@
 
 .janus-inspect-model.janus-inspect-entity
   .model-pairs
-    color: #777
+    color: #888
 
 .janus-inspect-kvPair
   overflow: hidden

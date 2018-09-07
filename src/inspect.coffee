@@ -4,6 +4,7 @@
 # get inspectors and create inspect().
 inspectorLibrary = new Library()
 require('./case/inspector').registerWith(inspectorLibrary)
+require('./list/inspector').registerWith(inspectorLibrary)
 require('./literal/inspector').registerWith(inspectorLibrary)
 require('./model/inspector').registerWith(inspectorLibrary)
 require('./varying/inspector').registerWith(inspectorLibrary)
