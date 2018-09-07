@@ -143,8 +143,7 @@ describe 'manifest', ->
     defer ->
       types.result.failure.match(result).should.equal(true)
       result.get().length.should.equal(1)
-      types.validity.invalid.match(result.get().at(0)).should.equal(true)
-      result.get().at(0).get().should.equal(1)
+      result.get().at(0).should.equal(1)
       done()
 
   it 'should return all failures if many happen', (done) ->
@@ -161,10 +160,8 @@ describe 'manifest', ->
     defer ->
       types.result.failure.match(result).should.equal(true)
       result.get().length.should.equal(2)
-      types.validity.invalid.match(result.get().at(0)).should.equal(true)
-      result.get().at(0).get().should.equal(1)
-      types.validity.invalid.match(result.get().at(1)).should.equal(true)
-      result.get().at(1).get().should.equal(3)
+      result.get().at(0).should.equal(1)
+      result.get().at(1).should.equal(3)
       done()
 
   it 'should only result once', (done) ->

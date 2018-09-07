@@ -365,8 +365,7 @@ describe 'Model', ->
 
       model = new TestModel()
       model.issues().length.should.equal(1)
-      types.validity.invalid.match(model.issues().at(0)).should.equal(true)
-      model.issues().at(0).get().should.equal('test')
+      model.issues().at(0).should.equal('test')
 
     it 'should return true if no active issues exist on valid()', ->
       v1 = new Varying(types.validity.valid())

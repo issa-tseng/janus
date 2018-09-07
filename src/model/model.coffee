@@ -80,7 +80,8 @@ class Model extends Map
     result
 
   # Returns a list of the currently failing validation results.
-  issues: -> this._issues$ ?= this.validations().filter(types.validity.invalid.match)
+  # Unwraps the types.validity.invalid case class because we know they're invalid.
+  issues: -> this._issues$ ?= this.validations().filter(types.validity.invalid.match).map((invalid) -> invalid.get())
 
   # Returns a `Varying` of `true` or `false` depending on whether this model is
   # valid or not.
