@@ -5,6 +5,8 @@ module.exports = {
   inspect,
 
   view:
+    case:
+      entity: require('./case/entity-view')
     common:
       textAttribute: require('./common/text-attribute')
     model:

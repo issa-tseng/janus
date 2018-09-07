@@ -35,22 +35,14 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// VARYING BASE STYLES
+// CASE BASE STYLES
 
-.janus-inspect-varying.janus-inspect-entity
-  .varying-unknown
-    display: none
+.janus-inspect-case.janus-inspect-entity
+  .entity-subtitle.has-subtitle:before
+    content: '.'
 
-    &.unknown
-      border: 1px dotted #888
-      border-radius: 99px
-      color: #888
-      cursor: pointer
-      display: inline
-      padding: 2px 3px
 
-      + .varying-value
-        display: none
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -88,4 +80,22 @@
       &:focus
         opacity: 1
         pointer-events: auto
+
+////////////////////////////////////////////////////////////////////////////////
+// VARYING BASE STYLES
+
+.janus-inspect-varying.janus-inspect-entity
+  .varying-unknown
+    display: none
+
+    &.unknown
+      border: 1px dotted #888
+      border-radius: 99px
+      color: #888
+      cursor: pointer
+      display: inline
+      padding: 2px 3px
+
+      + .varying-value
+        display: none
 
