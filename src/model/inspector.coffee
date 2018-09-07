@@ -14,9 +14,10 @@ class KVPair extends Model.build(
 
 class WrappedModel extends Model.build(
     bind('type', from('model').map((model) -> if model.isModel then 'Model' else 'Map'))
+    # TODO: don't add the dot here.
     bind('subtype', from('model')
       .map((model) -> model.constructor.name)
-      .map((name) -> if name? and (name not in [ 'Model', 'Map' ]) then ".#{name}" else ''))
+      .map((name) -> if name? and (name not in [ 'Model', 'Map', '_Class' ]) then ".#{name}" else ''))
 
     bind('identifier', from('model').watch('name')
       .and('model').watch('title')
