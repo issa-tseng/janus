@@ -9,7 +9,7 @@ class KVPair extends Model.build(
 
   # a little timid on some of these for the sake of Maps so use ?
   bind('bound', from('model').and('key').all.map((m, k) -> m.constructor.schema?.bindings[k]?))
-  bind('binding', from('model').and('key').all.map((m, k) -> m._bindings?[k].parent))
+  bind('binding', from('model').and('key').all.map((m, k) -> m._bindings?[k]?.parent))
 )
 
 class WrappedModel extends Model.build(
