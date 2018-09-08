@@ -2,6 +2,7 @@
 # is pretty simple; one can add and remove elements to and from it, and
 # it will emit added/removed events with (item, idx) params.
 
+{ Base } = require('../core/base')
 { Varying } = require('../core/varying')
 { OrderedMappable } = require('./collection')
 util = require('../util/util')
@@ -156,13 +157,14 @@ class List extends OrderedMappable
 
   # Watch the length of this collection.
   watchLength: ->
-    this.watchLength$ ?= do =>
+    this.watchLength$ ?= Varying.managed((-> new Base()), (listener) =>
       result = new Varying(this.list.length)
 
-      this.on('added', => result.set(this.list.length))
-      this.on('removed', => result.set(this.list.length))
+      listener.listenTo(this, 'added', => result.set(this.list.length))
+      listener.listenTo(this, 'removed', => result.set(this.list.length))
 
       result
+    )
 
   # Set an index of this collection to the given member and return the replaced
   # element, if any.
