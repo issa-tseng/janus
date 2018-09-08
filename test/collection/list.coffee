@@ -329,6 +329,34 @@ describe 'List', ->
       l.removeAt(1)
       results.should.eql([ 4, 5, 7, 6, 5 ])
 
+    it 'should provide an empty convenience method', ->
+      (new List()).empty().should.equal(true)
+      (new List(0)).empty().should.equal(false)
+
+    it 'should provide a watchEmpty convenience method', ->
+      l = new List()
+      result = null
+      l.watchEmpty().react((x) -> result = x)
+      result.should.equal(true)
+      l.add(2)
+      result.should.equal(false)
+      l.removeAt(0)
+      result.should.equal(true)
+
+    it 'should provide a nonEmpty convenience method', ->
+      (new List()).nonEmpty().should.equal(false)
+      (new List(0)).nonEmpty().should.equal(true)
+
+    it 'should provide a watchNonEmpty convenience method', ->
+      l = new List()
+      result = null
+      l.watchNonEmpty().react((x) -> result = x)
+      result.should.equal(false)
+      l.add(2)
+      result.should.equal(true)
+      l.removeAt(0)
+      result.should.equal(false)
+
   describe 'put', ->
     it 'should overwrite the appropriate elements', ->
       l = new List([ 4, 8, 15, 16, 23, 42 ])
