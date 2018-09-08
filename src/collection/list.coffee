@@ -151,11 +151,8 @@ class List extends OrderedMappable
   watchAt: _watchAt
   watch: _watchAt
 
-  # Provide something that looks like a normal length getter:
+  # Length-related operations. .length is presented as a getter for familiarity.
   Object.defineProperty(@prototype, 'length', get: -> this.list.length)
-
-
-  # Watch the length of this collection.
   watchLength: ->
     this.watchLength$ ?= Varying.managed((-> new Base()), (listener) =>
       result = new Varying(this.list.length)
@@ -165,6 +162,12 @@ class List extends OrderedMappable
 
       result
     )
+
+  # Length-related convenience methods, since these maps happen a lot:
+  empty: -> this.length is 0
+  watchEmpty: -> this.watchLength().map((length) -> length is 0)
+  nonEmpty: -> this.length > 0
+  watchNonEmpty: -> this.watchLength().map((length) -> length > 0)
 
   # Set an index of this collection to the given member and return the replaced
   # element, if any.
