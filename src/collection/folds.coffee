@@ -83,20 +83,14 @@ folds =
   join: (collection, joiner) -> foldBase((_, _2, collection) -> collection.list.join(joiner))(collection)
 
   scanl: (collection, memo, f) ->
-    intermediate = new (require('./list').List)()
-    intermediate.add(Varying.of(memo))
-
-    collection.watchLength().react (length) ->
-      intermediateLength = intermediate.list.length - 1
-      if length > intermediateLength
-        for idx in [intermediateLength...length]
-          do (idx) ->
-            intermediate.add(Varying.combine([ intermediate.watchAt(idx), collection.watchAt(idx) ], f))
-      else if length > intermediateLength
-        for idx in [length...intermediateLength]
-          intermediate.removeAt(intermediateLength)
-
-    intermediate
+    self = new Varying()
+    result = collection.enumeration().flatMap((idx) -> self.flatMap((result) ->
+      return unless result?
+      prev = if idx is 0 then Varying.of(memo) else result.watchAt(idx - 1)
+      Varying.mapAll(f, prev, collection.watchAt(idx))
+    ))
+    self.set(result)
+    result
 
   foldl: (collection, memo, f) -> folds.scanl(collection, memo, f).watchAt(-1)
 
