@@ -82,19 +82,6 @@ folds =
 
   join: (collection, joiner) -> foldBase((_, _2, collection) -> collection.list.join(joiner))(collection)
 
-  # dangerous (stack depth)
-  fold: (collection, memo, f) ->
-    intermediate = []
-    intermediate[-1] = Varying.of(memo)
-
-    update = (value, idx, collection) ->
-      start = Math.min(intermediate.length, idx)
-      for idx in [start...collection.list.length]
-        intermediate[idx] = intermediate[idx - 1].map((last) -> f(last, value))
-      intermediate[intermediate.length - 1]
-
-    foldBase(update)(collection)
-
   scanl: (collection, memo, f) ->
     intermediate = new (require('./list').List)()
     intermediate.add(Varying.of(memo))
