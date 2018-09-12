@@ -13,18 +13,6 @@ foldBase = (update) -> (collection) ->
   result
 
 folds =
-  any: foldBase (value, _, collection) ->
-    if value isnt true
-      existTrue = false
-      for item in collection.list
-        if item is true
-          existTrue = true
-          break
-
-      existTrue
-    else
-      true
-
   apply: (collection, f) ->
     collection.watchLength().flatMap((length) ->
       Varying.all(collection.watchAt(idx) for idx in [0..collection.length]).map(f))
