@@ -6,7 +6,9 @@
 { Varying } = require('../core/varying')
 { Traversal } = require('./traversal')
 folds = require('./folds')
+
 { IndexOfFold } = require('./derived/indexof-fold')
+{ IncludesFold } = require('./derived/includes-fold')
 
 
 # cache this circularly referenced module once we fetch it:
@@ -56,6 +58,7 @@ class Mappable extends Enumerable
   uniq: -> new (require('./derived/uniq-list').UniqList)(this)
 
   # fold-like operations:
+  includes: (x) -> IncludesFold.includes(this, x)
   any: (f) -> folds.any(new (require('./derived/mapped-list').FlatMappedList)(this, f))
   min: -> folds.min(this)
   max: -> folds.max(this)
