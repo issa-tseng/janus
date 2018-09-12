@@ -29,14 +29,6 @@ folds =
     collection.watchLength().flatMap((length) ->
       Varying.all(collection.watchAt(idx) for idx in [0..collection.length]).map(f))
 
-  find: foldBase (value, idx, collection) ->
-    if value is true
-      collection.list[idx]
-    else
-      for elem in collection
-        return elem if f(elem) is true
-      null
-
   min: (collection) ->
     last = null
 
