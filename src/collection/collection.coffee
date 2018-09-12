@@ -9,6 +9,7 @@ folds = require('./folds')
 
 { IndexOfFold } = require('./derived/indexof-fold')
 { IncludesFold } = require('./derived/includes-fold')
+{ AnyFold } = require('./derived/any-fold')
 
 
 # cache this circularly referenced module once we fetch it:
@@ -59,7 +60,7 @@ class Mappable extends Enumerable
 
   # fold-like operations:
   includes: (x) -> IncludesFold.includes(this, x)
-  any: (f) -> folds.any(new (require('./derived/mapped-list').FlatMappedList)(this, f))
+  any: (f) -> AnyFold.any(this, f)
   min: -> folds.min(this)
   max: -> folds.max(this)
   sum: -> folds.sum(this)
