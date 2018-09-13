@@ -226,6 +226,17 @@ describe 'traversal', ->
       a = Traversal.getArray(s, map: (k, v) -> varying(vary.map((x) -> value(v + x))))
       a.should.eql([ 3, 4, 5 ])
 
+    it 'should delegate to another function given delegate', ->
+      s = new Map( a: 1, b: 2, c: 3 )
+      o = Traversal.getArray(s, map: (k, v) ->
+        if v < 3
+          delegate((k, v) -> if v < 2 then value('x') else value('y'))
+        else
+          value(v)
+      )
+
+      o.should.eql([ 'x', 'y', 3 ])
+
   describe 'as natural', ->
     # largely relies on the asList tests for correctness of internal traversal.
     it 'should supply the appropriate parameters', ->
@@ -277,6 +288,19 @@ describe 'traversal', ->
 
       s.get('e').data.should.eql({ f: 'f5' })
 
+    it 'should delegate to another function given delegate', ->
+      s = new Map( a: 1, b: 2, c: 3 )
+      r = Traversal.asNatural(s, map: (k, v) ->
+        if v < 3
+          delegate((k, v) -> if v < 2 then value('x') else value('y'))
+        else
+          value(v)
+      )
+
+      r.get('a').should.equal('x')
+      r.get('b').should.equal('y')
+      r.get('c').should.equal(3)
+
   describe 'get natural', ->
     # largely relies on the asList tests for correctness of internal traversal.
     it 'should supply the appropriate parameters', ->
@@ -314,6 +338,17 @@ describe 'traversal', ->
       )
 
       o.should.eql({ a: 'a1', b: [ '02', { c: 'c3', d: 'd4' } ], e: { f: 'f5' } })
+
+    it 'should delegate to another function given delegate', ->
+      s = new Map( a: 1, b: 2, c: 3 )
+      o = Traversal.getNatural(s, map: (k, v) ->
+        if v < 3
+          delegate((k, v) -> if v < 2 then value('x') else value('y'))
+        else
+          value(v)
+      )
+
+      o.should.eql({ a: 'x', b: 'y', c: 3 })
 
   describe 'default implementations', ->
     describe 'serialization', ->
