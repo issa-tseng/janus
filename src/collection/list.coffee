@@ -272,6 +272,8 @@ class DerivedList extends List
 
   shadow: -> this
 
+# also export under List:
+List.Derived = DerivedList
 
 module.exports = { List, DerivedList }
 
