@@ -5,15 +5,12 @@ types = require('../core/types')
 # a plain data storage class. really, there is no need to derive from this or
 # pay it any attention at all.
 class Request
-  isRequest: true
   constructor: (@options) ->
 
   type: types.operation.read()
   signature: undefined # caching signature.
   cacheable: true # for mutation requests, can opt not to save the result.
   expires: undefined
-
-  criteria: undefined # resolver library search criteria
 
 Resolver = {
   # given some number of resolvers, tries each one until it gets a result. returning
