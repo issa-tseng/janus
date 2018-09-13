@@ -10,6 +10,8 @@ folds = require('./folds')
 { IndexOfFold } = require('./derived/indexof-fold')
 { IncludesFold } = require('./derived/includes-fold')
 { AnyFold } = require('./derived/any-fold')
+{ MinMaxFold } = require('./derived/min-max-fold')
+{ SumFold } = require('./derived/sum-fold')
 
 
 # cache this circularly referenced module once we fetch it:
@@ -61,9 +63,9 @@ class Mappable extends Enumerable
   # fold-like operations:
   includes: (x) -> IncludesFold.includes(this, x)
   any: (f) -> AnyFold.any(this, f)
-  min: -> folds.min(this)
-  max: -> folds.max(this)
-  sum: -> folds.sum(this)
+  min: -> MinMaxFold.min(this)
+  max: -> MinMaxFold.max(this)
+  sum: -> SumFold.sum(this)
 
 
 # An `OrderedMappable` provides `add` and `remove` events for every element
