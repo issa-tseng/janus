@@ -6,7 +6,7 @@ should = require('should')
 { attribute } = require('../../lib/model/schema')
 { List } = require('../../lib/collection/list')
 attributes = require('../../lib/model/attribute')
-{ sum } = require('../../lib/collection/folds')
+{ sum } = require('../../lib/collection/derived/sum-fold').SumFold
 { Traversal } = require('../../lib/collection/traversal')
 { recurse, delegate, defer, varying, value, nothing } = require('../../lib/core/types').traversal
 
