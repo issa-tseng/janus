@@ -82,7 +82,7 @@ Traversal =
     for key in obj.enumerate()
       val = obj.get(key)
       attribute = obj.attribute(key) if obj.isModel is true
-      local = Object.assign({}, fs, { obj, key, val, attribute, context, immediate: true, root: Traversal.getNatural })
+      local = Object.assign({}, fs, { obj, key, value: val, attribute, context, immediate: true, root: Traversal.getNatural })
       set(key, matchAction(local)(local.map(key, val, obj, attribute, context)))
     result
 
@@ -91,7 +91,7 @@ Traversal =
       for key in obj.enumerate() 
         val = obj.get(key)
         attribute = obj.attribute(key) if obj.isModel is true
-        local = Object.assign({}, fs, { obj, key, val, attribute, context, immediate: true, root: Traversal.getArray })
+        local = Object.assign({}, fs, { obj, key, value: val, attribute, context, immediate: true, root: Traversal.getArray })
         matchAction(local)(local.map(key, val, obj, attribute, context))
     )
 
