@@ -17,7 +17,7 @@ ListEntityView = DomView.withOptions({ viewModelClass: ListEntityVM }).build($('
     <span class="entity-title">List<span class="entity-subtitle"/></span>
     <span class="entity-content">
       <span class="list-values"></span>
-      <button class="list-more">&hellip;<span class="list-more-count"/> more</button>
+      <button class="entity-more">&hellip;<span class="entity-more-count"/> more</button>
     </span>
   </div>'), template(
 
@@ -28,14 +28,15 @@ ListEntityView = DomView.withOptions({ viewModelClass: ListEntityVM }).build($('
   find('.list-values').render(from('list').and('take').asVarying()
     .all.map((list, take) -> list.take(take).map(inspect)))
 
-  find('.list-more-count')
-    .classed('has-more', from('more_count').map((x) -> x > 0))
+  find('.entity-more-count')
     .text(from('more_count'))
 
-  find('.list-more').on('click', (_, subject) ->
-    taken = subject.get('take')
-    subject.set('take', taken + min(25, taken))
-  )
+  find('.entity-more')
+    .classed('has-more', from('more_count').map((x) -> x > 0))
+    .on('click', (_, subject) ->
+      taken = subject.get('take')
+      subject.set('take', taken + min(25, taken))
+    )
 ))
 
 module.exports = {

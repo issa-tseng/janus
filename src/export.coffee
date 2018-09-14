@@ -11,6 +11,8 @@ module.exports = {
       textAttribute: require('./common/text-attribute')
     list:
       entity: require('./list/entity-view')
+    literal:
+      entity: require('./literal/entity-view')
     model:
       panel: require('./model/panel-view')
       entity: require('./model/entity-view')
