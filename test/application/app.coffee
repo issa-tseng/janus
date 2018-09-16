@@ -1,4 +1,6 @@
 { App } = require('../../lib/application/app')
+{ Base } = require('../../lib/core/base')
+{ Varying } = require('../../lib/core/varying')
 
 describe 'base App model', ->
   describe 'library instantiation', ->
@@ -110,6 +112,21 @@ describe 'base App model', ->
         app.view(subject, null, { resolve: [ 'one', 'two' ] })
         attrs.should.eql([ 'one', 'two' ])
         resolves.should.equal(2)
+
+      it 'should have the view react to requested attributes', ->
+        watches = {}
+        subject = {
+          attribute: (key) -> {}
+          watch: (key) -> watches[key] ?= new Varying()
+        }
+
+        class A extends Base
+        app = new App( views: { get: -> A } )
+        view = app.view(subject, null, { resolve: 'test' })
+        subject.watch('test').refCount().get().should.equal(1)
+
+        view.destroy()
+        subject.watch('test').refCount().get().should.equal(0)
 
       it 'should not resolve non-references', ->
         called = false
