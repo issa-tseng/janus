@@ -98,6 +98,8 @@ class ReferenceAttribute extends Attribute
         result =
           if request.all?
             request.all.point(this.model.pointer()).flatMap((request) -> app.resolve(request))
+          else if request.isVarying is true
+            request.flatMap(app.resolve)
           else
             app.resolve(request)
         return unless result?
