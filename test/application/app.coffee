@@ -16,6 +16,9 @@ describe 'base App model', ->
     it 'should come with a view library by default', ->
       (new App()).get('views').isLibrary.should.equal(true)
 
+    it 'should get the view library via the .views getter', ->
+      (new App()).views.isLibrary.should.equal(true)
+
     it 'should pass the subject and criteria to the library', ->
       subject = criteria = null
       library = { get: (x, y) -> subject = x; criteria = y; null }
@@ -64,7 +67,7 @@ describe 'base App model', ->
       results.length.should.equal(1)
       results[0].should.be.an.instanceof(A)
 
-    describe 'resolution', ->
+    describe 'view resolution', ->
       it 'should call autoresolve if it exists on the subject', ->
         called = null
         class A
@@ -144,6 +147,9 @@ describe 'base App model', ->
         )
 
   describe 'request resolving', ->
+    it 'should get the resolver library via the .resolvers getter', ->
+      (new App()).resolvers.isLibrary.should.equal(true)
+
     it 'should do nothing if a non-request is given', ->
       should.doesNotThrow(->
         should.not.exist((new App()).resolve(null))

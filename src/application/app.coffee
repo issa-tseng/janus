@@ -13,6 +13,9 @@ class App extends Model.build(
   attribute('views', LibraryAttribute)
   attribute('resolvers', LibraryAttribute))
 
+  Object.defineProperty(@prototype, 'views', get: -> this.get('views'))
+  Object.defineProperty(@prototype, 'resolvers', get: -> this.get('resolvers'))
+
   view: (subject, criteria = {}, options = {}) ->
     klass = this.get('views').get(subject, criteria)
     return unless klass?
