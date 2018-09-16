@@ -9,7 +9,7 @@ class LibraryAttribute extends attributes.Attribute
   default: -> new Library()
   writeDefault: true
 
-App = class extends Model.build(
+class App extends Model.build(
   attribute('views', LibraryAttribute)
   attribute('resolvers', LibraryAttribute))
 
@@ -27,9 +27,12 @@ App = class extends Model.build(
       resolveSource = options.resolve ? view.resolve
       if resolveSource? and isFunction(subject.attribute)
         resolve = if isFunction(resolveSource) then resolveSource() else resolveSource
-        attrs = if isArray(resolve) then resolve else [ resolve ]
-        for key in attrs when (attribute = subject.attribute(key))?
+        keys = if isArray(resolve) then resolve else [ resolve ]
+        for key in keys when (attribute = subject.attribute(key))?
+          # we fire off an explicit resolve, in case auto was off. we also have
+          # the view react on the key for its lifetime to ensure resolution.
           attribute.resolveWith(this) if attribute.isReference is true
+          view.reactTo(subject.watch(key), (->)) if isFunction(subject.watch)
 
     view
 
