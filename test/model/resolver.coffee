@@ -116,6 +116,17 @@ describe 'Resolver', ->
         done()
       ), 0)
 
+    it 'should not expire until it is time', (done) ->
+      class ExpiringRequest extends SignaturedRequest
+        expires: 10
+      cache = new MemoryCacheResolver()
+      cache.cache(new ExpiringRequest(), 42)
+      cache.resolve(new ExpiringRequest()).should.equal(42)
+      setTimeout((->
+        cache.resolve(new ExpiringRequest()).should.equal(42)
+        done()
+      ), 0)
+
     it 'should accept a function to determine cache expiration', (done) ->
       class ExpiringRequest extends SignaturedRequest
         expires: -> 0
