@@ -222,6 +222,17 @@ describe 'Attribute', ->
         v.react(->)
         calledWith.test.should.equal(4.136)
 
+      it 'should resolve Varyings containing requests', ->
+        calledWith = null
+        v = new Varying()
+        class TestModel extends Model
+          watch: -> v
+
+        ref = new (attribute.Reference.to(new Varying(6.582)))(new TestModel())
+        ref.resolveWith({ resolve: (req) -> calledWith = req; new Varying() })
+        v.react(->)
+        calledWith.should.equal(6.582)
+
       it 'should point fromchains containing requests, then resolve', ->
         calledWith = null
         v = new Varying()
