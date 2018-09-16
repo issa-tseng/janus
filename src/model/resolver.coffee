@@ -56,11 +56,14 @@ Resolver = {
 # standard cache, generally useful for all purposes. respects all request properties:
 # type, signature, cacheable, and expires. simply stores results in a map.
 class MemoryCacheResolver
-  constructor: -> this._cache = {}
+  constructor: ->
+    this._cache = {}
+    this._expires = {}
 
   resolve: (request) ->
     signature = request.signature?()
     return unless signature?
+    return if (expires = this._expires[signature])? and (expires < (new Date()).getTime())
     this._cache[signature]
 
   cache: (request, result) ->
@@ -91,7 +94,7 @@ class MemoryCacheResolver
     this._cache[signature] = value
     if expires?
       after = if isFunction(expires) then expires() else expires
-      setTimeout((=> this._cache[signature] = null), after * 1000) if isNumber(after)
+      this._expires[signature] = (new Date()).getTime() + (after * 1000) if isNumber(after)
     null
 
 # for the export, don't have multiple toplevel Resolver things:
