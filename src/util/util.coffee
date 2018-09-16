@@ -38,9 +38,6 @@ util =
     (value = f(value, elem)) for elem in arr
     value
 
-  # Still exactly what you think it is.
-  reduceLeft: (arr, f) -> util.foldLeft(arr[0])(arr.slice(1), f)
-
 
   #### Object Utils
   # Basic shallow copy in emulation of simplest jQuery extend case. warning: mutates!

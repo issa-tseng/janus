@@ -74,10 +74,6 @@ describe 'Util', ->
     it 'should fold with an initial value and a recurring folder', ->
       util.foldLeft('this')([ 'is', 'only', 'a', 'test' ], (x, y) -> "#{x} #{y}").should.equal('this is only a test')
 
-  describe 'reduceLeft', ->
-    it 'should fold without taking an initial value', ->
-      util.reduceLeft([ 'this', 'is', 'only', 'a', 'test' ], (x, y) -> "#{x} #{y}").should.equal('this is only a test')
-
   describe 'extend', ->
     it 'should copy properties from the sources onto the target', ->
       target = { a: 1 }
