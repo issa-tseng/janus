@@ -21,13 +21,14 @@ class Library extends Base
   constructor: () ->
     super()
     this.bookcase = {}
+    this.classTypes = []
 
   # Registers a book with the `Library`. Book is the thing that should be handed
   # back when we try to .get(klass). It can be anything. Options can be context,
   # priority (bigger is higher pri), and any arbitrary other k/v pairs for
   # matching on .get().
   register: (klass, book, options = {}) ->
-    bookId = Library._classId(klass)
+    bookId = this._classIdForConstructor(klass)
 
     classShelf = this.bookcase[bookId] ?= {}
     contextShelf = classShelf[options.context ? 'default'] ?= []
@@ -54,7 +55,7 @@ class Library extends Base
 
   # Internal recursion method for searching the library.
   _get: (obj, klass, context, criteria) ->
-    bookId = Library._instanceClassId(obj) ? Library._classId(klass)
+    bookId = this._classIdForInstance(obj) ? this._classIdForConstructor(klass)
     contextShelf = this.bookcase[bookId]?[context]
 
     # possible matches; return the first true match.
@@ -72,12 +73,8 @@ class Library extends Base
       if (superClass = util.superClass(klass))?
         return this._get(obj, superClass, context, criteria)
 
-  # Class-level internal tracking of object constructors.
-  @classKey: "__janus_classId#{new Date().getTime()}"
-  @classMap: {}
-
-  # Class-level method for tagging and reading the tag off of constructors.
-  @_classId: (klass) ->
+  # records and retrieves class IDs for constructors.
+  _classIdForConstructor: (klass) ->
     if !klass?
       'null'
     else if klass is Number
@@ -89,18 +86,16 @@ class Library extends Base
     else
       klass = klass.type if klass.isCase is true
 
-      id = klass[this.classKey]
-
-      if id? and this.classMap[id] is klass
-        klass[this.classKey]
+      if (id = this.classTypes.indexOf(klass)) >= 0
+        id
       else
-        id = util.uniqueId()
-        this.classMap[id] = klass
-        klass[this.classKey] = id
+        id = this.classTypes.length
+        this.classTypes.push(klass)
+        id
 
-  # Class-level method for determining the tag of some special-case object
-  # instances.
-  @_instanceClassId: (obj) ->
+  # determines the id of some special-case object instances. if it fails to
+  # find an id, feed the constructor to _classIdForConstructor instead.
+  _classIdForInstance: (obj) ->
     if !obj?
       'null'
     else if util.isNumber(obj)

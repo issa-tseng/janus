@@ -11,36 +11,36 @@ describe 'Library', ->
   describe 'class identification', ->
     it 'should return an integer', ->
       class TestClass
-      (typeof Library._classId(TestClass) is 'number').should.equal(true)
-
-    it 'should tag the class with the id', ->
-      class TestClass
-
-      id = Library._classId(TestClass)
-      TestClass[Library.classKey].should.equal(id)
+      library = new Library()
+      (typeof library._classIdForConstructor(TestClass) is 'number').should.equal(true)
 
     it 'should return the same id for a class each time', ->
       class TestClass
-
-      Library._classId(TestClass).should.equal(Library._classId(TestClass))
+      library = new Library()
+      library._classIdForConstructor(TestClass).should.equal(library._classIdForConstructor(TestClass))
 
     it 'should return a different id for a derived class', ->
       class ClassA
       class ClassB extends ClassA
-
-      Library._classId(ClassA).should.not.equal(Library._classId(ClassB))
+      library = new Library()
+      library._classIdForConstructor(ClassA).should.not.equal(library._classIdForConstructor(ClassB))
 
     it 'should return "null" for null', ->
-      Library._classId(null).should.equal('null')
+      library = new Library()
+      library._classIdForConstructor(null).should.equal('null')
     it 'should return int for a case', ->
       { success, fail } = Case.build('success', 'fail')
-      Library._classId(success).should.be.a.Number()
+      library = new Library()
+      library._classIdForConstructor(success).should.be.a.Number()
     it 'should return "number" for Number', ->
-      Library._classId(Number).should.equal('number')
+      library = new Library()
+      library._classIdForConstructor(Number).should.equal('number')
     it 'should return "string" for String', ->
-      Library._classId(String).should.equal('string')
+      library = new Library()
+      library._classIdForConstructor(String).should.equal('string')
     it 'should return "boolean" for Boolean', ->
-      Library._classId(Boolean).should.equal('boolean')
+      library = new Library()
+      library._classIdForConstructor(Boolean).should.equal('boolean')
 
   describe 'registration', ->
     it 'should take a class and any book', ->
@@ -49,7 +49,7 @@ describe 'Library', ->
 
       library.register(TestClass, {})
 
-      should.exist(library.bookcase[Library._classId(TestClass)]?.default?[0])
+      should.exist(library.bookcase[library._classIdForConstructor(TestClass)]?.default?[0])
 
   describe 'retrieval', ->
     it 'should return a book for its class with no description', ->
@@ -154,7 +154,6 @@ describe 'Library', ->
 
       class SuccessBook
       library.register(success, SuccessBook)
-      console.log(Library._classId(success))
 
       library.get(success(42)).should.equal(SuccessBook)
       should(library.get(fail)).equal(null)
