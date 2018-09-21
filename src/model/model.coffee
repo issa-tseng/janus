@@ -43,7 +43,7 @@ class Model extends Map
   autoResolveWith: (app) ->
     for key of this.constructor.schema.attributes
       attribute = this.attribute(key)
-      attribute.resolveWith(app) if attribute.isReference is attribute.autoResolve is true
+      attribute.resolveWith(app) if attribute.isReference is true and attribute.autoResolve is true
     return
 
   # Actually set up our bindings.
