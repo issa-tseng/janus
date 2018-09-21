@@ -180,3 +180,16 @@ describe 'manifest', ->
         result.should.equal(firstResult)
         done()
 
+  it.only 'should isolate its own App events', (done) ->
+    result = null
+    resolvers = []
+    { TestModel, TestView, app } = env({ resolvers, watch: [ 'one' ] })
+    Manifest.run(app, new TestModel()).result.react((x) -> result = x)
+    Manifest.run(app, new TestModel())
+
+    resolvers.length.should.equal(2)
+    resolvers[0]()
+    defer ->
+      types.result.success.match(result).should.equal(true)
+      done()
+
