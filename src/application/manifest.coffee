@@ -8,9 +8,10 @@ types = require('../core/types')
 # Varying[types.result[x]]. but we also want to track and return what requests
 # were made and their results, so we make a class as a holding box.
 class Manifest extends Base
-  constructor: (@app, @model, criteria, options) ->
+  constructor: (app, @model, criteria, options) ->
     super()
     self = this
+    this.app = app.shadow() # get our own events.
 
     this._valid = true
     this.result = new Varying(types.result.init())
