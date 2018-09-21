@@ -69,12 +69,12 @@ describe 'Model', ->
   describe 'binding', ->
     describe 'application', ->
       it 'should bind one value from another', ->
-        TestModel = Model.build(bind('slave', from('master')))
+        TestModel = Model.build(bind('dest', from('source')))
         model = new TestModel()
-        should.not.exist(model.get('slave'))
+        should.not.exist(model.get('dest'))
 
-        model.set('master', 'commander')
-        model.get('slave').should.equal('commander')
+        model.set('source', 'aoeu')
+        model.get('dest').should.equal('aoeu')
 
       it 'should unset a value if its bound value nulls out', ->
         TestModel = Model.build(bind('inner_id', from('inner').watch('id')))
