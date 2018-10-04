@@ -1,6 +1,8 @@
-{ Model, bind, from, List } = require('janus')
+{ Model, dēfault, bind, from, List } = require('janus')
 
 class WrappedList extends Model.build(
+  dēfault('type', 'List')
+
   bind('subtype', from('list')
     .map((list) -> list.constructor.name)
     .map((name) -> name if name? and (name not in [ 'List', '_Class' ])))

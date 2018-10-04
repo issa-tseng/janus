@@ -14,12 +14,14 @@ ListEntityVM = Model.build(
 
 ListEntityView = DomView.withOptions({ viewModelClass: ListEntityVM }).build($('
   <div class="janus-inspect-entity janus-inspect-list">
-    <span class="entity-title">List<span class="entity-subtitle"/></span>
+    <span class="entity-title"><span class="entity-type"/><span class="entity-subtitle"/></span>
     <span class="entity-content">
       <span class="list-values"></span>
       <button class="entity-more">&hellip;<span class="entity-more-count"/> more</button>
     </span>
   </div>'), template(
+
+  find('.entity-type').text(from('subject').watch('type'))
 
   find('.entity-subtitle')
     .classed('has-subtitle', from('subject').watch('subtype').map(exists))
