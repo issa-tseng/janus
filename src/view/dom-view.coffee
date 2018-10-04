@@ -66,5 +66,8 @@ class DomView extends View
       dom: -> fragment.clone()
       preboundTemplate: template(fragment)
 
+      @fragment: fragment
+      @template: template
+
 module.exports = { DomView }
 
