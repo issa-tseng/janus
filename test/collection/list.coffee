@@ -253,6 +253,21 @@ describe 'List', ->
       l.move(m, 2)
       eventedArgs.should.eql([ l, 2, 0 ])
 
+  describe 'moveAt', ->
+    it 'should move the element to the relevant place', ->
+      l = new List([ 1, 2, 3, 4, 5 ])
+      l.moveAt(2, 0)
+      l.length.should.equal(5)
+      for val, idx in [ 3, 1, 2, 4, 5 ]
+        l.at(idx).should.equal(val)
+
+    it 'should allow negative indices', ->
+      l = new List([ 1, 2, 3, 4, 5 ])
+      l.moveAt(-1, -3)
+      l.length.should.equal(5)
+      for val, idx in [ 1, 2, 5, 3, 4 ]
+        l.at(idx).should.equal(val)
+
   describe 'removeAll', ->
     it 'should remove all elements', ->
       l = new List([ 4, 8, 15, 16, 23, 42 ])
