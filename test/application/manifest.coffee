@@ -180,7 +180,7 @@ describe 'manifest', ->
         result.should.equal(firstResult)
         done()
 
-  it.only 'should isolate its own App events', (done) ->
+  it 'should isolate its own App events', (done) ->
     result = null
     resolvers = []
     { TestModel, TestView, app } = env({ resolvers, watch: [ 'one' ] })
