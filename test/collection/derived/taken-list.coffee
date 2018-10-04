@@ -17,6 +17,12 @@ describe 'collection', ->
       for elem, idx in [ 1, 2, 3, 4 ]
         l.at(idx).should.equal(elem)
 
+    it 'should deal correctly with nested array values', ->
+      l = (new List([ [ 1, 2 ], [ 3, 4 ], [ 5, 6 ] ])).take(2)
+      l.length.should.equal(2)
+      l.at(0).should.eql([ 1, 2 ])
+      l.at(1).should.eql([ 3, 4 ])
+
     it 'should handle a changing take value via a Varying', ->
       v = new Varying(3)
       l = (new List([ 1, 2, 3, 4, 5, 6, 7, 8 ])).take(v)

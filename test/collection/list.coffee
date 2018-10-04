@@ -17,6 +17,11 @@ describe 'List', ->
       l.list.should.eql([ 4, 8, 15, 16, 23, 42 ])
       l.length.should.equal(6)
 
+    it 'should accept a nested array', ->
+      l = new List([ [ 4, 8 ], [ 15, 16 ], [ 23, 42 ] ])
+      l.list.should.eql([ [ 4, 8 ], [ 15, 16 ], [ 23, 42 ] ])
+      l.length.should.equal(3)
+
   describe 'retrieval', ->
     it 'should retrieve the element at idx', ->
       l = new List([ 4, 8, 15, 16, 23, 42 ])
