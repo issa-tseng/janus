@@ -13,7 +13,7 @@ class TakenList extends DerivedList
     this.reactTo(this.number, false, => this._rebalance())
 
     take = this._take()
-    this._add(elem, idx, take) for elem, idx in this.parent.list when idx < take
+    this._add(elem, idx) for elem, idx in this.parent.list when idx < take
 
     this.listenTo(this.parent, 'added', (elem, idx) => this._add(elem, idx))
     this.listenTo(this.parent, 'moved', (elem, idx, oldIdx) => this._moveElem(elem, oldIdx, idx))
@@ -22,7 +22,7 @@ class TakenList extends DerivedList
   _take: -> Math.min(this.number.get(), this.parent.list.length)
 
   _add: (elem, idx, take = this._take()) ->
-    super(elem, idx) if idx < take # don't add phantom elements far past the end.
+    super([ elem ], idx) if idx < take # don't add phantom elements far past the end.
     this._removeAt(take) if this.list.length > take
     return
 
