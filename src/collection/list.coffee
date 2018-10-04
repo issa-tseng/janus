@@ -84,6 +84,8 @@ class List extends OrderedMappable
 
   # Same as move, but by index rather than element reference.
   moveAt: (oldIdx, idx) ->
+    oldIdx = this.length + oldIdx if oldIdx < 0
+    idx = this.length + idx if idx < 0
     elem = this.list[oldIdx]
 
     # Move the element, then trigger `moved` event.
