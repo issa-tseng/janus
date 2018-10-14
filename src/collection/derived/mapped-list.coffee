@@ -35,7 +35,7 @@ class FlatMappedList extends DerivedList
     binding = this.reactTo(mapping, (newValue) =>
       initial ?= newValue # perf: saves us one mapping.get()
       bidx = this._bindings.list.indexOf(binding)
-      this._put(newValue, bidx) if bidx >= 0
+      this._set(bidx, newValue) if bidx >= 0
     )
 
     this._bindings.add(binding, idx)
