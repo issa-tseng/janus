@@ -156,28 +156,15 @@ describe 'Map', ->
         (map.get('cafe.vivace') is null).should.equal(true)
         (map.get('cafe') is null).should.equal(true)
 
-    describe 'setAll', ->
-      it 'should set all data in the given bag', ->
-        map = new Map()
-        map.setAll( the: { stranger: 'seattle', joule: 'apartments' } )
-
-        map.data.the.stranger.should.equal('seattle')
-        map.get('the.stranger').should.equal('seattle')
-
-        map.data.the.joule.should.equal('apartments')
-        map.get('the.joule').should.equal('apartments')
-
-      it 'should clear keys not in the given bag', ->
+    describe 'unsetAll', ->
+      it 'should clear all keys', ->
         map = new Map( una: 'bella', tazza: { di: 'caffe' } )
-        map.setAll( tazza: { of: 'cafe' } )
+        map.unsetAll()
 
-        should.not.exist(map.data.una)
         (map.get('una') is null).should.equal(true)
-        should.not.exist(map.data.tazza.di)
         (map.get('tazza.di') is null).should.equal(true)
 
-        map.data.tazza.of.should.equal('cafe')
-        map.get('tazza.of').should.equal('cafe')
+        map.data.should.eql({})
 
     describe 'watch', ->
       it 'should null out dead keys', ->
