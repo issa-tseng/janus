@@ -16,7 +16,7 @@ class FailingRequest
 
 failIfTrue = (x) -> (y) ->
   if y is true
-    types.validity.invalid(x)
+    types.validity.error(x)
   else
     types.validity.valid(x)
 

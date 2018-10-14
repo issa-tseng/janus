@@ -59,7 +59,7 @@ describe 'case', ->
 
       it 'should read twice-nested child cases', ->
         cases = Case.build('nothing', something: [ onething: [ 'redfish', 'bluefish' ], twothings: { pairfish: unapply1 } ] )
-        for x, y in [ 'nothing', 'something', 'onething', 'redfish', 'bluefish', 'twothings', 'pairfish' ]
+        for x, y in [ 'nothing', 'redfish', 'bluefish', 'pairfish' ]
           cases[x](y).toString().should.equal("case[#{x}]: #{y}")
 
       it 'should set unapply for child cases appropriately', ->
