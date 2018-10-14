@@ -94,11 +94,6 @@ describe 'List', ->
       for val, idx in [ 4, 8, 15, 16, 23, 42 ]
         l.at(idx).should.equal(val)
 
-    it 'should return the added elements', ->
-      l = new List()
-      l.add(2).should.eql([ 2 ])
-      l.add([ 3, 4, 5 ]).should.eql([ 3, 4, 5 ])
-
     it 'should emit an event for each added element', ->
       l = new List([ 4, 8, 42 ])
       evented = []
