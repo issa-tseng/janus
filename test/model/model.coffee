@@ -357,7 +357,7 @@ describe 'Model', ->
 
     it 'should return failing validations on issues()', ->
       v1 = new Varying(types.validity.valid())
-      v2 = new Varying(types.validity.invalid('test'))
+      v2 = new Varying(types.validity.error('test'))
       TestModel = Model.build(
         validate(from(v1))
         validate(from(v2))

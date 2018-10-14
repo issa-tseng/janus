@@ -96,7 +96,7 @@ defcase = (options) -> { build: (args...) ->
       else if typeArity is 1 then -> this.unapply(identity)
       else -> this.unapply((xs...) -> xs)
 
-    base.prototype.get = getter
+    type.prototype.get = getter
 
     base.prototype["#{name}OrElse"] = identity
     type.prototype["#{name}OrElse"] = getter
