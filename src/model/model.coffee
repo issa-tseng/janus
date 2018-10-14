@@ -27,11 +27,8 @@ class Model extends Map
 
     # if that fails, check the attribute and write if requested.
     if !value? and (attribute = this.attribute(key))?
-      value =
-        if attribute.writeDefault is true
-          this.set(key, attribute.default())
-        else
-          attribute.default()
+      value = attribute.default()
+      this.set(key, value) if (attribute.writeDefault is true) and (value isnt undefined)
 
     value ? null # drop undef to null
 

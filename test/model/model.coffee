@@ -66,6 +66,19 @@ describe 'Model', ->
       m.get('latte').should.equal('espresso')
       m.data.should.eql({ latte: 'espresso' })
 
+    # before this bugfix, the result of .set() was always written, which meant
+    # that if the default value was undefined, the .set(key) curried function
+    # would get written into the model, which we do not want.
+    it 'should not write a default value if writeDefault is true default is undefined', ->
+      class TestAttribute extends attributes.Attribute
+        writeDefault: true
+      TestModel = Model.build(attribute('breve', TestAttribute))
+
+      m = new TestModel()
+      m.data.should.eql({})
+      should.not.exist(m.get('breve'))
+      m.data.should.eql({})
+
   describe 'binding', ->
     describe 'application', ->
       it 'should bind one value from another', ->
