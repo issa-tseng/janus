@@ -50,7 +50,8 @@ class Map extends Enumerable
     if !value? and this._parent?
       value = this._parent.get(key)
       if value?.isEnumerable is true
-        value = this.set(key, value.shadow())
+        value = value.shadow()
+        this.set(key, value)
 
     if value is Nothing then null else value
 
@@ -81,13 +82,12 @@ class Map extends Enumerable
   # subclasses.
   _set: (key, value) ->
     oldValue = deepGet(this.data, key)
-    return value if oldValue is value
+    return if oldValue is value
 
     deepSet(this.data, key)(value)
     key = key.join('.') if isArray(key)
     this._changed(key, value, oldValue)
-
-    value
+    return
 
   # Takes an entire data bag, and replaces our own data with it, firing events as needed.
   setAll: (attrs) ->
