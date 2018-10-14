@@ -35,7 +35,7 @@ class Base
       EventEmitter.prototype.emit.apply(this.events, arguments)
 
   listeners: -> this.events?.listeners() ? []
-  removeAllListeners: -> this.events?.removeAllListeners()
+  removeAllListeners: (event) -> this.events?.removeAllListeners(event)
 
 
   ################################################################################
@@ -74,7 +74,7 @@ class Base
   # another, so it should self-destruct if the other does.
   # Normally, the garbage collector would handle this sort of thing, but with
   # listeners flying around it can be a little hard to reason out.
-  destroyWith: (other) -> this.listenTo(other, 'destroying', => this.destroy()); return
+  destroyWith: (other) -> this.listenTo(other, 'destroying', => this.destroy()); this
 
   # Increase the number of dependencies on this resource, which delays destruction.
   tap: ->
