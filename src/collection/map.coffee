@@ -90,12 +90,11 @@ class Map extends Enumerable
     return
 
   # Takes an entire data bag, and replaces our own data with it, firing events as needed.
-  setAll: (attrs) ->
+  unsetAll: (attrs) ->
     # first clear off data values that are about to no longer exist, then write over.
     traverseAll(this.data, (path, value) =>
       this.unset(path.join('.')) unless deepGet(attrs, path)?
     )
-    this.set(attrs)
     return
 
   # Clear the value of some key and returns the cleared value. If we are a shadow
