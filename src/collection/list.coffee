@@ -47,6 +47,20 @@ class List extends OrderedMappable
 
     return
 
+  # Sets a single value at a given index. Emits events as appropriate.
+  set: (idx, value) ->
+    idx = this.length + idx if idx < 0
+
+    if 0 <= idx and idx < this.length
+      removed = this.list[idx]
+      this.emit('removed', removed, idx)
+      removed?.emit?('removedFrom', this, idx)
+
+    this.list[idx] = value
+    this.emit('added', value, idx)
+    value?.emit?('addedTo', this, idx)
+    return
+
   # Removes one item from the collection by reference and returns it.
   remove: (which) ->
     idx = this.list.indexOf(which)
@@ -171,58 +185,6 @@ class List extends OrderedMappable
   nonEmpty: -> this.length > 0
   watchNonEmpty: -> this.watchLength().map((length) -> length > 0)
 
-  # Set an index of this collection to the given member and return the replaced
-  # element, if any.
-  #
-  # This is internally modelled as if the previous item at the index was removed
-  # and the new one was added in succession, but without the later members of
-  # the collection slipping around.
-  put: (list, idx) ->
-    # normalize input.
-    list = [ list ] unless util.isArray(list)
-
-    # If nothing yet exists at the target, populate it with null so that splice
-    # does the right thing.
-    if idx > this.list.length
-      this.list[idx] = null
-      delete this.list[idx]
-
-    # Actually process and splice in the elements.
-    removed = this.list.splice(idx, list.length, list...)
-
-    # Event on removals
-    for elem, subidx in removed# when elem? # TODO: this seems wrong, but why was it here?
-      this.emit('removed', elem, idx + subidx)
-      elem?.emit?('removedFrom', this, idx + subidx)
-
-    # Event on additions
-    for elem, subidx in list
-      this.emit('added', elem, idx + subidx)
-      elem?.emit?('addedTo', this, idx + subidx)
-
-    removed
-  set: (idx, item) -> this.put([ item ], idx)
-
-  # Somewhat smartly resets the entire list to a new one. Does a merge of the
-  # two such that adds/removes are limited.
-  # TODO: maybe deprecate. seems too fancy.
-  putAll: (list) ->
-    # first remove all existing models that should no longer exist.
-    (this.remove(elem) unless list.indexOf(elem) >= 0) for elem in this.list.slice()
-
-    # now go through each elem one at a time and add or move as necessary.
-    for elem, i in list
-      continue if this.list[i] is elem
-
-      oldIdx = this.list.indexOf(elem)
-      if oldIdx >= 0
-        this.move(elem, i)
-      else
-        this.add(elem, i)
-
-    # return the list that was set.
-    list
-
   # A shadow list is really just a clone that has a backreference so that we
   # can determine later if it has changed. We could copy-on-write, but that
   # seems like an unpredictable behaviour to build against.
@@ -268,7 +230,7 @@ class DerivedList extends List
 
   roError = -> throw new Error('this list is read-only')
 
-  for method in [ 'add', 'remove', 'removeAt', 'removeAll', 'put', 'putAll', 'move', 'moveAt' ]
+  for method in [ 'add', 'remove', 'removeAt', 'removeAll', 'set', 'move', 'moveAt' ]
     this.prototype["_#{method}"] = this.__super__[method]
     this.prototype[method] = roError
 

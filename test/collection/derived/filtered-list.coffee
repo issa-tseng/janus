@@ -119,9 +119,9 @@ describe 'collection', ->
       fl.length.should.equal(0)
       ol.add(1)
       fl.length.should.equal(0)
-      tl.put(true, 1)
+      tl.set(1, true)
       fl.length.should.equal(1)
       fl.at(0).should.equal(1)
-      tl.put(false, 1)
+      tl.set(1, false)
       fl.length.should.equal(0)
 
