@@ -45,7 +45,7 @@ class List extends OrderedMappable
       if util.isFunction(elem?.destroy) and (this.isDerivedList isnt true)
         (do (elem) => this.listenTo(elem, 'destroying', => this.remove(elem)))
 
-    elems
+    return
 
   # Removes one item from the collection by reference and returns it.
   remove: (which) ->
