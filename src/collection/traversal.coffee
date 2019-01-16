@@ -131,7 +131,7 @@ Traversal.default =
         else
           value(va? or vb?)
       ))
-    reduce: (list) -> list.any(identity)
+    reduce: (list) -> list.any()
 
 
 module.exports = { Traversal }
