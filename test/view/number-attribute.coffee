@@ -12,3 +12,14 @@ describe 'view', ->
       dom.is('input').should.equal(true)
       dom.attr('type').should.equal('number')
 
+    it 'sets a number', ->
+      model = new Model()
+      view = new NumberAttributeEditView(new attribute.Number(model, 'test'))
+      view.wireEvents()
+      dom = view.artifact()
+
+      dom.focus()
+      dom.val('42')
+      dom.trigger('input')
+      model.get('test').should.equal(42)
+
