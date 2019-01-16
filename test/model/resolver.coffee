@@ -107,6 +107,11 @@ describe 'Resolver', ->
       cache.cache(new SignaturedRequest(), 42)
       should.not.exist(cache.resolve(new (SignaturedRequest.of('other'))))
 
+    it 'should never resolve nonfetch requests', ->
+      cache = new MemoryCacheResolver()
+      cache.cache(new SignaturedRequest(), 42)
+      should.not.exist(cache.resolve(new UpdatingRequest()))
+
     it 'should expire fetch requests if requested', (done) ->
       class ExpiringRequest extends SignaturedRequest
         expires: 0
