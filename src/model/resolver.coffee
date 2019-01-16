@@ -45,11 +45,11 @@ Resolver = {
 
     cacheNode = dom.children("##{signature}")
     return if cacheNode.length is 0
+    cacheNode.remove()
 
     if types.operation.read.match(request.type)
-      new Varying(types.result.success(deserialize(cacheNode.text())))
+      new Varying(types.result.success(deserialize(cacheNode.text(), cacheNode)))
     else
-      cacheNode.remove()
       null
 }
 
