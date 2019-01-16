@@ -60,7 +60,7 @@ class Manifest extends Base
       if this._valid is true
         this.result.set(types.result.success(this.view))
       else
-        this.result.set(types.result.failure(this.model.issues()))
+        this.result.set(types.result.failure(this.model.errors()))
 
       this.destroy()
       return

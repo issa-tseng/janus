@@ -7,7 +7,7 @@ types =
 
   result: Case.build('init', 'pending', 'progress', 'complete': [ 'success', 'failure' ])
 
-  validity: Case.build('valid', 'invalid': [ 'warning', 'error' ])
+  validity: Case.build('valid', 'warning', 'error')
 
   operation: Case.build('read', 'mutate': [ 'create', 'update', 'delete' ])
 

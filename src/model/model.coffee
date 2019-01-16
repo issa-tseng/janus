@@ -77,13 +77,13 @@ class Model extends Map
     result
 
   # Returns a list of the currently failing validation results.
-  # Unwraps the types.validity.invalid case class because we know they're invalid.
-  issues: -> this._issues$ ?= this.validations().filter(types.validity.invalid.match).map((invalid) -> invalid.get())
+  # Unwraps the types.validity.error case class because we know they're errors.
+  errors: -> this._errors$ ?= this.validations().filter(types.validity.error.match).map((error) -> error.getError())
 
   # Returns a `Varying` of `true` or `false` depending on whether this model is
   # valid or not.
   valid: -> this._valid$ ?=
-    this.issues().watchLength().map((length) -> length is 0)
+    this.errors().watchLength().map((length) -> length is 0)
 
   # Handles parent changes; mostly exists in Map but we wrap to additionally
   # bail if the changed parent attribute is a bound value; we want that to
