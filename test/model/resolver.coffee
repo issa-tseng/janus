@@ -76,14 +76,16 @@ describe 'Resolver', ->
     it 'should do nothing if no child was found', ->
       should.not.exist(fromDom({ children: -> { length: 0 } })({ signature: -> 'test' }))
 
-    it 'should return success(the node text) if found and the request is fetch', ->
-      result = fromDom({ children: -> { length: 1, text: -> 'cached' } })(new SignaturedRequest())
+    it 'should remove the node and return success(the node text) if found and the request is fetch', ->
+      removed = false
+      result = fromDom({ children: -> { length: 1, text: (-> 'cached'), remove: -> removed = true } })(new SignaturedRequest())
       result.isVarying.should.equal(true)
       types.result.success.match(result.get()).should.equal(true)
       result.get().get().should.equal('cached')
+      removed.should.equal(true)
 
     it 'should use the given deserializer if it exists', ->
-      result = fromDom({ children: -> { length: 1, text: -> 'cached' } }, (x) -> { x })(new SignaturedRequest())
+      result = fromDom({ children: -> { length: 1, text: (-> 'cached'), remove: (->) } }, (x) -> { x })(new SignaturedRequest())
       result.get().get().should.eql({ x: 'cached' })
 
     it 'should remove the node and return nothing if found and the request modifies', ->
