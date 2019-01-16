@@ -7,13 +7,13 @@ describe 'collection', ->
       flattened = (new Set([ 1, 2, 3, 3, 4, 2 ])).flatten()
       flattened.length.should.equal(4)
       for x in [ 1, 2, 3, 4 ]
-        flattened.has(x).should.equal(true)
+        flattened.includes(x).should.equal(true)
 
     it 'should start with parent nested elements', ->
       flattened = (new Set([ 1, 2, new Set([ 1, 3 ]), new Set([ 3, 4 ]) ])).flatten()
       flattened.length.should.equal(4)
       for x in [ 1, 2, 3, 4 ]
-        flattened.has(x).should.equal(true)
+        flattened.includes(x).should.equal(true)
 
     it 'should track parent primitive changes', ->
       og = new Set([ 1, 2 ])
@@ -21,14 +21,14 @@ describe 'collection', ->
 
       og.add(4)
       flattened.length.should.equal(3)
-      flattened.has(4).should.equal(true)
+      flattened.includes(4).should.equal(true)
 
       og.add(4)
       flattened.length.should.equal(3)
 
       og.remove(2)
       flattened.length.should.equal(2)
-      flattened.has(2).should.equal(false)
+      flattened.includes(2).should.equal(false)
 
     it 'should track flattened subelements on change', ->
       og = new Set([ 1, 2 ])
@@ -37,25 +37,25 @@ describe 'collection', ->
       nest1 = new Set([ 2, 3, 4 ])
       og.add(nest1)
       flattened.length.should.equal(4)
-      flattened.has(3).should.equal(true)
-      flattened.has(4).should.equal(true)
+      flattened.includes(3).should.equal(true)
+      flattened.includes(4).should.equal(true)
 
       nest2 = new Set([ 1, 3, 5 ])
       og.add(nest2)
       flattened.length.should.equal(5)
-      flattened.has(5).should.equal(true)
+      flattened.includes(5).should.equal(true)
 
       og.remove(nest1)
       flattened.length.should.equal(4)
-      flattened.has(4).should.equal(false)
+      flattened.includes(4).should.equal(false)
 
       og.remove(nest2)
       flattened.length.should.equal(2)
-      flattened.has(5).should.equal(false)
+      flattened.includes(5).should.equal(false)
 
       og.remove(1)
       flattened.length.should.equal(1)
-      flattened.has(1).should.equal(false)
+      flattened.includes(1).should.equal(false)
 
     it 'should track child subelement changes', ->
       og = new Set([ 1, 2 ])
@@ -65,7 +65,7 @@ describe 'collection', ->
       og.add(nest1)
       nest1.add(4)
       flattened.length.should.equal(4)
-      flattened.has(4).should.equal(true)
+      flattened.includes(4).should.equal(true)
 
       nest1.remove(2)
       flattened.length.should.equal(4)
@@ -85,7 +85,7 @@ describe 'collection', ->
       flattened = outer.flatten()
 
       flattened.length.should.equal(5)
-      flattened.has(inner).should.equal(true)
+      flattened.includes(inner).should.equal(true)
 
       inner.add(6)
       flattened.length.should.equal(5)
@@ -103,14 +103,14 @@ describe 'collection', ->
       basiliskparrot.add(basiliskparrot)
       flattened = basiliskparrot.flatten()
       flattened.length.should.equal(3)
-      flattened.has(basiliskparrot).should.equal(true)
+      flattened.includes(basiliskparrot).should.equal(true)
 
     it 'should never attempt to flatten its parent (on dynamic add)', ->
       parrot = new Set([ 1, 2 ])
       flattened = parrot.flatten()
       parrot.add(parrot)
       flattened.length.should.equal(3)
-      flattened.has(parrot).should.equal(true)
+      flattened.includes(parrot).should.equal(true)
 
     it 'should not accidentally unlisten to the parent', ->
       parrot = new Set([ 1, 2 ])
@@ -119,7 +119,7 @@ describe 'collection', ->
       parrot.remove(parrot)
       parrot.add(3)
       flattened.length.should.equal(3)
-      flattened.has(3).should.equal(true)
+      flattened.includes(3).should.equal(true)
 
     it 'should never try to flatten itself', ->
       bwahhh = new Set([ 1, 2 ])
@@ -127,5 +127,5 @@ describe 'collection', ->
       bwahhh.add(flattened)
 
       flattened.length.should.equal(3)
-      flattened.has(flattened).should.equal(true)
+      flattened.includes(flattened).should.equal(true)
 
