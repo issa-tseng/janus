@@ -24,7 +24,7 @@ class Set extends Mappable
   add: (elems) ->
     # Normalize the argument to an array, then add each elem if possible.
     elems = [ elems ] unless util.isArray(elems)
-    for elem in elems when not this.has(elem)
+    for elem in elems when not this.includes(elem)
       widx = this._watched.indexOf(elem)
       this._watchers[widx].set(true) if widx >= 0
       this._list.add(elem)
@@ -41,18 +41,15 @@ class Set extends Mappable
     this.emit('removed', elem)
     elem
 
-  putAll: (elems) ->
-    this.remove(x) for x in this.list.slice() when elems.indexOf(x) < 0
-    this.add(elems)
-
-  has: (elem) -> this.list.indexOf(elem) >= 0
-  watchHas: (elem) -> 
-    v = new Varying(this.has(elem))
+  includes: (elem) -> this.list.indexOf(elem) >= 0
+  watchIncludes: (elem) -> 
+    v = new Varying(this.includes(elem))
     this._watched.push(elem)
     this._watchers.push(v)
     v
 
   Object.defineProperty(@prototype, 'length', get: -> this.list.length)
+  watchLength: -> this._list.watchLength()
 
   flatten: -> this._flatten$ ?= new (require('./derived/flattened-set').FlattenedSet)(this)
 

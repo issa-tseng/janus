@@ -9,7 +9,7 @@ describe 'collection', ->
       s = new Set([ 1, 2, 3, 3, 4, 2 ])
       s.length.should.equal(4)
       for elem in [ 1, 2, 3, 4 ]
-        s.has(elem).should.equal(true)
+        s.includes(elem).should.equal(true)
 
     it 'should take in new unique elements', ->
       s = new Set([ 1, 2, 3, 3, 4, 2 ])
@@ -20,7 +20,7 @@ describe 'collection', ->
 
       s.length.should.equal(5)
       for elem in [ 1, 2, 3, 4, 6 ]
-        s.has(elem).should.equal(true)
+        s.includes(elem).should.equal(true)
 
     it 'should remove elements', ->
       s = new Set([ 1, 2, 3, 3, 4, 2 ])
@@ -28,19 +28,19 @@ describe 'collection', ->
       s.remove(2)
       s.length.should.equal(3)
       for elem in [ 1, 3, 4 ]
-        s.has(elem).should.equal(true)
+        s.includes(elem).should.equal(true)
 
       s.remove(6)
       s.length.should.equal(3)
       for elem in [ 1, 3, 4 ]
-        s.has(elem).should.equal(true)
+        s.includes(elem).should.equal(true)
 
     it 'should allow watching whether the set has an element', ->
       results = []
       s = new Set([ 1, 2, 3, 3, 4, 2 ])
 
-      v1 = s.watchHas(2)
-      v2 = s.watchHas(6)
+      v1 = s.watchIncludes(2)
+      v2 = s.watchIncludes(6)
       v1.react((x) -> results.push(1, x))
       v2.react((x) -> results.push(2, x))
 
@@ -50,15 +50,16 @@ describe 'collection', ->
 
       results.should.eql([ 1, true, 2, false, 1, false, 2, true, 1, true ])
 
-    it 'should allow full replacement via putAll', ->
-      s = new Set([ 1, 2, 3, 3, 4, 2 ])
-      s.putAll([ 4, 8, 15, 16, 23, 42, 4, 15 ])
+    it 'should allow watching the set size', ->
+      results = []
+      s = new Set([ 1, 2, 3, 3 ])
 
-      s.length.should.equal(6)
-      for elem in [ 4, 8, 15, 16, 23, 42 ]
-        s.has(elem).should.equal(true)
-      for elem in [ 1, 2, 3 ]
-        s.has(elem).should.equal(false)
+      s.watchLength().react((x) -> results.push(x))
+      s.add(2)
+      s.add(5)
+      s.remove(1)
+
+      results.should.eql([ 3, 4, 3 ])
 
     it 'should return itself as its own enumeration', ->
       s = new Set([ 1, 2, 3, 3, 4, 2 ])
