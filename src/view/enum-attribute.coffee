@@ -22,7 +22,9 @@ class EnumAttributeEditView extends DomView
     return
 
   _optionsList: ->
-    Varying.of(this.subject.values()).map((values) =>
+    values = this.subject.values()
+    values = values.all.point(this.subject.model.pointer()) if values.all?.point?
+    Varying.of(values).map((values) =>
       list = asList(values)
       if this.subject.nullable is true
         new List([ null ]).concat(list)

@@ -1,6 +1,6 @@
 should = require('should')
 
-{ Varying, Model, attribute, List } = require('janus')
+{ Varying, Model, attribute, List, from } = require('janus')
 { EnumAttributeEditView } = require('../../lib/view/enum-attribute')
 
 $ = require('janus-dollar')
@@ -192,6 +192,18 @@ describe 'view', ->
       v.set([ 'puppies', 'kittens', 'ducklings' ])
       select.children().length.should.equal(3)
       checkText(select, [ 'puppies', 'kittens', 'ducklings' ])
+
+    it 'deals well with a from expression', ->
+      class TestAttribute extends attribute.Enum
+        values: -> from('list')
+
+      model = new Model({ list: new List([ 'xray', 'yankee', 'zulu' ]) })
+      select = (new EnumAttributeEditView(new TestAttribute(model, 'test'))).artifact()
+      select.children().length.should.equal(3)
+      checkText(select, [ 'xray', 'yankee', 'zulu' ])
+
+      model.get('list').add('missingno')
+      checkText(select, [ 'xray', 'yankee', 'zulu', 'missingno' ])
 
     it 'inserts a blank placeholder if the field is declared nullable', ->
       class TestAttribute extends attribute.Enum

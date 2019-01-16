@@ -52,6 +52,19 @@ describe 'view', ->
       for label, idx in [ 1, 2, 3 ]
         checkListItem(listDom.children().eq(idx), (inner) -> checkLiteral(inner, label.toString()))
 
+    it 'should deal with from expressions', ->
+      class TestAttribute extends attribute.Enum
+        values: -> from('options')
+
+      model = new Model({ options: [ 1, 2, 3 ] })
+      dom = (new EnumAttributeListEditView(new TestAttribute(model, 'test'), { app: testApp })).artifact()
+      listDom = dom.children().eq(0)
+
+      listDom.children().length.should.equal(3)
+      for label, idx in [ 1, 2, 3 ]
+        checkListItem(listDom.children().eq(idx), (inner) -> checkLiteral(inner, label.toString()))
+
+    # TOOD: this comment is no longer true as of 2019 (and probably like 2017)
     # we kind of take on faith that derived behaviour from ListView with regards
     # to adding/removing elements will function, especially as our code does not
     # override those processes at all.
