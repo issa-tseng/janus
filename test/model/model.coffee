@@ -368,7 +368,7 @@ describe 'Model', ->
       types.validity.valid.match(model.validations().at(0)).should.equal(true)
       types.validity.valid.match(model.validations().at(1)).should.equal(true)
 
-    it 'should return failing validations on issues()', ->
+    it 'should return failing validations on errors()', ->
       v1 = new Varying(types.validity.valid())
       v2 = new Varying(types.validity.error('test'))
       TestModel = Model.build(
@@ -377,10 +377,10 @@ describe 'Model', ->
       )
 
       model = new TestModel()
-      model.issues().length.should.equal(1)
-      model.issues().at(0).should.equal('test')
+      model.errors().length.should.equal(1)
+      model.errors().at(0).should.equal('test')
 
-    it 'should return true if no active issues exist on valid()', ->
+    it 'should return true if no active errors exist on valid()', ->
       v1 = new Varying(types.validity.valid())
       v2 = new Varying(types.validity.valid())
       TestModel = Model.build(
@@ -391,7 +391,7 @@ describe 'Model', ->
       model = new TestModel()
       model.valid().get().should.equal(true)
 
-    it 'should return false if one or more active issues exist on valid()', ->
+    it 'should return false if one or more active errors exist on valid()', ->
       v1 = new Varying(types.validity.error())
       v2 = new Varying(types.validity.error())
       TestModel = Model.build(
