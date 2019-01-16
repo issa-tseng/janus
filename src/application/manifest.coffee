@@ -40,6 +40,7 @@ class Manifest extends Base
     this.view = this.app.view(this.model, criteria, options)
     if !this.view?
       return this._fault('internal: could not find view for model')
+    this.view.artifact() # force rendering and therefore resolution.
 
     # finally set the hook if we might be done, and report that we're working.
     this._hook()

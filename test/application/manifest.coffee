@@ -36,8 +36,8 @@ env = ({ watch = [], resolvers = [], view, trait = Trait() } = {}) ->
   )
 
   class TestView
-    constructor: (model) ->
-      model.watch(key).react(->) for key in watch
+    constructor: (@model) ->
+    artifact: -> this.model.watch(key).react(->) for key in watch
 
   app = new App()
   app.get('views').register(TestModel, view ? TestView)
