@@ -61,6 +61,7 @@ class MemoryCacheResolver
     this._expires = {}
 
   resolve: (request) ->
+    return unless types.operation.read.match(request.type)
     signature = request.signature?()
     return unless signature?
     return if (expires = this._expires[signature])? and (expires < (new Date()).getTime())
