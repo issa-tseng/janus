@@ -36,7 +36,7 @@ class Library extends Base
     contextShelf.push({ book: book, options: options })
     contextShelf.sort((a, b) -> (b.options.priority ? 0) - (a.options.priority ? 0)) if options.priority?
 
-    book
+    return
 
   # Given some object, returns the first match in the Library.
   # Takes the target `obj`, and optionally a `criteria` hash containing the
