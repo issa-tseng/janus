@@ -1,4 +1,5 @@
 { Library } = require('janus')
+{ stringify } = require('./util')
 { isPlainObject } = require('janus').util
 
 # get inspectors and create inspect().
@@ -12,7 +13,8 @@ require('./varying/inspector').registerWith(inspectorLibrary)
 # one little special case: plain objects are too dangerous to register in the
 # library so instead we trap it here and deal with it.
 inspect = (x) ->
-  if isPlainObject(x) then JSON.stringify(x)
+  # TODO: actual entity/panel for plain Object.
+  if isPlainObject(x) then stringify(x)
   else inspectorLibrary.get(x)?(x) ? x
 
 module.exports = { inspect }

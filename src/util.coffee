@@ -6,7 +6,13 @@ pluralize = (single, many) -> (num) ->
 
 exists = (x) -> x? and (x isnt '')
 
+stringify = (obj) ->
+  try
+    return JSON.stringify(obj)
+  catch
+    return "Object[#{Object.keys(obj).length} pairs]"
+
 module.exports = {
-  pluralize, exists
+  pluralize, exists, stringify
 }
 
