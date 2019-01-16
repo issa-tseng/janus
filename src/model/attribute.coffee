@@ -16,6 +16,8 @@ class Attribute extends Model
   setValue: (value) -> this.model.set(this.key, value)
   unsetValue: -> this.model.unset(this.key)
   getValue: ->
+    # TODO: this logic is only necessary if the model doesn't actually know about
+    # the attribute.. should we just nix it?
     value = this.model.get(this.key)
     if !value? and this.default?
       value = this.default()
