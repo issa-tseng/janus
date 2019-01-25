@@ -33,6 +33,8 @@
 { isFunction, fix, uniqueId, identity } = require('../util/util')
 
 
+noop = (->)
+
 class Varying
   # flag to enable duck-typed detection of this class.
   isVarying: true
@@ -53,7 +55,7 @@ class Varying
   # (Varying v) => v a -> (a -> v b) -> v b
   flatMap: (f) -> new FlatMappedVarying(this, f)
 
-  _react: (f_) ->
+  _react: (f_ = noop) ->
     id = uniqueId()
     this._refCount += 1
     this.refCount$?.set(this._refCount)
@@ -66,7 +68,7 @@ class Varying
 
   _reactImmediate: (f_) ->
     observation = this._react(f_)
-    f_.call(observation, this.get())
+    f_?.call(observation, this.get())
     observation
 
   # pass false as the first arg to not immediately call the handler with the
@@ -182,7 +184,7 @@ class FlatMappedVarying extends Varying
     else
       this._react(x, true)
 
-  _react: (callback, immediate) ->
+  _react: (callback = noop, immediate) ->
     # create the consumer Observation that will be returned.
     id = uniqueId()
     this._observers[id] = observation = new Observation(this, id, callback, =>
