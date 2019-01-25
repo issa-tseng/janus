@@ -9,6 +9,8 @@ class WrappedList extends Model.build(
 
   bind('length', from('list').flatMap((list) -> list.watchLength()))
 )
+  isInspector: true
+
   constructor: (list) -> super({ list })
   _initialize: ->
     this.set('of.class', this.get('list').constructor.modelClass)

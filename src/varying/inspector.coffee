@@ -17,6 +17,7 @@ class WrappedVarying extends Model.build(
     bind('active_reactions', from('reactions').map((rxns) -> rxns.filter((rxn) -> rxn.watch('active'))))
   )
 
+  isInspector: true
   isWrappedVarying: true
 
   constructor: (@varying) ->

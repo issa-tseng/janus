@@ -29,6 +29,7 @@ class WrappedModel extends Model.build(
     bind('pairs', from('model').map((model) -> model.enumeration().map((key) -> new KVPair({ model, key }))))
   )
 
+  isInspector: true
   isWrappedModel: true
   constructor: (model, options) -> super({ model }, options)
 
