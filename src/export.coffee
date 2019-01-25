@@ -8,6 +8,7 @@ module.exports = {
     case:
       entity: require('./case/entity-view')
     common:
+      linkedList: require('./common/linked-list')
       textAttribute: require('./common/text-attribute')
     list:
       entity: require('./list/entity-view')
@@ -17,6 +18,7 @@ module.exports = {
       panel: require('./model/panel-view')
       entity: require('./model/entity-view')
     varying:
+      panel: require('./varying/panel-view')
       entity: require('./varying/entity-view')
 
     registerWith: (library) ->
