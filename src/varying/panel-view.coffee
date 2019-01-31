@@ -105,7 +105,6 @@ VaryingTreeView = DomView.build($('
         <div class="varying-tree-inner varying-tree-innerMain"/>
         <div class="mapping"><span>λ</span></div>
       </div>
-      <div class="varying-tree-next"/>
       <div class="varying-tree-nexts"/>
     </div>
   '), template(
@@ -135,9 +134,10 @@ VaryingTreeView = DomView.build($('
       .classed('hasNewInner', from('new_inner').map((x) -> x?))
       .render(from('new_inner').map((v) -> WrappedVarying.hijack(v) if v?)).context('tree')
     find('.varying-tree-innerMain').render(from('inner').map((v) -> WrappedVarying.hijack(v) if v?)).context('tree')
-    find('.varying-tree-next').render(from('parent').map((v) -> WrappedVarying.hijack(v) if v?)).context('tree')
-    find('.varying-tree-nexts').render(from('parents').map((x) -> x?.map((v) -> WrappedVarying.hijack(v))))
-      .context('linked').options( itemContext: 'tree' )
+    find('.varying-tree-nexts')
+      .classed('single', from('applicants').map((xs) -> xs?.length is 1)) # length can't change
+      .render(from('applicants').map((xs) -> xs?.map(WrappedVarying.hijack)))
+        .context('linked').options( itemContext: 'tree' )
   )
 )
 
@@ -186,9 +186,9 @@ VaryingView = DomView.withOptions({ viewModelClass: VaryingPanel }).build($('
     find('.varying-inert').classed('hide', from('subject').watch('observations')
       .flatMap((obs) -> obs?.watchNonEmpty()))
 
-    find('.varying-observe').on('click', (event, wv) ->
+    find('.varying-observe').on('click', (event, vp) ->
       event.preventDefault()
-      wv.get('subject').varying.react()
+      vp.get('subject').varying.react()
     )
 
     find('.varying-tree').render(from('subject').and('active_reaction').all.flatMap((wv, ar) ->

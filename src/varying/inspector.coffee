@@ -28,10 +28,7 @@ class WrappedVarying extends Model.build(
 
       flattened: this.varying._flatten is true
       mapped: this.varying._f?
-
-      # parent is filled if this is mapped; parents if it is composed.
-      parent: this.varying._parent
-      parents: (new List(this.varying._applicants) if this.varying._applicants?)
+      applicants: (new List(this.varying.a) if this.varying.a?)
     })
 
   _initialize: ->
@@ -48,96 +45,46 @@ class WrappedVarying extends Model.build(
     addObservation(r) for _, r of varying._observers
 
     # hijack the react method:
-    if (_react = varying._react)? # primitive varying
-      varying._react = (f_, immediate) ->
-        observation = _react.call(varying, f_, immediate)
-        self.unset('parent_reaction')
-        addObservation(observation)
-        observation
-    else # derived varying
-      varying.react = (f_) ->
-        observation = Varying.prototype.react.call(varying, f_)
-        self.unset('parent_reaction')
-        addObservation(observation)
-        observation
+    _react = varying._react
+    varying._react = (f_, immediate) ->
+      observation = _react.call(varying, f_, immediate)
+      addObservation(observation)
+      observation
 
     # REACTION TRACKING:
-    # listen to our parent's reactions if we've got one.
-    self._trackReactions(varying._parent) if varying._parent?
-
-    # listen to all our parents' reactions if we've got many.
-    self._trackReactions(x) for x in varying._applicants if varying._applicants?
+    # listen to all our applicants' reactions if we've got many.
+    self._trackReactions(a) for a in varying.a if varying.a?
 
     # VALUE TRACKING:
     # grab the current value, populate.
     self.set('_value', varying._value)
 
-    # for primitive varyings, hijack the set method to set a current value and
-    # record a Reaction.
-    if (_set = varying.set)?
-      varying.set = (value) ->
-        rxn = self._startReaction(value, arguments.callee.caller)
+    # whenever a value begins propagating, begin a reaction and track its spread.
+    _propagate = varying._propagate
+    varying._propagate = ->
+      if (extantRxn = self.get('active_reactions').at(0))?
+        # we already have a reaction chain; add to it.
+        extantRxn.logChange(self, varying._value)
+      else
+        # create a new reaction.
+        newRxn = self._startReaction(varying._value, arguments.callee.caller)
 
-        self.set('_value', value)
+      if varying._flatten is true
+        newInner = varying._inner?.parent
+        if (oldInner = self.get('inner')) isnt newInner
+          # we are flat and the inner varying has changed.
+          self._untrackReactions(oldInner) if oldInner?
 
-        _set.call(this, value)
-        rxn.set('active', false)
-        null
-
-    # for derived varyings, hijack the _onValue method instead.
-    if (_onValue = varying._onValue)?
-      varying._onValue = (observation, value, silent) ->
-        if (extantRxn = self.get('active_reactions').at(0))?
-          # we already know which reaction chain to log to; do it.
-          extantRxn.logChange(self, value)
-        else if (extantRxn = self.unset('parent_reaction'))?
-          # we were spawned mid-reaction by a parent WV; it tells us where we are by
-          # setting our parent_reaction. pull it off and set it up properly.
-          snapshot = extantRxn.addNode(self)
-          latest = extantRxn.get('latest')
-          latest.set('new_inner', snapshot) unless latest.get('inner') is snapshot
-          extantRxn.logChange(self, value)
-        else
-          # nothing has been set, but by virtue of a new observation we are now
-          # computing what was previously not. create a reaction.
-          # TODO: is this always true, or are there other causes for this branch?
-          # * for instance, it's debatable whether a silent=true call borne out
-          #   of a .react() is worth a Reaction, as the internal code really just
-          #   calls onValue out of convenience.
-          newRxn = self._startReaction(value, arguments.callee.caller)
-
-        if varying._flatten is true
-          if observation is varying._parentObservation
-            # we have a potentially new value at the top level; change what we are tracking.
-            self._untrackReactions(oldInner) if (oldInner = self.get('inner'))?
-
-            if value?.isVarying is true
-              self.set('inner', value)
-              self._trackReactions(value)
-              WrappedVarying.hijack(value).set('parent_reaction', extantRxn ? newRxn)
-              # the new varying will onValue as the change propagates down.
-            else
-              self.unset('inner')
+          if newInner?
+            self.set('inner', newInner)
+            self._trackReactions(newInner)
+            newInner._wrapper.get('reactions').add(extantRxn ? newRxn)
           else
-            # do things for inner value changing??
-            null
+            self.unset('inner')
 
-        self.unset('immediate')
-        self.set('_value', value)
-
-        _onValue.call(varying, observation, value, silent)
-        newRxn?.set('active', false)
-
-    # hijack the immediate method:
-    if (_immediate = varying._immediate)?
-      varying._immediate = ->
-        result = _immediate.call(varying)
-        if result?.isVarying and varying._flatten is true
-          self.set('inner', result)
-          self.set('immediate', result.get()) # TODO: messy; not the actual result value instance
-        else
-          self.set('immediate', result)
-        result
+      self.set('_value', varying._value)
+      _propagate.call(varying)
+      newRxn?.set('active', false)
 
   # called by primitive varyings to begin recording a reaction tree from root.
   _startReaction: (newValue, caller) ->
@@ -150,18 +97,21 @@ class WrappedVarying extends Model.build(
   _trackReactions: (other) ->
     other = WrappedVarying.hijack(other)
     this.listenTo(other.get('reactions'), 'added', (r) =>
-      unless this.get('reactions').list.indexOf(r) >= 0
+      unless this.get('reactions').at(-1) is r
         this.get('reactions').add(r)
         r.addNode(this)
     )
   _untrackReactions: (other) -> this.unlistenTo(WrappedVarying.hijack(other))
 
-  @hijack: (varying) -> if varying.isWrappedVarying is true then varying else varying._wrapper ?= new WrappedVarying(varying)
+  @hijack: (varying) ->
+    if varying.isWrappedVarying is true then varying
+    else varying._wrapper ?= new WrappedVarying(varying)
 
 
 # n.b. that because of the extra data snapshotting requires, the attributes
-# to parent, parents, and inner point at SnapshottedVaryings rather than bare
+# to applicants and inner point at SnapshottedVaryings rather than bare
 # ones. This ought to be transparent to all consumers.
+# TODO: why does this even derive from WV?
 class SnapshottedVarying extends WrappedVarying
   constructor: (data, options) ->
     Model.prototype.constructor.call(this, data, options)
@@ -187,7 +137,7 @@ class Reaction extends Model.build(
     this.set('root', this.addNode(this.get('root')))
 
   getNode: (wrapped) -> this.get("tree.#{wrapped.get('id')}") if wrapped?
-  watchNode: (wrapped) -> wrapped?.watch('id').flatMap((id) => this.watch("tree.#{id}"))
+  watchNode: (wrapped) -> this.watch("tree.#{wrapped.get('id')}") if wrapped?
 
   addNode: (wrapped) ->
     if (snapshot = this.getNode(wrapped))?
@@ -198,19 +148,18 @@ class Reaction extends Model.build(
 
     maybeBuild = (v) => this.addNode(WrappedVarying.hijack(v))
 
-    snapshot.set('parent', maybeBuild(parent)) if (parent = wrapped.get('parent'))?
-    snapshot.set('parents', new List((maybeBuild(x) for x in parents.list))) if (parents = wrapped.get('parents'))?
+    if (applicants = wrapped.get('applicants'))?
+      snapshot.set('applicants', new List((maybeBuild(x) for x in applicants.list)))
     snapshot.set('inner', maybeBuild(inner)) if (inner = wrapped.get('inner'))?
 
     if (value = wrapped.get('value'))? and value.isVarying is true
-      clone = new Varying(value._value)
+      clone = new Varying(value._value) # TODO: this is probably too imprecise
       snapshot.set('_value', clone)
 
     snapshot
 
   logChange: (wrapped, value) ->
     snapshot = this.getNode(wrapped)
-    this.set('latest', snapshot) # ehh sort of a hack
 
     value = new Varying(value._value) if value?.isVarying is true
     snapshot.set({ new_value: value, changed: true })
