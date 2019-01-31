@@ -121,7 +121,7 @@ describe 'Resolver', ->
       setTimeout((->
         should.not.exist(cache.resolve(new ExpiringRequest()))
         done()
-      ), 0)
+      ), 2)
 
     it 'should not expire until it is time', (done) ->
       class ExpiringRequest extends SignaturedRequest
@@ -143,7 +143,7 @@ describe 'Resolver', ->
       setTimeout((->
         should.not.exist(cache.resolve(new ExpiringRequest()))
         done()
-      ), 0)
+      ), 2)
 
     it 'should invalidate a cache entry if a mutating request comes through', ->
       class NonCachingUpdatingRequest extends UpdatingRequest
