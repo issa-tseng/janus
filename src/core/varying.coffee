@@ -38,17 +38,17 @@ apply = [
     a = x[0]; b = x[1]; c = x[2]; d = x[3]; e = x[4]
     -> f(a._value, b._value, c._value, d._value, e._value)
   (f, x) ->
-    a = x[0]; b = x[1]; c = x[2]; d = x[3]; e = x[4]; f = x[5]
-    -> f(a._value, b._value, c._value, d._value, e._value, f._value)
+    a = x[0]; b = x[1]; c = x[2]; d = x[3]; e = x[4]; m = x[5]
+    -> f(a._value, b._value, c._value, d._value, e._value, m._value)
   (f, x) ->
-    a = x[0]; b = x[1]; c = x[2]; d = x[3]; e = x[4]; f = x[5]; g = x[6]
-    -> f(a._value, b._value, c._value, d._value, e._value, f._value, g._value)
+    a = x[0]; b = x[1]; c = x[2]; d = x[3]; e = x[4]; m = x[5]; n = x[6]
+    -> f(a._value, b._value, c._value, d._value, e._value, m._value, n._value)
   (f, x) ->
-    a = x[0]; b = x[1]; c = x[2]; d = x[3]; e = x[4]; f = x[5]; g = x[6]; h = x[7]
-    -> f(a._value, b._value, c._value, d._value, e._value, f._value, g._value, h._value)
+    a = x[0]; b = x[1]; c = x[2]; d = x[3]; e = x[4]; m = x[5]; n = x[6]; o = x[7]
+    -> f(a._value, b._value, c._value, d._value, e._value, m._value, n._value, o._value)
   (f, x) ->
-    a = x[0]; b = x[1]; c = x[2]; d = x[3]; e = x[4]; f = x[5]; g = x[6]; h = x[7]; i = x[8]
-    -> f(a._value, b._value, c._value, d._value, e._value, f._value, g._value, h._value, i._value)
+    a = x[0]; b = x[1]; c = x[2]; d = x[3]; e = x[4]; m = x[5]; n = x[6]; o = x[7]; p = x[8]
+    -> f(a._value, b._value, c._value, d._value, e._value, m._value, n._value, o._value, p._value)
 ]
 
 
