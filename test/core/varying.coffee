@@ -1,6 +1,6 @@
 should = require('should')
 
-{ Varying, Observation, FlatMappedVarying, FlattenedVarying, MappedVarying, ComposedVarying } = require('../../lib/core/varying')
+{ Varying, Observation, FlatMappedVarying, FlattenedVarying, MappedVarying, ReducingVarying } = require('../../lib/core/varying')
 
 countObservers = (o) ->
   observers = 0
@@ -409,6 +409,13 @@ describe 'Varying', ->
       v.set(3)
       runCount.should.equal(1)
 
+    it 'should not double-free the old inner upon reactivation', ->
+      inner = new Varying(2)
+      outer = Varying.of(0).flatMap(-> inner)
+      outer.react().stop()
+      outer.react()
+      inner.refCount().get().should.equal(1)
+
     it 'should re-react to an inner varying after flatMapping', ->
       v = new Varying()
       i = null
@@ -548,26 +555,26 @@ describe 'Varying', ->
 
   describe 'mapAll', ->
     describe 'application', ->
-      it 'should return a ComposedVarying given a, b, c, f', ->
-        Varying.mapAll(new Varying(), new Varying(), new Varying(), ->).should.be.an.instanceof(ComposedVarying)
+      it 'should return a ReducingVarying given a, b, c, f', ->
+        Varying.mapAll(new Varying(), new Varying(), new Varying(), ->).should.be.an.instanceof(ReducingVarying)
 
       it 'should return a curryable function given a, b, c', ->
         Varying.mapAll(new Varying(), new Varying(), new Varying()).should.be.a.Function()
 
-      it 'should return a ComposedVarying once a function is curried in', ->
-        Varying.mapAll(new Varying(), new Varying())(new Varying())(->).should.be.an.instanceof(ComposedVarying)
+      it 'should return a ReducingVarying once a function is curried in', ->
+        Varying.mapAll(new Varying(), new Varying())(new Varying())(->).should.be.an.instanceof(ReducingVarying)
 
-      it 'should return a ComposedVarying given f, a, b, c', ->
-        Varying.mapAll(((a, b, c) ->), new Varying(), new Varying(), new Varying()).should.be.an.instanceof(ComposedVarying)
+      it 'should return a ReducingVarying given f, a, b, c', ->
+        Varying.mapAll(((a, b, c) ->), new Varying(), new Varying(), new Varying()).should.be.an.instanceof(ReducingVarying)
 
       it 'should return a curryable function given (a -> b -> c -> x), a, b', ->
         f = Varying.mapAll(((a, b, c) ->), new Varying(), new Varying())
         f.should.be.a.Function()
 
-        f(new Varying()).should.be.an.instanceof(ComposedVarying)
+        f(new Varying()).should.be.an.instanceof(ReducingVarying)
 
       it 'should expose mapAll as a synonym for mapAll', ->
-        Varying.mapAll(new Varying(), new Varying(), new Varying(), ->).should.be.an.instanceof(ComposedVarying)
+        Varying.mapAll(new Varying(), new Varying(), new Varying(), ->).should.be.an.instanceof(ReducingVarying)
 
     describe 'mapAll', ->
       it 'should be able to directly get a value', ->
@@ -601,6 +608,9 @@ describe 'Varying', ->
 
         vb.set(4)
         result.should.equal(5)
+
+        va.set(-1)
+        result.should.equal(3)
 
       it 'should not flatten on react', ->
         m = Varying.mapAll(((x, y) -> new Varying(x + y)), new Varying(1), new Varying(2))
