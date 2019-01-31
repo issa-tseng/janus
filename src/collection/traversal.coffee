@@ -28,7 +28,7 @@ matchAction = (local) -> fix((rematch) -> match(
   varying (v) ->
     # we can indiscriminately flatMap because the only valid final values here
     # are case instances anyway, so we can't squash anything we oughtn't.
-    mapped = v.flatMap((x) -> rematch(x))
+    mapped = v.flatMap(rematch)
     if local.immediate is true then mapped.get() else mapped
 
   value (x) -> x
@@ -44,15 +44,13 @@ processElem = (general) -> (key, value) ->
 
 # entrypoint; called top-level before actually traversing a data structure, so
 # the first recurse() call enters the structure itself.
-processRoot = (general, process) ->
-  matchRootAction = match(
-    recurse (into, context) -> process(Object.assign({}, general, { obj: into, context }))
-    varying (v, context) ->
-      mapped = v.flatMap((x) -> matchRootAction(x))
-      if general.immediate is true then mapped.get() else mapped
-    otherwise (x) -> matchAction(general)(x)
-  )
-  matchRootAction((general.recurse ? recurse)(general.obj, general.context))
+processRoot = (general, process) -> fix((matchRootAction) -> match(
+  recurse (into, context) -> process(Object.assign({}, general, { obj: into, context }))
+  varying (v, context) ->
+    mapped = v.flatMap(matchRootAction)
+    if general.immediate is true then mapped.get() else mapped
+  otherwise (x) -> matchAction(general)(x)
+))((general.recurse ? recurse)(general.obj, general.context))
 
 # wraps reduction in a managed varying for resource management.
 # TODO: the double-call is not my favourite. same for the resource func.
