@@ -224,9 +224,9 @@ class DerivedVarying extends Varying
     # first react upwards if necessary (first reaction) to force values, then
     # immediately recompute to force our own.
     if this._refCount is 0
-      recompute = this._recompute.bind(this)
+      recompute = this._recompute.bind(this, false)
       this._applicantObs = (a.react(false, recompute) for a in this.a)
-    this._recompute(true)
+      this._recompute(true)
 
     # then update our refCount.
     this._refCount += 1
