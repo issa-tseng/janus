@@ -2,6 +2,7 @@
 $ = require('janus-dollar')
 { DateTime } = require('luxon')
 
+{ exists } = require('../util')
 { WrappedVarying, Reaction } = require('./inspector')
 
 
@@ -116,7 +117,7 @@ VaryingTreeView = DomView.build($('
 
       .classed('hasObservations', from('observations').flatMap((os) -> os.watchLength().map((l) -> l > 0)))
       .classed('hasValue', from('value').map((x) -> x?))
-      .classed('hasInner', from('inner').map((x) -> x?))
+      .classed('hasInner', from('inner').and('new_inner').all.map((x, y) -> x? or y?))
 
     find('.tagOutdated').classed('hide', from('derived').and('immediate').and('value')
       .and('observations').flatMap((os) -> os.watchLength())
@@ -131,9 +132,11 @@ VaryingTreeView = DomView.build($('
     #find('.mapping').flyout(from((x) -> x).and('mapped').all.map((wv, mapped) -> wv if mapped is true)).context('mapping')
 
     find('.varying-tree-innerNew')
-      .classed('hasNewInner', from('new_inner').map((x) -> x?))
+      .classed('hasNewInner', from('new_inner').map(exists))
       .render(from('new_inner').map((v) -> WrappedVarying.hijack(v) if v?)).context('tree')
-    find('.varying-tree-innerMain').render(from('inner').map((v) -> WrappedVarying.hijack(v) if v?)).context('tree')
+    find('.varying-tree-innerMain')
+      .classed('hasMainInner', from('inner').map(exists))
+      .render(from('inner').map((v) -> WrappedVarying.hijack(v) if v?)).context('tree')
     find('.varying-tree-nexts')
       .classed('single', from('applicants').map((xs) -> xs?.length is 1)) # length can't change
       .render(from('applicants').map((xs) -> xs?.map(WrappedVarying.hijack)))

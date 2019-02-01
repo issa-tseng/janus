@@ -103,6 +103,7 @@ $icon-arrow-right: "\f178"
 
     .title
       font-weight: bold
+      white-space: nowrap
 
   .tags
     float: left
@@ -148,7 +149,7 @@ $icon-arrow-right: "\f178"
     .varying-tree-innerNew > .varying-tree > .main .title span
       background: $color-highlight-bg
 
-    .varying-tree-innerNew.hasNewInner + .varying-tree-inner
+    .varying-tree-innerNew.hasNewInner + .varying-tree-inner.hasMainInner
       > .varying-tree
         opacity: 0.35
         > .main .title span
