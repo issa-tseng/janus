@@ -32,6 +32,7 @@ reactShim = (f_, immediate) ->
 
   # now do some more shimwork:
   if initialCompute
+    handleInner(wrapper, this, rxn)
     wrapper.set('_value', this._value)
     rxn.logChange(wrapper, this._value)
     rxn.set('active', false) unless hadExtant
@@ -41,29 +42,34 @@ reactShim = (f_, immediate) ->
 #   which we do by tapping into _propagate.
 propagateShim = ->
   wrapper = this._wrapper
+  # log to the existing reaction or create a new one (which logs for us).
   if (extantRxn = wrapper.get('active_reactions').at(0))?
-    # we already have a reaction chain; add to it.
     extantRxn.logChange(wrapper, this._value)
   else
-    # create a new reaction.
-    newRxn = wrapper._startReaction(this._value, arguments.callee.caller)
+    newRxn = new Reaction(wrapper, arguments.callee.caller)
+    wrapper.reactions.add(newRxn)
+    newRxn.logChange(wrapper, this._value)
 
-  if this._flatten is true
-    newInner = this._inner?.parent
-    if (oldInner = wrapper.get('inner')) isnt newInner
-      # we are flat and the inner varying has changed.
-      wrapper._untrackReactions(oldInner) if oldInner?
-
-      if newInner?
-        wrapper.set('inner', newInner)
-        wrapper._trackReactions(newInner)
-        newInner._wrapper.reactions.add(extantRxn ? newRxn)
-      else
-        wrapper.unset('inner')
-
+  handleInner(wrapper, this, extantRxn ? newRxn)
   wrapper.set('_value', this._value)
   Object.getPrototypeOf(this)._propagate.call(this)
   newRxn?.set('active', false)
+  return
+
+# this helper digests possible new inners and does the needful.
+handleInner = (wrapper, varying, rxn) ->
+  return unless varying._flatten is true
+  newInner = varying._inner?.parent
+  if (oldInner = wrapper.get('inner')) isnt newInner
+    # we are flat and the inner varying has changed.
+    wrapper._untrackReactions(oldInner) if oldInner?
+    if newInner?
+      wrapper.set('inner', newInner)
+      wrapper._trackReactions(newInner)
+      newInner._wrapper.reactions.add(rxn)
+      rxn.logInner(wrapper, WrappedVarying.hijack(newInner))
+    else
+      wrapper.unset('inner')
   return
 
 
@@ -124,13 +130,6 @@ class WrappedVarying extends Model.build(
     observation.stop = => this.observations.remove(this); oldStop.call(observation)
     this.observations.add(observation)
     return
-
-  # called by primitive varyings to begin recording a reaction tree from root.
-  _startReaction: (newValue, caller) ->
-    rxn = new Reaction(this, caller)
-    this.get('reactions').add(rxn)
-    rxn.logChange(this, newValue)
-    rxn
 
   # for now, naively assume this is the only cross-WV listener to simplify tracking.
   _trackReactions: (other) ->
@@ -205,6 +204,12 @@ class Reaction extends Model.build(
     snapshot.unset('immediate')
 
     this.get('changes').add(snapshot)
+    return
+
+  logInner: (wrapped, inner) ->
+    snapshot = this.getNode(wrapped)
+    snapshot.set('new_inner', inner)
+    return
 
 
 module.exports = {
