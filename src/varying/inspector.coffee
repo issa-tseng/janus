@@ -2,6 +2,74 @@
 { fix, uniqueId } = require('janus').util
 
 
+################################################################################
+# SHIMS:
+# WrappedVarying will hijack its inspection target and override many of its
+# methods in order to actually do its job. in general, to correctly track reactions
+# as they occur, there are two operations we have to be able to spot:
+
+# 1 value reification of inert derived varyings by way of initial #react. we spot
+#   these by tapping into _react.
+reactShim = (f_, immediate) ->
+  wrapper = this._wrapper
+
+  # if this is the first reaction, we first need to get the/create a tracking
+  # instance and push it rootwards.
+  initialCompute = (this._refCount is 0) and (this._recompute?)
+  if initialCompute
+    rxn = wrapper.get('active_reactions').at(0)
+    hadExtant = rxn?
+    if !hadExtant
+      rxn = new Reaction(wrapper, '(internal)')
+      wrapper.reactions.add(rxn)
+
+    # push the reaction one step rootwards.
+    a._wrapper.reactions.add(rxn) for a in this.a if this.a?
+
+  # do the normal work.
+  observation = Object.getPrototypeOf(this)._react.call(this, f_, immediate)
+  this._wrapper._addObservation(observation)
+
+  # now do some more shimwork:
+  if initialCompute
+    wrapper.set('_value', this._value)
+    rxn.logChange(wrapper, this._value)
+    rxn.set('active', false) unless hadExtant
+  observation
+
+# 2 change propagation toward the leaves by way of #set on some root static Varying,
+#   which we do by tapping into _propagate.
+propagateShim = ->
+  wrapper = this._wrapper
+  if (extantRxn = wrapper.get('active_reactions').at(0))?
+    # we already have a reaction chain; add to it.
+    extantRxn.logChange(wrapper, this._value)
+  else
+    # create a new reaction.
+    newRxn = wrapper._startReaction(this._value, arguments.callee.caller)
+
+  if this._flatten is true
+    newInner = this._inner?.parent
+    if (oldInner = wrapper.get('inner')) isnt newInner
+      # we are flat and the inner varying has changed.
+      wrapper._untrackReactions(oldInner) if oldInner?
+
+      if newInner?
+        wrapper.set('inner', newInner)
+        wrapper._trackReactions(newInner)
+        newInner._wrapper.reactions.add(extantRxn ? newRxn)
+      else
+        wrapper.unset('inner')
+
+  wrapper.set('_value', this._value)
+  Object.getPrototypeOf(this)._propagate.call(this)
+  newRxn?.set('active', false)
+  return
+
+
+################################################################################
+# INSPECTOR CLASS:
+
 class WrappedVarying extends Model.build(
     attribute('observations', class extends attribute.List
       default: -> new List()
@@ -32,59 +100,30 @@ class WrappedVarying extends Model.build(
     })
 
   _initialize: ->
-    self = this
+    # drop some vars to direct/local access for perf.
+    this.observations = this.get('observations')
+    this.applicants = this.get('applicants')
+    this.reactions = this.get('reactions')
     varying = this.varying
 
-    # OBSERVATION TRACKING:
-    # grab the current set of observations, populate.
-    observations = this.get('observations')
-    addObservation = (observation) =>
-      oldStop = observation.stop
-      observation.stop = -> observations.remove(this); oldStop.call(this)
-      observations.add(observation)
-    addObservation(r) for _, r of varying._observers
+    # ABSORB EXTANT STATE:
+    # grab the current value and extant observations, populate.
+    this.set('_value', varying._value)
+    this._addObservation(r) for _, r of varying._observers
 
-    # hijack the react method:
-    _react = varying._react
-    varying._react = (f_, immediate) ->
-      observation = _react.call(varying, f_, immediate)
-      addObservation(observation)
-      observation
+    # BUILD TREE:
+    # track all our parents' reactions, which also hijacks the whole tree.
+    this._trackReactions(a) for a in varying.a if varying.a?
 
-    # REACTION TRACKING:
-    # listen to all our applicants' reactions if we've got many.
-    self._trackReactions(a) for a in varying.a if varying.a?
+    # HIJACK METHODS:
+    varying._react = reactShim
+    varying._propagate = propagateShim
 
-    # VALUE TRACKING:
-    # grab the current value, populate.
-    self.set('_value', varying._value)
-
-    # whenever a value begins propagating, begin a reaction and track its spread.
-    _propagate = varying._propagate
-    varying._propagate = ->
-      if (extantRxn = self.get('active_reactions').at(0))?
-        # we already have a reaction chain; add to it.
-        extantRxn.logChange(self, varying._value)
-      else
-        # create a new reaction.
-        newRxn = self._startReaction(varying._value, arguments.callee.caller)
-
-      if varying._flatten is true
-        newInner = varying._inner?.parent
-        if (oldInner = self.get('inner')) isnt newInner
-          # we are flat and the inner varying has changed.
-          self._untrackReactions(oldInner) if oldInner?
-
-          if newInner?
-            self.set('inner', newInner)
-            self._trackReactions(newInner)
-            newInner._wrapper.get('reactions').add(extantRxn ? newRxn)
-          else
-            self.unset('inner')
-
-      self.set('_value', varying._value)
-      _propagate.call(varying)
-      newRxn?.set('active', false)
+  _addObservation: (observation) ->
+    oldStop = observation.stop
+    observation.stop = => this.observations.remove(this); oldStop.call(observation)
+    this.observations.add(observation)
+    return
 
   # called by primitive varyings to begin recording a reaction tree from root.
   _startReaction: (newValue, caller) ->
