@@ -8,15 +8,58 @@
 util = require('../util/util')
 
 
+# handlers that update watches depending on the given operation. like Map,
+# these are funcs rather than methods because i don't actually really understand
+# whether method inlining happens or not.
+#
+# for each of these, we will first update individual index watches, then take
+# care of the lengthwatcher.
+_added = (list, midx, value) ->
+  length = list.length
+  reverseThreshold = midx - length
+  for _, { v, idx } of list._watches
+    if idx is midx
+      v.set(value)
+    else if idx < 0
+      if idx >= reverseThreshold then v.set(list.list[length + idx])
+    else
+      if idx >= midx then v.set(list.list[idx])
+  list._length$?.set(length)
+  return
+
+_moved = (list, oldIdx, newIdx, value) ->
+  length = list.length
+  for _, { v, idx } of list._watches
+    cidx = if idx < 0 then length + idx else idx
+    if cidx is newIdx
+      v.set(value)
+    else if (cidx is oldIdx) or
+        (cidx > oldIdx and cidx < newIdx) or
+        (cidx < oldIdx and cidx > newIdx)
+      v.set(list.list[cidx])
+  return
+
+_removed = (list, midx) ->
+  length = list.length
+  reverseThreshold = midx - length
+  for _, { v, idx } of list._watches
+    if idx < 0
+      if idx >= reverseThreshold then v.set(list.list[length + idx])
+    else
+      if idx >= midx then v.set(list.list[idx])
+  list._length$?.set(length)
+  return
+
+
 # We derive off of Model so that we have free access to attributes.
 class List extends OrderedMappable
   isList: true
 
   # We take a list of elements, and initialize to empty list if nothing is given.
   constructor: (list = [], options) ->
-    # super first so Model stuff and _initialize gets set up before initial add.
     this._parent = options.parent if options?.parent?
     super({}, options)
+    this._watches = {}
     this._initialize?()
 
     # Init our list, and add the items to it.
@@ -38,8 +81,10 @@ class List extends OrderedMappable
 
     for elem, subidx in elems
       # fire events:
-      this.emit('added', elem, idx + subidx) 
-      elem?.emit?('addedTo', this, idx + subidx)
+      iidx = idx + subidx
+      _added(this, iidx, elem)
+      this.emit('added', elem, iidx)
+      elem?.emit?('addedTo', this, iidx)
 
       # If the item is destroyed, automatically remove it from our collection.
       if util.isFunction(elem?.destroy) and (this.isDerivedList isnt true)
@@ -53,10 +98,12 @@ class List extends OrderedMappable
 
     if 0 <= idx and idx < this.length
       removed = this.list[idx]
+      _removed(this, idx)
       this.emit('removed', removed, idx)
       removed?.emit?('removedFrom', this, idx)
 
     this.list[idx] = value
+    _added(this, idx, value)
     this.emit('added', value, idx)
     value?.emit?('addedTo', this, idx)
     return
@@ -80,6 +127,7 @@ class List extends OrderedMappable
       else
         this.list.splice(idx, 1)[0]
 
+    _removed(this, idx)
     this.emit('removed', removed, idx)
     removed?.emit?('removedFrom', this, idx)
     removed
@@ -106,6 +154,7 @@ class List extends OrderedMappable
     this.list.splice(oldIdx, 1)
     this.list.splice(idx, 0, elem)
 
+    _moved(this, oldIdx, idx, elem)
     this.emit('moved', elem, idx, oldIdx)
     elem?.emit?('movedIn', this, idx, oldIdx)
 
@@ -115,6 +164,7 @@ class List extends OrderedMappable
   removeAll: ->
     while this.list.length > 0
       elem = this.list.shift()
+      _removed(this, 0)
       this.emit('removed', elem, 0)
       elem?.emit?('removedFrom', this, 0)
       elem
@@ -129,55 +179,19 @@ class List extends OrderedMappable
   get: _at
 
   # Watch an element from this collection by index.
+  # TODO: i hate generating this many structures, but negative indices and sparse
+  # array iteration are both bad.
   _watchAt = (idx) ->
     if idx?.isVarying is true
       return idx.flatMap((tidx) => this.watchAt(tidx))
+    (this._watches[idx] ?= { idx, v: new Varying(this.at(idx)) }).v
 
-    result = new Varying(this.at(idx))
-
-    this.listenTo(this, 'added', (elem, midx) =>
-      if idx is midx
-        result.set(elem)
-      else if (idx > 0) and (midx < idx)
-        result.set(this.at(idx))
-      else if (idx < 0) and (midx >= (this.list.length + idx))
-        result.set(this.at(idx))
-    )
-
-    this.listenTo(this, 'moved', (elem, newIdx, oldIdx) =>
-      tidx = if idx < 0 then this.list.length + idx else idx
-      if tidx is newIdx
-        result.set(elem)
-      else if tidx is oldIdx
-        result.set(this.at(tidx))
-      else if tidx > oldIdx and tidx < newIdx
-        result.set(this.at(tidx))
-      else if tidx < oldIdx and tidx > newIdx
-        result.set(this.at(tidx))
-    )
-
-    this.listenTo(this, 'removed', (_, midx) =>
-      if (idx >= 0) and (midx <= idx)
-        result.set(this.at(idx))
-      else if (idx < 0) and (midx >= (this.list.length + idx))
-        result.set(this.at(idx))
-    )
-
-    result
   watchAt: _watchAt
   watch: _watchAt
 
   # Length-related operations. .length is presented as a getter for familiarity.
   Object.defineProperty(@prototype, 'length', get: -> this.list.length)
-  watchLength: ->
-    this.watchLength$ ?= Varying.managed((-> new Base()), (listener) =>
-      result = new Varying(this.list.length)
-
-      listener.listenTo(this, 'added', => result.set(this.list.length))
-      listener.listenTo(this, 'removed', => result.set(this.list.length))
-
-      result
-    )
+  watchLength: -> this._length$ ?= new Varying(this.length)
 
   # Length-related convenience methods, since these maps happen a lot:
   empty: -> this.length is 0
@@ -226,6 +240,7 @@ class DerivedList extends List
     # it tries to add the initial items.
     OrderedMappable.call(this)
     this.list = []
+    this._watches = []
     this._initialize?()
 
   roError = -> throw new Error('this list is read-only')
