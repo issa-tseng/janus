@@ -15,6 +15,26 @@
 class NothingClass
 Nothing = new NothingClass()
 
+
+# helper that propagates a value change. defined separately because i don't really
+# understand js inlining rules and i'm not sure if a method is eligible for inlining.
+_changed = (map, key, newValue, oldValue) ->
+  oldValue = null if oldValue is Nothing
+
+  # emit events for leaf nodes that no longer exist:
+  if isPlainObject(oldValue) and !newValue?
+    traverse(oldValue, (path, value) =>
+      subkey = "#{key}.#{path.join('.')}"
+      map._watches[subkey]?.set(null)
+      map.emit('anyChanged', subkey, null, value)
+    )
+
+  # now emit direct events:
+  map._watches[key]?.set(newValue)
+  map.emit('anyChanged', key, newValue, oldValue)
+  return
+
+
 class Map extends Enumerable
   isMap: true
 
@@ -22,7 +42,7 @@ class Map extends Enumerable
     super()
 
     this.data = {}
-    this._watches$ = {}
+    this._watches = {}
 
     # If we have a designated shadow parent, set it and track its events.
     if this.options.parent?
@@ -86,7 +106,7 @@ class Map extends Enumerable
 
     deepSet(this.data, key)(value)
     key = key.join('.') if isArray(key)
-    this._changed(key, value, oldValue)
+    _changed(this, key, value, oldValue)
     return
 
   # Takes an entire data bag, and replaces our own data with it, firing events as needed.
@@ -107,7 +127,7 @@ class Map extends Enumerable
     else
       oldValue = deepDelete(this.data, key)
 
-    this._changed(key, this.get(key), oldValue) if oldValue?
+    _changed(this, key, this.get(key), oldValue) if oldValue?
     oldValue
 
   # Revert a particular data key on this model to its shadow parent, returning
@@ -119,7 +139,7 @@ class Map extends Enumerable
 
     oldValue = deepDelete(this.data, key)
     newValue = this.get(key)
-    this._changed(key, newValue, oldValue) unless newValue is oldValue
+    _changed(this, key, newValue, oldValue) unless newValue is oldValue
     oldValue
 
   # Shadow-copies a model.
@@ -136,34 +156,17 @@ class Map extends Enumerable
   original: -> this._parent?.original() ? this
 
   # Get a `Varying` object for a particular key. Uses events to set. Caches.
-  watch: (key) -> this._watches$[key] ?= do =>
-    varying = new Varying(this.get(key))
-    this.listenTo(this, "changed:#{key}", (newValue) -> varying.set(newValue))
-    varying
-
-  # Helper to generate change events.
-  _changed: (key, newValue, oldValue) ->
-    oldValue = null if oldValue is Nothing
-
-    # emit events for leaf nodes that no longer exist:
-    if isPlainObject(oldValue) and !newValue?
-      traverse(oldValue, (path, value) =>
-        subkey = "#{key}.#{path.join('.')}"
-        this.emit("changed:#{subkey}", null, value)
-        this.emit('anyChanged', subkey, null, value)
-      )
-
-    # now emit direct events:
-    this.emit("changed:#{key}", newValue, oldValue)
-    this.emit('anyChanged', key, newValue, oldValue)
-    return
+  watch: (key) ->
+    extant = this._watches[key]
+    if extant? then return extant
+    else return (this._watches[key] = new Varying(this.get(key)))
 
   # Handles our parent's changes and judiciously vends those events ourselves.
   _parentChanged: (key, newValue, oldValue) ->
     ourValue = deepGet(this.data, key)
     return if ourValue? or ourValue is Nothing # the change doesn't affect us.
 
-    this.emit("changed:#{key}", newValue, oldValue)
+    this._watches[key]?.set(newValue)
     this.emit('anyChanged', key, newValue, oldValue)
     return
 

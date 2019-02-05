@@ -82,13 +82,13 @@ describe 'Map', ->
 
       it 'should do nothing if setting an equal value', ->
         map = new Map( test: 47 )
-        evented = false
-        map.on('changed:test', => evented = true)
+        reacted = false
+        map.watch('test').react(false, -> reacted = true)
 
         map.set('test', 47)
-        evented.should.equal(false)
+        reacted.should.equal(false)
         map.set('test', 42)
-        evented.should.equal(true)
+        reacted.should.equal(true)
 
       it 'should unset the key if given null (but not undef)', ->
         map = new Map( test: 22 )
