@@ -67,13 +67,12 @@ class Observation
 class Varying
   # flag to enable duck-typed detection of this class.
   isVarying: true
+  _refCount: 0 # tracks observer count.
+  _generation: 0 # prevents reaction stale-repropagation loops.
 
   constructor: (value) ->
     this.set(value) # immediately set our internal value.
     this._observers = {} # track our observers so we can notify on change.
-    this._refCount = 0 # tracks observer count.
-
-    this._generation = 0 # keeps track of which propagation cycle we're on.
 
   map: (f) -> new MappedVarying(this, f)
   flatten: -> new FlattenedVarying(this)
@@ -194,8 +193,6 @@ class DerivedVarying extends Varying
 
     # set up default values.
     this._observers = {}
-    this._refCount = 0
-    this._generation = 0
     this._value = nothing
 
     # specialize some methods based on arity.
@@ -296,8 +293,6 @@ class UnreducedVarying extends DerivedVarying
   constructor: (@a) ->
     # set up the bare minimum.
     this._observers = {}
-    this._refCount = 0
-    this._generation = 0
     this._value = nothing
 
   map: (f) -> new ReducingVarying(this.a, f)
