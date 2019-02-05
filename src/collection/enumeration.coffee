@@ -31,7 +31,7 @@ class KeyList extends DerivedList
       scanMap(this.target)
 
     # listen for future keys.
-    this.listenTo(this.target, 'anyChanged', (key, newValue, oldValue) =>
+    this.listenTo(this.target, 'changed', (key, newValue, oldValue) =>
       if this.scope is 'direct'
         # TODO: is there a cleverer way to do this?
         ownValue = deepGet(this.target.data, key)

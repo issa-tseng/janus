@@ -307,13 +307,13 @@ describe 'Map', ->
         s.set('a', 2)
         results.should.eql([ 1, 2 ])
 
-      it 'should emit anyChanged when a skiplevel parent has changed', -> # gh45
+      it 'should emit changed when a skiplevel parent has changed', -> # gh45
         s = new Map()
         s2 = s.shadow()
         s3 = s2.shadow()
 
         results = []
-        s3.on('anyChanged', (args...) -> results.push(args))
+        s3.on('changed', (args...) -> results.push(args))
 
         s.set('a', 1)
         results.should.eql([ [ 'a', 1, null ] ])
@@ -323,7 +323,7 @@ describe 'Map', ->
         s2 = s.shadow()
 
         results = []
-        s2.on('anyChanged', (key, newValue, oldValue) -> results.push(newValue, oldValue))
+        s2.on('changed', (key, newValue, oldValue) -> results.push(newValue, oldValue))
         s2.unset('a')
         s2.set('a', 1)
         results.should.eql([ null, 0, 1, null ])

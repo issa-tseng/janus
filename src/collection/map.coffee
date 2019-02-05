@@ -26,12 +26,12 @@ _changed = (map, key, newValue, oldValue) ->
     traverse(oldValue, (path, value) =>
       subkey = "#{key}.#{path.join('.')}"
       map._watches[subkey]?.set(null)
-      map.emit('anyChanged', subkey, null, value)
+      map.emit('changed', subkey, null, value)
     )
 
   # now emit direct events:
   map._watches[key]?.set(newValue)
-  map.emit('anyChanged', key, newValue, oldValue)
+  map.emit('changed', key, newValue, oldValue)
   return
 
 
@@ -47,7 +47,7 @@ class Map extends Enumerable
     # If we have a designated shadow parent, set it and track its events.
     if this.options.parent?
       this._parent = this.options.parent
-      this.listenTo(this._parent, 'anyChanged', (key, newValue, oldValue) => this._parentChanged(key, newValue, oldValue))
+      this.listenTo(this._parent, 'changed', (key, newValue, oldValue) => this._parentChanged(key, newValue, oldValue))
 
     # Allow setup that happens before initial data load occurs, without
     # overriding constructor args.
@@ -167,7 +167,7 @@ class Map extends Enumerable
     return if ourValue? or ourValue is Nothing # the change doesn't affect us.
 
     this._watches[key]?.set(newValue)
-    this.emit('anyChanged', key, newValue, oldValue)
+    this.emit('changed', key, newValue, oldValue)
     return
 
   # Simple shortcuts with familiar names.
@@ -182,7 +182,7 @@ class Map extends Enumerable
       k = k.join('.')
       result.__set(k, f(k, v))
     )
-    result.listenTo(this, 'anyChanged', (key, value) =>
+    result.listenTo(this, 'changed', (key, value) =>
       if value? and value isnt Nothing
         result.__set(key, f(key, value))
       else
@@ -199,7 +199,7 @@ class Map extends Enumerable
       varieds[key] ?= this.watch(key).flatMap((value) => f(key, value)).react((x) -> result.__set(key, x))
     traverse(this.data, (k) -> add(k.join('.')))
 
-    result.listenTo(this, 'anyChanged', (key, newValue, oldValue) =>
+    result.listenTo(this, 'changed', (key, newValue, oldValue) =>
       if newValue? and !varieds[key]?
         # check v[k] rather than oldValue to account for an {} becoming an atom.
         add(key)
