@@ -13,11 +13,11 @@ class App extends Model.build(
   attribute('views', LibraryAttribute)
   attribute('resolvers', LibraryAttribute))
 
-  Object.defineProperty(@prototype, 'views', get: -> this.get('views'))
-  Object.defineProperty(@prototype, 'resolvers', get: -> this.get('resolvers'))
+  Object.defineProperty(@prototype, 'views', get: -> this.get_('views'))
+  Object.defineProperty(@prototype, 'resolvers', get: -> this.get_('resolvers'))
 
   view: (subject, criteria = {}, options = {}) ->
-    klass = this.get('views').get(subject, criteria)
+    klass = this.get_('views').get(subject, criteria)
     return unless klass?
 
     # instantiate result; autoinject ourself as app.
@@ -35,7 +35,7 @@ class App extends Model.build(
           # we fire off an explicit resolve, in case auto was off. we also have
           # the view react on the key for its lifetime to ensure resolution.
           attribute.resolveWith(this) if attribute.isReference is true
-          view.reactTo(subject.watch(key), (->)) if isFunction(subject.watch)
+          view.reactTo(subject.get(key), (->)) if isFunction(subject.get)
 
     view
 
@@ -44,7 +44,7 @@ class App extends Model.build(
     this.emit('resolvedRequest', request, result) if result?
     result
 
-  resolver: -> Resolver.fromLibrary(this.get('resolvers'))
+  resolver: -> Resolver.fromLibrary(this.get_('resolvers'))
 
 
 module.exports = { App }

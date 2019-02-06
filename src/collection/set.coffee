@@ -24,7 +24,7 @@ class Set extends Mappable
   add: (elems) ->
     # Normalize the argument to an array, then add each elem if possible.
     elems = [ elems ] unless util.isArray(elems)
-    for elem in elems when not this.includes(elem)
+    for elem in elems when not this.includes_(elem)
       widx = this._watched.indexOf(elem)
       this._watchers[widx].set(true) if widx >= 0
       this._list.add(elem)
@@ -41,22 +41,22 @@ class Set extends Mappable
     this.emit('removed', elem)
     elem
 
-  includes: (elem) -> this.list.indexOf(elem) >= 0
-  watchIncludes: (elem) -> 
-    v = new Varying(this.includes(elem))
+  includes_: (elem) -> this.list.indexOf(elem) >= 0
+  includes: (elem) -> 
+    v = new Varying(this.includes_(elem))
     this._watched.push(elem)
     this._watchers.push(v)
     v
 
-  Object.defineProperty(@prototype, 'length', get: -> this.list.length)
-  watchLength: -> this._list.watchLength()
+  Object.defineProperty(@prototype, 'length', get: -> this._list.length)
+  Object.defineProperty(@prototype, 'length_', get: -> this.list.length)
 
   flatten: -> this._flatten$ ?= new (require('./derived/flattened-set').FlattenedSet)(this)
 
   # a Set is already its own enumeration; it is unordered, unindexed, and the
   # only addressing method is the things in it.
-  enumerate: -> this.list.slice()
-  enumeration: -> this
+  enumerate_: -> this.list.slice()
+  enumerate: -> this
 
   # all the list-like functions can get implemented based on our captive list. this
   # does mean that the resulting derivedlists will impose an ordering and indices

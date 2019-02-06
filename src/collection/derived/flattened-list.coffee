@@ -14,7 +14,7 @@ class FlattenedList extends DerivedList
     this.listenTo(this.parent, 'moved', (obj, idx, oldIdx) => this._moveObj(obj, oldIdx, idx))
     this.listenTo(this.parent, 'removed', (obj, idx) => this._removeObj(obj, idx))
 
-  sizeof = (x) -> if x?.isMappable is true then x.length else 1
+  sizeof = (x) -> if x?.isMappable is true then x.length_ else 1
   _getOverallIdx: (parentIdx, offset = 0) ->
     util.foldLeft(0)(this.parent.list[0...parentIdx], (length, x) -> length + sizeof(x)) + offset
 
@@ -54,9 +54,9 @@ class FlattenedList extends DerivedList
         mOldIdx += sizeof(this.parent.list[oldIdx]) # adj up by what was shifted out from under us.
 
       if newIdx > oldIdx # moving down the list.
-        this._moveAt(mOldIdx, mNewIdx) for _ in [0...obj.length]
+        this._moveAt(mOldIdx, mNewIdx) for _ in [0...obj.length_]
       else if newIdx < oldIdx # moving up.
-        this._moveAt(mOldIdx + offset, mNewIdx + offset) for offset in [0...obj.length]
+        this._moveAt(mOldIdx + offset, mNewIdx + offset) for offset in [0...obj.length_]
     else
       this._moveAt(mOldIdx, mNewIdx)
 

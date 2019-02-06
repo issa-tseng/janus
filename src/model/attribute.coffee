@@ -15,17 +15,17 @@ class Attribute extends Model
 
   setValue: (value) -> this.model.set(this.key, value)
   unsetValue: -> this.model.unset(this.key)
-  getValue: ->
+  getValue_: ->
     # TODO: this logic is only necessary if the model doesn't actually know about
     # the attribute.. should we just nix it?
-    value = this.model.get(this.key)
+    value = this.model.get_(this.key)
     if !value? and this.default?
       value = this.default()
       if this.writeDefault is true
         this.setValue(value)
     value
 
-  watchValue: -> this.model.watch(this.key)
+  getValue: -> this.model.get(this.key)
 
   default: ->
   writeDefault: false # set to true to write-on-get the default stated above.
@@ -37,7 +37,7 @@ class Attribute extends Model
   @deserialize: (data) -> data
 
   # default implementation just spits out the value, unless we're transient.
-  serialize: -> this.getValue() unless this.transient is true
+  serialize: -> this.getValue_() unless this.transient is true
 
 class TextAttribute extends Attribute
 
@@ -51,7 +51,7 @@ class BooleanAttribute extends Attribute
 
 class DateAttribute extends Attribute
   @deserialize: (data) -> new Date(data)
-  serialize: -> this.getValue()?.getTime() unless this.transient is true
+  serialize: -> this.getValue_()?.getTime() unless this.transient is true
 
 class ModelAttribute extends Attribute
   @modelClass: Model
@@ -59,7 +59,7 @@ class ModelAttribute extends Attribute
   writeDefault: true
 
   @deserialize: (data) -> this.modelClass.deserialize(data)
-  serialize: -> this.constructor.modelClass.prototype.serialize.call(this.getValue()) unless this.transient is true
+  serialize: -> this.constructor.modelClass.prototype.serialize.call(this.getValue_()) unless this.transient is true
 
   @of: (modelClass) -> class extends this
     @modelClass: modelClass
@@ -70,7 +70,7 @@ class ListAttribute extends Attribute
   writeDefault: true
 
   @deserialize: (data) -> this.listClass.deserialize(data)
-  serialize: -> this.constructor.listClass.prototype.serialize.call(this.getValue()) unless this.transient is true
+  serialize: -> this.constructor.listClass.prototype.serialize.call(this.getValue_()) unless this.transient is true
 
   @of: (listClass) -> class extends this
     @listClass: listClass
@@ -92,7 +92,7 @@ class ReferenceAttribute extends Attribute
     # snoop on the actual model watcher to see if anybody cares, and if so actually
     # run the requestchain and set the result if we get it.
     observation = null
-    this.reactTo(this.model.watch(this.key).refCount(), (count) =>
+    this.reactTo(this.model.get(this.key).refCount(), (count) =>
       if count is 0 and observation?
         observation.stop()
         observation = null

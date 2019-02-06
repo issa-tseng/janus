@@ -20,9 +20,9 @@ Enumeration$ = null
 # The base for all data structures. Provides basic enumeration functions around
 # keys/indices, and all classes implementing Enumerable are expected to also
 # provide:
-# * get: (key) -> value
+# * get: (key) -> Varying[value]
+# * get_: (key) -> value
 # * set: (key, value) -> value
-# * watch: (key) -> Varying[value]
 # * shadow: -> Enumerable
 #
 # Most classes (not Set) also provide these:
@@ -35,18 +35,18 @@ class Enumerable extends Base
   # array enumerating the keys of this Map or List. The options are passed
   # directly to Enumeration and only matter for Maps, but consist of:
   # * scope: (all|direct) all inherited or only dir
-  enumerate: (options) -> (Enumeration$ ?= require('./enumeration').Enumeration).get(this, options)
-  enumeration: (options) ->
+  enumerate_: (options) -> (Enumeration$ ?= require('./enumeration').Enumeration).get_(this, options)
+  enumerate: (options) ->
     Enumeration$ ?= require('./enumeration').Enumeration
     if options?
-      Enumeration$.watch(this, options)
+      Enumeration$.get(this, options)
     else
-      (this.enumeration$ ?= Base.managed(=> Enumeration$.watch(this)))()
+      (this.enumeration$ ?= Base.managed(=> Enumeration$.get(this)))()
 
-  serialize: -> Traversal.getNatural(this, Traversal.default.serialize)
+  serialize: -> Traversal.natural_(this, Traversal.default.serialize)
 
-  watchModified: -> if this._parent? then this.watchDiff(this._parent) else new Varying(false)
-  watchDiff: (other) -> Traversal.asList(this, Traversal.default.diff, { other })
+  modified: -> if this._parent? then this.diff(this._parent) else new Varying(false)
+  diff: (other) -> Traversal.list(this, Traversal.default.diff, { other })
 
 # A `Mappable` provides map-like functions (map, filter, etc) and fires `add`
 # and `remove` events for every element that is added or removed from the list.
@@ -74,8 +74,8 @@ class OrderedMappable extends Mappable
   isOrderedMappable: true
 
   # Rely on enumeration to give us mapPairs and flatMapPairs:
-  mapPairs: (f) -> this.enumeration().mapPairs(f)
-  flatMapPairs: (f) -> this.enumeration().flatMapPairs(f)
+  mapPairs: (f) -> this.enumerate().mapPairs(f)
+  flatMapPairs: (f) -> this.enumerate().flatMapPairs(f)
 
   take: (x) -> new (require('./derived/taken-list').TakenList)(this, x)
 

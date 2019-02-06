@@ -35,7 +35,7 @@ describe 'View', ->
       view = new WithViewModel(model)
 
       view.subject.should.be.an.instanceof(MyViewModel)
-      view.subject.get('subject').should.equal(model)
+      view.subject.get_('subject').should.equal(model)
 
     it 'should provide the view and the options to the ViewModel', ->
       class MyViewModel extends Model
@@ -47,8 +47,8 @@ describe 'View', ->
       model = new MyModel()
       view = new WithViewModel(model, { test: 14 })
 
-      view.subject.get('view').should.equal(view)
-      view.subject.get('options.test').should.equal(14)
+      view.subject.get_('view').should.equal(view)
+      view.subject.get_('options.test').should.equal(14)
 
   describe 'artifact handling', ->
     it 'should get its artifact from _render', ->

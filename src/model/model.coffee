@@ -22,7 +22,7 @@ class Model extends Map
 
   # Get an data about this model. Differs from Map#get only in that it looks at
   # attributes for default values (and potentially writes them).
-  get: (key) ->
+  get_: (key) ->
     value = super(key) # see what Map says; it handles basic attrs and shadowing.
 
     # if that fails, check the attribute and write if requested.
@@ -55,15 +55,15 @@ class Model extends Map
       if util.isFunction(x)
         Varying.of(x(this))
       else if util.isString(x)
-        this.watch(x)
+        this.get(x)
       else
         Varying.of(x)
-    cases.watch (x) => this.watch(x)
+    cases.get (x) => this.get(x)
     cases.attribute (x) => new Varying(this.attribute(x))
     cases.varying (x) => if util.isFunction(x) then Varying.of(x(this)) else Varying.of(x)
     cases.app (x) =>
       if (app = this.options.app)?
-        if x? then app.watch(x) else new Varying(app)
+        if x? then app.get(x) else new Varying(app)
       else cases.app()
     cases.self (x) => if util.isFunction(x) then Varying.of(x(this)) else Varying.of(this)
   )
@@ -83,7 +83,7 @@ class Model extends Map
   # Returns a `Varying` of `true` or `false` depending on whether this model is
   # valid or not.
   valid: -> this._valid$ ?=
-    this.errors().watchLength().map((length) -> length is 0)
+    this.errors().length.map((length) -> length is 0)
 
   # Handles parent changes; mostly exists in Map but we wrap to additionally
   # bail if the changed parent attribute is a bound value; we want that to

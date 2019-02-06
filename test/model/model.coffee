@@ -21,7 +21,7 @@ describe 'Model', ->
     it 'should call preinitialize before data is populated', ->
       result = -1
       class TestModel extends Model
-        _preinitialize: -> result = this.get('a')
+        _preinitialize: -> result = this.get_('a')
 
       new TestModel({ a: 42 })
       should(result).equal(null)
@@ -29,7 +29,7 @@ describe 'Model', ->
     it 'should call initialize after data is populated', ->
       result = -1
       class TestModel extends Model
-        _initialize: -> result = this.get('a')
+        _initialize: -> result = this.get_('a')
 
       new TestModel({ a: 42 })
       result.should.equal(42)
@@ -41,10 +41,10 @@ describe 'Model', ->
       TestModel = Model.build(attribute('latte', TestAttribute))
 
       m = new TestModel()
-      m.get('latte').should.equal('espresso')
+      m.get_('latte').should.equal('espresso')
 
       m2 = new TestModel({ latte: 'good' })
-      m2.get('latte').should.equal('good')
+      m2.get_('latte').should.equal('good')
 
     it 'should not write the default value if not specified', ->
       class TestAttribute extends attributes.Attribute
@@ -52,7 +52,7 @@ describe 'Model', ->
       TestModel = Model.build(attribute('latte', TestAttribute))
 
       m = new TestModel()
-      m.get('latte').should.equal('espresso')
+      m.get_('latte').should.equal('espresso')
       m.data.should.eql({})
 
     it 'should write the default value if writeDefault is true', ->
@@ -63,7 +63,7 @@ describe 'Model', ->
 
       m = new TestModel()
       m.data.should.eql({})
-      m.get('latte').should.equal('espresso')
+      m.get_('latte').should.equal('espresso')
       m.data.should.eql({ latte: 'espresso' })
 
     # before this bugfix, the result of .set() was always written, which meant
@@ -76,7 +76,7 @@ describe 'Model', ->
 
       m = new TestModel()
       m.data.should.eql({})
-      should.not.exist(m.get('breve'))
+      should.not.exist(m.get_('breve'))
       m.data.should.eql({})
 
   describe 'binding', ->
@@ -84,20 +84,20 @@ describe 'Model', ->
       it 'should bind one value from another', ->
         TestModel = Model.build(bind('dest', from('source')))
         model = new TestModel()
-        should.not.exist(model.get('dest'))
+        should.not.exist(model.get_('dest'))
 
         model.set('source', 'aoeu')
-        model.get('dest').should.equal('aoeu')
+        model.get_('dest').should.equal('aoeu')
 
       it 'should unset a value if its bound value nulls out', ->
-        TestModel = Model.build(bind('inner_id', from('inner').watch('id')))
+        TestModel = Model.build(bind('inner_id', from('inner').get('id')))
         model = new TestModel( inner: new Model( id: 42 ) )
-        console.log(model.get('inner_id'))
-        model.get('inner_id').should.equal(42)
+        console.log(model.get_('inner_id'))
+        model.get_('inner_id').should.equal(42)
 
         model.unset('inner')
-        console.log(model.get('inner_id'))
-        (model.get('inner_id') is null).should.equal(true)
+        console.log(model.get_('inner_id'))
+        (model.get_('inner_id') is null).should.equal(true)
 
       it 'should map multiple value together', ->
         TestModel = Model.build(bind('c', from('a').and('b').all.map((a, b) -> a + b)))
@@ -105,17 +105,17 @@ describe 'Model', ->
         model = new TestModel()
         model.set( a: 3, b: 4 )
 
-        model.get('c').should.equal(7)
+        model.get_('c').should.equal(7)
 
       it 'should be able to bind from a Varying', ->
         v = new Varying(2)
         TestModel = Model.build(bind('x', from.varying(-> v)))
         model = new TestModel()
 
-        model.get('x').should.equal(2)
+        model.get_('x').should.equal(2)
 
         v.set(4)
-        model.get('x').should.equal(4)
+        model.get_('x').should.equal(4)
 
       it 'should give model as param in Varying bind', ->
         called = false
@@ -143,34 +143,34 @@ describe 'Model', ->
 
         m = new TestModel()
         calledWith.should.equal(m)
-        m.get('b').should.equal(1)
+        m.get_('b').should.equal(1)
 
         v.set(2)
-        m.get('b').should.equal(2)
+        m.get_('b').should.equal(2)
 
       it 'should point dynamic key names', ->
         TestModel = Model.build(bind('b', from('a')))
 
         m = new TestModel()
         m.set('a', 1)
-        m.get('b').should.equal(1)
+        m.get_('b').should.equal(1)
         m.set('a', 2)
-        m.get('b').should.equal(2)
+        m.get_('b').should.equal(2)
 
       it 'should point dynamic other objects', ->
         TestModel = Model.build(bind('b', from(42)))
 
         m = new TestModel()
-        m.get('b').should.equal(42)
+        m.get_('b').should.equal(42)
 
-      it 'should point watch key names', ->
-        TestModel = Model.build(bind('b', from.watch('a')))
+      it 'should point get key names', ->
+        TestModel = Model.build(bind('b', from.get('a')))
 
         m = new TestModel()
         m.set('a', 1)
-        m.get('b').should.equal(1)
+        m.get_('b').should.equal(1)
         m.set('a', 2)
-        m.get('b').should.equal(2)
+        m.get_('b').should.equal(2)
 
       it 'should point attribute objects', ->
         TestModel = Model.build(
@@ -179,7 +179,7 @@ describe 'Model', ->
         )
 
         m = new TestModel()
-        m.get('b').should.equal(m.attribute('a'))
+        m.get_('b').should.equal(m.attribute('a'))
 
       it 'should point explicit varying functions', ->
         calledWith = null
@@ -193,16 +193,16 @@ describe 'Model', ->
 
         m = new TestModel()
         calledWith.should.equal(m)
-        m.get('b').should.equal(1)
+        m.get_('b').should.equal(1)
 
         v.set(2)
-        m.get('b').should.equal(2)
+        m.get_('b').should.equal(2)
 
       it 'should not point apps by default', ->
         TestModel = Model.build(bind('b', from.app()))
 
         m = new TestModel()
-        m.get('b').should.be.a.Function()
+        m.get_('b').should.be.a.Function()
 
       it 'should point apps if given', ->
         app = {}
@@ -211,7 +211,7 @@ describe 'Model', ->
 
       it 'should point into app subkeys if given', ->
         watchedWith = null
-        app = { watch: (x) -> watchedWith = x; 'watched!' }
+        app = { get: (x) -> watchedWith = x; 'watched!' }
         m = new Model(null, { app })
         m.pointer()(types.from.app('test'), m, app).should.equal('watched!')
         watchedWith.should.equal('test')
@@ -222,13 +222,13 @@ describe 'Model', ->
 
         m = new TestModel()
         calledWith.should.equal(m)
-        m.get('b').should.equal(42)
+        m.get_('b').should.equal(42)
 
       it 'should point self statically', ->
         TestModel = Model.build(bind('b', from.self()))
 
         m = new TestModel()
-        m.get('b').should.equal(m)
+        m.get_('b').should.equal(m)
 
     describe 'classtree', ->
       it 'should not pollute across classdefs', ->
@@ -239,7 +239,7 @@ describe 'Model', ->
 
         b = new TestB()
         b.set('c', 47)
-        should.not.exist(b.get('a'))
+        should.not.exist(b.get_('a'))
 
       it 'should not pollute crosstree', ->
         Root = Model.build(bind('root', from('x')))
@@ -247,28 +247,28 @@ describe 'Model', ->
         Right = Model.build(bind('right', from('x')))
 
         root = new Root( x: 'root' )
-        should.not.exist(root.get('left'))
-        should.not.exist(root.get('right'))
+        should.not.exist(root.get_('left'))
+        should.not.exist(root.get_('right'))
 
         left = new Left( x: 'left' )
-        should.not.exist(left.get('right'))
+        should.not.exist(left.get_('right'))
 
         right = new Right( x: 'right' )
-        should.not.exist(right.get('left'))
+        should.not.exist(right.get_('left'))
 
       it 'should extend downtree', ->
         Root = Model.build(bind('root', from('x')))
         Child = Root.build(bind('child', from('x')))
 
         child = new Child( x: 'test' )
-        child.get('root').should.equal('test')
-        child.get('child').should.equal('test')
+        child.get_('root').should.equal('test')
+        child.get_('child').should.equal('test')
 
       it 'should allow child bind to override parent', ->
         Root = Model.build(bind('contend', from('x')))
         Child = Root.build(bind('contend', from('y')))
 
-        (new Child( x: 1, y: 2 )).get('contend').should.equal(2)
+        (new Child( x: 1, y: 2 )).get_('contend').should.equal(2)
 
     describe 'shadowing', ->
       it 'should not propagate parent bound values', ->
@@ -278,7 +278,7 @@ describe 'Model', ->
         y = x.shadow()
         y.set('a', 3)
         x.set('a', 1)
-        y.get('b').should.equal(3)
+        y.get_('b').should.equal(3)
 
   describe 'defined attributes', ->
     it 'should be definable and fetchable', ->
@@ -307,13 +307,13 @@ describe 'Model', ->
 
     it 'should allow default shortcut for defining a default value', ->
       TestModel = Model.build(dfault('test', 42))
-      (new TestModel()).get('test').should.equal(42)
+      (new TestModel()).get_('test').should.equal(42)
 
     it 'should take a function with default for defining a default value', ->
       i = 0
       TestModel = Model.build(dfault('test', -> ++i))
-      (new TestModel()).get('test').should.equal(1)
-      (new TestModel()).get('test').should.equal(2)
+      (new TestModel()).get_('test').should.equal(1)
+      (new TestModel()).get_('test').should.equal(2)
 
     it 'should allow for the attribute class to be defined with @default', ->
       TestModel = Model.build(dfault('test', 42, attributes.Number))
@@ -364,9 +364,9 @@ describe 'Model', ->
       )
 
       model = new TestModel()
-      model.validations().length.should.equal(2)
-      types.validity.valid.match(model.validations().at(0)).should.equal(true)
-      types.validity.valid.match(model.validations().at(1)).should.equal(true)
+      model.validations().length_.should.equal(2)
+      types.validity.valid.match(model.validations().at_(0)).should.equal(true)
+      types.validity.valid.match(model.validations().at_(1)).should.equal(true)
 
     it 'should return failing validations on errors()', ->
       v1 = new Varying(types.validity.valid())
@@ -377,8 +377,8 @@ describe 'Model', ->
       )
 
       model = new TestModel()
-      model.errors().length.should.equal(1)
-      model.errors().at(0).should.equal('test')
+      model.errors().length_.should.equal(1)
+      model.errors().at_(0).should.equal('test')
 
     it 'should return true if no active errors exist on valid()', ->
       v1 = new Varying(types.validity.valid())
@@ -417,8 +417,8 @@ describe 'Model', ->
       TestModel = Model.build(TestTrait)
 
       m = new TestModel( b: 2, y: 4 )
-      m.get('a').should.equal(2)
-      m.get('x').should.equal(4)
+      m.get_('a').should.equal(2)
+      m.get_('x').should.equal(4)
 
     it 'should work alongside direct definitions', ->
       TestTrait = Trait(
@@ -430,8 +430,8 @@ describe 'Model', ->
       )
 
       m = new TestModel( b: 2, y: 4 )
-      m.get('a').should.equal(2)
-      m.get('x').should.equal(4)
+      m.get_('a').should.equal(2)
+      m.get_('x').should.equal(4)
 
     it 'should nest', ->
       RootTrait = Trait(
@@ -444,8 +444,8 @@ describe 'Model', ->
       TestModel = Model.build(ChildTrait)
 
       m = new TestModel( b: 2, y: 4 )
-      m.get('a').should.equal(2)
-      m.get('x').should.equal(4)
+      m.get_('a').should.equal(2)
+      m.get_('x').should.equal(4)
 
   describe 'deserialization', ->
     it 'should store the given data into the correct places', ->
