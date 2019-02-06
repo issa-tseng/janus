@@ -39,9 +39,10 @@ _moved = (list, oldIdx, newIdx, value) ->
       v.set(list.list[cidx])
   return
 
+# here we have to do goofy things about the length because we have been shortened.
 _removed = (list, midx) ->
   length = list.length_
-  reverseThreshold = midx - length
+  reverseThreshold = midx - length - 1
   for _, { v, idx } of list._watches
     if idx < 0
       if idx >= reverseThreshold then v.set(list.list[length + idx])
