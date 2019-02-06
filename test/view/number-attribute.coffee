@@ -21,5 +21,5 @@ describe 'view', ->
       dom.focus()
       dom.val('42')
       dom.trigger('input')
-      model.get('test').should.equal(42)
+      model.get_('test').should.equal(42)
 

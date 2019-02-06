@@ -137,11 +137,11 @@ describe 'view', ->
 
       select.val(select.children().eq(1).val())
       select.trigger('change')
-      m.get('test').should.equal(arrval)
+      m.get_('test').should.equal(arrval)
 
       select.val(select.children().eq(0).val())
       select.trigger('change')
-      m.get('test').should.equal(mval)
+      m.get_('test').should.equal(mval)
 
     it 'updates the model if the selected value changes', ->
       class TestAttribute extends attribute.Enum
@@ -154,11 +154,11 @@ describe 'view', ->
 
       select.val('bravo')
       select.trigger('change')
-      m.get('test').should.equal('bravo')
+      m.get_('test').should.equal('bravo')
 
       select.val('charlie')
       select.trigger('change')
-      m.get('test').should.equal('charlie')
+      m.get_('test').should.equal('charlie')
 
     it 'sets the model value upon event wiring to the apparent value', ->
       class TestAttribute extends attribute.Enum
@@ -169,7 +169,7 @@ describe 'view', ->
       select = view.artifact()
       view.wireEvents()
 
-      m.get('test').should.equal('alpha')
+      m.get_('test').should.equal('alpha')
 
     it 'inserts a blank placeholder if the field is declared nullable', ->
       class TestAttribute extends attribute.Enum
@@ -202,7 +202,7 @@ describe 'view', ->
       select.children().length.should.equal(3)
       checkText(select, [ 'xray', 'yankee', 'zulu' ])
 
-      model.get('list').add('missingno')
+      model.get_('list').add('missingno')
       checkText(select, [ 'xray', 'yankee', 'zulu', 'missingno' ])
 
     it 'inserts a blank placeholder if the field is declared nullable', ->
@@ -237,7 +237,7 @@ describe 'view', ->
 
         select.val('bravo')
         select.trigger('change')
-        m.get('test').should.equal('bravo')
+        m.get_('test').should.equal('bravo')
 
       it 'should replace options correctly', ->
         l = new List([ 'alpha', 'bravo', 'charlie' ])

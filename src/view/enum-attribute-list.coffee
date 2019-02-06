@@ -12,7 +12,7 @@ ListSelectItemView = class extends DomView.build($('
     </div>'), template(
 
     find('.janus-list-selectItem').classed('checked', from.self().flatMap((view) ->
-      view.options.enum.watchValue().map((value) -> value is view.subject)))
+      view.options.enum.getValue().map((value) -> value is view.subject)))
 
     find('.janus-list-selectItem-select')
       .text(from.self().flatMap((view) -> view.options.buttonLabel?(view.subject) ? 'Select'))

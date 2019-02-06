@@ -146,10 +146,10 @@ describe 'view', ->
       wrappers = dom.find('> ul > li > .janus-list-selectItem')
 
       wrappers.eq(1).find('button').click()
-      m.get('test').should.equal(2)
+      m.get_('test').should.equal(2)
 
       wrappers.eq(2).find('button').click()
-      m.get('test').should.equal(3)
+      m.get_('test').should.equal(3)
 
     it 'should register the wrapper against a basic set', ->
       library = new Library()

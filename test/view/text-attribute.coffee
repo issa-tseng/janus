@@ -53,11 +53,11 @@ describe 'view', ->
       dom.focus()
       dom.val('lmnop')
       dom.trigger('input')
-      m.get('test').should.equal('lmnop')
+      m.get_('test').should.equal('lmnop')
 
       dom.val('xyz')
       dom.trigger('change')
-      m.get('test').should.equal('xyz')
+      m.get_('test').should.equal('xyz')
 
     ### for now, we've cut this feature. if people want it back we can figure it out.
     it 'updates the model only on change if specified', ->

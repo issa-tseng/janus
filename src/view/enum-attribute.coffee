@@ -15,7 +15,7 @@ class EnumAttributeEditView extends DomView
   # if we have the necessary mapping, locate the correct value and apply if found.
   _updateVal: (select) ->
     return unless this._textBindings?
-    selected = this.subject.getValue()
+    selected = this.subject.getValue_()
     for binding in this._textBindings.list when binding.item is selected
       select.val(binding.optionId)
       return
@@ -138,7 +138,7 @@ class EnumAttributeEditView extends DomView
     subject = this.subject
 
     # bind from model.
-    subject.watchValue().react(=> this._updateVal(select))
+    subject.getValue().react(=> this._updateVal(select))
 
     # bind to model. do so once immediately so that if the select is non-nullable
     # then the entry the user sees is what is saved.

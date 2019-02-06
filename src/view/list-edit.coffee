@@ -33,14 +33,14 @@ ListEditItemView = class extends DomView.build($('
     </div>
   '), template(
     find('.janus-list-editItem-moveUp')
-      .classed('disabled', from.self().flatMap((view) -> view.options.list.watchAt(0))
+      .classed('disabled', from.self().flatMap((view) -> view.options.list.at(0))
         .and.self().map((view) -> view.subject)
         .all.map((first, item) -> first is item))
 
       .on('click', moveHandler(-1))
 
     find('.janus-list-editItem-moveDown')
-      .classed('disabled', from.self().flatMap((view) -> view.options.list.watchAt(-1))
+      .classed('disabled', from.self().flatMap((view) -> view.options.list.at(-1))
         .and.self().map((view) -> view.subject)
         .all.map((last, item) -> last is item))
 

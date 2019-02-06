@@ -91,7 +91,7 @@ describe 'view', ->
         l = new List([ 1, new Varying(2), 3 ])
         dom = (new ListView(l, { app: testApp })).artifact()
 
-        l.at(1).set('test')
+        l.at_(1).set('test')
         dom.children().length.should.equal(3)
         itemDom = dom.children().eq(1)
         itemDom.is('li').should.equal(true)

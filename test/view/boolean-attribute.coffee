@@ -25,15 +25,15 @@ describe 'view', ->
       dom = view.artifact()
       view.wireEvents()
 
-      m.get('test').should.equal(false)
+      m.get_('test').should.equal(false)
 
       dom.prop('checked', true)
       dom.trigger('change')
-      m.get('test').should.equal(true)
+      m.get_('test').should.equal(true)
 
       dom.prop('checked', false)
       dom.trigger('change')
-      m.get('test').should.equal(false)
+      m.get_('test').should.equal(false)
 
     it 'is updated when the model value changes', ->
       m = new Model({ test: false })
@@ -67,14 +67,14 @@ describe 'view', ->
       dom = view.artifact()
       view.wireEvents()
 
-      m.get('test').should.equal(false)
+      m.get_('test').should.equal(false)
 
       dom.click()
-      m.get('test').should.equal(true)
+      m.get_('test').should.equal(true)
       dom.hasClass('checked').should.equal(true)
 
       dom.click()
-      m.get('test').should.equal(false)
+      m.get_('test').should.equal(false)
       dom.hasClass('checked').should.equal(false)
 
     it 'updates the model value when changed', ->

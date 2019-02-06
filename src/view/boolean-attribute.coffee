@@ -6,21 +6,21 @@ $ = require('janus-dollar')
 
 BooleanAttributeEditView = DomView.build($('<input type="checkbox"/>'), template(
   find('input')
-    .prop('checked', from.self().flatMap((view) -> view.subject.watchValue()))
+    .prop('checked', from.self().flatMap((view) -> view.subject.getValue()))
     .on('input change', (event, subject) -> subject.setValue(event.target.checked))
 ))
 
 BooleanButtonAttributeEditView = DomView.build($('<button/>'), template(
   find('button')
     .text(from.self().flatMap(stringifier)
-      .and.self().flatMap((view) -> view.subject.watchValue())
+      .and.self().flatMap((view) -> view.subject.getValue())
       .all.map((f, value) -> f(value)))
 
-    .classed('checked', from.self().flatMap((view) -> view.subject.watchValue()))
+    .classed('checked', from.self().flatMap((view) -> view.subject.getValue()))
 
     .on('click', (event, subject) ->
       event.preventDefault()
-      subject.setValue(!subject.getValue())
+      subject.setValue(!subject.getValue_())
     )
 ))
 

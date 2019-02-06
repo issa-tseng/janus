@@ -7,7 +7,7 @@ textAttributeTemplate = (type, handler) -> template(
   find('input')
     .attr('type', from.self().map((view) -> view.options.type ? type))
     .attr('placeholder', from.self().flatMap((view) -> view.options.placeholder ? ''))
-    .prop('value', from((subject) -> subject.watchValue().map((x) -> x ? '')))
+    .prop('value', from((subject) -> subject.getValue().map((x) -> x ? '')))
 
     .on('input change', handler)
 )
