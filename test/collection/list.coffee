@@ -368,6 +368,13 @@ describe 'List', ->
       l.moveAt(5, 0) # 4, *3, 1.5, 2, 1, 0
       results.should.eql([ undefined, 1, 1.5, 1, 1.5, 3, 1.5, 3 ])
 
+    it 'should watch the last value correctly', ->
+      l = new List([ 1, 2, 3, 4 ])
+      results = []
+      l.at(-1).react((x) -> results.push(x))
+      l.removeAt(-1)
+      results.should.eql([ 4, 3 ])
+
     it 'should be able to take a Varying index to watch', ->
       results = []
       l = new List([ 1, 2, 3, 4 ])
