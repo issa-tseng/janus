@@ -62,13 +62,13 @@ class Map extends Enumerable
   # Get a data value from this model. The key can be a dot-separated path into
   # a nested plain model. We do not traverse into submodels that have been
   # inflated.
-  get: (key) ->
+  get_: (key) ->
     value = deepGet(this.data, key)
 
     # If we don't have a value, maybe our parent does. If it does and it's a
     # Map, we'll want to shadowclone it before returning.
     if !value? and this._parent?
-      value = this._parent.get(key)
+      value = this._parent.get_(key)
       if value?.isEnumerable is true
         value = value.shadow()
         this.set(key, value)
@@ -122,12 +122,12 @@ class Map extends Enumerable
   # our parent. Fires events as needed.
   unset: (key) ->
     if this._parent?
-      oldValue = this.get(key)
+      oldValue = this.get_(key)
       deepSet(this.data, key)(Nothing)
     else
       oldValue = deepDelete(this.data, key)
 
-    _changed(this, key, this.get(key), oldValue) if oldValue?
+    _changed(this, key, this.get_(key), oldValue) if oldValue?
     oldValue
 
   # Revert a particular data key on this model to its shadow parent, returning
@@ -138,7 +138,7 @@ class Map extends Enumerable
     return unless this._parent?
 
     oldValue = deepDelete(this.data, key)
-    newValue = this.get(key)
+    newValue = this.get_(key)
     _changed(this, key, newValue, oldValue) unless newValue is oldValue
     oldValue
 
@@ -156,10 +156,10 @@ class Map extends Enumerable
   original: -> this._parent?.original() ? this
 
   # Get a `Varying` object for a particular key. Uses events to set. Caches.
-  watch: (key) ->
+  get: (key) ->
     extant = this._watches[key]
     if extant? then return extant
-    else return (this._watches[key] = new Varying(this.get(key)))
+    else return (this._watches[key] = new Varying(this.get_(key)))
 
   # Handles our parent's changes and judiciously vends those events ourselves.
   _parentChanged: (key, newValue, oldValue) ->
@@ -171,8 +171,8 @@ class Map extends Enumerable
     return
 
   # Simple shortcuts with familiar names.
+  keys_: Enumerable.prototype.enumerate_
   keys: Enumerable.prototype.enumerate
-  watchKeys: Enumerable.prototype.enumeration
 
   # Maps this map's values onto a new Map, with the same key structure. The
   # mapping functions are passed (key, value) as the arguments.
@@ -196,7 +196,7 @@ class Map extends Enumerable
     result = new klass()
     varieds = {}
     add = (key) =>
-      varieds[key] ?= this.watch(key).flatMap((value) => f(key, value)).react((x) -> result.__set(key, x))
+      varieds[key] ?= this.get(key).flatMap((value) => f(key, value)).react((x) -> result.__set(key, x))
     traverse(this.data, (k) -> add(k.join('.')))
 
     result.listenTo(this, 'changed', (key, newValue, oldValue) =>
@@ -213,7 +213,8 @@ class Map extends Enumerable
     result
 
   # Gets the number of k/v pairs in this Map. Depends on enumeration.
-  watchLength: -> this._watchLength$ ?= Varying.managed((=> this.enumeration()), (it) -> it.watchLength())
+  Object.defineProperty(@prototype, 'length', get: -> this.length$ ?= Varying.managed((=> this.enumerate()), (it) -> it.length))
+  Object.defineProperty(@prototype, 'length_', get: -> this.enumerate_().length_)
 
   # Takes in a data hash and populates a new Map (or Map covariant) with its data.
   @deserialize: (data) -> new this(data)

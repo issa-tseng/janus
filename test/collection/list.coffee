@@ -10,89 +10,89 @@ describe 'List', ->
     it 'should result in an empty list if directly constructed', ->
       l = new List()
       l.list.should.eql([])
-      l.length.should.equal(0)
+      l.length_.should.equal(0)
 
     it 'should accept elements out of an array if provided', ->
       l = new List([ 4, 8, 15, 16, 23, 42 ])
       l.list.should.eql([ 4, 8, 15, 16, 23, 42 ])
-      l.length.should.equal(6)
+      l.length_.should.equal(6)
 
     it 'should accept a nested array', ->
       l = new List([ [ 4, 8 ], [ 15, 16 ], [ 23, 42 ] ])
       l.list.should.eql([ [ 4, 8 ], [ 15, 16 ], [ 23, 42 ] ])
-      l.length.should.equal(3)
+      l.length_.should.equal(3)
 
   describe 'retrieval', ->
     it 'should retrieve the element at idx', ->
       l = new List([ 4, 8, 15, 16, 23, 42 ])
-      l.at(0).should.equal(4)
-      l.at(2).should.equal(15)
-      l.at(5).should.equal(42)
-      should(l.at(6)).equal(undefined)
+      l.at_(0).should.equal(4)
+      l.at_(2).should.equal(15)
+      l.at_(5).should.equal(42)
+      should(l.at_(6)).equal(undefined)
 
     it 'should retrieve the element at reverse idx if negative', ->
       l = new List([ 4, 8, 15, 16, 23, 42 ])
-      l.at(-1).should.equal(42)
-      l.at(-3).should.equal(16)
-      l.at(-6).should.equal(4)
-      should(l.at(-7)).equal(undefined)
+      l.at_(-1).should.equal(42)
+      l.at_(-3).should.equal(16)
+      l.at_(-6).should.equal(4)
+      should(l.at_(-7)).equal(undefined)
 
     it 'should give the appropriate list length', ->
       l = new List([ 4, 8, 15, 16, 23, 42 ])
-      l.length.should.equal(6)
+      l.length_.should.equal(6)
 
       l.add([ 56, 72, 99 ])
-      l.length.should.equal(9)
+      l.length_.should.equal(9)
 
   describe 'addition', ->
     it 'should add single new elements at the end', ->
       l = new List([ 4, 8 ])
 
       l.add(15)
-      l.length.should.equal(3)
+      l.length_.should.equal(3)
       for val, idx in [ 4, 8, 15 ]
-        l.at(idx).should.equal(val)
+        l.at_(idx).should.equal(val)
 
       l.add(16)
-      l.length.should.equal(4)
+      l.length_.should.equal(4)
       for val, idx in [ 4, 8, 15, 16 ]
-        l.at(idx).should.equal(val)
+        l.at_(idx).should.equal(val)
 
     it 'should add elements past the end', ->
       l = new List([ 1 ])
       l.add(5, 4)
-      l.length.should.equal(5)
+      l.length_.should.equal(5)
       for val, idx in [ 1, undefined, undefined, undefined, 5 ]
-        should(l.at(idx)).equal(val)
+        should(l.at_(idx)).equal(val)
 
     it 'should add multiple new elements at the end', ->
       l = new List([ 4, 8 ])
 
       l.add([ 15, 16 ])
-      l.length.should.equal(4)
+      l.length_.should.equal(4)
       for val, idx in [ 4, 8, 15, 16 ]
-        l.at(idx).should.equal(val)
+        l.at_(idx).should.equal(val)
 
       l.add([ 23, 42 ])
-      l.length.should.equal(6)
+      l.length_.should.equal(6)
       for val, idx in [ 4, 8, 15, 16, 23, 42 ]
-        l.at(idx).should.equal(val)
+        l.at_(idx).should.equal(val)
 
     it 'should add single new elements in the middle', ->
       l = new List([ 4, 8, 16, 23, 42 ])
 
       l.add(15, 2)
-      l.length.should.equal(6)
+      l.length_.should.equal(6)
       for val, idx in [ 4, 8, 15, 16, 23, 42 ]
-        l.at(idx).should.equal(val)
+        l.at_(idx).should.equal(val)
 
     it 'should add multiple new elements in the middle', ->
       l = new List([ 4, 8, 42 ])
 
       l.add([ 15, 16, 23 ], 2)
-      l.length.should.equal(6)
+      l.length_.should.equal(6)
       for val, idx in [ 4, 8, 15, 16, 23, 42 ]
-        l.at(idx).should.equal(val)
+        l.at_(idx).should.equal(val)
 
     it 'should emit an event for each added element', ->
       l = new List([ 4, 8, 42 ])
@@ -123,23 +123,23 @@ describe 'List', ->
     it 'should overwrite the appropriate element', ->
       l = new List([ 4, 8, 15, 16, 23, 42 ])
       l.set(2, 'hi')
-      l.length.should.equal(6)
+      l.length_.should.equal(6)
       for val, idx in [ 4, 8, 'hi', 16, 23, 42 ]
-        l.at(idx).should.equal(val)
+        l.at_(idx).should.equal(val)
 
     it 'should be able to set past the end of the list', ->
       l = new List([ 4, 8, 15, 16, 23, 42 ])
       l.set(7, 'hi')
-      l.length.should.equal(8)
+      l.length_.should.equal(8)
       for val, idx in [ 4, 8, 15, 16, 23, 42, undefined, 'hi' ]
-        (l.at(idx) is val).should.equal(true)
+        (l.at_(idx) is val).should.equal(true)
 
     it 'should accept negative indices', ->
       l = new List([ 4, 8, 15, 16, 23, 42 ])
       l.set(-3, 'hi')
-      l.length.should.equal(6)
+      l.length_.should.equal(6)
       for val, idx in [ 4, 8, 15, 'hi', 23, 42 ]
-        l.at(idx).should.equal(val)
+        l.at_(idx).should.equal(val)
 
     it 'should emit add events', ->
       results = []
@@ -171,16 +171,16 @@ describe 'List', ->
       l = new List(new Model() for _ in [0..4])
       l.on('removed', (elem, idx) -> eventedElem = elem; eventedIdx = idx)
 
-      m = l.at(2)
+      m = l.at_(2)
       m.destroy()
       eventedElem.should.equal(m)
       eventedIdx.should.equal(2)
-      l.length.should.equal(4)
+      l.length_.should.equal(4)
 
     it 'should not remove destroying Base elements if the list is derived', -> # gh97
       l = new List(new Model() for _ in [0..4])
       m = l.map((x) -> x.shadow())
-      should.doesNotThrow(-> m.at(0).destroy())
+      should.doesNotThrow(-> m.at_(0).destroy())
       # in the wild, this occurs when views self-destroy; we just destroy m to simulate this.
 
   describe 'removal (reference)', ->
@@ -189,14 +189,14 @@ describe 'List', ->
       l = new List([ {}, 2, 'test', obj, {} ])
 
       l.remove(2)
-      l.length.should.equal(4)
+      l.length_.should.equal(4)
       for val, idx in [ {}, 'test', {}, {} ]
-        l.at(idx).should.eql(val)
+        l.at_(idx).should.eql(val)
 
       l.remove(obj)
-      l.length.should.equal(3)
-      l.at(2).should.not.equal(obj)
-      l.at(2).should.eql({})
+      l.length_.should.equal(3)
+      l.at_(2).should.not.equal(obj)
+      l.at_(2).should.eql({})
 
     it 'should return undefined if the element is not found', ->
       l = new List()
@@ -221,9 +221,9 @@ describe 'List', ->
     it 'should remove the element indicated by the index', ->
       l = new List([ 1, 2, 3, 4, 5 ])
       l.removeAt(2)
-      l.length.should.equal(4)
+      l.length_.should.equal(4)
       for val, idx in [ 1, 2, 4, 5 ]
-        l.at(idx).should.equal(val)
+        l.at_(idx).should.equal(val)
 
     it 'should return the element that was removed', ->
       l = new List([ 1, 2, 3, 4, 5 ])
@@ -240,7 +240,7 @@ describe 'List', ->
       l = new List([ 1, 2, 3, 4, 5 ])
       should(l.removeAt(5)).equal(undefined)
       should(l.removeAt(-6)).equal(undefined)
-      l.length.should.equal(5)
+      l.length_.should.equal(5)
 
     it 'should event upon removal', ->
       removed = []
@@ -264,19 +264,19 @@ describe 'List', ->
     it 'should move the element to the relevant place', ->
       l = new List([ 1, 2, 3, 4, 5 ])
       l.move(4, 0)
-      l.length.should.equal(5)
+      l.length_.should.equal(5)
       for val, idx in [ 4, 1, 2, 3, 5 ]
-        l.at(idx).should.equal(val)
+        l.at_(idx).should.equal(val)
 
       l.move(4, 2)
-      l.length.should.equal(5)
+      l.length_.should.equal(5)
       for val, idx in [ 1, 2, 4, 3, 5 ]
-        l.at(idx).should.equal(val)
+        l.at_(idx).should.equal(val)
 
     it 'should abort if the element is not found', ->
       l = new List([ 1, 2, 3, 4, 5 ])
       should(l.move(6, 0)).equal(undefined)
-      l.length.should.equal(5)
+      l.length_.should.equal(5)
 
     it 'should event on the list', ->
       eventedArgs = []
@@ -297,22 +297,22 @@ describe 'List', ->
     it 'should move the element to the relevant place', ->
       l = new List([ 1, 2, 3, 4, 5 ])
       l.moveAt(2, 0)
-      l.length.should.equal(5)
+      l.length_.should.equal(5)
       for val, idx in [ 3, 1, 2, 4, 5 ]
-        l.at(idx).should.equal(val)
+        l.at_(idx).should.equal(val)
 
     it 'should allow negative indices', ->
       l = new List([ 1, 2, 3, 4, 5 ])
       l.moveAt(-1, -3)
-      l.length.should.equal(5)
+      l.length_.should.equal(5)
       for val, idx in [ 1, 2, 5, 3, 4 ]
-        l.at(idx).should.equal(val)
+        l.at_(idx).should.equal(val)
 
   describe 'removeAll', ->
     it 'should remove all elements', ->
       l = new List([ 4, 8, 15, 16, 23, 42 ])
       l.removeAll()
-      l.length.should.equal(0)
+      l.length_.should.equal(0)
 
     it 'should return the removed elements', ->
       (new List([ 4, 8, 15, 16, 23, 42 ])).removeAll().should.eql([ 4, 8, 15, 16, 23, 42 ])
@@ -336,11 +336,11 @@ describe 'List', ->
       l.removeAll()
       eventedArgs.should.eql([ l, 0, 0, l, 0, 1, l, 0, 2 ])
 
-  describe 'watchAt', ->
+  describe 'at', ->
     it 'should watch the value at an index', ->
       l = new List([ 1, 2, 3 ])
       results = []
-      l.watchAt(4).react((x) -> results.push(x))
+      l.at(4).react((x) -> results.push(x))
       l.add(4) # 1, 2, 3, 4
       l.add(5) # 1, 2, 3, 4, *5
       l.add(0, 0) # 0, 1, 2, 3, *4, 5
@@ -355,7 +355,7 @@ describe 'List', ->
     it 'should watch the value at a reverse index', ->
       l = new List([ 1, 2, 3, 4 ])
       results = []
-      l.watchAt(-5).react((x) -> results.push(x))
+      l.at(-5).react((x) -> results.push(x))
       l.add(5) # *1, 2, 3, 4, 5
       l.add(0, 0) # 0, *1, 2, 3, 4, 5
       l.add(1.5, 2) # 0, 1, *1.5, 2, 3, 4, 5
@@ -372,45 +372,45 @@ describe 'List', ->
       results = []
       l = new List([ 1, 2, 3, 4 ])
       v = new Varying(2)
-      l.watchAt(v).react((x) -> results.push(x))
+      l.at(v).react((x) -> results.push(x))
       l.removeAt(1) # 1 3 *4
       v.set(0) # *1 3 4
       l.add(0, 0) # *0 1 3 4
       results.should.eql([ 3, 4, 1, 0 ])
 
-  describe 'watchLength', ->
+  describe 'length', ->
     it 'should watch the length of the list', ->
       l = new List([ 1, 2, 3, 4 ])
       results = []
-      l.watchLength().react((x) -> results.push(x))
+      l.length.react((x) -> results.push(x))
       l.add(5)
       l.add([ 6, 7 ])
       l.removeAt(0)
       l.removeAt(1)
       results.should.eql([ 4, 5, 7, 6, 5 ])
 
-    it 'should provide an empty convenience method', ->
-      (new List()).empty().should.equal(true)
-      (new List(0)).empty().should.equal(false)
+    it 'should provide an empty_ convenience method', ->
+      (new List()).empty_().should.equal(true)
+      (new List(0)).empty_().should.equal(false)
 
-    it 'should provide a watchEmpty convenience method', ->
+    it 'should provide an empty convenience method', ->
       l = new List()
       result = null
-      l.watchEmpty().react((x) -> result = x)
+      l.empty().react((x) -> result = x)
       result.should.equal(true)
       l.add(2)
       result.should.equal(false)
       l.removeAt(0)
       result.should.equal(true)
 
-    it 'should provide a nonEmpty convenience method', ->
-      (new List()).nonEmpty().should.equal(false)
-      (new List(0)).nonEmpty().should.equal(true)
+    it 'should provide a nonEmpty_ convenience method', ->
+      (new List()).nonEmpty_().should.equal(false)
+      (new List(0)).nonEmpty_().should.equal(true)
 
-    it 'should provide a watchNonEmpty convenience method', ->
+    it 'should provide a nonEmpty convenience method', ->
       l = new List()
       result = null
-      l.watchNonEmpty().react((x) -> result = x)
+      l.nonEmpty().react((x) -> result = x)
       result.should.equal(false)
       l.add(2)
       result.should.equal(true)
@@ -453,8 +453,8 @@ describe 'List', ->
 
       result = TestList.deserialize([ { a: 1 }, { b: 2 } ]).list
       result[0].should.be.an.instanceof(TestModel)
-      result[0].get('a').should.equal(1)
+      result[0].get_('a').should.equal(1)
       result[1].should.be.an.instanceof(TestModel)
-      result[1].get('b').should.equal(2)
+      result[1].get_('b').should.equal(2)
 
 

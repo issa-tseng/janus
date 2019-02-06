@@ -15,7 +15,7 @@ util = require('../util/util')
 # for each of these, we will first update individual index watches, then take
 # care of the lengthwatcher.
 _added = (list, midx, value) ->
-  length = list.length
+  length = list.length_
   reverseThreshold = midx - length
   for _, { v, idx } of list._watches
     if idx is midx
@@ -24,11 +24,11 @@ _added = (list, midx, value) ->
       if idx >= reverseThreshold then v.set(list.list[length + idx])
     else
       if idx >= midx then v.set(list.list[idx])
-  list._length$?.set(length)
+  list.length$?.set(length)
   return
 
 _moved = (list, oldIdx, newIdx, value) ->
-  length = list.length
+  length = list.length_
   for _, { v, idx } of list._watches
     cidx = if idx < 0 then length + idx else idx
     if cidx is newIdx
@@ -40,14 +40,14 @@ _moved = (list, oldIdx, newIdx, value) ->
   return
 
 _removed = (list, midx) ->
-  length = list.length
+  length = list.length_
   reverseThreshold = midx - length
   for _, { v, idx } of list._watches
     if idx < 0
       if idx >= reverseThreshold then v.set(list.list[length + idx])
     else
       if idx >= midx then v.set(list.list[idx])
-  list._length$?.set(length)
+  list.length$?.set(length)
   return
 
 
@@ -94,9 +94,9 @@ class List extends OrderedMappable
 
   # Sets a single value at a given index. Emits events as appropriate.
   set: (idx, value) ->
-    idx = this.length + idx if idx < 0
+    idx = this.length_ + idx if idx < 0
 
-    if 0 <= idx and idx < this.length
+    if 0 <= idx and idx < this.length_
       removed = this.list[idx]
       _removed(this, idx)
       this.emit('removed', removed, idx)
@@ -146,8 +146,8 @@ class List extends OrderedMappable
 
   # Same as move, but by index rather than element reference.
   moveAt: (oldIdx, idx) ->
-    oldIdx = this.length + oldIdx if oldIdx < 0
-    idx = this.length + idx if idx < 0
+    oldIdx = this.length_ + oldIdx if oldIdx < 0
+    idx = this.length_ + idx if idx < 0
     elem = this.list[oldIdx]
 
     # Move the element, then trigger `moved` event.
@@ -170,34 +170,33 @@ class List extends OrderedMappable
       elem
 
   # Get an element from this collection by index.
-  _at = (idx) ->
+  _at_ = (idx) ->
     if idx >= 0
       this.list[idx]
     else
       this.list[this.list.length + idx]
-  at: _at
-  get: _at
+  at_: _at_
+  get_: _at_
 
   # Watch an element from this collection by index.
   # TODO: i hate generating this many structures, but negative indices and sparse
   # array iteration are both bad.
-  _watchAt = (idx) ->
+  _at = (idx) ->
     if idx?.isVarying is true
-      return idx.flatMap((tidx) => this.watchAt(tidx))
-    (this._watches[idx] ?= { idx, v: new Varying(this.at(idx)) }).v
-
-  watchAt: _watchAt
-  watch: _watchAt
+      return idx.flatMap((tidx) => this.at(tidx))
+    (this._watches[idx] ?= { idx, v: new Varying(this.at_(idx)) }).v
+  at: _at
+  get: _at
 
   # Length-related operations. .length is presented as a getter for familiarity.
-  Object.defineProperty(@prototype, 'length', get: -> this.list.length)
-  watchLength: -> this._length$ ?= new Varying(this.length)
+  Object.defineProperty(@prototype, 'length', get: -> this.length$ ?= new Varying(this.list.length))
+  Object.defineProperty(@prototype, 'length_', get: -> this.list.length)
 
   # Length-related convenience methods, since these maps happen a lot:
-  empty: -> this.length is 0
-  watchEmpty: -> this.watchLength().map((length) -> length is 0)
-  nonEmpty: -> this.length > 0
-  watchNonEmpty: -> this.watchLength().map((length) -> length > 0)
+  empty_: -> this.length_ is 0
+  empty: -> this.length.map((length) -> length is 0)
+  nonEmpty_: -> this.length_ > 0
+  nonEmpty: -> this.length.map((length) -> length > 0)
 
   # A shadow list is really just a clone that has a backreference so that we
   # can determine later if it has changed. We could copy-on-write, but that

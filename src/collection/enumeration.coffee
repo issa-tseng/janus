@@ -74,15 +74,15 @@ class KeyList extends DerivedList
     return
 
   # (flat)mapPairs takes f: (k, v) -> x and returns List[x]
-  mapPairs: (f) -> this.flatMap((key) => Varying.mapAll(f, new Varying(key), this.target.watch(key)))
-  flatMapPairs: (f) -> this.flatMap((key) => Varying.flatMapAll(f, new Varying(key), this.target.watch(key)))
+  mapPairs: (f) -> this.flatMap((key) => Varying.mapAll(f, new Varying(key), this.target.get(key)))
+  flatMapPairs: (f) -> this.flatMap((key) => Varying.flatMapAll(f, new Varying(key), this.target.get(key)))
 
 class IndexList extends DerivedList
   constructor: (@parent) ->
     super()
 
-    this._lengthObservation = this.reactTo(this.parent.watchLength(), (length) =>
-      ourLength = this.length
+    this._lengthObservation = this.reactTo(this.parent.length, (length) =>
+      ourLength = this.length_
       if length > ourLength
         this._add(idx) for idx in [ourLength...length]
       else if length < ourLength
@@ -91,39 +91,38 @@ class IndexList extends DerivedList
     )
 
   # (flat)mapPairs takes f: (k, v) -> x and returns List[x]
-  mapPairs: (f) -> this.flatMap((idx) => Varying.mapAll(f, new Varying(idx), this.parent.watchAt(idx)))
-  flatMapPairs: (f) -> this.flatMap((idx) => Varying.flatMapAll(f, new Varying(idx), this.parent.watchAt(idx)))
+  mapPairs: (f) -> this.flatMap((idx) => Varying.mapAll(f, new Varying(idx), this.parent.at(idx)))
+  flatMapPairs: (f) -> this.flatMap((idx) => Varying.flatMapAll(f, new Varying(idx), this.parent.at(idx)))
 
   __destroy: -> this._lengthObservation.stop(); return
 
-_dynamic = (f) -> (obj, options) ->
-  Enumeration[if obj.isMappable is true then 'list' else if obj.isMap is true then 'map'][f](obj, options)
+_dynamic = (suffix) -> (obj, options) ->
+  type = if obj.isMappable is true then 'list' else if obj.isMap is true then 'map'
+  Enumeration[type + suffix](obj, options)
 Enumeration =
-  get: _dynamic('get')
-  watch: _dynamic('watch')
+  get_: _dynamic('_')
+  get: _dynamic('')
 
-  map:
-    get: (map, options = {}) ->
-      scope = options.scope ? 'all'
-      include = options.include ? 'values'
+  map_: (map, options = {}) ->
+    scope = options.scope ? 'all'
+    include = options.include ? 'values'
 
-      result = []
-      traverser = if include is 'values' then traverse else if include is 'all' then traverseAll
-      scanMap = (map) => traverser(map.data, (key) => result.push(key.join('.')) unless result.indexOf(key) >= 0)
-      if scope is 'all'
-        ptr = map
-        while ptr?
-          scanMap(ptr)
-          ptr = ptr._parent
-      else if scope is 'direct'
-        scanMap(map)
-      result
+    result = []
+    traverser = if include is 'values' then traverse else if include is 'all' then traverseAll
+    scanMap = (map) => traverser(map.data, (key) => result.push(key.join('.')) unless result.indexOf(key) >= 0)
+    if scope is 'all'
+      ptr = map
+      while ptr?
+        scanMap(ptr)
+        ptr = ptr._parent
+    else if scope is 'direct'
+      scanMap(map)
+    result
 
-    watch: (map, options) -> new KeyList(map, options)
+  map: (map, options) -> new KeyList(map, options)
 
-  list:
-    get: (list) -> (idx for idx in [0...list.length])
-    watch: (list) -> new IndexList(list)
+  list_: (list) -> (idx for idx in [0...list.length_])
+  list: (list) -> new IndexList(list)
 
 
 module.exports = { KeyList, IndexList, Enumeration }

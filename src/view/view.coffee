@@ -7,7 +7,7 @@
 
 Base = require('../core/base').Base
 { Varying } = require('../core/varying')
-{ dynamic, watch, resolve, attribute, varying, app, self } = require('../core/types').from
+{ dynamic, get, resolve, attribute, varying, app, self } = require('../core/types').from
 { match } = require('../core/case')
 { isFunction, isString } = require('../util/util')
 
@@ -44,15 +44,15 @@ class View extends Base
     dynamic (x) =>
       if isFunction(x)
         Varying.of(x(this.subject))
-      else if isString(x) and this.subject.watch?
-        this.subject.watch(x)
+      else if isString(x) and this.subject.get?
+        this.subject.get(x)
       else
         Varying.of(x)
-    watch (x) => this.subject.watch(x)
+    get (x) => this.subject.get(x)
     attribute (x) => new Varying(this.subject.attribute(x))
     varying (x) => if isFunction(x) then Varying.of(x(this.subject)) else Varying.of(x)
     app (x) =>
-      if x? then this.options.app.watch(x)
+      if x? then this.options.app.get(x)
       else new Varying(this.options.app)
     self (x) => if isFunction(x) then Varying.of(x(this)) else Varying.of(this)
   )

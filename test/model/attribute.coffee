@@ -14,32 +14,32 @@ describe 'Attribute', ->
       m = new Model()
       a = new attribute.Attribute(m, 'testkey')
 
-      should(m.get('testkey')).equal(null)
+      should(m.get_('testkey')).equal(null)
       a.setValue(42)
-      m.get('testkey').should.equal(42)
+      m.get_('testkey').should.equal(42)
 
     it 'can unset a value off the model', ->
       m = new Model({ testkey: 42 })
       a = new attribute.Attribute(m, 'testkey')
 
-      m.get('testkey').should.equal(42)
+      m.get_('testkey').should.equal(42)
       a.unsetValue()
-      should(m.get('testkey')).equal(null)
+      should(m.get_('testkey')).equal(null)
 
     it 'can get a value off the model', ->
       m = new Model({ testkey: 42 })
       a = new attribute.Attribute(m, 'testkey')
 
-      a.getValue().should.equal(42)
+      a.getValue_().should.equal(42)
       m.set('testkey', 47)
-      a.getValue().should.equal(47)
+      a.getValue_().should.equal(47)
 
     it 'can watch a value off the model', ->
       m = new Model({ testkey: 42 })
       a = new attribute.Attribute(m, 'testkey')
 
       results = []
-      a.watchValue().react((x) -> results.push(x))
+      a.getValue().react((x) -> results.push(x))
       m.set('testkey', 47)
       m.set('testkey', 101)
       results.should.eql([ 42, 47, 101 ])
@@ -51,7 +51,7 @@ describe 'Attribute', ->
         default: -> 42
 
       a = new TestAttribute(m, 'default_test')
-      a.getValue().should.equal(42)
+      a.getValue_().should.equal(42)
       # Model#get respecting the default value is tested in model tests.
 
     # note these are distinct from the model tests; different codepath.
@@ -61,7 +61,7 @@ describe 'Attribute', ->
         default: -> 42
 
       a = new TestAttribute(m, 'default_test')
-      a.getValue().should.equal(42)
+      a.getValue_().should.equal(42)
       m.data.should.eql({})
 
     it 'writes the default value if writeDefault is true', ->
@@ -72,7 +72,7 @@ describe 'Attribute', ->
 
       a = new TestAttribute(m, 'default_test')
       m.data.should.eql({})
-      a.getValue().should.equal(42)
+      a.getValue_().should.equal(42)
       m.data.should.eql({ default_test: 42 })
 
   describe 'serialization', ->
@@ -172,7 +172,7 @@ describe 'Attribute', ->
       it 'should only try to resolve once', ->
         called = 0
         class TestModel
-          watch: -> called += 1; new Varying()
+          get: -> called += 1; new Varying()
         ref = new (attribute.Reference.to(6.626))(new TestModel())
         ref.resolveWith()
         ref.resolveWith()
@@ -184,7 +184,7 @@ describe 'Attribute', ->
         reacted = false
         v = new Varying()
         class TestModel
-          watch: (k) -> key = k; v
+          get: (k) -> key = k; v
 
         ref = new (attribute.Reference.to({ isRequest: true }))(new TestModel(), 1.055)
         ref.resolveWith({ resolve: -> called = true; { react: -> reacted = true } })
@@ -201,7 +201,7 @@ describe 'Attribute', ->
         calledWith = null
         v = new Varying()
         class TestModel
-          watch: -> v
+          get: -> v
 
         ref = new (attribute.Reference.to({ isRequest: true, test: 4.136 }))(new TestModel())
         ref.resolveWith({ resolve: (req) -> calledWith = req; new Varying() })
@@ -212,7 +212,7 @@ describe 'Attribute', ->
         calledWith = null
         v = new Varying()
         class TestModel
-          watch: -> v
+          get: -> v
 
         class TestReference extends attribute.Reference
           request: -> { isRequest: true, test: 4.136 }
@@ -226,7 +226,7 @@ describe 'Attribute', ->
         calledWith = null
         v = new Varying()
         class TestModel extends Model
-          watch: -> v
+          get: -> v
 
         ref = new (attribute.Reference.to(new Varying(6.582)))(new TestModel())
         ref.resolveWith({ resolve: (req) -> calledWith = req; new Varying() })
@@ -237,7 +237,7 @@ describe 'Attribute', ->
         calledWith = null
         v = new Varying()
         class TestModel extends Model
-          watch: -> v
+          get: -> v
 
         ref = new (attribute.Reference.to(from.varying(new Varying(6.582))))(new TestModel())
         ref.resolveWith({ resolve: (req) -> calledWith = req; new Varying() })
@@ -248,7 +248,7 @@ describe 'Attribute', ->
         vattr = new Varying()
         vreq = new Varying()
         class TestModel extends Model
-          watch: -> vattr
+          get: -> vattr
 
         m = new TestModel()
         ref = new (attribute.Reference.to({ isRequest: true }))(m, 'test')
@@ -256,15 +256,15 @@ describe 'Attribute', ->
         vattr.react(->)
 
         vreq.set(types.result.success(3.14))
-        m.get('test').should.equal(3.14)
+        m.get_('test').should.equal(3.14)
         vreq.set(types.result.success(2.718))
-        m.get('test').should.equal(2.718)
+        m.get_('test').should.equal(2.718)
 
       it 'should not set the model value given unsuccessful results', ->
         vattr = new Varying()
         vreq = new Varying()
         class TestModel extends Model
-          watch: -> vattr
+          get: -> vattr
 
         m = new TestModel()
         ref = new (attribute.Reference.to({ isRequest: true }))(m, 'test')
@@ -272,15 +272,15 @@ describe 'Attribute', ->
         vattr.react(->)
 
         vreq.set(types.result.failure(12))
-        should.not.exist(m.get('test'))
+        should.not.exist(m.get_('test'))
         vreq.set(types.result.success(24))
-        m.get('test').should.equal(24)
+        m.get_('test').should.equal(24)
 
       it 'should stop caring about the request result if nobody is watching', ->
         vattr = new Varying()
         vreq = new Varying()
         class TestModel extends Model
-          watch: -> vattr
+          get: -> vattr
 
         m = new TestModel()
         ref = new (attribute.Reference.to({ isRequest: true }))(m, 'test')
@@ -288,8 +288,8 @@ describe 'Attribute', ->
         o = vattr.react(->)
 
         vreq.set(types.result.success(36))
-        m.get('test').should.equal(36)
+        m.get_('test').should.equal(36)
         o.stop()
         vreq.set(types.result.success(48))
-        m.get('test').should.equal(36)
+        m.get_('test').should.equal(36)
 

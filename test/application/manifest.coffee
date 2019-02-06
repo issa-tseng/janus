@@ -37,12 +37,12 @@ env = ({ watch = [], resolvers = [], view, trait = Trait() } = {}) ->
 
   class TestView
     constructor: (@model) ->
-    artifact: -> this.model.watch(key).react(->) for key in watch
+    artifact: -> this.model.get(key).react(->) for key in watch
 
   app = new App()
-  app.get('views').register(TestModel, view ? TestView)
-  app.get('resolvers').register(SucceedingRequest, resolving(types.result.success('success')))
-  app.get('resolvers').register(FailingRequest, resolving(types.result.failure('failure')))
+  app.views.register(TestModel, view ? TestView)
+  app.resolvers.register(SucceedingRequest, resolving(types.result.success('success')))
+  app.resolvers.register(FailingRequest, resolving(types.result.failure('failure')))
   app
 
   { TestModel, TestView, app }
@@ -85,7 +85,7 @@ describe 'manifest', ->
     resolvers = []
     { TestModel, TestView, app } = env({ resolvers, watch: [ 'one', 'two' ] })
     model = new TestModel()
-    model.watch('one').react((x) -> model.watch('three').react(->) if x?)
+    model.get('one').react((x) -> model.get('three').react(->) if x?)
 
     Manifest.run(app, model).result.react((x) -> result = x)
 
@@ -106,13 +106,13 @@ describe 'manifest', ->
     r() for r in resolvers
 
     defer ->
-      m.requests.length.should.equal(2)
+      m.requests.length_.should.equal(2)
       # technically these /could/ come back in either order but in practice
       # so far they don't.
-      m.requests.at(0).request.should.be.an.instanceof(SucceedingRequest)
-      types.result.success.match(m.requests.at(0).result.get()).should.equal(true)
-      m.requests.at(1).request.should.be.an.instanceof(FailingRequest)
-      types.result.failure.match(m.requests.at(1).result.get()).should.equal(true)
+      m.requests.at_(0).request.should.be.an.instanceof(SucceedingRequest)
+      types.result.success.match(m.requests.at_(0).result.get()).should.equal(true)
+      m.requests.at_(1).request.should.be.an.instanceof(FailingRequest)
+      types.result.failure.match(m.requests.at_(1).result.get()).should.equal(true)
       done()
 
   it 'should return success if all validations are valid', (done) ->
@@ -142,8 +142,8 @@ describe 'manifest', ->
 
     defer ->
       types.result.failure.match(result).should.equal(true)
-      result.get().length.should.equal(1)
-      result.get().at(0).should.equal(1)
+      result.get().length_.should.equal(1)
+      result.get().at_(0).should.equal(1)
       done()
 
   it 'should return all failures if many happen', (done) ->
@@ -159,9 +159,9 @@ describe 'manifest', ->
 
     defer ->
       types.result.failure.match(result).should.equal(true)
-      result.get().length.should.equal(2)
-      result.get().at(0).should.equal(1)
-      result.get().at(1).should.equal(3)
+      result.get().length_.should.equal(2)
+      result.get().at_(0).should.equal(1)
+      result.get().at_(1).should.equal(3)
       done()
 
   it 'should only result once', (done) ->

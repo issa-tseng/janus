@@ -24,7 +24,7 @@ val = (conjunction, applicant, rest = []) ->
     map: (f) -> append((v) -> v.map(f))
     flatMap: (f) -> append((v) -> v.flatMap(f))
 
-    watch: (attr) -> append((v) -> v.flatMap((x) -> x?.watch?(attr) ? null))
+    get: (attr) -> append((v) -> v.flatMap((x) -> x?.get?(attr) ? null))
     attribute: (attr) -> append((v) -> v.map((x) -> x?.attribute?(attr) ? null))
     pipe: (f) -> append(f)
     asVarying: -> append((v) -> new Varying(v))

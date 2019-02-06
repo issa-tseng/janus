@@ -22,7 +22,7 @@ should.Assertion.add('val', (->
 should.Assertion.add('conjunction', (->
   this.params = { operator: 'to be a default conjunction' }
   this.obj.should.be.a.Function()
-  this.obj.watch.should.be.a.Function()
+  this.obj.get.should.be.a.Function()
   this.obj.attribute.should.be.a.Function()
   this.obj.varying.should.be.a.Function()
 ), true)
@@ -52,7 +52,7 @@ describe 'from', ->
       from('a').should.be.a.val()
 
     it 'should contain functions that return val-looking things', ->
-      from.watch('b').should.be.a.val()
+      from.get('b').should.be.a.val()
       from.attribute('b').should.be.a.val()
       from.varying('b').should.be.a.val()
 
@@ -80,7 +80,7 @@ describe 'from', ->
       args = []
 
       from('a')
-        .and.watch('b')
+        .and.get('b')
         .and.attribute('d')
         .and.varying('e')
         .all.point((x) -> args.push(x); x)
@@ -88,7 +88,7 @@ describe 'from', ->
       args[0].should.be.an.instanceof(cases.dynamic.type)
       args[0].get().should.equal('a')
 
-      args[1].should.be.an.instanceof(cases.watch.type)
+      args[1].should.be.an.instanceof(cases.get.type)
       args[1].get().should.equal('b')
 
       args[2].should.be.an.instanceof(cases.attribute.type)
@@ -98,13 +98,13 @@ describe 'from', ->
       args[3].get().should.equal('e')
 
     it 'should only point for things that have not resolved to varying', ->
-      { dynamic, watch, definition, varying } = cases
+      { dynamic, get, definition, varying } = cases
 
       count = 0
       incr = (f) -> (args...) -> count += 1; f(args...)
 
       f1 = from('a')
-        .and.watch('b')
+        .and.get('b')
         .all.point(match(
           dynamic incr (xs...) -> new Varying()
           otherwise incr id
@@ -113,7 +113,7 @@ describe 'from', ->
       count.should.equal(2)
 
       f2 = f1.point(match(
-        watch incr (xs...) -> new Varying()
+        get incr (xs...) -> new Varying()
         otherwise incr id
       ))
 
@@ -130,7 +130,7 @@ describe 'from', ->
       called = false
 
       v = from('a')
-        .and.watch('b')
+        .and.get('b')
         .all.map (xs...) ->
           called = true
 
@@ -145,14 +145,14 @@ describe 'from', ->
       called.should.equal(true)
 
     it 'should be called with resolved applicants', ->
-      { dynamic, watch, definition, varying } = cases
+      { dynamic, get, definition, varying } = cases
       called = false
 
       v = from('a')
-        .and.watch('b')
+        .and.get('b')
         .all.point(match(
           dynamic (x) -> new Varying("dynamic: #{x}")
-          watch (x) -> new Varying("watch: #{x}")
+          get (x) -> new Varying("get: #{x}")
           otherwise -> null
         )).map((xs...) ->
           called = true
@@ -160,7 +160,7 @@ describe 'from', ->
           xs.length.should.equal(2)
 
           xs[0].should.equal('dynamic: a')
-          xs[1].should.equal('watch: b')
+          xs[1].should.equal('get: b')
         )
 
       v.react(->)
@@ -175,11 +175,11 @@ describe 'from', ->
   describe 'flatMapAll', ->
     # very condensed test because the mapAll tests should cover this.
     it 'should be called with appropriate applicants', ->
-      { dynamic, watch, definition, varying } = cases
+      { dynamic, get, definition, varying } = cases
       called = false
 
       v = from('a')
-        .and.watch('b')
+        .and.get('b')
         .all.point(match(
           dynamic (x) -> new Varying("dynamic: #{x}")
           otherwise id
@@ -202,7 +202,7 @@ describe 'from', ->
 
   describe 'direct reaction', ->
     it 'should apply applicants as args', ->
-      { dynamic, watch, definition, varying } = cases
+      { dynamic, get, definition, varying } = cases
       result = null
 
       v = from('a').and('b').and('c')
@@ -214,7 +214,7 @@ describe 'from', ->
       result.should.eql([ 'a', 'b', 'c' ])
 
     it 'should return a single applicant as the argument absent an allmapper', ->
-      { dynamic, watch, definition, varying } = cases
+      { dynamic, get, definition, varying } = cases
       result = null
 
       v = from('a')
@@ -287,16 +287,16 @@ describe 'from', ->
       v.set('cd')
       result.should.equal('cd')
 
-  describe 'inline watch', ->
+  describe 'inline get', ->
     it 'should apply as a flatMap after point resolution', ->
       { dynamic } = cases
 
       called = null
       result = null
       iv = new Varying(2)
-      from('a').watch('myattr')
+      from('a').get('myattr')
         .all.point(match(
-          dynamic -> new Varying({ watch: (x) -> called = x; iv })
+          dynamic -> new Varying({ get: (x) -> called = x; iv })
           otherwise ->
         ))
         .map(id).react((x) -> result = x)
@@ -309,7 +309,7 @@ describe 'from', ->
 
       result = null
       iv = new Varying(2)
-      from('a').watch('myattr')
+      from('a').get('myattr')
         .all.point(match(
           dynamic -> new Varying()
         ))

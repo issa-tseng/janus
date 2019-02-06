@@ -127,7 +127,7 @@ describe 'DomView', ->
     it 'points dynamic string inputs correctly', ->
       attr = null
       v = new Varying('test')
-      subject = { watch: (x) -> attr = x; v }
+      subject = { get: (x) -> attr = x; v }
       TestView = DomView.build($('<div/>'), template(
         find('div').text(from('someattr'))
       ))
@@ -141,19 +141,19 @@ describe 'DomView', ->
 
     it 'points dynamic other inputs correctly', ->
       v = new Varying('test')
-      subject = { watch: (x) -> attr = x; v }
+      subject = { get: (x) -> attr = x; v }
       TestView = DomView.build($('<div/>'), template(
         find('div').text(from(42))
       ))
 
       (new TestView(subject)).artifact().text().should.equal('42')
 
-    it 'points watch inputs correctly', ->
+    it 'points get inputs correctly', ->
       attr = null
       v = new Varying('test')
-      subject = { watch: (x) -> attr = x; v }
+      subject = { get: (x) -> attr = x; v }
       TestView = DomView.build($('<div/>'), template(
-        find('div').text(from.watch('someattr'))
+        find('div').text(from.get('someattr'))
       ))
 
       artifact = (new TestView(subject)).artifact()
@@ -223,7 +223,7 @@ describe 'DomView', ->
 
     it 'points app with a key reference correctly', ->
       rendered = watchedWith = null
-      app = { toString: (-> 'test app'), on: (->), watch: (key) -> watchedWith = key; new Varying('watched!') }
+      app = { toString: (-> 'test app'), on: (->), get: (key) -> watchedWith = key; new Varying('watched!') }
       TestView = DomView.build($('<div/>'), template(
         find('div').text(from.app('testkey').map((x) -> x.toString()))
       ))

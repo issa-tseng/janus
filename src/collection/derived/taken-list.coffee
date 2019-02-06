@@ -45,7 +45,7 @@ class TakenList extends DerivedList
   _rebalance: ->
     take = this._take()
     if this.list.length < take
-      this._add(this.parent.at(this.list.length), this.list.length) while this.list.length isnt take
+      this._add(this.parent.at_(this.list.length), this.list.length) while this.list.length isnt take
     else if this.list.length > take
       this._removeAt(take) while this.list.length isnt take
     return

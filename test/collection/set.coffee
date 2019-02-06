@@ -7,9 +7,9 @@ describe 'collection', ->
   describe 'set', ->
     it 'should return a set with duplicates omitted', ->
       s = new Set([ 1, 2, 3, 3, 4, 2 ])
-      s.length.should.equal(4)
+      s.length_.should.equal(4)
       for elem in [ 1, 2, 3, 4 ]
-        s.includes(elem).should.equal(true)
+        s.includes_(elem).should.equal(true)
 
     it 'should take in new unique elements', ->
       s = new Set([ 1, 2, 3, 3, 4, 2 ])
@@ -18,29 +18,29 @@ describe 'collection', ->
       s.add(1)
       s.add(6)
 
-      s.length.should.equal(5)
+      s.length_.should.equal(5)
       for elem in [ 1, 2, 3, 4, 6 ]
-        s.includes(elem).should.equal(true)
+        s.includes_(elem).should.equal(true)
 
     it 'should remove elements', ->
       s = new Set([ 1, 2, 3, 3, 4, 2 ])
 
       s.remove(2)
-      s.length.should.equal(3)
+      s.length_.should.equal(3)
       for elem in [ 1, 3, 4 ]
-        s.includes(elem).should.equal(true)
+        s.includes_(elem).should.equal(true)
 
       s.remove(6)
-      s.length.should.equal(3)
+      s.length_.should.equal(3)
       for elem in [ 1, 3, 4 ]
-        s.includes(elem).should.equal(true)
+        s.includes_(elem).should.equal(true)
 
     it 'should allow watching whether the set has an element', ->
       results = []
       s = new Set([ 1, 2, 3, 3, 4, 2 ])
 
-      v1 = s.watchIncludes(2)
-      v2 = s.watchIncludes(6)
+      v1 = s.includes(2)
+      v2 = s.includes(6)
       v1.react((x) -> results.push(1, x))
       v2.react((x) -> results.push(2, x))
 
@@ -54,7 +54,7 @@ describe 'collection', ->
       results = []
       s = new Set([ 1, 2, 3, 3 ])
 
-      s.watchLength().react((x) -> results.push(x))
+      s.length.react((x) -> results.push(x))
       s.add(2)
       s.add(5)
       s.remove(1)
@@ -63,8 +63,8 @@ describe 'collection', ->
 
     it 'should return itself as its own enumeration', ->
       s = new Set([ 1, 2, 3, 3, 4, 2 ])
-      s.enumerate().should.eql([ 1, 2, 3, 4 ])
-      s.enumeration().should.equal(s)
+      s.enumerate_().should.eql([ 1, 2, 3, 4 ])
+      s.enumerate().should.equal(s)
 
     # these are dirt simple because they just pass through to list right now:
     it 'should provide filter', ->

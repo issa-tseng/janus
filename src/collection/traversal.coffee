@@ -60,36 +60,36 @@ reducer = (general, resource) -> ->
 # the actual runners that set state and call into the above. the first two return
 # live traversals; the second two just do the work. both depend on matchAction above.
 Traversal =
-  asNatural: (obj, fs, context = {}) ->
-    general = Object.assign({}, fs, { obj, context, root: Traversal.asNatural })
+  natural: (obj, fs, context = {}) ->
+    general = Object.assign({}, fs, { obj, context, root: Traversal.natural })
     fmapper = processElem(general) # init first to save calls.
     processRoot(general, -> general.obj.flatMapPairs(fmapper))
 
-  asList: (obj, fs, context = {}) ->
-    general = Object.assign({}, fs, { obj, context, root: Traversal.asList })
+  list: (obj, fs, context = {}) ->
+    general = Object.assign({}, fs, { obj, context, root: Traversal.list })
     fmapper = processElem(general) # ditto saving calls.
-    processRoot(general, reducer(general, -> -> general.obj.enumeration().flatMapPairs(fmapper)))
+    processRoot(general, reducer(general, -> -> general.obj.enumerate().flatMapPairs(fmapper)))
 
   # these two inner blocks are rather repetitive but i'm reluctant to pull them into a
   # function for perf reasons.
   #
   # n.b. val instead of value because coffeescript scoping is a mess.
-  getNatural: (obj, fs, context = {}) ->
+  natural_: (obj, fs, context = {}) ->
     result = if obj.isMappable is true then [] else {}
     set = if obj.isMappable is true then ((k, v) -> result[k] = v) else ((k, v) -> deepSet(result, k)(v))
-    for key in obj.enumerate()
-      val = obj.get(key)
+    for key in obj.enumerate_()
+      val = obj.get_(key)
       attribute = obj.attribute(key) if obj.isModel is true
-      local = Object.assign({}, fs, { obj, key, value: val, attribute, context, immediate: true, root: Traversal.getNatural })
+      local = Object.assign({}, fs, { obj, key, value: val, attribute, context, immediate: true, root: Traversal.natural_ })
       set(key, matchAction(local)(local.map(key, val, obj, attribute, context)))
     result
 
-  getArray: (obj, fs, context = {}) ->
+  list_: (obj, fs, context = {}) ->
     (fs.reduce ? identity)(
-      for key in obj.enumerate() 
-        val = obj.get(key)
+      for key in obj.enumerate_() 
+        val = obj.get_(key)
         attribute = obj.attribute(key) if obj.isModel is true
-        local = Object.assign({}, fs, { obj, key, value: val, attribute, context, immediate: true, root: Traversal.getArray })
+        local = Object.assign({}, fs, { obj, key, value: val, attribute, context, immediate: true, root: Traversal.list_ })
         matchAction(local)(local.map(key, val, obj, attribute, context))
     )
 
@@ -114,13 +114,13 @@ Traversal.default =
   diff:
     recurse: (obj, { other }) ->
       if (obj?.isEnumerable is true and other?.isEnumerable is true) and (obj.isMappable is other.isMappable)
-        varying(Varying.mapAll(obj.watchLength(), other.watchLength(), (la, lb) ->
+        varying(Varying.mapAll(obj.length, other.length, (la, lb) ->
           if la isnt lb then value(true) else recurse(obj, { other })
         ))
       else
         value(new Varying(obj isnt other))
     map: (k, va, obj, attribute, { other }) ->
-      varying(other.watch(k).map((vb) ->
+      varying(other.get(k).map((vb) ->
         if va? and vb?
           if (va?.isEnumerable is true and vb?.isEnumerable is true) and (va.isMappable is vb.isMappable)
             recurse(va, { other: vb })

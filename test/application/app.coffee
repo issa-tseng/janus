@@ -2,19 +2,19 @@
 { Base } = require('../../lib/core/base')
 { Varying } = require('../../lib/core/varying')
 
-describe 'base App model', ->
+describe 'App model', ->
   describe 'library instantiation', ->
     it 'should preserve default library instance constancy', ->
       app = new App()
-      app.get('views').register(String, 1)
-      app.get('views').get('').should.equal(1)
+      app.get_('views').register(String, 1)
+      app.get_('views').get('').should.equal(1)
 
-      app.get('resolvers').register(String, 1)
-      app.get('resolvers').get('').should.equal(1)
+      app.get_('resolvers').register(String, 1)
+      app.get_('resolvers').get('').should.equal(1)
 
   describe 'view handling', ->
     it 'should come with a view library by default', ->
-      (new App()).get('views').isLibrary.should.equal(true)
+      (new App()).get_('views').isLibrary.should.equal(true)
 
     it 'should get the view library via the .views getter', ->
       (new App()).views.isLibrary.should.equal(true)
@@ -120,16 +120,16 @@ describe 'base App model', ->
         watches = {}
         subject = {
           attribute: (key) -> {}
-          watch: (key) -> watches[key] ?= new Varying()
+          get: (key) -> watches[key] ?= new Varying()
         }
 
         class A extends Base
         app = new App( views: { get: -> A } )
         view = app.view(subject, null, { resolve: 'test' })
-        subject.watch('test').refCount().get().should.equal(1)
+        subject.get('test').refCount().get().should.equal(1)
 
         view.destroy()
-        subject.watch('test').refCount().get().should.equal(0)
+        subject.get('test').refCount().get().should.equal(0)
 
       it 'should not resolve non-references', ->
         called = false
@@ -199,7 +199,7 @@ describe 'base App model', ->
 
   describe 'default resolver', ->
     it 'should come with a resolver library by default', ->
-      (new App()).get('resolvers').isLibrary.should.equal(true)
+      (new App()).get_('resolvers').isLibrary.should.equal(true)
 
     it 'should return a resolver', ->
       (new App()).resolver().should.be.a.Function()

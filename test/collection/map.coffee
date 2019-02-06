@@ -16,7 +16,7 @@ describe 'Map', ->
     it 'should call preinitialize before data is populated', ->
       result = -1
       class TestMap extends Map
-        _preinitialize: -> result = this.get('a')
+        _preinitialize: -> result = this.get_('a')
 
       new TestMap({ a: 42 })
       should(result).equal(null)
@@ -24,25 +24,25 @@ describe 'Map', ->
     it 'should call initialize after data is populated', ->
       result = -1
       class TestMap extends Map
-        _initialize: -> result = this.get('a')
+        _initialize: -> result = this.get_('a')
 
       new TestMap({ a: 42 })
       result.should.equal(42)
 
   describe 'data', ->
-    describe 'get', ->
+    describe 'get_', ->
       it 'should be able to get a shallow key', ->
         map = new Map( vivace: 'brix' )
-        map.get('vivace').should.equal('brix')
+        map.get_('vivace').should.equal('brix')
 
       it 'should be able to get a deep key', ->
         map = new Map( cafe: { vivace: 'brix' } )
-        map.get('cafe.vivace').should.equal('brix')
+        map.get_('cafe.vivace').should.equal('brix')
 
       it 'should return null on nonexistent keys', ->
         map = new Map( broad: 'way' )
-        (map.get('vivace') is null).should.equal(true)
-        (map.get('cafe.vivace') is null).should.equal(true)
+        (map.get_('vivace') is null).should.equal(true)
+        (map.get_('cafe.vivace') is null).should.equal(true)
 
     describe 'set', ->
       it 'should be able to set a shallow key', ->
@@ -50,29 +50,29 @@ describe 'Map', ->
         map.set('colman', 'pool')
 
         map.data.colman.should.equal('pool')
-        map.get('colman').should.equal('pool')
+        map.get_('colman').should.equal('pool')
 
       it 'should be able to set a deep key', ->
         map = new Map()
         map.set('colman.pool', 'slide')
 
         map.data.colman.pool.should.equal('slide')
-        map.get('colman.pool').should.equal('slide')
+        map.get_('colman.pool').should.equal('slide')
 
       it 'should be able to set an empty object', ->
         map = new Map()
         map.set('an.obj', {})
 
         map.data.an.obj.should.eql({})
-        map.get('an.obj').should.eql({})
+        map.get_('an.obj').should.eql({})
 
       it 'should be able to set a deep data bag', ->
         map = new Map()
         map.set('colman.pool', { location: 'west seattle', length: { amount: 50, unit: 'meter' } })
 
-        map.get('colman.pool.location').should.equal('west seattle')
-        map.get('colman.pool.length.amount').should.equal(50)
-        map.get('colman.pool.length.unit').should.equal('meter')
+        map.get_('colman.pool.location').should.equal('west seattle')
+        map.get_('colman.pool.length.amount').should.equal(50)
+        map.get_('colman.pool.length.unit').should.equal('meter')
 
       it 'should accept a bag of data', ->
         map = new Map()
@@ -83,7 +83,7 @@ describe 'Map', ->
       it 'should do nothing if setting an equal value', ->
         map = new Map( test: 47 )
         reacted = false
-        map.watch('test').react(false, -> reacted = true)
+        map.get('test').react(false, -> reacted = true)
 
         map.set('test', 47)
         reacted.should.equal(false)
@@ -93,40 +93,40 @@ describe 'Map', ->
       it 'should unset the key if given null (but not undef)', ->
         map = new Map( test: 22 )
         map.set('test', undefined)
-        map.get('test').should.equal(22)
+        map.get_('test').should.equal(22)
 
         map.set('test', null)
-        (map.get('test')?).should.equal(false)
+        (map.get_('test')?).should.equal(false)
 
       it 'should deep write all data in a given bag', ->
         map = new Map( the: { stranger: 'seattle' } )
         map.set( the: { joule: 'apartments' }, black: 'dog' )
 
         map.data.the.stranger.should.equal('seattle')
-        map.get('the.stranger').should.equal('seattle')
+        map.get_('the.stranger').should.equal('seattle')
 
         map.data.the.joule.should.equal('apartments')
-        map.get('the.joule').should.equal('apartments')
+        map.get_('the.joule').should.equal('apartments')
 
         map.data.black.should.equal('dog')
-        map.get('black').should.equal('dog')
+        map.get_('black').should.equal('dog')
 
       it 'should curry if given only a string key', ->
         map = new Map()
         setter = map.set('test')
-        (map.get('test') is null).should.equal(true)
+        (map.get_('test') is null).should.equal(true)
 
         setter(2)
-        map.get('test').should.equal(2)
+        map.get_('test').should.equal(2)
         setter(4)
-        map.get('test').should.equal(4)
+        map.get_('test').should.equal(4)
 
       it 'should correctly fire nested reactions upon curry', ->
         map = new Map()
         setter = map.set('test')
 
         results = []
-        map.watch('test.nested').react((x) -> results.push(x))
+        map.get('test.nested').react((x) -> results.push(x))
         setter({ nested: 1 })
         setter({ nested: 2 })
 
@@ -135,43 +135,43 @@ describe 'Map', ->
       it 'should correctly set and fire given a case', ->
         result = null
         map = new Map()
-        map.watch('test').react((x) -> result = x)
+        map.get('test').react((x) -> result = x)
 
         kase = types.result.success()
         map.set('test', kase)
         result.should.equal(kase)
-        map.get('test').should.equal(kase) # the key is that we are ref-checking
+        map.get_('test').should.equal(kase) # the key is that we are ref-checking
 
     describe 'unset', ->
       it 'should be able to unset a key', ->
         map = new Map( cafe: { vivace: 'brix' } )
         map.unset('cafe.vivace')
 
-        (map.get('cafe.vivace') is null).should.equal(true)
+        (map.get_('cafe.vivace') is null).should.equal(true)
 
       it 'should be able to unset a key tree', ->
         map = new Map( cafe: { vivace: 'brix' } )
         map.unset('cafe')
 
-        (map.get('cafe.vivace') is null).should.equal(true)
-        (map.get('cafe') is null).should.equal(true)
+        (map.get_('cafe.vivace') is null).should.equal(true)
+        (map.get_('cafe') is null).should.equal(true)
 
     describe 'unsetAll', ->
       it 'should clear all keys', ->
         map = new Map( una: 'bella', tazza: { di: 'caffe' } )
         map.unsetAll()
 
-        (map.get('una') is null).should.equal(true)
-        (map.get('tazza.di') is null).should.equal(true)
+        (map.get_('una') is null).should.equal(true)
+        (map.get_('tazza.di') is null).should.equal(true)
 
         map.data.should.eql({})
 
-    describe 'watch', ->
+    describe 'get', ->
       it 'should null out dead keys', ->
         map = new Map( una: 'bella', tazza: { di: 'caffe' } )
 
         result = null
-        map.watch('tazza.di').react((v) -> result = v)
+        map.get('tazza.di').react((v) -> result = v)
         result.should.equal('caffe')
         map.unset('tazza')
         (result?).should.equal(false)
@@ -213,70 +213,70 @@ describe 'Map', ->
         map = new Map( test1: 'a' )
         shadow = map.shadow()
 
-        shadow.get('test1').should.equal('a')
+        shadow.get_('test1').should.equal('a')
 
         map.set('test2', 'b')
-        shadow.get('test2').should.equal('b')
+        shadow.get_('test2').should.equal('b')
 
       it 'should override the parent\'s values with its own', ->
         map = new Map( test: 'x' )
         shadow = map.shadow()
 
-        shadow.get('test').should.equal('x')
+        shadow.get_('test').should.equal('x')
         shadow.set('test', 'y')
-        shadow.get('test').should.equal('y')
+        shadow.get_('test').should.equal('y')
 
-        map.get('test').should.equal('x')
+        map.get_('test').should.equal('x')
 
       it 'should revert to the parent\'s value on revert()', ->
         map = new Map( test: 'x' )
         shadow = map.shadow()
 
         shadow.set('test', 'y')
-        shadow.get('test').should.equal('y')
+        shadow.get_('test').should.equal('y')
 
         shadow.revert('test')
-        shadow.get('test').should.equal('x')
+        shadow.get_('test').should.equal('x')
 
       it 'should do nothing on revert() if there is no parent', ->
         map = new Map( test: 'x' )
         map.revert('test')
-        map.get('test').should.equal('x')
+        map.get_('test').should.equal('x')
 
       it 'should return null for values that have been set and unset, even if the parent has values', ->
         map = new Map( test: 'x' )
         shadow = map.shadow()
 
         shadow.set('test', 'y')
-        shadow.get('test').should.equal('y')
+        shadow.get_('test').should.equal('y')
 
         shadow.unset('test')
-        (shadow.get('test') is null).should.equal(true)
+        (shadow.get_('test') is null).should.equal(true)
 
         shadow.revert('test')
-        shadow.get('test').should.equal('x')
+        shadow.get_('test').should.equal('x')
 
       it 'should return null for values that have been directly unset, even if the parent has values', ->
         map = new Map( test: 'x' )
         shadow = map.shadow()
 
         shadow.unset('test')
-        (shadow.get('test') is null).should.equal(true)
+        (shadow.get_('test') is null).should.equal(true)
 
       it 'should return a shadow submap if it sees a map', ->
         submap = new Map()
         map = new Map( test: submap )
 
         shadow = map.shadow()
-        shadow.get('test').original().should.equal(submap)
+        shadow.get_('test').original().should.equal(submap)
 
-    describe 'watching', ->
+    describe 'get', ->
       it 'should handle when an inherited value changes', ->
         map = new Map( test: 'x' )
         shadow = map.shadow()
 
         evented = false
-        shadow.watch('test').react(false, (value) ->
+        shadow.get('test').react(false, (value) ->
           evented = true
           value.should.equal('y')
         )
@@ -291,7 +291,7 @@ describe 'Map', ->
         shadow.set('test', 'y')
 
         evented = false
-        shadow.watch('test').react(false, -> evented = true)
+        shadow.get('test').react(false, -> evented = true)
 
         map.set('test', 'z')
         evented.should.equal(false)
@@ -302,7 +302,7 @@ describe 'Map', ->
         s3 = s2.shadow()
 
         results = []
-        s3.watch('a').react((x) -> results.push(x))
+        s3.get('a').react((x) -> results.push(x))
 
         s.set('a', 2)
         results.should.eql([ 1, 2 ])
@@ -332,7 +332,7 @@ describe 'Map', ->
         s = new Map( a: 1, b: { c: 2 })
 
         results = []
-        s.watch('b.c').react((x) -> results.push(x))
+        s.get('b.c').react((x) -> results.push(x))
         s.unset('b')
         results.should.eql([ 2, null ])
 
@@ -345,41 +345,41 @@ describe 'Map', ->
         s1 = new Map( a: 1, b: 2 )
         s2 = s1.with( b: 3, c: 4 )
 
-        s1.get('a').should.equal(1)
-        s1.get('b').should.equal(2)
-        s2.get('a').should.equal(1)
-        s2.get('b').should.equal(3)
-        s2.get('c').should.equal(4)
+        s1.get_('a').should.equal(1)
+        s1.get_('b').should.equal(2)
+        s2.get_('a').should.equal(1)
+        s2.get_('b').should.equal(3)
+        s2.get_('c').should.equal(4)
 
   describe 'enumeration', ->
     it 'should return a KeyList of itself when asked for an enumeration', ->
       s = new Map( a: 1, b: 2, c: { d: 3 } )
-      kl = s.enumeration()
+      kl = s.enumerate()
       kl.should.be.an.instanceof(KeyList)
       kl.list.should.eql([ 'a', 'b', 'c.d' ])
 
     it 'should pass options along appropriately', ->
       s = new Map( a: 1, b: 2, c: { d: 3 } )
-      kl = s.enumeration( scope: 'direct', include: 'all' )
+      kl = s.enumerate( scope: 'direct', include: 'all' )
       kl.scope.should.equal('direct')
       kl.include.should.equal('all')
 
     it 'should return an array of keys when asked to enumerate', ->
       s = new Map( a: 1, b: 2, c: { d: 3 } )
-      ks = s.enumerate()
+      ks = s.enumerate_()
       ks.should.eql([ 'a', 'b', 'c.d' ])
 
     it 'should pass option to the static enumerator', ->
       s = new Map( a: 1, b: 2, c: { d: 3 } )
       s2 = s.shadow()
       s2.set( c: { e: 4 }, f: 5 )
-      ks = s.enumerate( scope: 'direct', include: 'all' )
+      ks = s.enumerate_( scope: 'direct', include: 'all' )
       ks.should.eql([ 'a', 'b', 'c', 'c.d' ])
 
     it 'should allow the length to be watched', ->
       results = []
       s = new Map( a: 1, b: 2 )
-      s.watchLength().react((x) -> results.push(x))
+      s.length.react((x) -> results.push(x))
 
       s.set('c', 3)
       s.unset('b')

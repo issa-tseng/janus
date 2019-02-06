@@ -39,7 +39,7 @@ class FilteredList extends DerivedList
 
         # now insert the element in the correct destination slot.
         if result is true
-          super(this.parent.at(cidx), this._idxMap[cidx])
+          super(this.parent.at_(cidx), this._idxMap[cidx])
     )
 
     # can't add this til after we have the Observation reference.
