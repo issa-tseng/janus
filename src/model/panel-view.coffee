@@ -10,19 +10,19 @@ $ = require('janus-dollar')
 
 class KVPairVM extends Model.build(
     attribute('edit', attribute.Text)
-    bind('key', from('subject').watch('key'))
-    bind('model', from('subject').watch('model'))
+    bind('key', from('subject').get('key'))
+    bind('model', from('subject').get('model'))
   )
   _initialize: ->
-    subject = this.get('subject')
+    subject = this.get_('subject')
     do =>
-      value = subject.get('model').get(subject.get('key'))
+      value = subject.get_('model').get_(subject.get_('key'))
       this.set('edit', if isPrimitive(value) or isArray(value) then JSON.stringify(value) else '…')
 
-    this.watch('edit').react(false, (raw) =>
+    this.get('edit').react(false, (raw) =>
       try
         result = (new Function("return #{raw};"))()
-        subject.get('model').set(subject.get('key'), result)
+        subject.get_('model').set(subject.get_('key'), result)
       catch ex
         console.log("that didn't work..", ex) # TODO: surface this more usefully
     )
@@ -43,11 +43,11 @@ KVPairView = DomView.withOptions({ viewModelClass: KVPairVM }).build($('
       .attr('title', from('key'))
 
     find('.kvPair-value')
-      .render(from('binding').and('subject').watch('value').all.map((b, v) -> inspect(b ? v)))
+      .render(from('binding').and('subject').get('value').all.map((b, v) -> inspect(b ? v)))
       .on('dblclick', (event, _, __, dom) -> dom.find('.kvPair-edit input').focus().select())
 
     find('.kvPair-edit').render(from.attribute('edit')
-        .and('subject').watch('bound')
+        .and('subject').get('bound')
         .all.map((editor, bound) -> editor unless bound))
       .criteria( context: 'edit', commit: 'hard' )
   )

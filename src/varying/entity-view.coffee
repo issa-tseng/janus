@@ -13,7 +13,7 @@ VaryingEntityView = DomView.build($('
   </div>'), template(
 
   find('.varying-unknown')
-    .classed('unknown', from('observations').flatMap((os) -> os.watchLength())
+    .classed('unknown', from('observations').flatMap((os) -> os.length)
       .and('derived')
       .all.map((ol, derived) -> (ol is 0) and derived))
 

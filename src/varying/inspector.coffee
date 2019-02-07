@@ -17,7 +17,7 @@ reactShim = (f_, immediate) ->
   # instance and push it rootwards.
   initialCompute = (this._refCount is 0) and (this._recompute?)
   if initialCompute
-    rxn = wrapper.get('active_reactions').at(0)
+    rxn = wrapper.get_('active_reactions').at_(0)
     hadExtant = rxn?
     if !hadExtant
       rxn = new Reaction(wrapper, '(internal)')
@@ -43,7 +43,7 @@ reactShim = (f_, immediate) ->
 propagateShim = ->
   wrapper = this._wrapper
   # log to the existing reaction or create a new one (which logs for us).
-  if (extantRxn = wrapper.get('active_reactions').at(0))?
+  if (extantRxn = wrapper.get_('active_reactions').at_(0))?
     extantRxn.logChange(wrapper, this._value)
   else
     newRxn = new Reaction(wrapper, arguments.callee.caller)
@@ -60,7 +60,7 @@ propagateShim = ->
 handleInner = (wrapper, varying, rxn) ->
   return unless varying._flatten is true
   newInner = varying._inner?.parent
-  if (oldInner = wrapper.get('inner')) isnt newInner
+  if (oldInner = wrapper.get_('inner')) isnt newInner
     # we are flat and the inner varying has changed.
     wrapper._untrackReactions(oldInner) if oldInner?
     if newInner?
@@ -88,7 +88,7 @@ class WrappedVarying extends Model.build(
     bind('derived', from('mapped').and('flattened').all.map((m, f) -> m or f))
     bind('value', from('_value').map((x) -> if x?.isNothing is true then null else x))
 
-    bind('active_reactions', from('reactions').map((rxns) -> rxns.filter((rxn) -> rxn.watch('active'))))
+    bind('active_reactions', from('reactions').map((rxns) -> rxns.filter((rxn) -> rxn.get('active'))))
   )
 
   isInspector: true
@@ -107,9 +107,9 @@ class WrappedVarying extends Model.build(
 
   _initialize: ->
     # drop some vars to direct/local access for perf.
-    this.observations = this.get('observations')
-    this.applicants = this.get('applicants')
-    this.reactions = this.get('reactions')
+    this.observations = this.get_('observations')
+    this.applicants = this.get_('applicants')
+    this.reactions = this.get_('reactions')
     varying = this.varying
 
     # ABSORB EXTANT STATE:
@@ -134,9 +134,9 @@ class WrappedVarying extends Model.build(
   # for now, naively assume this is the only cross-WV listener to simplify tracking.
   _trackReactions: (other) ->
     other = WrappedVarying.hijack(other)
-    this.listenTo(other.get('reactions'), 'added', (r) =>
-      unless this.get('reactions').at(-1) is r
-        this.get('reactions').add(r)
+    this.listenTo(other.get_('reactions'), 'added', (r) =>
+      unless this.get_('reactions').at_(-1) is r
+        this.get_('reactions').add(r)
         r.addNode(this)
     )
   _untrackReactions: (other) -> this.unlistenTo(WrappedVarying.hijack(other))
@@ -172,25 +172,25 @@ class Reaction extends Model.build(
 
   _initialize: ->
     this.set('at', new Date())
-    this.set('root', this.addNode(this.get('root')))
+    this.set('root', this.addNode(this.get_('root')))
 
-  getNode: (wrapped) -> this.get("tree.#{wrapped.get('id')}") if wrapped?
-  watchNode: (wrapped) -> this.watch("tree.#{wrapped.get('id')}") if wrapped?
+  getNode: (wrapped) -> this.get_("tree.#{wrapped.get_('id')}") if wrapped?
+  watchNode: (wrapped) -> this.watch("tree.#{wrapped.get_('id')}") if wrapped?
 
   addNode: (wrapped) ->
     if (snapshot = this.getNode(wrapped))?
       return snapshot
 
     snapshot = new SnapshottedVarying(wrapped.data)
-    this.set("tree.#{wrapped.get('id')}", snapshot)
+    this.set("tree.#{wrapped.get_('id')}", snapshot)
 
     maybeBuild = (v) => this.addNode(WrappedVarying.hijack(v))
 
-    if (applicants = wrapped.get('applicants'))?
+    if (applicants = wrapped.get_('applicants'))?
       snapshot.set('applicants', new List((maybeBuild(x) for x in applicants.list)))
-    snapshot.set('inner', maybeBuild(inner)) if (inner = wrapped.get('inner'))?
+    snapshot.set('inner', maybeBuild(inner)) if (inner = wrapped.get_('inner'))?
 
-    if (value = wrapped.get('value'))? and value.isVarying is true
+    if (value = wrapped.get_('value'))? and value.isVarying is true
       clone = new Varying(value._value) # TODO: this is probably too imprecise
       snapshot.set('_value', clone)
 
@@ -203,7 +203,7 @@ class Reaction extends Model.build(
     snapshot.set({ new_value: value, changed: true })
     snapshot.unset('immediate')
 
-    this.get('changes').add(snapshot)
+    this.get_('changes').add(snapshot)
     return
 
   logInner: (wrapped, inner) ->

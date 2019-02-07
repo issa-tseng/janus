@@ -8,7 +8,7 @@ $ = require('janus-dollar')
 
 class LinkedListNode extends Model.build(
     bind('next', from('list').and('idx').all.flatMap((list, idx) ->
-      list.watchLength().map((length) -> new LinkedListNode(list, idx + 1) if length > (idx + 1))
+      list.length.map((length) -> new LinkedListNode(list, idx + 1) if length > (idx + 1))
     ))
   )
 
@@ -22,7 +22,7 @@ LinkedListNodeView = DomView.build($('
   '), template(
 
     find('.linkedList-contents')
-      .render(from('list').and('idx').all.flatMap((list, idx) -> list.watchAt(idx)))
+      .render(from('list').and('idx').all.flatMap((list, idx) -> list.at(idx)))
       .context(from.self().map((v) -> v.options.itemContext))
 
     find('.linkedList-next')

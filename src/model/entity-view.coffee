@@ -18,8 +18,8 @@ ModelEntityView = DomView.build($('
 
   find('.model-identifier').text(from('identifier'))
 
-  find('.model-count').text(from('model').flatMap((m) -> m.watchLength()))
-  find('.model-count-label').text(from('model').flatMap((m) -> m.watchLength())
+  find('.model-count').text(from('model').flatMap((m) -> m.length))
+  find('.model-count-label').text(from('model').flatMap((m) -> m.length)
     .map(pluralize('pair', 'pairs')))
 ))
 

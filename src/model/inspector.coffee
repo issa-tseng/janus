@@ -5,7 +5,7 @@ oneOf = (xs...) ->
   return
 
 class KVPair extends Model.build(
-  bind('value', from('model').and('key').all.flatMap((m, k) -> m.watch(k)))
+  bind('value', from('model').and('key').all.flatMap((m, k) -> m.get(k)))
 
   # a little timid on some of these for the sake of Maps so use ?
   bind('bound', from('model').and('key').all.map((m, k) -> m.constructor.schema?.bindings[k]?))
@@ -19,14 +19,14 @@ class WrappedModel extends Model.build(
       .map((model) -> model.constructor.name)
       .map((name) -> if name? and (name not in [ 'Model', 'Map', '_Class' ]) then ".#{name}" else ''))
 
-    bind('identifier', from('model').watch('name')
-      .and('model').watch('title')
-      .and('model').watch('label')
-      .and('model').watch('id')
-      .and('model').watch('uid')
+    bind('identifier', from('model').get('name')
+      .and('model').get('title')
+      .and('model').get('label')
+      .and('model').get('id')
+      .and('model').get('uid')
       .all.map(oneOf))
 
-    bind('pairs', from('model').map((model) -> model.enumeration().map((key) -> new KVPair({ model, key }))))
+    bind('pairs', from('model').map((model) -> model.enumerate().map((key) -> new KVPair({ model, key }))))
   )
 
   isInspector: true
