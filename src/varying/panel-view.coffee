@@ -88,10 +88,10 @@ VaryingTreeView = DomView.build($('
           <div class="value-marker"/>
         </div>
         <div class="text">
-          <p class="title">
+          <div class="title">
             <span class="className"/>
             <span class="uid"/>
-          </p>
+          </div>
           <div class="valueSection">
             <ul class="tags">
               <li class="tagOutdated">Outdated</li>
@@ -114,6 +114,7 @@ VaryingTreeView = DomView.build($('
       .classed('derived', from('derived'))
       .classed('flattened', from('flattened'))
       .classed('mapped', from('mapped'))
+      .classed('reducing', from('reducing'))
 
       .classed('hasObservations', from('observations').flatMap((os) -> os.nonEmpty()))
       .classed('hasValue', from('value').map(exists))
@@ -138,7 +139,6 @@ VaryingTreeView = DomView.build($('
       .classed('hasMainInner', from('inner').map(exists))
       .render(from('inner').map((v) -> WrappedVarying.hijack(v) if v?)).context('tree')
     find('.varying-tree-nexts')
-      .classed('single', from('applicants').map((xs) -> xs?.length is 1)) # length can't change
       .render(from('applicants').map((xs) -> xs?.map(WrappedVarying.hijack)))
         .context('linked').options( itemContext: 'tree' )
   )

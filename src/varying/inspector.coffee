@@ -102,6 +102,7 @@ class WrappedVarying extends Model.build(
 
       flattened: this.varying._flatten is true
       mapped: this.varying._f?
+      reducing: this.varying.a? and this.varying.a.length > 1
       applicants: (new List(this.varying.a) if this.varying.a?)
     })
 

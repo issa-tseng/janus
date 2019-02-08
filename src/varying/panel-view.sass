@@ -176,7 +176,7 @@ $icon-arrow-right: "\f178"
 
     .mapping
       background-color: $inactive-color
-      border-radius: $lambda-size
+      border-radius: 9999px
       clear: both
       color: #fff
       cursor: default
@@ -194,10 +194,10 @@ $icon-arrow-right: "\f178"
         font-size: 0.9em
 
   .varying-tree-nexts
-    margin-top: 1em
+    margin-top: 0.1em // TODO: why?
 
-    &.single
-      margin-top: 2em
+  &.reducing > .varying-tree-nexts
+    margin-top: -1 * ($lambda-size / 2)
 
   $indent: 1em
   $slant-length: 1em
@@ -218,12 +218,12 @@ $icon-arrow-right: "\f178"
         width: $indent + $node-outer-radius
 
       .linkedList-node:before
-          @include reify
-          border-left: 1px solid $inactive-color
-          bottom: -1em
-          left: 0
-          position: absolute
-          top: $slant-offset
+        @include reify
+        border-left: 1px solid $inactive-color
+        bottom: -1em
+        left: 0
+        position: absolute
+        top: $slant-offset
 
       &:after
         $offset: ($slant-length * $cos-45) / 2
@@ -235,18 +235,18 @@ $icon-arrow-right: "\f178"
         transform: rotate(-45deg)
         position: absolute
 
+      + .linkedList-contents
+        padding-top: $slant-offset + 0.5em
+
     .linkedList-contents
       padding-top: $slant-offset
 
-  .varying-tree-nexts > .linkedList
-    margin-top: -1 * ($lambda-size / 2 + 1em)
-
-    > .linkedList-node > .linkedList-next.hasNext
-      &:before
-        left: 0
-        width: $indent + $node-outer-radius - $slant-offset
-      > .linkedList-node:before
-        top: 0
+  .varying-tree-nexts > .linkedList > .linkedList-node > .linkedList-next.hasNext
+    &:before
+      left: 0
+      width: $indent + $node-outer-radius - $slant-offset
+    > .linkedList-node:before
+      top: 0
 
   &.mapped > .aux
     .mapping
