@@ -7,7 +7,7 @@ class MinMaxFold extends Base
     super()
 
     find = ->
-      candidate = list.at_(0)
+      candidate = list.list[0]
       (candidate = x) for x in list.list when compare(x, candidate)
       candidate
 
