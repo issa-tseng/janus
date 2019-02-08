@@ -15,7 +15,7 @@ foldBase = (update) -> (collection) ->
 folds =
   apply: (collection, f) ->
     collection.length.flatMap((length) ->
-      Varying.all(collection.at(idx) for idx in [0..collection.length]).map(f))
+      Varying.all(collection.at(idx) for idx in [0..collection.length_]).map(f))
 
   join: (collection, joiner) -> foldBase((_, _2, collection) -> collection.list.join(joiner))(collection)
 
