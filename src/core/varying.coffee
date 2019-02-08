@@ -27,8 +27,8 @@ stopAll = ->
 
 # cheat the jit. also we use this odd this.a namings scheme to cheat the minifier.
 apply = [
-  noop # nonsensical
-  noop # extra-specialized
+  -> noop # nonsensical
+  -> noop # extra-specialized
   (f, x) -> a = x[0]; b = x[1]; -> f(a._value, b._value)
   (f, x) -> a = x[0]; b = x[1]; c = x[2]; -> f(a._value, b._value, c._value)
   (f, x) ->
