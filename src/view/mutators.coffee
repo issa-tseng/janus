@@ -5,6 +5,7 @@
 
 { Varying } = require('../core/varying')
 from = require('../core/from')
+{ queued } = require('../util/render-queue')
 { isFunction } = require('../util/util')
 
 
@@ -20,31 +21,31 @@ doPoint = (x, point) ->
 
 mutators =
   attr: (prop, data) -> (dom, point, immediate = true) ->
-    data.all.point(point).react(immediate, (x) -> dom.attr(prop, safe(x)))
+    data.all.point(point).react(immediate, queued((x) -> dom.attr(prop, safe(x))))
 
   classGroup: (prefix, data) -> (dom, point, immediate = true) ->
-    data.all.point(point).react(immediate, (x) ->
+    data.all.point(point).react(immediate, queued((x) ->
       existing = dom.attr('class')?.split(/ +/) ? []
       desired = ''
       (desired += "#{str} ") for str in existing when !str.startsWith(prefix)
       desired += "#{prefix}#{safe(x)}"
       dom.attr('class', desired)
-    )
+    ))
 
   classed: (name, data) -> (dom, point, immediate = true) ->
-    data.all.point(point).react(immediate, (x) -> dom.toggleClass(name, x is true))
+    data.all.point(point).react(immediate, queued((x) -> dom.toggleClass(name, x is true)))
 
   css: (prop, data) -> (dom, point, immediate = true) ->
-    data.all.point(point).react(immediate, (x) -> dom.css(prop, safe(x)))
+    data.all.point(point).react(immediate, queued((x) -> dom.css(prop, safe(x))))
 
   text: (data) -> (dom, point, immediate = true) ->
-    data.all.point(point).react(immediate, (x) -> dom.text(safe(x)))
+    data.all.point(point).react(immediate, queued((x) -> dom.text(safe(x))))
 
   html: (data) -> (dom, point, immediate = true) ->
-    data.all.point(point).react(immediate, (x) -> dom.html(safe(x)))
+    data.all.point(point).react(immediate, queued((x) -> dom.html(safe(x))))
 
   prop: (prop, data) -> (dom, point, immediate = true) ->
-    data.all.point(point).react(immediate, (x) -> dom.prop(prop, x))
+    data.all.point(point).react(immediate, queued((x) -> dom.prop(prop, x)))
 
   render: (data, args = {}) ->
     result = (dom, point, immediate = true) ->
@@ -55,7 +56,7 @@ mutators =
       # despite the nomenclature we /always/ react immediately here, since
       # we do need to initialize the entire dom tree. instead, the immediate flag
       # gates whether we render or attach the first view we see.
-      getView(data.all.point(point), doPoint(args.context, point), doPoint(from.app(), point), doPoint(args.criteria, point), doPoint(args.options, point)).react(true, (view) ->
+      binding = getView(data.all.point(point), doPoint(args.context, point), doPoint(from.app(), point), doPoint(args.criteria, point), doPoint(args.options, point)).react(true, queued((view) ->
         runBefore = this.view?
         this.view ?= new Varying()
         this.view.get()?.destroy()
@@ -68,7 +69,9 @@ mutators =
           dom.append(view.artifact()) if view?
 
         this.view.set(view) # we wait to set so that the dom is part of the tree when events go.
-      )
+      ))
+      binding.view = new Varying()
+      binding
 
     result.context = (context) -> mutators.render(data, Object.assign({}, args, { context }))
     result.criteria = (criteria) -> mutators.render(data, Object.assign({}, args, { criteria }))
