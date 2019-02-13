@@ -7,13 +7,16 @@ With the exception of Collection folds, rework everything in the framework that 
 
 * New features:
     * `View#attach()` now works; given a data tree and DOM tree previously rendered by (eg server-side) Janus, instantiates a new View tree and binds it against all the existing DOM points.
+* Breaking changes:
+    * Reworked API surface so that instead of eg `length`/`watchLength`, we use `length_`/`length` respectively now throughout. Less memorization, and emphasizes Varying-based computation.
 * Refactors:
     * Redid entire `application` package:
         * `Library` no longer auto-instantiates things it hands back. Also simplified call format to remove the explicit `attributes` object. `acceptor` and `rejector` are no longer supported.
         * `Endpoint`, `Handler`, and `Manifest` got all simplified and collapsed down to just `Manifest`. Actually gained some features in this process.
         * `App` got simplified as well, primarily because it no longer shadow-copies with each returned artifact and no longer worries about Stores so much. Almost all the "automagic" in the framework is now contained within `App`.
         * All three are now top-level exports in the Janus package.
-    * Reworked implementation behind `from` and `case` core components:
+    * Reworked implementation behind all three core components: `Varying`, `from`, and `case`.
+        * `Varying` did not change externally, but the internal propagation mechanism was completely redone and `ComposedVarying` was merged substantially into the primary codepath.
         * `from` didn't really change externally except that the semantics around transforming a `from` to a `Varying` is now concretely whenever `.point()` is called. Removed all the complicated internal casing.
         * `case` no longer typechecks full case set on `match` which makes it a simple tight loop. It also once again relies on `instanceof` and class instances. Generally much more pleasant to look at.
     * Request/Resolve got reworked one last time:
@@ -22,6 +25,7 @@ With the exception of Collection folds, rework everything in the framework that 
         * All the magic around setting request results into the Model now live on the `ReferenceAttribute` itself, which feels cleaner.
     * `Set` was completely reimplemented and now provides much-closer-to true Set semantics.
     * `Model` issues/validate moved around a little bit; their names make more sense now.
+    * `Map` and `List` no longer rely on events to manage their Varying change propagation.
     * `Base` no longer derives from `EventEmitter2`; it lazily instantiates one when it needs it.
 * Quality of life improvements:
     * We now support `Varying.all([ vx, vy, vz ]).react((x, y, z) -> …)` to directly react on multiple Varyings.
