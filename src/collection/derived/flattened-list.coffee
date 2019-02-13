@@ -7,7 +7,6 @@ class FlattenedList extends DerivedList
     super()
 
     this._listListeners = new List()
-    this._listListeners.destroyWith(this)
 
     this._addObj(list, idx) for list, idx in this.parent.list
     this.listenTo(this.parent, 'added', (obj, idx) => this._addObj(obj, idx))
@@ -76,7 +75,10 @@ class FlattenedList extends DerivedList
     return
 
   __destroy: ->
-    this.parent.list[idx].off(event, handler) for event, handler of listeners for listeners, idx in this._listListeners.list when listeners?
+    for listeners, idx in this._listListeners.list when listeners?
+      for event, handler of listeners
+        this.parent.list[idx].off(event, handler)
+    this._listListeners.destroy()
     return
 
 

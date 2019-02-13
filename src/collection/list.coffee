@@ -220,6 +220,11 @@ class List extends OrderedMappable
   if typeof Symbol isnt 'undefined'
     @.prototype[Symbol.iterator] = -> this.list[Symbol.iterator]()
 
+  __destroy: ->
+    # jettison reference-laden data:
+    this.list = null
+    this._watches = null
+
   @deserialize: (data) ->
     items =
       if this.modelClass? and util.isFunction(this.modelClass.deserialize)

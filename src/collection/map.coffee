@@ -216,6 +216,12 @@ class Map extends Enumerable
   Object.defineProperty(@prototype, 'length', get: -> this.length$ ?= Varying.managed((=> this.enumerate()), (it) -> it.length))
   Object.defineProperty(@prototype, 'length_', get: -> this.enumerate_().length_)
 
+  __destroy: ->
+    # jettison all likely ties to other objects.
+    this._parent = null
+    this.data = null
+    this._watches = null
+
   # Takes in a data hash and populates a new Map (or Map covariant) with its data.
   @deserialize: (data) -> new this(data)
 

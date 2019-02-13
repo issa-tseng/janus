@@ -63,7 +63,7 @@ class Manifest extends Base
       else
         this.result.set(types.result.failure(this.model.errors()))
 
-      this.destroy()
+      this.stopAll()
       return
     ), 0)
     return
@@ -71,7 +71,7 @@ class Manifest extends Base
   _fault: (x) ->
     this._fault = true
     this.result.set(types.result.failure(x))
-    this.destroy() # immediately stop listening to things.
+    this.stopAll() # immediately stop listening to things.
     return
 
   @run: (app, model, criteria, options) -> new this(app, model, criteria, options)

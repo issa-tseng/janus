@@ -5,6 +5,7 @@ Varying = require('../../core/varying').Varying
 class MappedList extends DerivedList
   constructor: (@parent, @mapper, @options = {}) ->
     super()
+    this.destroyWith(this.parent)
 
     # add initial items then keep track of membership changes.
     this._add(elem) for elem in this.parent.list

@@ -91,7 +91,9 @@ class Model extends Map
   _parentChanged: (key, newValue, oldValue) -> super(key, newValue, oldValue) unless this._bindings[key]?
 
   __destroy: ->
+    super()
     attribute?.destroy() for _, attribute of this._attributes
+    this._attributes = null
     return
 
   # Overridden to define model characteristics like attributes, bindings, and validations.
