@@ -51,7 +51,10 @@ propagateShim = ->
     newRxn.logChange(wrapper, this._value)
 
   handleInner(wrapper, this, extantRxn ? newRxn)
-  wrapper.set('_value', this._value)
+  if this._value?
+    wrapper.set('_value', this._value)
+  else
+    wrapper.unset('_value')
   Object.getPrototypeOf(this)._propagate.call(this)
   newRxn?.set('active', false)
   return
