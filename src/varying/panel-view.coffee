@@ -44,6 +44,8 @@ ReactionView = DomView.withOptions({ viewModelClass: ReactionVM }).build($('
     find('.time .minor').text(from('at').map((t) -> t.toFormat("HH:mm:")))
     find('.time .major').text(from('at').map((t) -> t.toFormat("ss.SSS")))
 
+    find('.reaction').classed('singular', from('target').and('root').all.map((x, y) -> x is y))
+
     find('.reaction-inspectionTarget .reaction-part-id').text(from('target').get('id').map((id) -> "##{id}"))
     find('.reaction-inspectionTarget .reaction-part-delta').render(from('target')).context('delta')
 
