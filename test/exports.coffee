@@ -1,6 +1,6 @@
 should = require('should')
 
-{ Library } = require('janus').application
+{ Library } = require('janus')
 stdlib = require('../lib/janus-stdlib')
 
 describe 'exports', ->
