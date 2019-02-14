@@ -1,7 +1,7 @@
 should = require('should')
 
 { Varying } = require('janus')
-{ sticky, debounce, throttle, filter, fromEvent, fromEventNow } = require('../../lib/varying')
+{ sticky, debounce, throttle, filter, fromEvent, fromEventNow, fromEvents } = require('../lib/varying')
 
 wait = (time, f) -> setTimeout(f, time)
 
@@ -306,4 +306,38 @@ describe 'varying utils', ->
       extern = 2
       f_()
       results.should.eql([ 0, 1, 2 ])
+
+  describe 'fromEvents binding', ->
+    it 'should set the correct initial value', ->
+      jq = { on: (->) }
+      fromEvents(jq, 42, {}).get().should.equal(42)
+
+      results = []
+      fromEvents(jq, 42, {}).react((x) -> results.push(x))
+      results.should.eql([ 42 ])
+
+    it 'should listen to the correct events', ->
+      listened = []
+      jq = { on: ((event) -> listened.push(event)) }
+
+      fromEvents(jq, null, { mousedown: 1, mouseup: 2 }).react(->)
+      listened.should.eql([ 'mousedown', 'mouseup' ])
+
+    it 'should hold the correct value after each event', ->
+      jq = { listeners: {}, on: ((event, handler) -> this.listeners[event] = handler) }
+      results = []
+      fromEvents(jq, 0, { mousedown: 1, mouseup: 2 }).react((x) -> results.push(x))
+
+      jq.listeners['mousedown']({ type: 'mousedown' })
+      jq.listeners['mousedown']({ type: 'mousedown' })
+      jq.listeners['mouseup']({ type: 'mouseup' })
+      jq.listeners['mousedown']({ type: 'mousedown' })
+
+      results.should.eql([ 0, 1, 2, 1 ])
+
+    it 'should unregister all listeners on destruction', ->
+      unlistened = []
+      jq = { on: (->), off: ((event) -> unlistened.push(event)) }
+      fromEvents(jq, 0, { mousedown: 1, mouseup: 2 }).react().stop()
+      unlistened.should.eql([ 'mousedown', 'mouseup' ])
 

@@ -85,8 +85,8 @@ varyingUtils = {
     )
 
   fromEvent: (jq, event, f, immediate = false) ->
-    destroyer = (d_) -> destroyer.destroy = d_
-    Varying.managed((-> destroyer), ((destroyer) ->
+    manager = (d_) -> manager.destroy = d_
+    Varying.managed((-> manager), (destroyer) ->
       result = new Varying()
 
       f_ = (event) -> result.set(f.call(this, event))
@@ -95,9 +95,22 @@ varyingUtils = {
       destroyer(-> jq.off(event, f_))
 
       result
-    ))
+    )
 
   fromEventNow: (jq, event, f) -> varyingUtils.fromEvent(jq, event, f, true)
+
+  fromEvents: (jq, initial, eventMap) ->
+    manager = (d_) -> manager.destroy = d_
+    Varying.managed((-> manager), (destroyer) ->
+      result = new Varying(initial)
+      handler = (event) -> result.set(eventMap[event.type])
+      jq.on(k, handler) for k of eventMap
+      destroyer(->
+        jq.off(k, handler) for k of eventMap
+        return
+      )
+      result
+    )
 }
 
 module.exports = varyingUtils
