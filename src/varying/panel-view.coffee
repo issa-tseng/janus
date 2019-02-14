@@ -4,6 +4,7 @@ $ = require('janus-dollar')
 
 { exists } = require('../util')
 { WrappedVarying, Reaction } = require('./inspector')
+{ inspect } = require('../inspect')
 
 
 ################################################################################
@@ -69,8 +70,8 @@ VaryingDeltaView = DomView.build($('
     </div>
   '), template(
 
-    find('.value').render(from('immediate').and('value').all.map((i, v) -> v ? i)).context('debug')
-    find('.newValue').render(from('new_value')).context(from('changed').map((changed) -> 'debug' if changed is true))
+    find('.value').render(from('immediate').and('value').all.map((i, v) -> inspect(v ? i)))
+    find('.newValue').render(from('new_value').map(inspect))
 
     find('.varyingDelta').classed('hasDelta', from('changed'))
   )
