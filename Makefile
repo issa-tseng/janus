@@ -15,7 +15,7 @@ node_modules:
 build: $(LIB)
 
 test: build node_modules
-	node node_modules/mocha/bin/mocha --require coffee-script/register test/**/*.coffee
+	node node_modules/mocha/bin/mocha --require coffee-script/register "test/**/*.coffee"
 
 test-coverage: build node_modules
 	node node_modules/.bin/istanbul cover node_modules/.bin/_mocha -- --require coffee-script/register test/**/*.coffee
