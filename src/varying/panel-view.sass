@@ -13,16 +13,6 @@ $color-bad: #600
 $color-panel-bg: #f7f7f7
 $color-highlight-bg: #fadd00
 
-// TODO: haven't actually included this.
-@mixin icon
-  display: inline-block
-  font: normal normal normal 14px/1 FontAwesome
-  font-size: inherit
-  text-rendering: auto
-  -webkit-font-smoothing: antialiased
-
-$icon-delete: "\f00d"
-$icon-arrow-right: "\f178"
 
 .varying-tree
   $node-size: 2.8em
@@ -159,10 +149,8 @@ $icon-arrow-right: "\f178"
         $icon-size: 1.3em
         $offset: -0.3em
 
-        @include reify
-        @include icon
         color: $color-bad
-        content: $icon-delete
+        content: '×'
         font-size: $icon-size
         left: $inner-padding / $icon-size + $offset
         position: absolute
@@ -330,10 +318,10 @@ $icon-arrow-right: "\f178"
     .reaction-intermediate, .reaction-root
       display: none
 
-.varyingDelta
+.varying-delta
   overflow: hidden
 
-  &.hasDelta
+  &.has-delta
     > div
       background-color: $color-highlight-bg
     .delta
@@ -352,10 +340,10 @@ $icon-arrow-right: "\f178"
 
   .separator
     float: left
-    padding: 0.1em 0.2em
+    padding: 0.2em
     &:before
       content: '»'
 
-  .newValue
+  .new-value
     float: left
 

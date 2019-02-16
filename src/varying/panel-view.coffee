@@ -63,19 +63,19 @@ ReactionView = DomView.withOptions({ viewModelClass: ReactionVM }).build($('
 # VARYING DELTA -> VIEW
 
 VaryingDeltaView = DomView.build($('
-    <div class="varyingDelta">
+    <div class="varying-delta">
       <div class="value"/>
       <div class="delta">
         <div class="separator"/>
-        <div class="newValue"/>
+        <div class="new-value"/>
       </div>
     </div>
   '), template(
 
     find('.value').render(from('immediate').and('value').all.map((i, v) -> inspect(v ? i)))
-    find('.newValue').render(from('new_value').map(inspect))
+    find('.new-value').render(from('new_value').map(inspect))
 
-    find('.varyingDelta').classed('hasDelta', from('changed'))
+    find('.varying-delta').classed('has-delta', from('changed'))
   )
 )
 
