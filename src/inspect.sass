@@ -130,3 +130,22 @@
 
 @import './varying/panel-view'
 
+////////////////////////////////////////////////////////////////////////////////
+// FUNCTION BASE STYLES
+
+.janus-inspect-function.janus-inspect-entity
+  .function-args
+    ul, li
+      display: inline
+
+    li:after
+      content: ', '
+    li:last-child:after
+      content: none
+
+.janus-inspect-applicant
+  &.has-value .applicant-name
+    font-weight: bold
+    &:after
+      content: ': '
+
