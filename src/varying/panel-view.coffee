@@ -167,6 +167,7 @@ VaryingView = DomView.withOptions({ viewModelClass: VaryingPanel }).build($('
           Snapshot
           <a class="varying-snapshot-close" href="#close">Close</a>
         </span>
+        <button class="janus-inspect-pin" title="Pin"/>
       </div>
       <div class="panel-sidebar">
         <div class="panel-sidebar-title">Reactions</div>

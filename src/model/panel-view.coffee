@@ -59,7 +59,10 @@ KVPairView = DomView.withOptions({ viewModelClass: KVPairVM }).build($('
 
 ModelPanelView = DomView.build($('
   <div class="janus-inspect-panel janus-inspect-model">
-    <div class="panel-title"><span class="model-type"/><span class="model-subtype"/></div>
+    <div class="panel-title">
+      <span class="model-type"/><span class="model-subtype"/>
+      <button class="janus-inspect-pin" title="Pin"/>
+    </div>
     <div class="panel-content"/>
   </div>'), template(
     find('.model-type').text(from('type'))
