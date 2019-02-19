@@ -135,7 +135,10 @@ VaryingTreeView = DomView.build($('
     find('.valueContainer').render(from((x) -> x)).context('delta') # TODO: ehhh on this context name?
 
     find('.mapping').on('mouseenter', (event, wrapped, view) ->
-      args = (WrappedVarying.hijack(a).get_('value') for a in wrapped.get_('applicants').list)
+      args = []
+      for a in wrapped.get_('applicants').list
+        wa = WrappedVarying.hijack(a)
+        args.push(wa.get_('new_value') ? wa.get_('value'))
       wf = new WrappedFunction(wrapped.varying._f, args)
       view.options.app.flyout?($(event.target), wf, 'panel')
     )
