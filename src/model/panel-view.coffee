@@ -12,6 +12,7 @@ class KVPairVM extends Model.build(
     attribute('edit', attribute.Text)
     bind('key', from('subject').get('key'))
     bind('value', from('subject').get('value'))
+    bind('primitive', from('value').map(isPrimitive))
     bind('model', from('subject').get('model'))
   )
   _initialize: ->
@@ -37,10 +38,13 @@ KVPairView = DomView.withOptions({ viewModelClass: KVPairVM }).build($('
       <div class="kvPair-valueBlock">
         <div class="kvPair-value"></div>
         <div class="kvPair-edit"></div>
+        <div class="kvPair-clear"></div>
       </div>
     </div>
   '), template(
-    find('.janus-inspect-kvPair').classed('bound', from('subject').get('bound'))
+    find('.janus-inspect-kvPair')
+      .classed('bound', from('subject').get('bound'))
+      .classed('primitive', from('primitive'))
 
     find('.kvPair-key')
       .text(from('key'))
@@ -49,12 +53,18 @@ KVPairView = DomView.withOptions({ viewModelClass: KVPairVM }).build($('
     find('.kvPair-value')
       .render(from('subject').get('binding').and('value')
         .all.map((b, v) -> inspect(b ? v)))
-      .on('dblclick', (e, s, v, dom) -> dom.find('.kvPair-edit input').focus().select())
+      .on('dblclick', (e, subject, v, dom) ->
+        return if subject.get_('subject').get_('bound') is true
+        return unless subject.get_('primitive') is true
+        dom.find('.kvPair-edit input').focus().select()
+      )
 
-    find('.kvPair-edit').render(from.attribute('edit')
-        .and('subject').get('bound')
-        .all.map((editor, bound) -> editor unless bound))
+    find('.kvPair-edit').render(from.attribute('edit'))
       .criteria( context: 'edit', commit: 'hard' )
+
+    find('.kvPair-clear').on('click', (_, subject) ->
+      subject.get_('model').unset(subject.get_('key'))
+    )
   )
 )
 

@@ -122,6 +122,17 @@
         opacity: 1
         pointer-events: auto
 
+  .kvPair-clear
+    padding: 0.25em
+    position: absolute
+    right: 0
+    top: 0
+    &:before
+      content: '×'
+
+  &.primitive .kvPair-clear
+    display: none
+
 ////////////////////////////////////////////////////////////////////////////////
 // VARYING BASE STYLES
 
