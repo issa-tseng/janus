@@ -72,7 +72,7 @@ VaryingDeltaView = DomView.build($('
     </div>
   '), template(
 
-    find('.value').render(from('immediate').and('value').all.map((i, v) -> inspect(v ? i)))
+    find('.value').render(from('value').all.map(inspect))
     find('.new-value').render(from('new_value').map(inspect))
 
     find('.varying-delta').classed('has-delta', from('changed'))
