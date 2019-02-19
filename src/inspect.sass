@@ -100,8 +100,10 @@
       content: ':'
       font-weight: normal
 
-  &.bound .kvPair-key:after
-    content: ' is bound to '
+  &.bound .kvPair-key
+    padding-right: 0.2em
+    &:after
+      content: ' is bound to '
 
   .kvPair-valueBlock
     overflow: hidden
