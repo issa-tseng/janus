@@ -11,6 +11,7 @@ module.exports = {
       linkedList: require('./common/linked-list')
       textAttribute: require('./common/text-attribute')
     function:
+      panel: require('./function/panel-view')
       entity: require('./function/entity-view')
     list:
       entity: require('./list/entity-view')

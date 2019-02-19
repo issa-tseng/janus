@@ -157,6 +157,7 @@ class WrappedVarying extends Model.build(
 class SnapshottedVarying extends WrappedVarying
   constructor: (data, options) ->
     Model.prototype.constructor.call(this, data, options)
+    this.varying = data.target
 
   _initialize: -> # a snapshot is inert so no tracking is necessary nor desired.
 

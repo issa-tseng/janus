@@ -20,10 +20,9 @@
     "node": ">= 6.0"
   },
   "peerDependencies": {
+    "cherow": "~1",
     "janus": "~0",
-    "janus-dollar": "git+https://github.com/clint-tseng/janus-dollar-jquery"
-  },
-  "dependencies": {
+    "janus-dollar": "~0",
     "luxon": "~1"
   },
   "devDependencies": {

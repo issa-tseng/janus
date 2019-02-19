@@ -1,3 +1,4 @@
+{ parse } = require('cherow')
 
 pluralize = (single, many) -> (num) ->
   if typeof num is 'number'
@@ -12,12 +13,11 @@ stringify = (obj) ->
   catch
     return "Object[#{Object.keys(obj).length} pairs]"
 
-# http://stackoverflow.com/questions/1007981/how-to-get-function-parameter-names-values-dynamically-from-javascript
-STRIP_COMMENTS = /(\/\/.*$)|(\/\*[\s\S]*?\*\/)|(\s*=[^,\)]*(('(?:\\'|[^'\r\n])*')|("(?:\\"|[^"\r\n])*"))|(\s*=[^,\)]*))/mg
-ARGUMENT_NAMES = /([^\s,]+)/g
 getArguments = (f) ->
-  s = f.toString().replace(STRIP_COMMENTS, '')
-  s.slice(s.indexOf('(') + 1, s.indexOf(')')).match(ARGUMENT_NAMES) ? []
+  # we always assign to f to guard against anonymous function decl failure:
+  tree = parse('f = ' + f.toString())
+  fexpr = tree.body[0].expression.right # navigate into that assignment
+  (param.name for param in fexpr.params)
 
 deindent = (s) ->
   minIndent = 999 # i'd love to see the code that breaks this line.
