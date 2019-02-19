@@ -1,5 +1,8 @@
 { Model, attribute, bind, List, from, Varying } = require('janus')
-{ fix, uniqueId } = require('janus').util
+{ fix } = require('janus').util
+
+_serialId = 0
+serialId = -> ++_serialId
 
 
 ################################################################################
@@ -99,7 +102,7 @@ class WrappedVarying extends Model.build(
 
   constructor: (@varying) ->
     super({
-      id: uniqueId()
+      id: serialId()
       target: this.varying
       title: this.varying.constructor.name
 
