@@ -11,12 +11,16 @@ $ = require('janus-dollar')
 class KVPairVM extends Model.build(
     attribute('edit', attribute.Text)
     bind('key', from('subject').get('key'))
+    bind('value', from('subject').get('value'))
     bind('model', from('subject').get('model'))
   )
   _initialize: ->
+    app = this.get_('options.app')
+    view = this.get_('view')
     subject = this.get_('subject')
+
     do =>
-      value = subject.get_('model').get_(subject.get_('key'))
+      value = this.get_('subject').get_('value')
       this.set('edit', if isPrimitive(value) or isArray(value) then JSON.stringify(value) else '…')
 
     this.get('edit').react(false, (raw) =>
@@ -36,15 +40,16 @@ KVPairView = DomView.withOptions({ viewModelClass: KVPairVM }).build($('
       </div>
     </div>
   '), template(
-    find('.kvPair').classed('bound', from('bound'))
+    find('.janus-inspect-kvPair').classed('bound', from('subject').get('bound'))
 
     find('.kvPair-key')
       .text(from('key'))
       .attr('title', from('key'))
 
     find('.kvPair-value')
-      .render(from('binding').and('subject').get('value').all.map((b, v) -> inspect(b ? v)))
-      .on('dblclick', (event, _, __, dom) -> dom.find('.kvPair-edit input').focus().select())
+      .render(from('subject').get('binding').and('value')
+        .all.map((b, v) -> inspect(b ? v)))
+      .on('dblclick', (e, s, v, dom) -> dom.find('.kvPair-edit input').focus().select())
 
     find('.kvPair-edit').render(from.attribute('edit')
         .and('subject').get('bound')
