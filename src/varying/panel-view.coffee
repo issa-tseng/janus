@@ -3,6 +3,7 @@ $ = require('janus-dollar')
 { DateTime } = require('luxon')
 
 { exists } = require('../util')
+{ WrappedFunction } = require('../function/inspector')
 { WrappedVarying, Reaction } = require('./inspector')
 { inspect } = require('../inspect')
 
@@ -133,7 +134,11 @@ VaryingTreeView = DomView.build($('
 
     find('.valueContainer').render(from((x) -> x)).context('delta') # TODO: ehhh on this context name?
 
-    #find('.mapping').flyout(from((x) -> x).and('mapped').all.map((wv, mapped) -> wv if mapped is true)).context('mapping')
+    find('.mapping').on('mouseenter', (event, wrapped, view) ->
+      args = (WrappedVarying.hijack(a).get_('value') for a in wrapped.get_('applicants').list)
+      wf = new WrappedFunction(wrapped.varying._f, args)
+      view.options.app.flyout?($(event.target), wf, 'panel')
+    )
 
     find('.varying-tree-innerNew')
       .classed('hasNewInner', from('new_inner').map(exists))
