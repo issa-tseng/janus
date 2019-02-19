@@ -64,13 +64,13 @@ ReactionView = DomView.withOptions({ viewModelClass: ReactionVM }).build($('
 # VARYING DELTA -> VIEW
 
 VaryingDeltaView = DomView.build($('
-    <div class="varying-delta">
-      <div class="value"/>
-      <div class="delta">
-        <div class="separator"/>
-        <div class="new-value"/>
-      </div>
-    </div>
+    <span class="varying-delta">
+      <span class="value"/>
+      <span class="delta">
+        <span class="separator"/>
+        <span class="new-value"/>
+      </span>
+    </span>
   '), template(
 
     find('.value').render(from('value').all.map(inspect))
