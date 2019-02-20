@@ -29,7 +29,7 @@ class KVPairVM extends Model.build(
         result = (new Function("return #{raw};"))()
         subject.get_('model').set(subject.get_('key'), result)
       catch ex
-        console.log("that didn't work..", ex) # TODO: surface this more usefully
+        app.flyout?(view.artifact(), ex)
     )
 
 KVPairView = DomView.withOptions({ viewModelClass: KVPairVM }).build($('
