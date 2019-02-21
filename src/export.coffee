@@ -10,6 +10,9 @@ module.exports = {
     common:
       linkedList: require('./common/linked-list')
       textAttribute: require('./common/text-attribute')
+    domview:
+      panel: require('./dom-view/panel-view')
+      entity: require('./dom-view/entity-view')
     function:
       panel: require('./function/panel-view')
       entity: require('./function/entity-view')
