@@ -53,7 +53,8 @@ class DomSpy
   empty: noop
   append: noop
 
-  # prevent NPEs but we don't track these (yet?).
+  # on/off are handled separately, because they aren't bound in a way that the
+  # spy can easily see.
   on: noop
   off: noop
 
@@ -90,11 +91,14 @@ deduceMutators = (view) ->
   # 3. now that we have bindings, go through each one in turn, trigger its mutator,
   # and see from the operations spy what we got out of it.
   for binding in dummy._bindings
-    try # TODO: this try/catch approach is a hack.
-      binding.f_(true)
-    catch
-      binding.f_(null)
-    operations.pop()
+    if typeof binding.start is 'function'
+      null # sentinel null for now that gets stripped out later.
+    else
+      try # TODO: this try/catch approach is a hack.
+        binding.f_(true)
+      catch
+        binding.f_(null)
+      operations.pop()
 
 
 ################################################################################
@@ -115,8 +119,13 @@ class DomViewInspector extends Model.build(
   constructor: (domview) ->
     mutations = deduceMutators(domview) # TODO: someday cache defs based on classref.
     domview.artifact() # TODO: someday don't force this and have an idle state.
+
+    # we would like to match the generic mutator definitions we've just derived with
+    # the actual databindings we just generated, but we need to account for some
+    # failure/nonstandard-view cases while we do so:
     if mutations?
-      mutations[idx].set('binding', binding.parent) for binding, idx in domview._bindings
+      for binding, idx in domview._bindings when (mutation = mutations[idx])?
+        mutation.set('binding', binding.parent)
     else if domview._bindings?
       mutations = for binding in domview._bindings
         mutation = new Mutation()
@@ -124,6 +133,10 @@ class DomViewInspector extends Model.build(
         mutation
     else
       mutations = [] # some sort of custom view we don't know how to handle.
+
+    # for now, we drop all mutations that are actually just .on handlers, because
+    # there's really nothing interesting to show about them.
+    mutations = mutations.filter((m) -> m?)
 
     super({ domview, mutations: new List(mutations) })
 
