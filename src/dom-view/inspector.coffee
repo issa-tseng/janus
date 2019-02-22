@@ -138,6 +138,12 @@ class DomViewInspector extends Model.build(
     # there's really nothing interesting to show about them.
     mutations = mutations.filter((m) -> m?)
 
+    # flag mutations which share a selector with their predecessor.
+    # TODO: is there a better way to do this?
+    for mutation, idx in mutations when idx > 0
+      if mutations[idx - 1].get_('selector') is mutation.get_('selector')
+        mutation.set('repeated-selector', true)
+
     super({ domview, mutations: new List(mutations) })
 
   @inspect: (domview) -> new DomViewInspector(domview)

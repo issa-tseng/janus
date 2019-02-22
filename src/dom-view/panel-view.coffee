@@ -14,7 +14,9 @@ MutationView = DomView.build($('
     </span>
   </div>'), template(
 
-  find('.mutation-selector').text(from('selector'))
+  find('.mutation-selector')
+    .text(from('selector'))
+    .classed('repeated', from('repeated-selector'))
   find('.mutation-operation').text(from('operation'))
   find('.mutation-param')
     .text(from('param'))
