@@ -24,20 +24,29 @@ MutationView = DomView.build($('
   find('.mutation-binding').render(from('binding').map(inspect))
 ))
 
-DomViewPanelView = DomView.build($('
-  <div class="janus-inspect-panel janus-inspect-domview">
-    <div class="panel-title">
-      DomView<span class="domview-subtype"/>
-      <button class="janus-inspect-pin" title="Pin"/>
-    </div>
-    <div class="panel-content">
-      <div class="domview-mutations"/>
-    </div>
-  </div>'), template(
+class DomViewPanelView extends DomView.build($('
+    <div class="janus-inspect-panel janus-inspect-domview">
+      <div class="panel-title">
+        DomView<span class="domview-subtype"/>
+        <button class="janus-inspect-pin" title="Pin"/>
+      </div>
+      <div class="panel-content">
+        <div class="domview-mutations"/>
+        <div class="domview-display">
+          <span class="domview-display-label">View Preview</span>
+        </div>
+      </div>
+    </div>'), template(
 
-  find('.domview-subtype').text(from('subtype'))
-  find('.domview-mutations').render(from('mutations'))
-))
+    find('.domview-subtype').text(from('subtype'))
+    find('.domview-mutations').render(from('mutations'))
+  ))
+
+  _render: ->
+    artifact = super()
+    if (target = this.subject.get_('domview').artifact()).closest('html').length is 0
+      artifact.find('.domview-display').prepend(target)
+    artifact
 
 module.exports = {
   MutationView
