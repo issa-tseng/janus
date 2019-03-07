@@ -5,12 +5,15 @@ $ = require('janus-dollar')
 { WrappedList } = require('./inspector')
 { exists } = require('../util')
 
-ListEntityVM = Model.build(
-  bind('list', from('subject').get('list'))
-  dēfault('take', 5)
-  bind('more_count', from('subject').get('length').and('take')
-    .all.map((all, taken) -> max(0, all - taken)))
-)
+class ListEntityVM extends Model.build(
+    bind('list', from('subject').get('list'))
+    dēfault('take', 5)
+    bind('more_count', from('subject').get('length').and('take')
+      .all.map((all, taken) -> max(0, all - taken)))
+  )
+
+  _initialize: ->
+    this.set('take', 6) if this.get_('subject').get_('list').length_ is 6
 
 ListEntityView = DomView.withOptions({ viewModelClass: ListEntityVM }).build($('
   <div class="janus-inspect-entity janus-inspect-list">
