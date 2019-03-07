@@ -42,7 +42,7 @@ class DomSpy
     else if this._pendingClassGroup is true
       this._pendingClassGroup = false
       prefix = value.slice(0, -4) # true is always given as the value
-      this.operations.push(new Mutationthis(this.selector, 'classGroup', param: prefix))
+      this.operations.push(new Mutation(this.selector, 'classGroup', param: prefix))
     else
       this.operations.push(new Mutation(this.selector, 'attr', param))
 
