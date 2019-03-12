@@ -260,6 +260,13 @@ describe 'List', ->
       eventedList.should.equal(l)
       eventedIdx.should.equal(2)
 
+    it 'should provide an alias unset', ->
+      l = new List([ 1, 2, 3, 4, 5 ])
+      l.unset(2)
+      l.length_.should.equal(4)
+      for val, idx in [ 1, 2, 4, 5 ]
+        l.at_(idx).should.equal(val)
+
   describe 'move', ->
     it 'should move the element to the relevant place', ->
       l = new List([ 1, 2, 3, 4, 5 ])

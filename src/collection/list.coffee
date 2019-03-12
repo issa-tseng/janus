@@ -116,7 +116,7 @@ class List extends OrderedMappable
     this.removeAt(idx)
 
   # Removes one item from the collection by index and returns it.
-  removeAt: (idx) ->
+  _removeAt = (idx) ->
     idx = this.list.length + idx if idx < 0
     return if idx < 0 or idx >= this.list.length
 
@@ -132,6 +132,8 @@ class List extends OrderedMappable
     this.emit('removed', removed, idx)
     removed?.emit?('removedFrom', this, idx)
     removed
+  removeAt: _removeAt
+  unset: _removeAt
 
   # Move an item by reference to an index in the collection. This will trigger
   # `moved` events for only the shifted element. But, it will give the new and
