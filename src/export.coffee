@@ -18,6 +18,7 @@ module.exports = {
       panel: require('./function/panel-view')
       entity: require('./function/entity-view')
     list:
+      panel: require('./list/panel-view')
       entity: require('./list/entity-view')
     literal:
       entity: require('./literal/entity-view')
