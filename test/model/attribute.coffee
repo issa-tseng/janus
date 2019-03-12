@@ -135,6 +135,17 @@ describe 'Attribute', ->
         MyAttribute = attribute.Model.of(MyModel)
         MyAttribute.modelClass.should.equal(MyModel)
 
+      it 'should allow Model.withDefault() shortcut definition', ->
+        a = new (attribute.Model.withDefault())(new Model(), 'test')
+        m = a.getValue_()
+        m.should.be.an.instanceof(Model)
+        a.getValue_().should.equal(m)
+
+      it 'should combine of and withDefault shortcuts correctly', ->
+        class TestModel extends Model
+        a = new (attribute.Model.of(TestModel).withDefault())(new Model(), 'test')
+        a.getValue_().should.be.an.instanceof(TestModel)
+
     describe 'list type', ->
       it 'should delegate deserialization to the list class', ->
         called = false
@@ -167,6 +178,17 @@ describe 'Attribute', ->
         class MyList extends List
         MyAttribute = attribute.List.of(MyList)
         MyAttribute.listClass.should.equal(MyList)
+
+      it 'should allow List.withDefault() shortcut definition', ->
+        a = new (attribute.List.withDefault())(new Model(), 'test')
+        l = a.getValue_()
+        l.should.be.an.instanceof(List)
+        a.getValue_().should.equal(l)
+
+      it 'should combine of and withDefault shortcuts correctly', ->
+        class TestList extends List
+        a = new (attribute.List.of(TestList).withDefault())(new Model(), 'test')
+        a.getValue_().should.be.an.instanceof(TestList)
 
     describe 'reference type', ->
       it 'should only try to resolve once', ->

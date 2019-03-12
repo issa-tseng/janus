@@ -63,6 +63,8 @@ class ModelAttribute extends Attribute
 
   @of: (modelClass) -> class extends this
     @modelClass: modelClass
+  @withDefault: -> class extends this
+    default: -> new (this.constructor.modelClass)()
 
 class ListAttribute extends Attribute
   @listClass: List
@@ -74,6 +76,8 @@ class ListAttribute extends Attribute
 
   @of: (listClass) -> class extends this
     @listClass: listClass
+  @withDefault: -> class extends this
+    default: -> new (this.constructor.listClass)()
 
 class ReferenceAttribute extends Attribute
   isReference: true
