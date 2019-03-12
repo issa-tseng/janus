@@ -7,7 +7,7 @@ types = require('../core/types')
 
 { Null, Map } = require('../collection/map')
 { Varying } = require('../core/varying')
-util = require('../util/util')
+{ deepGet, deepSet, isFunction, isString } = require('../util/util')
 
 
 class Model extends Map
@@ -52,20 +52,20 @@ class Model extends Map
 
   pointer: -> this.pointer$ ?= match(
     cases.dynamic (x) =>
-      if util.isFunction(x)
+      if isFunction(x)
         Varying.of(x(this))
-      else if util.isString(x)
+      else if isString(x)
         this.get(x)
       else
         Varying.of(x)
     cases.get (x) => this.get(x)
     cases.attribute (x) => new Varying(this.attribute(x))
-    cases.varying (x) => if util.isFunction(x) then Varying.of(x(this)) else Varying.of(x)
+    cases.varying (x) => if isFunction(x) then Varying.of(x(this)) else Varying.of(x)
     cases.app (x) =>
       if (app = this.options.app)?
         if x? then app.get(x) else new Varying(app)
       else cases.app()
-    cases.self (x) => if util.isFunction(x) then Varying.of(x(this)) else Varying.of(this)
+    cases.self (x) => if isFunction(x) then Varying.of(x(this)) else Varying.of(this)
   )
 
   # Returns a list of the validation results that have been bound against this model.
@@ -104,8 +104,8 @@ class Model extends Map
   # default deserialization methodology.
   @deserialize: (data) ->
     for key, attribute of this.schema.attributes
-      prop = util.deepGet(data, key)
-      util.deepSet(data, key)(attribute.deserialize(prop)) if prop?
+      prop = deepGet(data, key)
+      deepSet(data, key)(attribute.deserialize(prop)) if prop?
 
     new this(data)
 
