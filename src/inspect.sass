@@ -12,7 +12,7 @@
 // ENTITY BASE STYLES
 
 .janus-inspect-entity
-  display: inline-block
+  display: inline // TODO: just make it a span dummy
 
   .entity-title
     font-weight: bold
@@ -88,6 +88,9 @@
   .model-pairs
     color: #888
 
+////////////////////////////////////////////////////////////////////////////////
+// KVPAIR BASE STYLES
+
 .janus-inspect-kvPair
   overflow: hidden
 
@@ -124,9 +127,6 @@
 
   .kvPair-clear
     padding: 0.25em
-    position: absolute
-    right: 0
-    top: 0
     &:before
       content: '×'
 

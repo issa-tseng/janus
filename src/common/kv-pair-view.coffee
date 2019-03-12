@@ -32,9 +32,9 @@ KVPairView = DomView.withOptions({ viewModelClass: KVPairVM }).build($('
     <div class="janus-inspect-kvPair">
       <div class="kvPair-key"></div>
       <div class="kvPair-valueBlock">
-        <div class="kvPair-value"></div>
         <div class="kvPair-edit"></div>
-        <div class="kvPair-clear"></div>
+        <span class="kvPair-value"></span>
+        <span class="kvPair-clear"></span>
       </div>
     </div>
   '), template(
