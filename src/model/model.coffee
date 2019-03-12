@@ -5,7 +5,7 @@ cases = require('../core/types').from
 { match, otherwise } = require('../core/case')
 types = require('../core/types')
 
-{ Null, Map } = require('../collection/map')
+{ Map, Nothing } = require('../collection/map')
 { Varying } = require('../core/varying')
 { deepGet, deepSet, isFunction, isString } = require('../util/util')
 
@@ -22,11 +22,28 @@ class Model extends Map
 
   # Get an data about this model. Differs from Map#get only in that it looks at
   # attributes for default values (and potentially writes them).
+  # TODO: a lot of copypasta from Map, but we have a different flowpath because
+  # attributes may decline shadowing.
   get_: (key) ->
-    value = super(key) # see what Map says; it handles basic attrs and shadowing.
+    value = deepGet(this.data, key)
 
-    # if that fails, check the attribute and write if requested.
-    if !value? and (attribute = this.attribute(key))?
+    # we will need this if we have a nothingish value:
+    attribute = this.attribute(key) if !value? or (value is Nothing)
+
+    # first, if we have literally null we check for shadowing.
+    if !value? and this._parent?
+      value = this._parent.get_(key)
+
+      if value?.isEnumerable is true and (attribute?.shadow isnt false)
+        # shadow the result, but only if we are supposed to.
+        value = value.shadow()
+        this.set(key, value)
+
+    # now that we have avoided shadowing logic, clear Nothing:
+    value = null if value is Nothing
+
+    # and if we still have no value, we want to look at attribute defaults
+    if !value? and attribute?
       value = attribute.default()
       this.set(key, value) if (attribute.writeDefault is true) and (value isnt undefined)
 

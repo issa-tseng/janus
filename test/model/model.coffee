@@ -34,7 +34,7 @@ describe 'Model', ->
       new TestModel({ a: 42 })
       result.should.equal(42)
 
-  describe 'attribute get', ->
+  describe 'get_', ->
     it 'should return the default value if defined', ->
       class TestAttribute extends attributes.Attribute
         default: -> 'espresso'
@@ -78,6 +78,35 @@ describe 'Model', ->
       m.data.should.eql({})
       should.not.exist(m.get_('breve'))
       m.data.should.eql({})
+
+    it 'should correctly ignore overshadowed unsets', ->
+      m = new Model({ x: 2 })
+      m2 = m.shadow()
+      m2.unset('x')
+      console.log(m2.get_('x'))
+      (m2.get_('x') is null).should.equal(true)
+
+    it 'should by default shadow parent-obtained enumerables', ->
+      p = new Model({ a: 1 })
+      m = new Model({ p })
+      m2 = m.shadow()
+      p2 = m2.get_('p')
+      p2.set('a', 4)
+
+      p2.get_('a').should.equal(4)
+      p.get_('a').should.equal(1)
+
+    it 'should now default shadow parent-obtained enumerables if the attribute flags shadow:false', ->
+      TestModel = Model.build(
+        attribute('p', class extends attributes.Attribute
+          shadow: false
+        )
+      )
+
+      p = new Model({ a: 1 })
+      m = new TestModel({ p })
+      m2 = m.shadow()
+      m2.get_('p').should.equal(p)
 
   describe 'binding', ->
     describe 'application', ->

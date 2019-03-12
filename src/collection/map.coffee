@@ -237,5 +237,5 @@ class DerivedMap extends Map
   shadow: -> this
 
 
-module.exports = { Map }
+module.exports = { Map, Nothing }
 
