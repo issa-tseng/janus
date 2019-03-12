@@ -509,6 +509,62 @@ describe 'Mutator', ->
       emptied.should.equal(true)
       appended.should.equal(8)
 
+    describe 'specializations', ->
+      # these test the various specializations of render that cut down on the
+      # number of input Varyings given simpler definitions, just to ensure all
+      # their basic plumbing is done correctly.
+
+      it 'should work given just a subject', ->
+        appended = null
+        newView = { artifact: -> 4 }
+        dom = { append: ((x) -> appended = x), empty: (->), children: (->) }
+        app = { view: (-> newView) }
+        point = passthroughWithApp(app)
+
+        mutators.render(from.varying(new Varying(1)))(dom, point)
+        appended.should.equal(4)
+
+      it 'should work given a subject and a context', ->
+        appended = null
+        criteria = null
+        newView = { artifact: -> 4 }
+        dom = { append: ((x) -> appended = x), empty: (->), children: (->) }
+        app = { view: ((_, c) -> criteria = c; newView) }
+        point = passthroughWithApp(app)
+
+        mutators.render(from.varying(new Varying(1))).context(new Varying('specialized'))(dom, point)
+        appended.should.equal(4)
+        criteria.should.eql({ context: 'specialized' })
+
+      it 'should work given a subject and a criteria', ->
+        appended = null
+        criteria = null
+        newView = { artifact: -> 4 }
+        dom = { append: ((x) -> appended = x), empty: (->), children: (->) }
+        app = { view: ((_, c) -> criteria = c; newView) }
+        point = passthroughWithApp(app)
+
+        mutators.render(from.varying(new Varying(1))).criteria(new Varying({ appearance: 'specialized' }))(dom, point)
+        appended.should.equal(4)
+        criteria.should.eql({ appearance: 'specialized' })
+
+      it 'should work given the works', ->
+        appended = null
+        criteria = null
+        options = null
+        newView = { artifact: -> 4 }
+        dom = { append: ((x) -> appended = x), empty: (->), children: (->) }
+        app = { view: ((_, c, o) -> criteria = c; options = o; newView) }
+        point = passthroughWithApp(app)
+
+        mutators.render(from.varying(new Varying(1)))
+          .context(new Varying('super'))
+          .criteria(new Varying({ appearance: 'specialized' }))
+          .options({ super: 'duper' })(dom, point)
+        appended.should.equal(4)
+        criteria.should.eql({ context: 'super', appearance: 'specialized' })
+        options.super.should.equal('duper')
+
   describe 'on', ->
     it 'should do nothing initially', ->
       called = false
