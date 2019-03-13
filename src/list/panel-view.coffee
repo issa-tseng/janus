@@ -35,6 +35,7 @@ ListPanelView = DomView.build($('
   find('.janus-inspect-list').on('click', '.list-insert', (event, subject, view) ->
     event.stopPropagation() # don't pop multiple up the stack
     target = $(event.target)
+    return if target.hasClass('valuating')
     # TODO: don't put strings here:
     valuator = view.options.app.popValuator('Insert List Item', (result) ->
       idx = target.closest('li').prevAll().length
