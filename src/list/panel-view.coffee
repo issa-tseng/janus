@@ -38,7 +38,9 @@ ListPanelView = DomView.build($('
     return if target.hasClass('valuating')
     # TODO: don't put strings here:
     valuator = view.options.app.popValuator('Insert List Item', (result) ->
-      idx = target.closest('li').prevAll().length
+      idx =
+        if target.hasClass('list-insert-last') then undefined
+        else target.closest('li').prevAll().length
       subject.get_('list').add(result, idx)
     )
 
