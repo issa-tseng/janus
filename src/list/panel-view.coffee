@@ -25,8 +25,10 @@ ListPanelView = DomView.build($('
       <button class="list-insert list-insert-last"/>
     </div>
   </div>'), template(
-  find('.list-list')
+  find('.janus-inspect-list')
+    .classed('derived', from('derived'))
     .classed('read-only', from.app().map((app) -> !(app.popValuator?)))
+  find('.list-list')
     .render(from('list').map((target) -> target.enumerate().map((key) -> new KVPair({ target, key }))))
       .options({ renderItem: (r) -> r.context('list-entry') })
 

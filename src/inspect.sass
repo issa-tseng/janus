@@ -85,8 +85,9 @@
     hr
       display: none
 
-  .list-list.read-only .list-insert
-    display: none !important
+  &.read-only, &.derived // TODO: do we really need two classes here?
+    .list-insert, .kvPair-clear
+      display: none !important
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -137,9 +138,6 @@
     padding: 0.25em
     &:before
       content: '×'
-
-  &.primitive .kvPair-clear
-    display: none
 
 ////////////////////////////////////////////////////////////////////////////////
 // VARYING BASE STYLES
