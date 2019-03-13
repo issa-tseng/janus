@@ -34,7 +34,7 @@ KVPairView = DomView.withOptions({ viewModelClass: KVPairVM }).build($('
       <div class="kvPair-valueBlock">
         <div class="kvPair-edit"></div>
         <span class="kvPair-value"></span>
-        <span class="kvPair-clear"></span>
+        <button class="kvPair-clear" title="Unset Value"/>
       </div>
     </div>
   '), template(

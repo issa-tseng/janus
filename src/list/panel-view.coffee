@@ -7,7 +7,7 @@ $ = require('janus-dollar')
 
 ListEntry = DomView.build($('
   <div class="list-entry">
-    <button class="list-insert"/>
+    <button class="list-insert" title="Insert Item"/>
     <hr/>
     <div class="list-pair"/>
   </div>'), template(
