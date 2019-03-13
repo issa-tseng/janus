@@ -48,6 +48,7 @@ class DomViewPanelView extends DomView.build($('
     target = domview.artifact()
     if (target.closest('html').length is 0) or (target.parent().hasClass('domview-display') and (target.closest('.flyout').length isnt 0))
       artifact.find('.domview-display').prepend(target)
+      #domview._wired = false # TODO: feels hackish but maybe it's not.
       domview.wireEvents()
     artifact
 
