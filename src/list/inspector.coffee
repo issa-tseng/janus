@@ -1,6 +1,6 @@
 { Model, dēfault, bind, from, List } = require('janus')
 
-class WrappedList extends Model.build(
+class ListInspector extends Model.build(
   dēfault('type', 'List')
 
   bind('subtype', from('list')
@@ -17,10 +17,10 @@ class WrappedList extends Model.build(
     this.set('of.class', this.get_('list').constructor.modelClass)
     this.set('of.name', this.get_('of.class')?.name)
 
-  @wrap: (list) -> new WrappedList(list)
+  @inspect: (list) -> new ListInspector(list)
 
 module.exports = {
-  WrappedList,
-  registerWith: (library) -> library.register(List, WrappedList.wrap)
+  ListInspector,
+  registerWith: (library) -> library.register(List, ListInspector.inspect)
 }
 

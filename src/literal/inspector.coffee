@@ -1,7 +1,7 @@
 { List, dēfault } = require('janus')
 { TruncatingLiteral } = require('./entity-view')
 { isPrimitive, isArray } = require('janus').util
-{ WrappedList } = require('../list/inspector')
+{ ListInspector } = require('../list/inspector')
 
 
 inspectLiteral = (x) ->
@@ -17,7 +17,7 @@ inspectLiteral = (x) ->
     x
 
 
-class WrappedArray extends WrappedList.build(dēfault('type', 'Array'))
+class WrappedArray extends ListInspector.build(dēfault('type', 'Array'))
   @wrap: (array) -> new WrappedArray(new List(array))
 
 wrapArray = (array) -> WrappedArray.wrap(array)

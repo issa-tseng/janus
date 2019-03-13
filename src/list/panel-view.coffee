@@ -1,5 +1,5 @@
 { DomView, template, find, from, Model, bind, attribute } = require('janus')
-{ WrappedList } = require('./inspector')
+{ ListInspector } = require('./inspector')
 { KVPair } = require('../common/kv-pair-model')
 $ = require('janus-dollar')
 { min, max } = Math
@@ -88,6 +88,6 @@ module.exports = {
   ListEntry, ListPanelView
   registerWith: (library) ->
     library.register(KVPair, ListEntry, context: 'list-entry')
-    library.register(WrappedList, ListPanelView, context: 'panel')
+    library.register(ListInspector, ListPanelView, context: 'panel')
 }
 

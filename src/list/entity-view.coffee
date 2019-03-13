@@ -2,7 +2,7 @@
 { DomView, template, find, from, Model, attribute, bind, dēfault } = require('janus')
 $ = require('janus-dollar')
 { inspect } = require('../inspect')
-{ WrappedList } = require('./inspector')
+{ ListInspector } = require('./inspector')
 { exists } = require('../util')
 
 class ListEntityVM extends Model.build(
@@ -47,6 +47,6 @@ ListEntityView = DomView.withOptions({ viewModelClass: ListEntityVM }).build($('
 module.exports = {
   ListEntityView,
   registerWith: (library) ->
-    library.register(WrappedList, ListEntityView)
+    library.register(ListInspector, ListEntityView)
 }
 
