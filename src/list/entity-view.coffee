@@ -20,7 +20,7 @@ ListEntityView = DomView.withOptions({ viewModelClass: ListEntityVM }).build($('
     <span class="entity-title"><span class="entity-type"/><span class="entity-subtitle"/></span>
     <span class="entity-content">
       <span class="list-values"></span>
-      <button class="entity-more">&hellip;<span class="entity-more-count"/> more</button>
+      <button class="entity-more list-more">&hellip;<span class="entity-more-count"/> more</button>
     </span>
   </div>'), template(
 

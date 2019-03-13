@@ -41,14 +41,7 @@
           color: inherit
 
   .entity-more
-    background: none
-    border: none
-      bottom: 1px dotted #777
     display: none
-    margin: 0
-    outline: none
-    padding: 0
-
   .entity-more.has-more
     display: inline
 
@@ -88,6 +81,11 @@
   &.read-only, &.derived // TODO: do we really need two classes here?
     .list-insert, .kvPair-clear
       display: none !important
+
+  .list-last-item
+    display: none
+  .list-more.has-more + .list-last-item
+    display: block
 
 
 ////////////////////////////////////////////////////////////////////////////////
