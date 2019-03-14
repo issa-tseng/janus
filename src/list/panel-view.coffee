@@ -7,10 +7,7 @@ $ = require('janus-dollar')
 
 
 ################################################################################
-# LIST ENTRIES
-
-########################################
-# standard list entry
+# LIST ENTRY VIEW
 
 ListEntry = DomView.build($('
   <div class="list-entry">
@@ -22,18 +19,12 @@ ListEntry = DomView.build($('
 ))
 
 
-########################################
-# list entry mapping
-
-subtypes = { 'MappedList': 'mapped' }
-
-
 ################################################################################
 # LIST PANEL VIEW
 
 # TODO: a LOT of overlap with ListEntityVM
 class ListPanelVM extends Model.build(
-  bind('list', from('subject').get('list'))
+  bind('list', from.subject('list'))
   bind('length', from('list').flatMap((l) -> l.length))
   attribute('take', class extends attribute.Number
     default: ->
@@ -43,40 +34,7 @@ class ListPanelVM extends Model.build(
   bind('tail', from('length').and('take').all.map((l, t) -> max(0, l - t)))
 )
 
-ListPanelView = DomView.withOptions({ viewModelClass: ListPanelVM }).build($('
-  <div class="janus-inspect-panel janus-inspect-list">
-    <div class="panel-title">
-      List<span class="list-type"/>
-      <button class="janus-inspect-pin" title="Pin"/>
-    </div>
-    <div class="panel-content">
-      <div class="list-derivation">Derived from <span class="list-parent"/></div>
-      <div class="list-list"/>
-      <button class="list-more">&hellip; <span class="list-more-count"/> more</button>
-      <div class="list-last-item"/>
-      <button class="list-insert list-insert-last" title="Insert Item"/>
-    </div>
-  </div>'), template(
-  find('.janus-inspect-list')
-    .classed('derived', from('subject').get('derived'))
-    .classed('read-only', from.app().map((app) -> !(app.popValuator?)))
-
-  find('.list-type').text(from('subtype'))
-
-  find('.list-derivation').classed('hide', from('list').map((l) -> !l.parent?))
-  find('.list-parent').render(from('list').map((l) -> inspect(l.parent)))
-
-  find('.list-list')
-    .render(from('list').and.self().all.map((target, view) ->
-      target.enumerate()
-        .map((key) -> new KVPair({ target, key }))
-        .take(view.subject.get('take'))))
-      .options(from('subject').get('subtype').map((subtype) ->
-        criteria = { context: 'list-entry' }
-        criteria.subtype = subtypes[subtype] if subtypes[subtype]?
-        { renderItem: (r) -> r.criteria(criteria) }
-      ))
-
+moreButton = template(
   find('.list-more-count').text(from('tail'))
   find('.list-more')
     .classed('has-more', from('tail').map((t) -> t > 0))
@@ -88,6 +46,32 @@ ListPanelView = DomView.withOptions({ viewModelClass: ListPanelVM }).build($('
         else naive
       subject.set('take', target)
     )
+)
+
+ListPanelView = DomView.withOptions({ viewModelClass: ListPanelVM }).build($('
+  <div class="janus-inspect-panel janus-inspect-list">
+    <div class="panel-title">
+      List
+      <button class="janus-inspect-pin" title="Pin"/>
+    </div>
+    <div class="panel-content">
+      <div class="list-list"/>
+      <button class="list-more">&hellip; <span class="list-more-count"/> more</button>
+      <div class="list-last-item"/>
+      <button class="list-insert list-insert-last" title="Insert Item"/>
+    </div>
+  </div>'), template(
+  find('.janus-inspect-list')
+    .classed('read-only', from.app().map((app) -> !(app.popValuator?)))
+
+  find('.list-list')
+    .render(from('list').and.self().all.map((target, view) ->
+      target.enumerate()
+        .map((key) -> new KVPair({ target, key }))
+        .take(view.subject.get('take'))))
+      .options({ renderItem: (r) -> r.context('list-entry') })
+
+  moreButton
 
   find('.list-last-item').render(from('list').and('length')
     .all.map((target, length) -> new KVPair({ target, key: length - 1 })))
@@ -112,7 +96,8 @@ ListPanelView = DomView.withOptions({ viewModelClass: ListPanelVM }).build($('
 
 
 module.exports = {
-  ListEntry, ListPanelView
+  moreButton
+  ListEntry, ListPanelVM, ListPanelView
   registerWith: (library) ->
     library.register(KVPair, ListEntry, context: 'list-entry')
     library.register(ListInspector, ListPanelView, context: 'panel')

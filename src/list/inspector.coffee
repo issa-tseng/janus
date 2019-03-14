@@ -3,10 +3,6 @@
 class ListInspector extends Model.build(
   dēfault('type', 'List')
 
-  bind('subtype', from('list')
-    .map((list) -> list.constructor.name)
-    .map((name) -> name if name? and (name not in [ 'List', '_Class' ])))
-
   bind('derived', from('list').map((list) -> list.isDerivedList is true))
   bind('length', from('list').flatMap((list) -> list.length))
 )
@@ -17,7 +13,15 @@ class ListInspector extends Model.build(
     this.set('of.class', this.get_('list').constructor.modelClass)
     this.set('of.name', this.get_('of.class')?.name)
 
-  @inspect: (list) -> new ListInspector(list)
+  @inspect: (list) ->
+    if list.mapper
+      if list._bindings then new ListInspector(list)
+      else new ListInspector.Mapped(list)
+    else new ListInspector(list)
+
+ListInspector.Mapped = class extends ListInspector.build(
+  dēfault('type', 'MappedList')
+)
 
 module.exports = {
   ListInspector,

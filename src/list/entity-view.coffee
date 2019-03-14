@@ -17,7 +17,7 @@ class ListEntityVM extends Model.build(
 
 ListEntityView = DomView.withOptions({ viewModelClass: ListEntityVM }).build($('
   <div class="janus-inspect-entity janus-inspect-list">
-    <span class="entity-title"><span class="entity-type"/><span class="entity-subtitle"/></span>
+    <span class="entity-title"><span class="entity-type"/></span>
     <span class="entity-content">
       <span class="list-values"></span>
       <button class="entity-more list-more">&hellip;<span class="entity-more-count"/> more</button>
@@ -25,10 +25,6 @@ ListEntityView = DomView.withOptions({ viewModelClass: ListEntityVM }).build($('
   </div>'), template(
 
   find('.entity-type').text(from('subject').get('type'))
-
-  find('.entity-subtitle')
-    .classed('has-subtitle', from('subject').get('subtype').map(exists))
-    .text(from('subject').get('subtype'))
 
   find('.list-values').render(from('list').and('take').asVarying()
     .all.map((list, take) -> list.take(take).map(inspect)))
