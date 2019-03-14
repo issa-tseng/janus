@@ -20,6 +20,7 @@ module.exports = {
     list:
       panel: require('./list/panel-view')
       entity: require('./list/entity-view')
+      mapped: require('./list/derived/mapped-list')
     literal:
       entity: require('./literal/entity-view')
     model:

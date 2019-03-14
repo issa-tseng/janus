@@ -2,8 +2,15 @@
 { ListInspector } = require('./inspector')
 { KVPair } = require('../common/kv-pair-model')
 $ = require('janus-dollar')
+{ inspect } = require('../inspect')
 { min, max } = Math
 
+
+################################################################################
+# LIST ENTRIES
+
+########################################
+# standard list entry
 
 ListEntry = DomView.build($('
   <div class="list-entry">
@@ -13,6 +20,16 @@ ListEntry = DomView.build($('
   </div>'), template(
   find('.list-pair').render(from.self((view) -> view.subject))
 ))
+
+
+########################################
+# list entry mapping
+
+subtypes = { 'MappedList': 'mapped' }
+
+
+################################################################################
+# LIST PANEL VIEW
 
 # TODO: a LOT of overlap with ListEntityVM
 class ListPanelVM extends Model.build(
@@ -29,26 +46,36 @@ class ListPanelVM extends Model.build(
 ListPanelView = DomView.withOptions({ viewModelClass: ListPanelVM }).build($('
   <div class="janus-inspect-panel janus-inspect-list">
     <div class="panel-title">
-      List
+      List<span class="list-type"/>
       <button class="janus-inspect-pin" title="Pin"/>
     </div>
     <div class="panel-content">
+      <div class="list-derivation">Derived from <span class="list-parent"/></div>
       <div class="list-list"/>
       <button class="list-more">&hellip; <span class="list-more-count"/> more</button>
       <div class="list-last-item"/>
-      <button class="list-insert list-insert-last"/>
+      <button class="list-insert list-insert-last" title="Insert Item"/>
     </div>
   </div>'), template(
   find('.janus-inspect-list')
     .classed('derived', from('subject').get('derived'))
     .classed('read-only', from.app().map((app) -> !(app.popValuator?)))
 
+  find('.list-type').text(from('subtype'))
+
+  find('.list-derivation').classed('hide', from('list').map((l) -> !l.parent?))
+  find('.list-parent').render(from('list').map((l) -> inspect(l.parent)))
+
   find('.list-list')
     .render(from('list').and.self().all.map((target, view) ->
       target.enumerate()
         .map((key) -> new KVPair({ target, key }))
         .take(view.subject.get('take'))))
-      .options({ renderItem: (r) -> r.context('list-entry') })
+      .options(from('subject').get('subtype').map((subtype) ->
+        criteria = { context: 'list-entry' }
+        criteria.subtype = subtypes[subtype] if subtypes[subtype]?
+        { renderItem: (r) -> r.criteria(criteria) }
+      ))
 
   find('.list-more-count').text(from('tail'))
   find('.list-more')
