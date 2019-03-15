@@ -62,7 +62,9 @@ ListPanelView = DomView.withOptions({ viewModelClass: ListPanelVM }).build($('
     </div>
   </div>'), template(
   find('.janus-inspect-list')
-    .classed('read-only', from.app().map((app) -> !(app.popValuator?)))
+    .classed('read-only', from.app().map((app) -> !(app.popValuator?))
+      .and.subject('derived')
+      .all.map((x, y) -> (x is true) or (y is true)))
 
   find('.list-list')
     .render(from('list').and.self().all.map((target, view) ->

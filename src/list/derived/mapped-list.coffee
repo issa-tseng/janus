@@ -19,7 +19,7 @@ MappedEntryView = DomView.build($('
   <div class="list-entry list-mapped">
     <span class="list-index"/>
     <span class="list-value value-parent"/>
-    <span class="list-mapping"/>
+    <span class="list-function"/>
     <span class="list-value value-child"/>
   </div>'), template(
   find('.list-index').text(from('index'))
@@ -27,7 +27,7 @@ MappedEntryView = DomView.build($('
   find('.value-parent').render(from('parent.value').map(inspect))
   find('.value-child').render(from('child.value').map(inspect))
 
-  find('.list-mapping').on('mouseenter', (event, entry, view) ->
+  find('.list-function').on('mouseenter', (event, entry, view) ->
     return unless view.options.app.flyout?
     wf = new WrappedFunction(entry.get_('child.list').mapper, [ entry.get_('parent.value') ])
     view.options.app.flyout($(event.target), wf, 'panel')

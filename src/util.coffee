@@ -1,6 +1,7 @@
 { parse } = require('cherow')
 
 noop = (->)
+identity = (x) -> x
 
 pluralize = (single, many) -> (num) ->
   if typeof num is 'number'
@@ -31,6 +32,6 @@ deindent = (s) ->
   [ lines[0] ].concat(line.slice(minIndent) for line in rest).join('\n')
 
 module.exports = {
-  noop, pluralize, exists, stringify, getArguments, deindent
+  noop, identity, pluralize, exists, stringify, getArguments, deindent
 }
 

@@ -14,14 +14,21 @@ class ListInspector extends Model.build(
     this.set('of.name', this.get_('of.class')?.name)
 
   @inspect: (list) ->
-    if list.mapper
-      if list._bindings then new ListInspector(list)
+    if list.mapper?
+      if list._bindings? then new ListInspector(list)
       else new ListInspector.Mapped(list)
+    else if list.filterer? then new ListInspector.Filtered(list)
     else new ListInspector(list)
 
+########################################
+# DERIVED LIST TYPES
+
 ListInspector.Mapped = class extends ListInspector.build(
-  dēfault('type', 'MappedList')
-)
+  dēfault('type', 'MappedList'))
+
+ListInspector.Filtered = class extends ListInspector.build(
+  dēfault('type', 'FilteredList'))
+
 
 module.exports = {
   ListInspector,
