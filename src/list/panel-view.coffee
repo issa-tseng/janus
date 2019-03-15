@@ -15,7 +15,7 @@ ListEntry = DomView.build($('
     <hr/>
     <div class="list-pair"/>
   </div>'), template(
-  find('.list-pair').render(from.self((view) -> view.subject))
+  find('.list-pair').render(from.subject())
 ))
 
 
@@ -24,8 +24,7 @@ ListEntry = DomView.build($('
 
 # TODO: a LOT of overlap with ListEntityVM
 class ListPanelVM extends Model.build(
-  bind('list', from.subject('list'))
-  bind('length', from('list').flatMap((l) -> l.length))
+  bind('length', from.subject('list').flatMap((l) -> l.length))
   dēfault('take.setting', 10)
   bind('take.actual', from('take.setting').and('length').and('shows-last')
     .all.map((setting, length, showsLast) ->
@@ -38,13 +37,13 @@ ListPanelVM.ShowsLast = ListPanelVM.build(
   dēfault('shows-last', true))
 
 moreButton = template(
-  find('.list-more-count').text(from('tail').and('shows-last')
+  find('.list-more-count').text(from.vm('tail').and.vm('shows-last')
     .all.map((x, showsLast) -> if showsLast is true then x - 1 else x))
   find('.list-more')
-    .classed('has-more', from('tail').map((t) -> t > 0))
-    .on('click', (e, subject) ->
-      taken = subject.get_('take.setting')
-      subject.set('take.setting', taken + min(100, taken))
+    .classed('has-more', from.vm('tail').map((t) -> t > 0))
+    .on('click', (e, s, { viewModel }) ->
+      taken = viewModel.get_('take.setting')
+      viewModel.set('take.setting', taken + min(100, taken))
     )
 )
 
@@ -63,20 +62,18 @@ ListPanelView = DomView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).b
   </div>'), template(
   find('.janus-inspect-list')
     .classed('read-only', from.app().map((app) -> !(app.popValuator?))
-      .and.subject('derived')
+      .and('derived')
       .all.map((x, y) -> (x is true) or (y is true)))
 
   find('.list-list')
-    .render(from('list').and.self().all.map((target, view) ->
-      target.enumerate()
-        .take(view.subject.get('take.actual'))
-        .map((key) -> new KVPair({ target, key })))
-    )
+    .render(from('list').and.vm('take.actual').asVarying().all.map((target, take) ->
+      target.enumerate().take(take).map((key) -> new KVPair({ target, key }))
+    ))
     .options({ renderItem: (r) -> r.context('list-entry') })
 
   moreButton
 
-  find('.list-last-item').render(from('list').and('length')
+  find('.list-last-item').render(from('list').and.vm('length')
     .all.map((target, length) -> new KVPair({ target, key: length - 1 })))
 
   find('.janus-inspect-list').on('click', '.list-insert', (event, subject, view) ->

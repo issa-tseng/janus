@@ -53,10 +53,8 @@ MappedListView = DomView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).
   find('.list-mapper').render(from('list').map((list) -> inspect(list.mapper)))
   find('.list-parent').render(from('list').map((list) -> inspect(list.parent)))
 
-  find('.list-list').render(from('list').and.self().all.map((list, view) ->
-    list.enumerate()
-      .take(view.subject.get('take.actual'))
-      .map((index) -> new MappedEntry(list, index)))
+  find('.list-list').render(from('list').and.vm('take.actual').asVarying().all.map((list, take) ->
+    list.enumerate().take(take).map((index) -> new MappedEntry(list, index)))
   )
   find('.list-last-item').render(from('list').map((list) -> new MappedEntry(list, -1)))
 

@@ -44,7 +44,7 @@ FilteredEntryView = DomView.build($('
 
 # we have to use our parent's length to determine our length threshold.
 FilteredListVM = ListPanelVM.build(
-  bind('length', from('list').flatMap((l) -> l.parent.length)))
+  bind('length', from.subject('list').flatMap((l) -> l.parent.length)))
 
 FilteredListView = DomView.withOptions({ viewModelClass: FilteredListVM }).build($('
   <div class="janus-inspect-panel janus-inspect-list list-filtered">
@@ -64,10 +64,8 @@ FilteredListView = DomView.withOptions({ viewModelClass: FilteredListVM }).build
   find('.list-filterer').render(from('list').map((list) -> inspect(list.filterer)))
   find('.list-parent').render(from('list').map((list) -> inspect(list.parent)))
   find('.list-plain').render(from('list').map((list) -> new ListInspector(list)))
-  find('.list-list').render(from('list').and.self().all.map((list, view) ->
-    list.parent.enumerate()
-      .take(view.subject.get('take.actual'))
-      .map((index) -> new FilteredEntry(list, index)))
+  find('.list-list').render(from('list').and.vm('take.actual').asVarying().all.map((list, take) ->
+    list.parent.enumerate().take(take).map((index) -> new FilteredEntry(list, index)))
   )
 
   moreButton

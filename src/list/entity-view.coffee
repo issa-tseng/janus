@@ -6,9 +6,8 @@ $ = require('janus-dollar')
 { exists } = require('../util')
 
 class ListEntityVM extends Model.build(
-    bind('list', from('subject').get('list'))
     dēfault('take', 5)
-    bind('more_count', from('subject').get('length').and('take')
+    bind('more_count', from.subject('length').and('take')
       .all.map((all, taken) -> max(0, all - taken)))
   )
 
@@ -24,19 +23,19 @@ ListEntityView = DomView.withOptions({ viewModelClass: ListEntityVM }).build($('
     </span>
   </div>'), template(
 
-  find('.entity-type').text(from('subject').get('type'))
+  find('.entity-type').text(from('type'))
 
-  find('.list-values').render(from('list').and('take').asVarying()
+  find('.list-values').render(from('list').and.vm('take').asVarying()
     .all.map((list, take) -> list.take(take).map(inspect)))
 
   find('.entity-more-count')
-    .text(from('more_count'))
+    .text(from.vm('more_count'))
 
   find('.entity-more')
-    .classed('has-more', from('more_count').map((x) -> x > 0))
-    .on('click', (_, subject) ->
-      taken = subject.get_('take')
-      subject.set('take', taken + min(25, taken))
+    .classed('has-more', from.vm('more_count').map((x) -> x > 0))
+    .on('click', (e, s, { viewModel }) ->
+      taken = viewModel.get_('take')
+      viewModel.set('take', taken + min(25, taken))
     )
 ))
 

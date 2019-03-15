@@ -12,15 +12,10 @@ $ = require('janus-dollar')
 # REACTION VIEW (list)
 
 ReactionVM = Model.build(
-  bind('at', from('subject').get('at').map(DateTime.fromJSDate))
-  bind('change_count', from('subject').get('changes').flatMap((cs) -> cs.length))
-  bind('target', from('settings.target').and('subject').all.flatMap((target, subject) ->
-    if target?
-      subject.watchNode(target)
-    else
-      subject.get('changes').flatMap((cs) -> cs.at(-1))
-  ))
-  bind('root', from('target').and('subject').get('root').all.map((t, r) -> r unless t is r))
+  bind('at', from.subject('at').map(DateTime.fromJSDate)) # TODO: not always correct?
+  bind('change_count', from.subject('changes').flatMap((cs) -> cs.length))
+  bind('target', from.subject('changes').flatMap((cs) -> cs.at(-1)))
+  bind('root', from('target').and.subject().get('root').all.map((t, r) -> r unless t is r))
 )
 
 ReactionView = DomView.withOptions({ viewModelClass: ReactionVM }).build($('
@@ -42,20 +37,20 @@ ReactionView = DomView.withOptions({ viewModelClass: ReactionVM }).build($('
     </div>
   '), template(
 
-    find('.time .minor').text(from('at').map((t) -> t.toFormat("HH:mm:")))
-    find('.time .major').text(from('at').map((t) -> t.toFormat("ss.SSS")))
+    find('.time .minor').text(from.vm('at').map((t) -> t.toFormat("HH:mm:")))
+    find('.time .major').text(from.vm('at').map((t) -> t.toFormat("ss.SSS")))
 
-    find('.reaction').classed('singular', from('target').and('root').all.map((x, y) -> x is y))
+    find('.reaction').classed('singular', from.vm('target').and('root').all.map((x, y) -> x is y))
 
-    find('.reaction-inspectionTarget .reaction-part-id').text(from('target').get('id').map((id) -> "##{id}"))
-    find('.reaction-inspectionTarget .reaction-part-delta').render(from('target')).context('delta')
+    find('.reaction-inspectionTarget .reaction-part-id').text(from.vm('target').get('id').map((id) -> "##{id}"))
+    find('.reaction-inspectionTarget .reaction-part-delta').render(from.vm('target')).context('delta')
 
-    find('.reaction-intermediate').classed('hide', from('change_count').map((x) -> x < 3))
-    find('.reaction-intermediate .count').text(from('change_count').map((cc) -> cc - 2))
+    find('.reaction-intermediate').classed('hide', from.vm('change_count').map((x) -> x < 3))
+    find('.reaction-intermediate .count').text(from.vm('change_count').map((cc) -> cc - 2))
 
-    find('.reaction-root').classed('hide', from('root').map((r) -> !r?))
-    find('.reaction-root .reaction-part-id').text(from('root').get('id').map((id) -> "##{id}"))
-    find('.reaction-root .reaction-part-delta').render(from('root')).context('delta')
+    find('.reaction-root').classed('hide', from.vm('root').map((r) -> !r?))
+    find('.reaction-root .reaction-part-id').text(from.vm('root').get('id').map((id) -> "##{id}"))
+    find('.reaction-root .reaction-part-delta').render(from.vm('root')).context('delta')
   )
 )
 
@@ -190,29 +185,29 @@ VaryingView = DomView.withOptions({ viewModelClass: VaryingPanel }).build($('
       </div>
     </div>
   '), template(
-    find('.varying-id').text(from('subject').get('id'))
+    find('.varying-id').text(from('id'))
 
-    find('.varying-snapshot').classed('hide', from('active_reaction').map((x) -> !x?))
-    find('.varying-snapshot-close').on('click', (event, subject) ->
+    find('.varying-snapshot').classed('hide', from.vm('active_reaction').map((x) -> !x?))
+    find('.varying-snapshot-close').on('click', (event, s, { viewModel }) ->
       event.preventDefault()
-      subject.unset('active_reaction')
+      viewModel.unset('active_reaction')
     )
 
-    find('.varying-inert').classed('hide', from('subject').get('observations')
+    find('.varying-inert').classed('hide', from('observations')
       .flatMap((obs) -> obs?.nonEmpty()))
 
-    find('.varying-observe').on('click', (event, vp) ->
+    find('.varying-observe').on('click', (event, subject) ->
       event.preventDefault()
-      vp.get_('subject').varying.react()
+      subject.varying.react()
     )
 
-    find('.varying-tree').render(from('subject').and('active_reaction').all.flatMap((wv, ar) ->
+    find('.varying-tree').render(from.subject().and.vm('active_reaction').all.flatMap((wv, ar) ->
       if ar? then wv.get('id').flatMap((id) -> ar.get("tree.#{id}")) else wv
     )).context('tree')
 
-    find('.varying-reactions').render(from.attribute('active_reaction'))
+    find('.varying-reactions').render(from.vm().attribute('active_reaction'))
       .context('edit').criteria( style: 'list' )
-      .options(from('subject').map((wv) -> { renderItem: (x) -> x.options( settings: { target: wv } ) }))
+      .options(from.subject().map((wv) -> { renderItem: (x) -> x.options( settings: { target: wv } ) }))
   )
 )
 

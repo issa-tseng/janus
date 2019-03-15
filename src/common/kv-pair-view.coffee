@@ -6,10 +6,7 @@ $ = require('janus-dollar')
 
 class KVPairVM extends Model.build(
     attribute('edit', attribute.Text)
-    bind('key', from('subject').get('key'))
-    bind('value', from('subject').get('value'))
-    bind('primitive', from('value').map(isPrimitive))
-    bind('target', from('subject').get('target'))
+    bind('primitive', from.subject('value').map(isPrimitive))
   )
   _initialize: ->
     app = this.get_('options.app')
@@ -17,7 +14,7 @@ class KVPairVM extends Model.build(
     subject = this.get_('subject')
 
     do =>
-      value = this.get_('subject').get_('value')
+      value = subject.get_('value')
       this.set('edit', if isPrimitive(value) or isArray(value) then JSON.stringify(value) else '(…)')
 
     this.get('edit').react(false, (raw) =>
@@ -39,8 +36,8 @@ KVPairView = DomView.withOptions({ viewModelClass: KVPairVM }).build($('
     </div>
   '), template(
     find('.janus-inspect-kvPair')
-      .classed('bound', from('subject').get('bound'))
-      .classed('primitive', from('primitive'))
+      .classed('bound', from('bound'))
+      .classed('primitive', from.vm('primitive'))
 
     find('.kvPair-key')
       .text(from('key'))
@@ -49,13 +46,13 @@ KVPairView = DomView.withOptions({ viewModelClass: KVPairVM }).build($('
     find('.kvPair-value')
       .render(from('subject').get('binding').and('value')
         .all.map((b, v) -> inspect(b ? v)))
-      .on('dblclick', (e, subject, v, dom) ->
-        return if subject.get_('subject').get_('bound') is true
-        return unless subject.get_('primitive') is true
+      .on('dblclick', (e, subject, { viewModel }, dom) ->
+        return if subject.get_('bound') is true
+        return unless viewModel.get_('primitive') is true
         dom.find('.kvPair-edit input').focus().select()
       )
 
-    find('.kvPair-edit').render(from.attribute('edit'))
+    find('.kvPair-edit').render(from.vm().attribute('edit'))
       .criteria( context: 'edit', commit: 'hard' )
 
     find('.kvPair-clear').on('click', (_, subject) ->
