@@ -3,7 +3,7 @@
 
 
 types =
-  from: Case.build('dynamic', 'get', 'attribute', 'varying', 'app', 'self')
+  from: Case.build('dynamic', 'get', 'attribute', 'varying', 'app', 'self', 'subject', 'vm')
 
   result: Case.build('init', 'pending', 'progress', 'complete': [ 'success', 'failure' ])
 

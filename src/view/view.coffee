@@ -7,7 +7,7 @@
 
 Base = require('../core/base').Base
 { Varying } = require('../core/varying')
-{ dynamic, get, resolve, attribute, varying, app, self } = require('../core/types').from
+{ dynamic, get, subject, attribute, vm, varying, app, self } = require('../core/types').from
 { match } = require('../core/case')
 { isFunction, isString } = require('../util/util')
 
@@ -18,18 +18,17 @@ class View extends Base
   # The `View` takes first and foremost a `subject`, which is the object it aims
   # to create a view for. It also takes an `options` hash, which has no
   # predefined behavior.
-  constructor: (subject, @options = {}) ->
+  constructor: (@subject, @options = {}) ->
     super()
 
-    # If we have a reference to a ViewModel intermediary, instantiate it and
-    # inject our actual subject. Otherwise, accept as-is.
-    this.subject =
-      if this.constructor.viewModelClass?
-        vm = new this.constructor.viewModelClass({ view: this, options: this.options, subject }, { app: this.options.app })
-        vm.destroyWith(this)
-        vm
-      else
-        subject
+    # If we have a reference to a ViewModel intermediary, instantiate and store it.
+    if this.constructor.viewModelClass?
+      this.viewModel = new this.constructor.viewModelClass({
+        subject: this.subject
+        view: this
+        options: this.options
+      }, { app: this.options.app })
+      this.viewModel.destroyWith(this)
 
     this._initialize?()
 
@@ -42,14 +41,16 @@ class View extends Base
   # Standard point implementation that all subclasses can typically use unaltered.
   pointer: -> this.pointer$ ?= match(
     dynamic (x) =>
-      if isFunction(x)
-        Varying.of(x(this.subject))
-      else if isString(x) and this.subject.get?
+      if isString(x) and this.subject.get?
         this.subject.get(x)
+      else if isFunction(x)
+        Varying.of(x(this.subject))
       else
         Varying.of(x)
     get (x) => this.subject.get(x)
+    subject (x) => if x? then this.subject.get(x) else new Varying(this.subject)
     attribute (x) => new Varying(this.subject.attribute(x))
+    vm (x) => if x? then this.viewModel?.get(x) else new Varying(this.viewModel)
     varying (x) => if isFunction(x) then Varying.of(x(this.subject)) else Varying.of(x)
     app (x) =>
       if x? then this.options.app.get(x)

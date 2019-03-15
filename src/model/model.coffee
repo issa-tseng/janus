@@ -76,6 +76,9 @@ class Model extends Map
       else
         Varying.of(x)
     cases.get (x) => this.get(x)
+    cases.subject (x) =>
+      if x? then this.get('subject').flatMap((s) -> s?.get(x))
+      else this.get('subject')
     cases.attribute (x) => new Varying(this.attribute(x))
     cases.varying (x) => if isFunction(x) then Varying.of(x(this)) else Varying.of(x)
     cases.app (x) =>

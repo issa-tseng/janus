@@ -201,6 +201,20 @@ describe 'Model', ->
         m.set('a', 2)
         m.get_('b').should.equal(2)
 
+      it 'should point at subjects without a parameter', ->
+        TestModel = Model.build(bind('x', from.subject()))
+        m = new TestModel()
+        should.not.exist(m.get_('x'))
+        m.set('subject', 42)
+        m.get_('x').should.equal(42)
+
+      it 'should point at subject data given a parameter', ->
+        TestModel = Model.build(bind('x', from.subject('y')))
+        m = new TestModel()
+        should.not.exist(m.get_('x'))
+        m.set('subject', new Model({ y: 42 }))
+        m.get_('x').should.equal(42)
+
       it 'should point attribute objects', ->
         TestModel = Model.build(
           attribute('a', attributes.Number)

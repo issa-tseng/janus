@@ -173,6 +173,26 @@ describe 'DomView', ->
       artifact = (new TestView('hello')).artifact() # not crashing is also a check here.
       artifact.text().should.equal('whatever')
 
+    it 'should get the subject given no parameter', ->
+      attr = null
+      rendered = []
+      TestView = DomView.build($('<div/>'), template(
+        find('div').text(from.subject())
+      ))
+
+      artifact = (new TestView('hello')).artifact()
+      artifact.text().should.equal('hello')
+
+    it 'should get from the subject given a parameter', ->
+      attr = null
+      rendered = []
+      TestView = DomView.build($('<div/>'), template(
+        find('div').text(from.subject('x'))
+      ))
+
+      artifact = (new TestView(new Model({ x: 42 }))).artifact()
+      artifact.text().should.equal('42')
+
     it 'points attribute inputs correctly', ->
       attr = null
       subject = { attribute: (x) -> attr = x; 'test' }
@@ -183,6 +203,32 @@ describe 'DomView', ->
       artifact = (new TestView(subject)).artifact()
       attr.should.equal('test_attr')
       artifact.text().should.equal('test')
+
+    it 'should point at the viewmodel given no parameter', ->
+      class ViewModel
+        destroyWith: ->
+        toString: -> 'view model instance'
+      attr = null
+      rendered = []
+      TestView = DomView.withOptions({ viewModelClass: ViewModel }).build($('<div/>'), template(
+        find('div').text(from.vm())
+      ))
+
+      artifact = (new TestView()).artifact()
+      artifact.text().should.equal('view model instance')
+
+    it 'should point at viewmodel data given a parameter', ->
+      class ViewModel extends Model
+        _initialize: -> this.set('test', 'vm test')
+
+      attr = null
+      rendered = []
+      TestView = DomView.withOptions({ viewModelClass: ViewModel }).build($('<div/>'), template(
+        find('div').text(from.vm('test'))
+      ))
+
+      artifact = (new TestView()).artifact()
+      artifact.text().should.equal('vm test')
 
     it 'points varying function inputs correctly', ->
       passed = null
@@ -444,7 +490,7 @@ describe 'DomView', ->
       view._subwires[1].stopped.should.equal(true)
 
   describe 'viewModel declaration', ->
-    it 'should wrap in ViewModel if one is provided via builder options', ->
+    it 'should create a ViewModel if one is provided via builder options', ->
       class MyModel extends Model
         id: 'real mccoy'
       class MyViewModel extends Model
@@ -452,7 +498,7 @@ describe 'DomView', ->
 
       WithViewModel = DomView.withOptions({ viewModelClass: MyViewModel }).build(
         $('<div/>'),
-        find('div').text(from.self((view) -> view.subject.id))
+        find('div').text(from.self((view) -> view.viewModel.id))
       )
 
       model = new MyModel()
