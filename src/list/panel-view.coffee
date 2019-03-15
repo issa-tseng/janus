@@ -1,4 +1,4 @@
-{ DomView, template, find, from, Model, bind, attribute } = require('janus')
+{ DomView, template, find, from, Model, bind, dēfault } = require('janus')
 { ListInspector } = require('./inspector')
 { KVPair } = require('../common/kv-pair-model')
 $ = require('janus-dollar')
@@ -26,29 +26,29 @@ ListEntry = DomView.build($('
 class ListPanelVM extends Model.build(
   bind('list', from.subject('list'))
   bind('length', from('list').flatMap((l) -> l.length))
-  attribute('take', class extends attribute.Number
-    default: ->
-      if this.model.get_('subject').get_('list').length_ is 11 then 11
-      else 10
-  )
-  bind('tail', from('length').and('take').all.map((l, t) -> max(0, l - t)))
+  dēfault('take.setting', 10)
+  bind('take.actual', from('take.setting').and('length').and('shows-last')
+    .all.map((setting, length, showsLast) ->
+      threshold = if showsLast is true then 2 else 1
+      if setting + threshold >= length then length else setting
+    ))
+  bind('tail', from('length').and('take.actual').all.map((l, t) -> max(0, l - t)))
 )
+ListPanelVM.ShowsLast = ListPanelVM.build(
+  dēfault('shows-last', true))
 
 moreButton = template(
-  find('.list-more-count').text(from('tail'))
+  find('.list-more-count').text(from('tail').and('shows-last')
+    .all.map((x, showsLast) -> if showsLast is true then x - 1 else x))
   find('.list-more')
     .classed('has-more', from('tail').map((t) -> t > 0))
     .on('click', (e, subject) ->
-      taken = subject.get_('take')
-      naive = taken + min(100, taken)
-      target = # it's always dumb when a button takes up space and says "show me 1 more!"
-        if naive is subject.get_('length') - 1 then naive + 1
-        else naive
-      subject.set('take', target)
+      taken = subject.get_('take.setting')
+      subject.set('take.setting', taken + min(100, taken))
     )
 )
 
-ListPanelView = DomView.withOptions({ viewModelClass: ListPanelVM }).build($('
+ListPanelView = DomView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).build($('
   <div class="janus-inspect-panel janus-inspect-list">
     <div class="panel-title">
       List
@@ -69,9 +69,10 @@ ListPanelView = DomView.withOptions({ viewModelClass: ListPanelVM }).build($('
   find('.list-list')
     .render(from('list').and.self().all.map((target, view) ->
       target.enumerate()
-        .map((key) -> new KVPair({ target, key }))
-        .take(view.subject.get('take'))))
-      .options({ renderItem: (r) -> r.context('list-entry') })
+        .take(view.subject.get('take.actual'))
+        .map((key) -> new KVPair({ target, key })))
+    )
+    .options({ renderItem: (r) -> r.context('list-entry') })
 
   moreButton
 

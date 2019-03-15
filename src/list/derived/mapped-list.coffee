@@ -20,7 +20,10 @@ MappedEntryView = DomView.build($('
     <span class="list-function"/>
     <span class="list-value value-child"/>
   </div>'), template(
-  find('.list-index').text(from('index'))
+  find('.list-index').text(from('parent.list').and('index').all.flatMap((list, index) ->
+    if index is -1 then list.length.map((x) -> x - 1)
+    else index
+  ))
 
   find('.value-parent').render(from('parent.value').map(inspect))
   find('.value-child').render(from('child.value').map(inspect))
@@ -32,7 +35,7 @@ MappedEntryView = DomView.build($('
   )
 ))
 
-MappedListView = DomView.withOptions({ viewModelClass: ListPanelVM }).build($('
+MappedListView = DomView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).build($('
   <div class="janus-inspect-panel janus-inspect-list">
     <div class="panel-title">
       Mapped List
@@ -50,8 +53,10 @@ MappedListView = DomView.withOptions({ viewModelClass: ListPanelVM }).build($('
   find('.list-mapper').render(from('list').map((list) -> inspect(list.mapper)))
   find('.list-parent').render(from('list').map((list) -> inspect(list.parent)))
 
-  find('.list-list').render(from('list').map((list) ->
-    list.enumerate().map((index) -> new MappedEntry(list, index)))
+  find('.list-list').render(from('list').and.self().all.map((list, view) ->
+    list.enumerate()
+      .take(view.subject.get('take.actual'))
+      .map((index) -> new MappedEntry(list, index)))
   )
   find('.list-last-item').render(from('list').map((list) -> new MappedEntry(list, -1)))
 
