@@ -1,11 +1,9 @@
 { DomView, template, find, from, Model, bind } = require('janus')
 $ = require('janus-dollar')
-{ KVPair } = require('../../common/kv-pair-model')
 { inspect } = require('../../inspect')
 { ListPanelVM, moreButton } = require('../panel-view')
 { ListInspector } = require('../inspector')
 { WrappedFunction } = require('../../function/inspector')
-{ inspect } = require('../../inspect')
 
 
 class MappedEntry extends Model.build(
@@ -37,7 +35,7 @@ MappedEntryView = DomView.build($('
 MappedListView = DomView.withOptions({ viewModelClass: ListPanelVM }).build($('
   <div class="janus-inspect-panel janus-inspect-list">
     <div class="panel-title">
-      List.map
+      Mapped List
       <button class="janus-inspect-pin" title="Pin"/>
     </div>
     <div class="panel-content">
