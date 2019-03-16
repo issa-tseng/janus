@@ -47,6 +47,15 @@ describe 'App model', ->
       view.options.test.should.equal(24)
       view.options.app.should.equal(app)
 
+    it 'should inject the parent as options.parent into the instantiated view', ->
+      class A
+        constructor: (_, @options) ->
+
+      app = new App( views: { get: -> A } )
+      view = app.view(12, null, { test: 24 }, 75)
+      view.options.test.should.equal(24)
+      view.options.parent.should.equal(75)
+
     it 'should not override an explicit options.app', ->
       class A
         constructor: (_, @options) ->

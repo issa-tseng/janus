@@ -6,24 +6,29 @@ from = require('../core/from')
 
 pointify = (x, point) -> x?.all?.point?(point) ? Varying.of(x)
 
-getView = Varying.lift((subject, app, context, criteria, options) ->
-  app.view(subject, Object.assign({ context }, criteria), options)
+getView = Varying.lift((app, subject, context, criteria, options, parent) ->
+  app.view(subject, Object.assign({ context }, criteria), options, parent)
 )
-getView_subject = Varying.lift((subject, app) -> app.view(subject))
-getView_subjectContext = Varying.lift((subject, app, context) -> app.view(subject, { context }))
-getView_subjectCriteria = Varying.lift((subject, app, criteria) -> app.view(subject, criteria))
+getView_subject = Varying.lift((app, subject, parent) -> app.view(subject, undefined, undefined, parent))
+getView_subjectContext = Varying.lift((app, subject, context, parent) -> app.view(subject, { context }, undefined, parent))
+getView_subjectCriteria = Varying.lift((app, subject, criteria, parent) -> app.view(subject, criteria, undefined, parent))
+getView_subjectOptions = Varying.lift((app, subject, options, parent) -> app.view(subject, undefined, options, parent))
 
+fromApp = from.app().all
+fromSelf = from.self().all
 render = (data, args = {}) ->
   result = (dom, point, immediate = true) ->
     view =
       if !args.context? and !args.criteria? and !args.options?
-        getView_subject(data.all.point(point), from.app().all.point(point))
+        getView_subject(fromApp.point(point), data.all.point(point), fromSelf.point(point))
       else if !args.criteria? and !args.options?
-        getView_subjectContext(data.all.point(point), from.app().all.point(point), pointify(args.context, point))
+        getView_subjectContext(fromApp.point(point), data.all.point(point), pointify(args.context, point), fromSelf.point(point))
       else if !args.context? and !args.options?
-        getView_subjectCriteria(data.all.point(point), from.app().all.point(point), pointify(args.criteria, point))
+        getView_subjectCriteria(fromApp.point(point), data.all.point(point), pointify(args.criteria, point), fromSelf.point(point))
+      else if !args.context? and !args.criteria?
+        getView_subjectOptions(fromApp.point(point), data.all.point(point), pointify(args.options, point), fromSelf.point(point))
       else
-        getView(data.all.point(point), from.app().all.point(point), pointify(args.context, point), pointify(args.criteria, point), pointify(args.options, point))
+        getView(fromApp.point(point), data.all.point(point), pointify(args.context, point), pointify(args.criteria, point), pointify(args.options, point), fromSelf.point(point))
 
     # despite the nomenclature we /always/ react immediately here, since
     # we do need to initialize the entire dom tree. instead, the immediate flag

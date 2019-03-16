@@ -422,6 +422,19 @@ describe 'Mutator', ->
       criteria.attrs.should.equal(2)
       opts.should.eql({ test: 3 })
 
+    it 'passes itself to the app as parent', ->
+      parent = null
+      dom = { append: (->), empty: (->), data: (->), children: (->) }
+      app = { view: (a, b, c, x) -> parent = x; { artifact: (->) } }
+      point = match(
+        types.from.app -> Varying.of(app)
+        types.from.self -> Varying.of(23)
+        otherwise (x) -> passthrough(x)
+      )
+
+      mutators.render(from.varying(new Varying(1)))(dom, point)
+      parent.should.equal(23)
+
     it 'clears out the previous subview', ->
       views = []
       emptied = 0
@@ -547,6 +560,18 @@ describe 'Mutator', ->
         mutators.render(from.varying(new Varying(1))).criteria(new Varying({ appearance: 'specialized' }))(dom, point)
         appended.should.equal(4)
         criteria.should.eql({ appearance: 'specialized' })
+
+      it 'should work given a subject and options', ->
+        appended = null
+        options = null
+        newView = { artifact: -> 4 }
+        dom = { append: ((x) -> appended = x), empty: (->), children: (->) }
+        app = { view: ((_, __, o) -> options = o; newView) }
+        point = passthroughWithApp(app)
+
+        mutators.render(from.varying(new Varying(1))).options(new Varying({ cool: true }))(dom, point)
+        appended.should.equal(4)
+        options.should.eql({ cool: true })
 
       it 'should work given the works', ->
         appended = null

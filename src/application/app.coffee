@@ -16,12 +16,12 @@ class App extends Model.build(
   Object.defineProperty(@prototype, 'views', get: -> this.get_('views'))
   Object.defineProperty(@prototype, 'resolvers', get: -> this.get_('resolvers'))
 
-  view: (subject, criteria = {}, options = {}) ->
+  view: (subject, criteria = {}, options = {}, parent) ->
     klass = this.get_('views').get(subject, criteria)
     return unless klass?
 
     # instantiate result; autoinject ourself as app.
-    view = new klass(subject, Object.assign({ app: this }, options))
+    view = new klass(subject, Object.assign({ app: this, parent }, options))
     this.emit('createdView', view)
 
     # Handle reference resolution, both auto and manual.
