@@ -9,6 +9,7 @@ Base = require('../core/base').Base
 { Varying } = require('../core/varying')
 { dynamic, get, subject, attribute, vm, varying, app, self } = require('../core/types').from
 { match } = require('../core/case')
+{ NavigatorRoot } = require('./navigator')
 { isFunction, isString } = require('../util/util')
 
 
@@ -57,6 +58,11 @@ class View extends Base
       else new Varying(this.options.app)
     self (x) => if isFunction(x) then Varying.of(x(this)) else Varying.of(this)
   )
+
+  # navigation plumb-throughs
+  into: (selector) -> (this._navigator$ ?= new NavigatorRoot(this)).into(selector)
+  parent: (selector) -> (this._navigator$ ?= new NavigatorRoot(this)).parent(selector)
+  closest: (selector) -> (this._navigator$ ?= new NavigatorRoot(this)).closest(selector)
 
 
 module.exports = { View }
