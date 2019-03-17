@@ -1,22 +1,12 @@
 { List } = require('../collection/list')
 { identity } = require('../util/util')
 
-match =
-  if (typeof Symbol isnt 'undefined') and (Symbol.hasInstance)
-    (selector, view) ->
-      if undefined is selector then true
-      else if view is selector then true
-      else if selector[Symbol.hasInstance]?
-        if view instanceof selector then true
-        else if view?.subject instanceof selector then true
-  else
-    (selector, view) ->
-      if undefined is selector then true
-      else if view is selector then true
-      else try
-        if view instanceof selector then true
-        else if view?.subject instanceof selector then true
-
+match = (selector, view) ->
+  if undefined is selector then true
+  else if view is selector then true
+  else if selector[Symbol.hasInstance]?
+    if view instanceof selector then true
+    else if view?.subject instanceof selector then true
 
 # TODO: all this would i guess be more efficient with transducers?
 # but we're not going to do all that yet.
