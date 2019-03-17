@@ -829,6 +829,57 @@ describe 'Varying', ->
         o2.stop()
         count.should.equal(0)
 
+      it 'should return an array on inactive get', ->
+        varyings = (new Varying(idx) for idx in [ 0..2 ])
+        Varying.all(varyings).get().should.eql([ 0..2 ])
+
+      it 'should return an array on active get', ->
+        varyings = (new Varying(idx) for idx in [ 0..2 ])
+        v = Varying.all(varyings)
+        v.react(->)
+        v.get().should.eql([ 0..2 ])
+
+    describe 'argcount specialization', ->
+      it 'should work given one argument', ->
+        varyings = (new Varying(idx) for idx in [ 0..0 ])
+        Varying.all(varyings).map((args...) -> args.should.eql([ 0..0 ])).react(->)
+
+      it 'should work given two arguments', ->
+        varyings = (new Varying(idx) for idx in [ 0..1 ])
+        Varying.all(varyings).map((args...) -> args.should.eql([ 0..1 ])).react(->)
+
+      it 'should work given three arguments', ->
+        varyings = (new Varying(idx) for idx in [ 0..2 ])
+        Varying.all(varyings).map((args...) -> args.should.eql([ 0..2 ])).react(->)
+
+      it 'should work given four arguments', ->
+        varyings = (new Varying(idx) for idx in [ 0..3 ])
+        Varying.all(varyings).map((args...) -> args.should.eql([ 0..3 ])).react(->)
+
+      it 'should work given five arguments', ->
+        varyings = (new Varying(idx) for idx in [ 0..4 ])
+        Varying.all(varyings).map((args...) -> args.should.eql([ 0..4 ])).react(->)
+
+      it 'should work given six arguments', ->
+        varyings = (new Varying(idx) for idx in [ 0..5 ])
+        Varying.all(varyings).map((args...) -> args.should.eql([ 0..5 ])).react(->)
+
+      it 'should work given seven arguments', ->
+        varyings = (new Varying(idx) for idx in [ 0..6 ])
+        Varying.all(varyings).map((args...) -> args.should.eql([ 0..6 ])).react(->)
+
+      it 'should work given eight arguments', ->
+        varyings = (new Varying(idx) for idx in [ 0..7 ])
+        Varying.all(varyings).map((args...) -> args.should.eql([ 0..7 ])).react(->)
+
+      it 'should work given nine arguments', ->
+        varyings = (new Varying(idx) for idx in [ 0..8 ])
+        Varying.all(varyings).map((args...) -> args.should.eql([ 0..8 ])).react(->)
+
+      it 'should work given ten arguments', ->
+        varyings = (new Varying(idx) for idx in [ 0..9 ])
+        Varying.all(varyings).map((args...) -> args.should.eql([ 0..9 ])).react(->)
+
   describe 'lift', ->
     it 'should take a pure function and arguments and return a mapped varying', ->
       va = new Varying(2)
