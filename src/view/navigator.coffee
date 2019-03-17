@@ -1,9 +1,11 @@
+{ Varying } = require('../core/varying')
 { List } = require('../collection/list')
-{ identity } = require('../util/util')
+{ identity, isString, isNumber } = require('../util/util')
 
 match = (selector, view) ->
   if undefined is selector then true
   else if view is selector then true
+  else if view?.subject is selector then true
   else if selector[Symbol.hasInstance]?
     if view instanceof selector then true
     else if view?.subject instanceof selector then true
@@ -12,18 +14,32 @@ match = (selector, view) ->
 # but we're not going to do all that yet.
 # TODO: also these flatMaps/flattens are sort of painful.
 
+isKey = (x) -> isString(x) or isNumber(x)
 into = (selector) -> (selection, primitive) ->
+  selectorIsKey = isKey(selector)
   if primitive is true
     results = []
     for selected in selection
-      for binding in selected._bindings when binding.view?
-        view = binding.view.get()
-        results.push(view) if view? and match(selector, view) is true
+      localSelector = if selectorIsKey then selected.subject?.get_(selector) ? selector else selector
+      if selected._bindings? # here we opt to write two loops rather than execute two loops.
+        for binding in selected._bindings when binding.view?
+          view = binding.view.get()
+          results.push(view) if view? and match(localSelector, view) is true
+      else if selected._mappedBindings?
+        for obs in selected._mappedBindings.list
+          view = obs.parent.get()
+          results.push(view) if view? and match(localSelector, view) is true
     results
   else
     selection.map((selected) ->
-      bindings = new List(binding.view for binding in selected._bindings when binding.view?)
-      bindings.flatMap(identity).filter((view) -> view? and match(selector, view))
+      localSelector = Varying.of(if selectorIsKey then selected.subject?.get(selector) else selector)
+      subviews =
+        if selected._bindings? then new List(binding.view for binding in selected._bindings when binding.view?)
+        else if selected._mappedBindings? then selected._mappedBindings.flatMap((binding) -> binding.parent)
+      subviews.flatMap(identity).filter((view) ->
+        if !view? then false
+        else localSelector.map((s) -> match(s, view))
+      )
     ).flatten()
 
 parentQ = (selector) -> (selection, primitive) ->

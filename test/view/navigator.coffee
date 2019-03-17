@@ -1,5 +1,7 @@
 should = require('should')
 { match } = require('../../lib/view/navigator')
+{ Model } = require('../../lib/model/model')
+{ List } = require('../../lib/collection/list')
 { View } = require('../../lib/view/view')
 { Varying } = require('../../lib/core/varying')
 
@@ -21,6 +23,12 @@ class TreeView extends View
     this._bindings.push({ view: new Varying(view) })
     view
 
+# and here, we create a thin mock for how the stdlib ListView works.
+# it takes a list of views and mocks up the correct structure to look like bindings for them.
+class ListView
+  constructor: (list) ->
+    this._mappedBindings = list.map((view) -> (new Varying(view)).react(->))
+
 # these tests are /highly repetitive/ and very verbose. whatever. they're tests.
 describe 'view navigator', ->
   describe 'selection', ->
@@ -31,6 +39,9 @@ describe 'view navigator', ->
     it 'should return true given === match', ->
       (match(23, 23) is true).should.equal(true)
       (match('test', {}) is true).should.equal(false)
+
+    it 'should return true given === subject match', ->
+      (match(23, { subject: 23 }) is true).should.equal(true)
 
     it 'should return true given viewclass descendant', ->
       class A
@@ -79,6 +90,27 @@ describe 'view navigator', ->
         result.length.should.equal(4)
         result.should.eql(children.slice(2))
 
+      it 'should search by data key', ->
+        modelA = new Model()
+        modelB = new Model()
+        root = new TreeView(new Model({ x: modelA, y: modelB }))
+        viewA = root.add(modelA)
+        viewB = root.add(modelB)
+        root.into('x').get_().should.eql([ viewA ])
+        root.into('y').get_().should.eql([ viewB ])
+
+      it 'should work with stdlib ListViews', ->
+        class A
+        class B
+        viewA = new TreeView(A)
+        viewB = new TreeView(A)
+        subviews = new List([ viewA, new TreeView(B), null, viewB ])
+        listView = new ListView(subviews)
+        root = new TreeView()
+        root._bindings.push({ view: new Varying(listView) })
+
+        root.into().into(A).get_().should.eql([ viewA, viewB ])
+
     describe 'reactive', ->
       it 'should return nothing given no present children', ->
         view = new TreeView()
@@ -120,6 +152,50 @@ describe 'view navigator', ->
         root._bindings[2].view.set(new TreeView(new A()))
         result.length_.should.equal(1)
         result.get_(0).should.equal(children[1])
+
+      it 'should search by data key', ->
+        childModel = new Model()
+        parentModel = new Model({ x: childModel, y: new Model() })
+        root = new TreeView(parentModel)
+        viewA = root.add(childModel)
+        viewB = root.add(new Model())
+        result = root.into('x').get()
+        result.length_.should.equal(1)
+        result.get_(0).should.equal(viewA)
+
+        viewC = new TreeView(childModel)
+        root._bindings[3].view.set(viewC)
+        result.length_.should.equal(2)
+        result.get_(0).should.equal(viewA)
+        result.get_(1).should.equal(viewC)
+
+        parentModel.set('x', 42)
+        result.length_.should.equal(0)
+
+      it 'should work with stdlib ListViews', ->
+        class A
+        class B
+        viewA = new TreeView(A)
+        viewB = new TreeView(A)
+        subviews = new List([ viewA, new TreeView(B), null, viewB ])
+        listView = new ListView(subviews)
+        root = new TreeView()
+        root._bindings.push({ view: new Varying(listView) })
+
+        result = root.into().into(A).get()
+        result.length_.should.equal(2)
+        result.get_(0).should.equal(viewA)
+        result.get_(1).should.equal(viewB)
+
+        viewC = new TreeView(A)
+        subviews.add(viewC)
+        result.length_.should.equal(3)
+        result.get_(2).should.equal(viewC)
+
+        subviews.remove(viewB)
+        result.length_.should.equal(2)
+        result.get_(0).should.equal(viewA)
+        result.get_(1).should.equal(viewC)
 
   describe 'parent', ->
     describe 'primitive', ->
