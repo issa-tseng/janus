@@ -96,8 +96,11 @@ class NavigateOne extends Navigator
     selection[idx]
   get: -> this.precedent._get(false).at(this.idx)
   _get: (primitive) ->
-    if primitive is true then [ this.get_() ]
-    else (new List([ null ])).flatMap(=> this.get())
+    if primitive is true
+      if (result = this.get_())? then [ result ] else []
+    else
+      result = this.get()
+      (new List([ null ])).flatMap(-> result).filter((x) -> x?) # my this is a lot of ops.
 
 class NavigatorRoot extends Navigator
   constructor: (@selection) ->

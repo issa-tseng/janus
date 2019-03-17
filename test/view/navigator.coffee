@@ -304,6 +304,10 @@ describe 'view navigator', ->
         root.into().first().into(A).get_().should.eql([ children[2], children[3] ])
         root.into().last().into(A).get_().should.eql([ children[4], children[5] ])
 
+      it 'should return empty array given no upstream matches', ->
+        node = new TreeView()
+        node.into().first().into().get_().should.eql([])
+
       it 'should filter reactive queries (first)', ->
         class A
         root = new TreeView(new A())
@@ -325,6 +329,10 @@ describe 'view navigator', ->
         result.length_.should.equal(2)
         result.get_(0).should.equal(children[4])
         result.get_(1).should.equal(children[5])
+
+      it 'should return empty list given no upstream matches', ->
+        node = new TreeView()
+        node.into().first().into().get().length_.should.equal(0)
 
       it 'should filter reactive queries (last)', ->
         class A
