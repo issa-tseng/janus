@@ -199,7 +199,7 @@ class DerivedVarying extends Varying
     length = applicants.length
     this._apply =
       if length is 1 then first = this.a[0]; -> _f(first._value)
-      else if length < 9 then apply[this.a.length](_f, this.a)
+      else if length < 10 then apply[this.a.length](_f, this.a)
       else -> _f((a._value for a in applicants)...)
     this._stop = if length is 1 then stopOne else stopAll
 
