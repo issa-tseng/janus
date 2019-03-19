@@ -90,8 +90,12 @@ deduceMutators = (view) ->
   }
 
   # 2a instantiate a view and do a little dance to get it to latch onto our spy
-  # fragment rather than use its own.
+  # fragment rather than use its own. we have to sub out the viewWodelClass in
+  # case it actually expects some data to exist to bind.
+  vmc = view.constructor.viewModelClass
+  view.constructor.viewModelClass = null
   dummy = new (view.constructor)(new Model())
+  view.constructor.viewModelClass = vmc
   dummy.preboundTemplate = view.constructor.template(fragment)
   dummy.dom = -> div
 
