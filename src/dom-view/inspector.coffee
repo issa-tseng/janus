@@ -24,6 +24,15 @@ voidPointer = -> ->
   result.pipe = -> result
   result
 
+forceArtifact = (view) ->
+  try
+    view.artifact()
+  catch # something is out of our expectation. force default _render and pray.
+    view._render = DomView.prototype._render
+    try
+      view.artifact()
+  return
+
 # the domspy judges, based on the methods that are called on it, which mutator
 # is being called on it. only works with out-of-the-box mutators for now.
 class DomSpy
@@ -91,7 +100,7 @@ deduceMutators = (view) ->
   dummy.pointer = voidPointer
 
   # 2c now force an artifact to actually get binding to occur.
-  dummy.artifact()
+  forceArtifact(dummy)
 
   # 3. now that we have bindings, go through each one in turn, trigger its mutator,
   # and see from the operations spy what we got out of it.
@@ -123,7 +132,7 @@ class DomViewInspector extends Model.build(
 
   constructor: (domview) ->
     mutations = deduceMutators(domview) # TODO: someday cache defs based on classref.
-    domview.artifact() # TODO: someday don't force this and have an idle state.
+    forceArtifact(domview)
 
     # we would like to match the generic mutator definitions we've just derived with
     # the actual databindings we just generated, but we need to account for some
