@@ -15,7 +15,10 @@ class KVPairVM extends Model.build(
 
     do =>
       value = subject.get_('value')
-      this.set('edit', if isPrimitive(value) or isArray(value) then JSON.stringify(value) else '(…)')
+      try
+        this.set('edit', if isPrimitive(value) or isArray(value) then JSON.stringify(value) else '(…)')
+      catch
+        this.set('edit', '(…)')
 
     this.get('edit').react(false, (raw) =>
       try
