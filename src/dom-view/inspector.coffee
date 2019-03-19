@@ -1,4 +1,5 @@
 { DomView, Varying, List, Model, attribute, bind, from, types } = require('janus')
+{ isPlainObject } = require('janus').util
 $ = require('janus-dollar')
 { noop } = require('../util')
 
@@ -124,7 +125,9 @@ deduceMutators = (view) ->
 # not much to them, actually.
 
 class Mutation extends Model
-  constructor: (selector, operation, param) -> super({ selector, operation, param })
+  constructor: (a, b, c) ->
+    if isPlainObject(a) then super(a, b)
+    else super({ selector: a, operation: b, param: c })
 
 class DomViewInspector extends Model.build(
     bind('subtype', from('domview')
@@ -133,28 +136,35 @@ class DomViewInspector extends Model.build(
   )
 
   isInspector: true
+  cache: new WeakMap()
 
   constructor: (domview) ->
-    mutations = deduceMutators(domview) # TODO: someday cache defs based on classref.
+    mutations =
+      if !domview? then []
+      else if this.cache.has(domview.constructor)
+        this.cache.get(domview.constructor)
+      else
+        result = deduceMutators(domview)
+        this.cache.set(domview.constructor, result)
+        result
+
+    # now we force the artifact so that we can attach to the bindings of this instance.
     forceArtifact(domview)
 
     # we would like to match the generic mutator definitions we've just derived with
     # the actual databindings we just generated, but we need to account for some
     # failure/nonstandard-view cases while we do so:
-    if mutations?
-      for binding, idx in domview._bindings when (mutation = mutations[idx])?
-        mutation.set('binding', binding.parent)
-    else if domview._bindings?
-      mutations = for binding in domview._bindings
-        mutation = new Mutation()
-        mutation.set('binding', binding.parent)
-        mutation
-    else
-      mutations = [] # some sort of custom view we don't know how to handle.
-
-    # for now, we drop all mutations that are actually just .on handlers, because
-    # there's really nothing interesting to show about them.
-    mutations = mutations.filter((m) -> m?)
+    mutations =
+      if mutations?
+        for binding, idx in domview._bindings when (mutation = mutations[idx])?
+          mutation.with({ binding: binding.parent })
+      else if domview._bindings?
+        for binding in domview._bindings
+          mutation = new Mutation()
+          mutation.set('binding', binding.parent)
+          mutation
+      else
+        [] # some sort of custom view we don't know how to handle.
 
     # flag mutations which share a selector with their predecessor.
     # TODO: is there a better way to do this?
