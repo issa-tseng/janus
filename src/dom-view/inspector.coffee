@@ -30,6 +30,7 @@ class DomSpy
   constructor: (@selector, @operations) ->
 
   # straightforward operations:
+  toggleClass: (param) -> this.operations.push(new Mutation(this.selector, 'classed', param))
   css: (param) -> this.operations.push(new Mutation(this.selector, 'css', param))
   html: -> this.operations.push(new Mutation(this.selector, 'html'))
   prop: (param) -> this.operations.push(new Mutation(this.selector, 'prop', param))
