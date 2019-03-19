@@ -12,8 +12,12 @@ $ = require('janus-dollar')
 last = (arr) -> arr[arr.length - 1]
 div = $('<div/>')
 
+# TODO: not perfect enough an imitation for some cases probably:
+class DummyApp extends Model
+  view: noop
+
 voidPointer = -> ->
-  result = new Varying({ view: noop })
+  result = new Varying(new DummyApp())
   result.map = -> result
   result.flatten = -> result
   result.flatMap = -> result
