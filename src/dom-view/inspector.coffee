@@ -82,7 +82,7 @@ deduceMutators = (view) ->
 
   # 2a instantiate a view and do a little dance to get it to latch onto our spy
   # fragment rather than use its own.
-  dummy = new (view.constructor)({})
+  dummy = new (view.constructor)(new Model())
   dummy.preboundTemplate = view.constructor.template(fragment)
   dummy.dom = -> div
 
