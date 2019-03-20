@@ -1,5 +1,5 @@
 { DomView, template, find, Model, attribute, bind, from } = require('janus')
-{ isPrimitive, isArray } = require('janus').util
+{ isPrimitive, isArray, isFunction } = require('janus').util
 { KVPair } = require('./kv-pair-model')
 { inspect } = require('../inspect')
 $ = require('janus-dollar')
@@ -13,16 +13,19 @@ class KVPairVM extends Model.build(
     view = this.get_('view')
     subject = this.get_('subject')
 
-    do =>
-      value = subject.get_('value')
-      try
-        this.set('edit', if isPrimitive(value) or isArray(value) then JSON.stringify(value) else '(…)')
-      catch
-        this.set('edit', '(…)')
+    value = subject.get_('value')
+    try
+      this.set('edit', if isPrimitive(value) or isArray(value) then JSON.stringify(value) else '(…)')
+    catch
+      this.set('edit', '(…)')
 
     this.get('edit').react(false, (raw) =>
+      expr = "return #{raw};"
+      app = view.options.app
       try
-        result = (new Function("return #{raw};"))()
+        result =
+          if isFunction(app.evaluate) then app.evaluate(expr)
+          else (new Function(expr))()
         subject.get_('target').set(subject.get_('key'), result)
       catch ex
         app.flyout?(view.artifact(), ex)
