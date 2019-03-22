@@ -52,10 +52,10 @@ FilteredListView = DomView.withOptions({ viewModelClass: FilteredListVM }).build
       Filtered List
       <button class="janus-inspect-pin" title="Pin"/>
     </div>
+    <div class="panel-derivation">
+      Filtered via <span class="list-filterer"/> from <span class="list-parent"/>
+    </div>
     <div class="panel-content">
-      <div class="list-derivation">
-        Filtered via <span class="list-filterer"/> from <span class="list-parent"/>
-      </div>
       <div class="list-derivation">resulting in <span class="list-plain"/></div>
       <div class="list-list"/>
       <button class="list-more">&hellip; <span class="list-more-count"/> more</button>

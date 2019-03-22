@@ -30,6 +30,10 @@ class DomViewPanelView extends DomView.build($('
         DomView<span class="domview-subtype"/>
         <button class="janus-inspect-pin" title="Pin"/>
       </div>
+      <div class="panel-derivation">
+        View of <span class="domview-subject"/>
+        <span class="domview-vm">with viewmodel <span class="domview-vm-vm"/></span>
+      </div>
       <div class="panel-content">
         <div class="domview-mutations"/>
         <div class="domview-display">
@@ -37,7 +41,9 @@ class DomViewPanelView extends DomView.build($('
         </div>
       </div>
     </div>'), template(
-
+    find('.domview-subject').render(from('domview').map((view) -> inspect(view.subject)))
+    find('.domview-vm').classed('hide', from('domview').map((view) -> !view.vm?))
+    find('.domview-vm-vm').render(from('domview').map((view) => inspect(view.vm)))
     find('.domview-subtype').text(from('subtype'))
     find('.domview-mutations').render(from('mutations'))
   ))

@@ -41,10 +41,10 @@ MappedListView = DomView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).
       Mapped List
       <button class="janus-inspect-pin" title="Pin"/>
     </div>
+    <div class="panel-derivation">
+      Mapped via <span class="list-mapper"/> from <span class="list-parent"/>
+    </div>
     <div class="panel-content">
-      <div class="list-derivation">
-        Mapped via <span class="list-mapper"/> from <span class="list-parent"/>
-      </div>
       <div class="list-list"/>
       <button class="list-more">&hellip; <span class="list-more-count"/> more</button>
       <div class="list-last-item"/>
