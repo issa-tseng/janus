@@ -104,8 +104,9 @@ deduceMutators = (view) ->
   # for the point operation to effortlessly succeed.
   dummy.pointer = voidPointer
 
-  # 2c now force an artifact to actually get binding to occur.
+  # 2c now force an artifact to actually get binding to occur and make sure it did.
   forceArtifact(dummy)
+  return unless dummy._bindings?
 
   # 3. now that we have bindings, go through each one in turn, trigger its mutator,
   # and see from the operations spy what we got out of it.
