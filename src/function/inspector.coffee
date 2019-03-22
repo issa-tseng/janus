@@ -11,7 +11,7 @@ class WrappedFunction extends Model
 
     # functions can't change, so we just statically precompute some stuff, including
     # argument names and value mappings.
-    this.set('f', f)
+    this.set('target', f)
     this.set('arg.given', args?)
     args = [] unless args?
 

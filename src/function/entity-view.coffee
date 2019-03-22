@@ -21,7 +21,7 @@ FunctionEntityView = DomView.build($('
     </span>
   </div>'), template(
 
-  find('.function-name').text(from('f').map((f) -> if exists(f.name) then f.name else 'λ'))
+  find('.function-name').text(from('target').map((f) -> if exists(f.name) then f.name else 'λ'))
   find('.function-args').render(from('arg.pairs'))
 ))
 

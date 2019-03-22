@@ -24,7 +24,7 @@ ListEntry = DomView.build($('
 
 # TODO: a LOT of overlap with ListEntityVM
 class ListPanelVM extends Model.build(
-  bind('length', from.subject('list').flatMap((l) -> l.length))
+  bind('length', from.subject('target').flatMap((l) -> l.length))
   dēfault('take.setting', 10)
   bind('take.actual', from('take.setting').and('length').and('shows-last')
     .all.map((setting, length, showsLast) ->
@@ -66,14 +66,14 @@ ListPanelView = DomView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).b
       .all.map((x, y) -> (x is true) or (y is true)))
 
   find('.list-list')
-    .render(from('list').and.vm('take.actual').asVarying().all.map((target, take) ->
+    .render(from('target').and.vm('take.actual').asVarying().all.map((target, take) ->
       target.enumerate().take(take).map((key) -> new KVPair({ target, key }))
     ))
     .options({ renderItem: (r) -> r.context('list-entry') })
 
   moreButton
 
-  find('.list-last-item').render(from('list').and.vm('length')
+  find('.list-last-item').render(from('target').and.vm('length')
     .all.map((target, length) -> new KVPair({ target, key: length - 1 })))
 
   find('.janus-inspect-list').on('click', '.list-insert', (event, subject, view) ->
@@ -85,7 +85,7 @@ ListPanelView = DomView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).b
       idx =
         if target.hasClass('list-insert-last') then undefined
         else target.closest('li').prevAll().length
-      subject.get_('list').add(result, idx)
+      subject.get_('target').add(result, idx)
     )
 
     # TODO: less than elegant. i don't like direct stateful mutation.

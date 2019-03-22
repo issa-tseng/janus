@@ -131,7 +131,7 @@ class Mutation extends Model
     else super({ selector: a, operation: b, param: c })
 
 class DomViewInspector extends Model.build(
-    bind('subtype', from('domview')
+    bind('subtype', from('target')
       .map((domview) -> domview.constructor.name)
       .map((name) -> if name? and (name not in [ 'DomView', '_Class' ]) then ".#{name}" else ''))
   )
@@ -173,7 +173,7 @@ class DomViewInspector extends Model.build(
       if mutations[idx - 1].get_('selector') is mutation.get_('selector')
         mutation.set('repeated-selector', true)
 
-    super({ domview, mutations: new List(mutations) })
+    super({ target: domview, mutations: new List(mutations) })
 
   @inspect: (domview) -> new DomViewInspector(domview)
 

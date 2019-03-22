@@ -41,16 +41,16 @@ class DomViewPanelView extends DomView.build($('
         </div>
       </div>
     </div>'), template(
-    find('.domview-subject').render(from('domview').map((view) -> inspect(view.subject)))
-    find('.domview-vm').classed('hide', from('domview').map((view) -> !view.vm?))
-    find('.domview-vm-vm').render(from('domview').map((view) => inspect(view.vm)))
+    find('.domview-subject').render(from('target').map((view) -> inspect(view.subject)))
+    find('.domview-vm').classed('hide', from('target').map((view) -> !view.vm?))
+    find('.domview-vm-vm').render(from('target').map((view) => inspect(view.vm)))
     find('.domview-subtype').text(from('subtype'))
     find('.domview-mutations').render(from('mutations'))
   ))
 
   _render: ->
     artifact = super()
-    domview = this.subject.get_('domview')
+    domview = this.subject.get_('target')
     target = domview.artifact()
     if (target.closest('html').length is 0) or (target.parent().hasClass('domview-display') and (target.closest('.flyout').length isnt 0))
       artifact.find('.domview-display').prepend(target)

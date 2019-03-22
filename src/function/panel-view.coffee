@@ -17,7 +17,7 @@ FunctionPanelView = DomView.build($('
     find('.function-args')
       .classed('inline', from('arg.pairs').flatMap((as) -> as.length.map((l) -> l < 4)))
       .render(from('arg.pairs').and('arg.given').all.map((as, given) -> as if given))
-    find('.function-body').text(from('f').map((f) -> deindent(f.toString())))
+    find('.function-body').text(from('target').map((f) -> deindent(f.toString())))
 ))
 
 module.exports = {

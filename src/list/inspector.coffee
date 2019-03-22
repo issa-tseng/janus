@@ -3,14 +3,14 @@
 class ListInspector extends Model.build(
   dēfault('type', 'List')
 
-  bind('derived', from('list').map((list) -> list.isDerivedList is true))
-  bind('length', from('list').flatMap((list) -> list.length))
+  bind('derived', from('target').map((list) -> list.isDerivedList is true))
+  bind('length', from('target').flatMap((list) -> list.length))
 )
   isInspector: true
 
-  constructor: (list) -> super({ list })
+  constructor: (list) -> super({ target: list })
   _initialize: ->
-    this.set('of.class', this.get_('list').constructor.modelClass)
+    this.set('of.class', this.get_('target').constructor.modelClass)
     this.set('of.name', this.get_('of.class')?.name)
 
   @inspect: (list) ->

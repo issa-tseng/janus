@@ -12,7 +12,7 @@ class ListEntityVM extends Model.build(
   )
 
   _initialize: ->
-    this.set('take', 6) if this.get_('subject').get_('list').length_ is 6
+    this.set('take', 6) if this.get_('subject').get_('target').length_ is 6
 
 ListEntityView = DomView.withOptions({ viewModelClass: ListEntityVM }).build($('
   <div class="janus-inspect-entity janus-inspect-list">
@@ -25,7 +25,7 @@ ListEntityView = DomView.withOptions({ viewModelClass: ListEntityVM }).build($('
 
   find('.entity-type').text(from('type'))
 
-  find('.list-values').render(from('list').and.vm('take').asVarying()
+  find('.list-values').render(from('target').and.vm('take').asVarying()
     .all.map((list, take) -> list.take(take).map(inspect)))
 
   find('.entity-more-count')
