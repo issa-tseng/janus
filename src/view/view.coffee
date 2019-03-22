@@ -24,7 +24,7 @@ class View extends Base
 
     # If we have a reference to a ViewModel intermediary, instantiate and store it.
     if this.constructor.viewModelClass?
-      this.viewModel = new this.constructor.viewModelClass({
+      this.viewModel = this.vm = new this.constructor.viewModelClass({
         subject: this.subject
         view: this
         options: this.options
