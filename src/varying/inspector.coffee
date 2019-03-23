@@ -101,15 +101,17 @@ class WrappedVarying extends Model.build(
   isWrappedVarying: true
 
   constructor: (@varying) ->
+    varying = this.varying
     super({
       id: serialId()
-      target: this.varying
-      title: this.varying.constructor.name
+      target: varying
+      title: varying.constructor.name
 
-      flattened: this.varying._flatten is true
-      mapped: this.varying._f?
-      reducing: this.varying.a? and this.varying.a.length > 1
-      applicants: (new List(this.varying.a) if this.varying.a?)
+      flattened: varying._flatten is true
+      mapped: varying._f?
+      reducing: varying.a? and varying.a.length > 1
+      applicants: (new List(varying.a) if varying.a?)
+
     })
 
   _initialize: ->
