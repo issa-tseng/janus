@@ -187,12 +187,24 @@ class List extends OrderedMappable
   _at = (idx) ->
     if idx?.isVarying is true
       return idx.flatMap((tidx) => this.at(tidx))
-    (this._watches[idx] ?= { idx, v: new Varying(this.at_(idx)) }).v
+    # TODO: ugh (#145)
+    if (obj = this._watches[idx])? then return obj.v
+    else
+      v = new Varying(this.at_(idx))
+      v.__owner = this
+      this._watches[idx] = { idx, v }
+      v
   at: _at
   get: _at
 
   # Length-related operations. .length is presented as a getter for familiarity.
-  Object.defineProperty(@prototype, 'length', get: -> this.length$ ?= new Varying(this.list.length))
+  Object.defineProperty(@prototype, 'length', get: ->
+    if (l = this.length$) then return l
+    else
+      this.length$ = new Varying(this.list.length)
+      this.length$.__owner = this
+      this.length$
+  )
   Object.defineProperty(@prototype, 'length_', get: -> this.list.length)
 
   # Length-related convenience methods, since these maps happen a lot:

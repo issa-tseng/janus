@@ -159,7 +159,10 @@ class Map extends Enumerable
   get: (key) ->
     extant = this._watches[key]
     if extant? then return extant
-    else return (this._watches[key] = new Varying(this.get_(key)))
+    else # ugh; i dislike having to make this ref; see #145
+      v = new Varying(this.get_(key))
+      v.__owner = this
+      this._watches[key] = v
 
   # Handles our parent's changes and judiciously vends those events ourselves.
   _parentChanged: (key, newValue, oldValue) ->
