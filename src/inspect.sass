@@ -157,6 +157,16 @@
 
 @import './varying/panel-view'
 
+.janus-inspect-varying.janus-inspect-panel
+  .derivation-arg
+    display: none
+    &.has-arg
+      display: inline
+      &:before
+        content: '('
+      &:after
+        content: ')'
+
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION BASE STYLES
 

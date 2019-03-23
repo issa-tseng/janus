@@ -80,6 +80,25 @@ handleInner = (wrapper, varying, rxn) ->
 
 
 ################################################################################
+# OTHER UTIL:
+
+class Derivation extends Model
+  constructor: (method, arg) -> super({ method, arg })
+
+getDerivation = (varying) ->
+  owner = varying.__owner
+  if owner.length$ is varying
+    return new Derivation('length')
+  else if owner.isMap is true
+    for key, watch of owner._watches when watch is varying
+      return new Derivation('get', key)
+  else if owner.isList is true
+    for _, { idx, v } of owner._watches when v is varying
+      return new Derivation('get', idx)
+  return
+
+
+################################################################################
 # INSPECTOR CLASS:
 
 class WrappedVarying extends Model.build(
@@ -112,6 +131,7 @@ class WrappedVarying extends Model.build(
       reducing: varying.a? and varying.a.length > 1
       applicants: (new List(varying.a) if varying.a?)
 
+      owner: varying.__owner
     })
 
   _initialize: ->
@@ -133,6 +153,10 @@ class WrappedVarying extends Model.build(
     # HIJACK METHODS:
     varying._react = reactShim
     varying._propagate = propagateShim
+
+    # DETERMINE OWNER RELATIONSHIP (if any):
+    this.set('derivation', getDerivation(this.varying)) if varying.__owner
+    return
 
   _addObservation: (observation) ->
     oldStop = observation.stop

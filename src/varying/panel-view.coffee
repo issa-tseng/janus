@@ -176,6 +176,10 @@ VaryingView = DomView.withOptions({ viewModelClass: VaryingPanel }).build($('
         <div class="panel-sidebar-title">Reactions</div>
         <div class="panel-sidebar-content varying-reactions"/>
       </div>
+      <div class="panel-derivation">
+        Given by <span class="varying-owner"/>
+        via .<span class="derivation-method"/><span class="derivation-arg"/>
+      </div>
       <div class="panel-content">
         <div class="varying-inert">
           Inert (no observers).
@@ -192,6 +196,13 @@ VaryingView = DomView.withOptions({ viewModelClass: VaryingPanel }).build($('
       event.preventDefault()
       viewModel.unset('active_reaction')
     )
+
+    find('.panel-derivation').classed('hide', from('owner').map((x) -> !x?))
+    find('.varying-owner').render(from('owner').map(inspect))
+    find('.derivation-method').text(from('derivation').get('method'))
+    find('.derivation-arg')
+      .classed('has-arg', from('derivation').get('arg').map(exists))
+      .render(from('derivation').get('arg').map(inspect))
 
     find('.varying-inert').classed('hide', from('observations')
       .flatMap((obs) -> obs?.nonEmpty()))
