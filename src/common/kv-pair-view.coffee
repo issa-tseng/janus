@@ -50,7 +50,7 @@ KVPairView = DomView.withOptions({ viewModelClass: KVPairVM }).build($('
       .attr('title', from('key'))
 
     find('.kvPair-value')
-      .render(from('subject').get('binding').and('value')
+      .render(from('binding').and('value')
         .all.map((b, v) -> inspect(b ? v)))
       .on('dblclick', (e, subject, { viewModel }, dom) ->
         return if subject.get_('bound') is true
