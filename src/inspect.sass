@@ -101,19 +101,14 @@
 .janus-inspect-kvPair
   overflow: hidden
 
-  .kvPair-key
+  .kvPair-keyBlock
     float: left
-    font-weight: bold
     padding-right: 0.4em
+  .kvPair-key
+    font-weight: bold
 
-    &:after
-      content: ':'
-      font-weight: normal
-
-  &.bound .kvPair-key
-    padding-right: 0.2em
-    &:after
-      content: ' is bound to '
+  &.bound .kvPair-delimeter
+    padding-left: 0.2em
 
   .kvPair-valueBlock
     overflow: hidden

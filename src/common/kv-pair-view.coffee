@@ -33,7 +33,10 @@ class KVPairVM extends Model.build(
 
 KVPairView = DomView.withOptions({ viewModelClass: KVPairVM }).build($('
     <div class="janus-inspect-kvPair">
-      <div class="kvPair-key"></div>
+      <div class="kvPair-keyBlock">
+        <span class="kvPair-key"/>
+        <span class="kvPair-delimeter"/>
+      </div>
       <div class="kvPair-valueBlock">
         <div class="kvPair-edit"></div>
         <span class="kvPair-value"></span>
@@ -48,6 +51,9 @@ KVPairView = DomView.withOptions({ viewModelClass: KVPairVM }).build($('
     find('.kvPair-key')
       .text(from('key'))
       .attr('title', from('key'))
+    find('.kvPair-delimeter')
+      .text(from('bound').map((b) -> if b is true then ' is bound to ' else ':'))
+      .attr('title', from('bound').map((b) -> 'This value is bound' if b is true))
 
     find('.kvPair-value')
       .render(from('binding').and('value')
