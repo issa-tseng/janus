@@ -16,7 +16,7 @@ CaseEntityView = DomView.build($('
     .classed('has-subtitle', from('name').map(exists))
     .text(from('name'))
 
-  find('.case-value').render(from('case').map((kase) -> inspect(kase.get())))
+  find('.case-value').render(from('target').map((kase) -> inspect(kase.get())))
 ))
 
 module.exports = {

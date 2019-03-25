@@ -3,9 +3,9 @@
 class WrappedCase extends Model
   isInspector: true
 
-  constructor: (kase) -> super({ case: kase })
+  constructor: (target) -> super({ target })
   _initialize: ->
-    this.set('name', this.get('case').name)
+    this.set('name', this.get('target').name)
 
   @wrap: (kase) -> new WrappedCase(kase)
 
