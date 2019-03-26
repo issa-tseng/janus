@@ -12,8 +12,9 @@ util = require('../util/util')
 # these are funcs rather than methods because i don't actually really understand
 # whether method inlining happens or not.
 #
-# for each of these, we will first update individual index watches, then take
-# care of the lengthwatcher.
+# when we /add/ elements, we update each individual index watch /before/ we
+# update the length, so that values are present by the time lists look for them.
+# when we /remove/ them, we do the opposite. otherwise, we get bugs like gh148.
 _added = (list, midx, value) ->
   length = list.length_
   reverseThreshold = midx - length
@@ -42,13 +43,13 @@ _moved = (list, oldIdx, newIdx, value) ->
 # here we have to do goofy things about the length because we have been shortened.
 _removed = (list, midx) ->
   length = list.length_
+  list.length$?.set(length)
   reverseThreshold = midx - length - 1
   for _, { v, idx } of list._watches
     if idx < 0
       if idx >= reverseThreshold then v.set(list.list[length + idx])
     else
       if idx >= midx then v.set(list.list[idx])
-  list.length$?.set(length)
   return
 
 

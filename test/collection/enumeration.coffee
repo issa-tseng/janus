@@ -309,6 +309,16 @@ describe 'map enumeration', ->
       for value, idx in [ 6, 11, 19, 21, 29, 49 ]
         l2.at_(idx).should.equal(value)
 
+    it 'should not spuriously call the mapper with dead keys on remove', -> #gh148
+      maps = []
+
+      l = new List()
+      m = l.mapPairs((k, v) -> maps.push(k, v); 42)
+      l.add(16)
+      maps.should.eql([ 0, 16 ])
+      l.remove(16)
+      maps.should.eql([ 0, 16 ])
+
   describe 'module list get_', ->
     it 'should return a list of the appropriate length with increasing indices', ->
       Enumeration.list_(new List(null for _ in [0...10])).should.eql([ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ])
