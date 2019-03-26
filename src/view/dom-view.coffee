@@ -41,7 +41,7 @@ class DomView extends View
 
   __destroy: ->
     if this._bindings?
-      for binding in this._bindings.slice() # TODO: property enumerate to not slice
+      for binding in this._bindings
         binding.view?.get()?.destroy()
         binding.stop()
 
