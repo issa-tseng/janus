@@ -137,16 +137,17 @@ class DomViewInspector extends Model.build(
   )
 
   isInspector: true
-  cache: new WeakMap()
 
   constructor: (domview) ->
+    # get Mutations that represent the binding operations but aren't yet tied
+    # to the actual Varying bindings of this instance.
     mutations =
       if !domview? then []
-      else if this.cache.has(domview.constructor)
-        this.cache.get(domview.constructor)
+      else if this.constructor.cache.has(domview.constructor)
+        this.constructor.cache.get(domview.constructor)
       else
         result = deduceMutators(domview)
-        this.cache.set(domview.constructor, result)
+        this.constructor.cache.set(domview.constructor, result)
         result
 
     # now we force the artifact so that we can attach to the bindings of this instance.
@@ -155,17 +156,19 @@ class DomViewInspector extends Model.build(
     # we would like to match the generic mutator definitions we've just derived with
     # the actual databindings we just generated, but we need to account for some
     # failure/nonstandard-view cases while we do so:
-    mutations =
-      if mutations?
-        for binding, idx in domview._bindings when (mutation = mutations[idx])?
-          mutation.with({ binding: binding.parent })
-      else if domview._bindings?
-        for binding in domview._bindings
-          mutation = new Mutation()
-          mutation.set('binding', binding.parent)
-          mutation
-      else
-        [] # some sort of custom view we don't know how to handle.
+    if domview._bindings?
+      mutations =
+        if mutations?
+          for binding, idx in domview._bindings when (mutation = mutations[idx])?
+            mutation.with({ binding: binding.parent })
+        else
+          for binding in domview._bindings
+            mutation = new Mutation()
+            mutation.set('binding', binding.parent)
+            mutation
+
+    # if we got here with nothing we have some sort of custom view we can't handle.
+    mutations ?= []
 
     # flag mutations which share a selector with their predecessor.
     # TODO: is there a better way to do this?
@@ -176,6 +179,7 @@ class DomViewInspector extends Model.build(
     super({ target: domview, mutations: new List(mutations) })
 
   @inspect: (domview) -> new DomViewInspector(domview)
+  @cache: new WeakMap()
 
 module.exports = {
   Mutation, DomViewInspector,
