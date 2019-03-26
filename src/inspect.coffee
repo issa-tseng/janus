@@ -17,6 +17,7 @@ require('./varying/inspector').registerWith(inspectorLibrary)
 inspect = (x) ->
   # TODO: actual entity/panel for plain Object.
   if isPlainObject(x) then stringify(x)
+  else if x?.destroyed is true then null # TODO: show something here.
   else inspectorLibrary.get(x)?(x) ? x
 
 module.exports = { inspect }
