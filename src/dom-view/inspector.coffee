@@ -1,4 +1,4 @@
-{ DomView, Varying, List, Model, attribute, bind, from, types } = require('janus')
+{ DomView, Varying, List, Model, attribute, bind, from, types, Library } = require('janus')
 { isPlainObject } = require('janus').util
 $ = require('janus-dollar')
 { noop } = require('../util')
@@ -143,6 +143,8 @@ class DomViewInspector extends Model.build(
     # to the actual Varying bindings of this instance.
     mutations =
       if !domview? then []
+      else if (extractor = this.constructor.extractors.get(domview))?
+        extractor(domview)
       else if this.constructor.cache.has(domview.constructor)
         this.constructor.cache.get(domview.constructor)
       else
@@ -180,6 +182,8 @@ class DomViewInspector extends Model.build(
 
   @inspect: (domview) -> new DomViewInspector(domview)
   @cache: new WeakMap()
+  @extractors: new Library()
+
 
 module.exports = {
   Mutation, DomViewInspector,

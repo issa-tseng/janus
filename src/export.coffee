@@ -2,7 +2,16 @@
 
 # export.
 module.exports = {
-  inspect,
+  inspect
+
+  inspector:
+    case: require('./case/inspector')
+    domview: require('./dom-view/inspector')
+    function: require('./function/inspector')
+    list: require('./list/inspector')
+    literal: require('./literal/inspector')
+    model: require('./model/inspector')
+    varying: require('./varying/inspector')
 
   view:
     case:
