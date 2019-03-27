@@ -91,13 +91,7 @@ VaryingTreeView = DomView.build($('
             <span class="className"/>
             <span class="uid"/>
           </div>
-          <div class="valueSection">
-            <ul class="tags">
-              <li class="tagOutdated">Outdated</li>
-              <li class="tagImmediate">Immediate</li>
-            </ul>
-            <div class="valueContainer"/>
-          </div>
+          <div class="value"/>
         </div>
       </div>
       <div class="aux">
@@ -119,15 +113,10 @@ VaryingTreeView = DomView.build($('
       .classed('hasValue', from('value').map(exists))
       .classed('hasInner', from('inner').and('new_inner').all.map((x, y) -> x? or y?))
 
-    find('.tagOutdated').classed('hide', from('derived').and('immediate').and('value')
-      .and('observations').flatMap((os) -> os.length)
-      .all.map((derived, immediate, value, osl) -> !derived or (osl > 0) or !(immediate? or value?)))
-    find('.tagImmediate').classed('hide', from('immediate').map((x) -> !x?))
-
     find('.title .className').text(from('title'))
     find('.title .uid').text(from('id').map((x) -> "##{x}"))
 
-    find('.valueContainer').render(from((x) -> x)).context('delta') # TODO: ehhh on this context name?
+    find('.value').render(from((x) -> x)).context('delta') # TODO: ehhh on this context name?
 
     find('.mapping').on('mouseenter', (event, wrapped, view) ->
       args = []
