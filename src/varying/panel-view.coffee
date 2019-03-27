@@ -56,7 +56,7 @@ ReactionView = DomView.withOptions({ viewModelClass: ReactionVM }).build($('
 
 
 ################################################################################
-# VARYING DELTA -> VIEW
+# VARYING DELTA ("x -> y") VIEW
 
 VaryingDeltaView = DomView.build($('
     <span class="varying-delta">
@@ -75,6 +75,17 @@ VaryingDeltaView = DomView.build($('
   )
 )
 
+################################################################################
+# VARYING NODE VIEW
+# TODO: feels like there should be a lighter weight approach.
+# TODO: should this really have an entity class?
+
+VaryingNodeView = DomView.build($('
+  <div class="varying-node janus-inspect-entity">
+    <div class="inner-marker"/>
+    <div class="value-marker"/>
+  </div>
+'), template())
 
 ################################################################################
 # VARYING TREE VIEW
@@ -82,17 +93,8 @@ VaryingDeltaView = DomView.build($('
 VaryingTreeView = DomView.build($('
     <div class="varying-tree">
       <div class="main">
-        <div class="node">
-          <div class="inner-marker"/>
-          <div class="value-marker"/>
-        </div>
-        <div class="text">
-          <div class="title">
-            <span class="className"/>
-            <span class="uid"/>
-          </div>
-          <div class="value"/>
-        </div>
+        <div class="node"/>
+        <div class="value"/>
       </div>
       <div class="aux">
         <div class="varying-tree-inner varying-tree-innerNew"/>
@@ -113,10 +115,9 @@ VaryingTreeView = DomView.build($('
       .classed('hasValue', from('value').map(exists))
       .classed('hasInner', from('inner').and('new_inner').all.map((x, y) -> x? or y?))
 
-    find('.title .className').text(from('title'))
-    find('.title .uid').text(from('id').map((x) -> "##{x}"))
-
-    find('.value').render(from((x) -> x)).context('delta') # TODO: ehhh on this context name?
+    # TODO: ehhh on these context names?
+    find('.node').render(from.subject()).context('node')
+    find('.value').render(from.subject()).context('delta')
 
     find('.mapping').on('mouseenter', (event, wrapped, view) ->
       args = []
@@ -154,7 +155,7 @@ class VaryingPanel extends Model.build(
 VaryingView = DomView.withOptions({ viewModelClass: VaryingPanel }).build($('
     <div class="janus-inspect-panel janus-inspect-varying">
       <div class="panel-title">
-        Varying #<span class="varying-id"/>
+        <span class="varying-title"/> #<span class="varying-id"/>
         <span class="varying-snapshot">
           Snapshot
           <button class="varying-snapshot-close" title="Close Snapshot"/>
@@ -178,6 +179,7 @@ VaryingView = DomView.withOptions({ viewModelClass: VaryingPanel }).build($('
       </div>
     </div>
   '), template(
+    find('.varying-title').text(from('title'))
     find('.varying-id').text(from('id'))
 
     find('.varying-snapshot').classed('hide', from.vm('active_reaction').map((x) -> !x?))
@@ -219,6 +221,7 @@ module.exports = {
 
   registerWith: (library) ->
     library.register(WrappedVarying, VaryingDeltaView, context: 'delta')
+    library.register(WrappedVarying, VaryingNodeView, context: 'node')
     library.register(WrappedVarying, VaryingTreeView, context: 'tree')
     library.register(WrappedVarying, VaryingView, context: 'panel')
     library.register(Reaction, ReactionView)

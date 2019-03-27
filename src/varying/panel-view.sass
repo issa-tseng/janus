@@ -33,7 +33,8 @@ $color-highlight-bg: #fadd00
       @include reify
       clear: both
 
-    .node
+    .varying-node
+      display: block
       background-color: $color-panel-bg
       border: $node-border-width solid $active-color
       border-radius: $node-size
@@ -91,9 +92,10 @@ $color-highlight-bg: #fadd00
           top: $value-size / 2
           width: 1.6em
 
-    .title
-      font-weight: bold
-      white-space: nowrap
+    .value
+      align-items: center
+      display: flex
+      min-height: $node-outer-size
 
   .tags
     float: left
@@ -136,14 +138,9 @@ $color-highlight-bg: #fadd00
       width: 0
       z-index: 2
 
-    .varying-tree-innerNew > .varying-tree > .main .title span
-      background: $color-highlight-bg
-
     .varying-tree-innerNew.hasNewInner + .varying-tree-inner.hasMainInner
       > .varying-tree
         opacity: 0.35
-        > .main .title span
-          background: $color-highlight-bg
 
       &:before
         $icon-size: 1.3em
