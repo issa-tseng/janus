@@ -5,6 +5,7 @@ module.exports = {
   inspect
 
   inspector:
+    attribute: require('./attribute/inspector')
     case: require('./case/inspector')
     domview: require('./dom-view/inspector')
     function: require('./function/inspector')
@@ -14,6 +15,9 @@ module.exports = {
     varying: require('./varying/inspector')
 
   view:
+    attribute:
+      entity: require('./attribute/entity-view')
+      panel: require('./attribute/panel-view')
     case:
       entity: require('./case/entity-view')
     common:
