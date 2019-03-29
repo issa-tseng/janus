@@ -19,10 +19,11 @@ wrap = (dom) -> dom.wrapAll('<div/>').parent()
 # work, and it makes re-attaching to already-rendered fragments easier because there
 # won't be accidental child-matches we'd have to filter out.
 selectorToWalks = (dom, selector) ->
-  rawDom = dom.get(0)
+  rawDom = dom.get(0) # remember here this is the wrapper div we added above.
   dom.find(selector).map((_, target) ->
     walk = []
-    while (parent = target.parentNode) isnt rawDom
+    while target isnt rawDom
+      parent = target.parentNode
       for idx in [0..parent.childNodes.length] when parent.childNodes[idx] is target
         walk.unshift(idx)
         break
@@ -34,10 +35,10 @@ selectorToWalks = (dom, selector) ->
 # selection of the desired nodes. because jquery/zepto map actually return their
 # own specialist collections upon .map(), we end up with a selection again.
 walk = (dom, walks) ->
-  rawDom = dom.get(0)
+  rawDom = dom.get()
   walks.map((_, walk) ->
-    ptr = rawDom
-    (ptr = ptr.childNodes[idx]) for idx in walk
+    for childIdx, idx in walk
+      ptr = (if idx is 0 then rawDom[childIdx] else ptr.childNodes[childIdx])
     ptr
   )
 

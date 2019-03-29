@@ -36,6 +36,16 @@ describe 'templater', ->
         nodes.length.should.equal(1)
         nodes[0].should.equal(fragment.find('.target').get(0))
 
+      it 'selects appropriately from amongst sibling roots', ->
+        nodes = null
+        testfind = find.build({ test: (_) -> (x) -> nodes = x })
+        mutator = testfind('span').test()
+
+        fragment = $('<div></div><span></span><p></p>')
+        mutator(fragment)(fragment)
+        nodes.length.should.equal(1)
+        nodes[0].should.equal(fragment.filter('span').get(0))
+
       it 'selects appropriately multiple nodes', ->
         nodes = null
         testfind = find.build({ test: (_) -> (x) -> nodes = x })
