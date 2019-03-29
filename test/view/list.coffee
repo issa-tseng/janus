@@ -1,12 +1,26 @@
 should = require('should')
 
-{ Varying, DomView, template, find, from, List, Set, App, Library } = require('janus')
+{ Varying, DomView, template, find, from, List, Set, App, Library, Model } = require('janus')
 { ListView, SetView } = require('../../lib/view/list')
 
 $ = require('janus-dollar')
 
-# register LiteralView for our tests to make our lives easier.
+# TODO: there is some kind of bug (i'm pretty sure it's not us, and it's not jquery,
+# and it is domino) that shuffles this textnode to the end if i put it exactly here,
+# and omits it if i put it at the end. weird. so all the assertions work off this.
+class TestModel extends Model
+TestModelView = DomView.build($('
+    <div class="model-name"/>
+    textnode
+    <div class="model-length"/>
+  '), template(
+    find('.model-name').text(from('name'))
+    find('.model-length').text(from.subject().flatMap((m) -> m.length))
+))
+
+# register TestModelView and LiteralView for our tests to make our lives easier.
 testLibrary = new Library()
+testLibrary.register(TestModel, TestModelView)
 require('../../lib/view/literal').registerWith(testLibrary)
 testApp = new App( views: testLibrary )
 
@@ -15,12 +29,20 @@ checkLiteral = (dom, expectedText) ->
   dom.hasClass('janus-literal').should.equal(true)
   dom.text().should.equal(expectedText.toString())
 
+checkTestModel = (listDom, idx, model) ->
+  listDom.contents().eq(idx).is('div.model-name').should.equal(true)
+  listDom.contents().eq(idx).text().should.equal(model.get_('name'))
+  listDom.contents().eq(idx + 1).is('div.model-length').should.equal(true)
+  listDom.contents().eq(idx + 1).text().should.equal(model.length_.toString())
+  listDom.contents()[idx + 2].nodeType.should.equal(3)
+  listDom.contents()[idx + 2].outerHTML.should.equal(' textnode ')
+
 describe 'view', ->
   describe 'list', ->
     describe 'render', ->
       it 'should render an unordered list element of the appropriate class', ->
         dom = (new ListView(new List())).artifact()
-        dom.is('ul').should.equal(true)
+        dom.is('div').should.equal(true)
         dom.hasClass('janus-list').should.equal(true)
 
       it 'should initially display the appropriate elements', ->
@@ -29,10 +51,17 @@ describe 'view', ->
 
         for i in [0..2]
           child = dom.children().eq(i)
-          child.is('li').should.equal(true)
-          child.children().length.should.equal(1)
+          checkLiteral(child, i + 1)
 
-          checkLiteral(child.children(':first-child'), i + 1)
+      it 'should initially render multi-root subviews', ->
+        model = new TestModel( name: 'test' )
+        l = new List([ 1, model, 3 ])
+        dom = (new ListView(l, { app: testApp })).artifact()
+        dom.contents().length.should.equal(5)
+
+        checkLiteral(dom.contents().eq(0), 1)
+        checkTestModel(dom, 1, model)
+        checkLiteral(dom.contents().eq(4), 3)
 
       it 'should correctly add new elements', ->
         l = new List([ 1, 2, 3 ])
@@ -40,15 +69,33 @@ describe 'view', ->
 
         l.add(4)
         dom.children().length.should.equal(4)
-        itemDom = dom.children('li:last-child')
-        itemDom.children().length.should.equal(1)
-        checkLiteral(itemDom.children(':first-child'), 4)
+        checkLiteral(dom.children(':last-child'), 4)
 
         l.add(5, 1)
         dom.children().length.should.equal(5)
-        itemDom = dom.children(':nth-child(2)') # nth-child is 1-indexed
-        itemDom.children().length.should.equal(1)
-        checkLiteral(itemDom.children(':first-child'), 5)
+        checkLiteral(dom.children().eq(1), 5)
+
+      it 'should correctly add multi-root subviews', ->
+        l = new List([ 1, 2 ])
+        dom = (new ListView(l, { app: testApp })).artifact()
+
+        ma = new TestModel( name: 'ma' )
+        l.add(ma, 1)
+        dom.contents().length.should.equal(5)
+        checkTestModel(dom, 1, ma)
+
+        mb = new TestModel( name: 'mb', x: 0 )
+        l.add(mb, 1)
+        dom.contents().length.should.equal(8)
+        checkTestModel(dom, 1, mb)
+        checkTestModel(dom, 4, ma)
+
+        mc = new TestModel( name: 'mc', x: 0, y: 1 )
+        l.add(mc, 2)
+        dom.contents().length.should.equal(11)
+        checkTestModel(dom, 1, mb)
+        checkTestModel(dom, 4, mc)
+        checkTestModel(dom, 7, ma)
 
       it 'should correctly remove elements', ->
         l = new List([ 1, 2, 3, 4, 5 ])
@@ -57,10 +104,32 @@ describe 'view', ->
         l.remove(3)
         dom.children().length.should.equal(4)
         for label, idx in [ 1, 2, 4, 5 ]
-          itemDom = dom.children().eq(idx)
-          itemDom.is('li').should.equal(true)
-          itemDom.children().length.should.equal(1)
-          checkLiteral(itemDom.children(':first-child'), label)
+          checkLiteral(dom.children().eq(idx), label)
+
+      it 'should correctly remove multi-root subviews', ->
+        ma = new TestModel( name: 'ma' )
+        mb = new TestModel( name: 'mb', x: 0 )
+        mc = new TestModel( name: 'mc', x: 0, y: 1 )
+        l = new List([ 1, ma, mb, mc, 2 ])
+        dom = (new ListView(l, { app: testApp })).artifact()
+
+        l.remove(mb)
+        dom.contents().length.should.equal(8)
+        checkLiteral(dom.contents().eq(0), 1)
+        checkTestModel(dom, 1, ma)
+        checkTestModel(dom, 4, mc)
+        checkLiteral(dom.contents().eq(7), 2)
+
+        l.remove(ma)
+        dom.contents().length.should.equal(5)
+        checkLiteral(dom.contents().eq(0), 1)
+        checkTestModel(dom, 1, mc)
+        checkLiteral(dom.contents().eq(4), 2)
+
+        l.remove(1)
+        dom.contents().length.should.equal(4)
+        checkTestModel(dom, 0, mc)
+        checkLiteral(dom.contents().eq(3), 2)
 
       it 'should destroy views related to removed elements', ->
         l = new List([ 1, 2, 3, 4, 5 ])
@@ -69,7 +138,7 @@ describe 'view', ->
         view.wireEvents()
 
         destroyed = false
-        victimView = dom.children().eq(2).children().data('view')
+        victimView = dom.children().eq(2).data('view')
         victimView.on('destroying', -> destroyed = true)
 
         l.remove(3)
@@ -87,26 +156,15 @@ describe 'view', ->
         l.remove(3)
         unbound.should.equal(true)
 
-      it 'should react appropriately when a Varying item changes', ->
-        l = new List([ 1, new Varying(2), 3 ])
-        dom = (new ListView(l, { app: testApp })).artifact()
-
-        l.at_(1).set('test')
-        dom.children().length.should.equal(3)
-        itemDom = dom.children().eq(1)
-        itemDom.is('li').should.equal(true)
-        itemDom.children().length.should.equal(1)
-        checkLiteral(itemDom.children(':first-child'), 'test')
-
     describe 'attaching', ->
       checkChild = (dom, idx, text) ->
-        checkLiteral(dom.children().eq(idx).children(), text)
+        checkLiteral(dom.children().eq(idx), text)
 
       # we don't test every nook and cranny, only the things that differ from
-      # the render path above. the two share a lot of machinery code.
+      # the render path above. once set up, the two share a lot of machinery code.
       it 'should leave the initial dom be', ->
         l = new List([ 1, 2, 3 ])
-        dom = $('<ul><li><span class="janus-literal">one</span></li><li><span class="janus-literal">two</span></li><li><span class="janus-literal">three</span></li></ul>')
+        dom = $('<div><span class="janus-literal">one</span><span class="janus-literal">two</span><span class="janus-literal">three</span></div>')
         (new ListView(l, { app: testApp })).attach(dom)
         checkChild(dom, 0, 'one')
         checkChild(dom, 1, 'two')
@@ -114,7 +172,7 @@ describe 'view', ->
 
       it 'should update the correct nodes when they change', ->
         l = new List([ 1, 2, 3 ])
-        dom = $('<ul><li><span class="janus-literal">one</span></li><li><span class="janus-literal">two</span></li><li><span class="janus-literal">three</span></li></ul>')
+        dom = $('<div><span class="janus-literal">one</span><span class="janus-literal">two</span><span class="janus-literal">three</span></div>')
         (new ListView(l, { app: testApp })).attach(dom)
 
         l.removeAt(0)
@@ -133,80 +191,80 @@ describe 'view', ->
         checkChild(dom, 1, 'three')
         checkChild(dom, 2, '5')
 
-      it 'should handle changed flattened varying values correctly', ->
-        v = new Varying(2)
-        l = new List([ 1, v, 3 ])
-        dom = $('<ul><li><span class="janus-literal">one</span></li><li><span class="janus-literal">two</span></li><li><span class="janus-literal">three</span></li></ul>')
+      it 'should update the correct nodes when they change', ->
+        ma = new TestModel( name: 'ma' )
+        l = new List([ 1, ma, 2 ])
+        dom = $('<div><span class="janus-literal">one</span><div class="model-name">ma</div><div class="model-length">1</div> textnode <span class="janus-literal">two</span></div>')
         (new ListView(l, { app: testApp })).attach(dom)
 
-        v.set(7)
+        mb = new TestModel( name: 'mb', x: 0 )
+        l.add(mb, 2)
+        dom.contents().length.should.equal(8)
+        checkLiteral(dom.contents().eq(0), 'one')
+        checkTestModel(dom, 1, ma)
+        checkTestModel(dom, 4, mb)
+        checkLiteral(dom.contents().eq(7), 'two')
+
+        l.remove(ma)
+        dom.contents().length.should.equal(5)
+        checkLiteral(dom.contents().eq(0), 'one')
+        checkTestModel(dom, 1, mb)
+        checkLiteral(dom.contents().eq(4), 'two')
+
+        l.remove(1)
+        dom.contents().length.should.equal(4)
+        checkTestModel(dom, 0, mb)
+        checkLiteral(dom.contents().eq(3), 'two')
+
+    describe 'parent mutator interface', ->
+      it 'should allow chaining on its render mutator', ->
+        l = new List([ 1, 2, 3 ])
+        renderItem = (render) -> render.context('test')
+
+        library = new Library()
+        library.register(Number, require('../../lib/view/literal').LiteralView, context: 'test')
+        app = new App( views: library )
+
+        dom = (new ListView(l, { app, renderItem })).artifact()
+
         dom.children().length.should.equal(3)
-        checkChild(dom, 0, 'one')
-        checkChild(dom, 1, '7')
-        checkChild(dom, 2, 'three')
+        for i in [0..2]
+          checkLiteral(dom.children().eq(i), i + 1)
 
-    it 'should allow chaining on its render mutator', ->
-      l = new List([ 1, 2, 3 ])
-      renderItem = (render) -> render.context('test')
+    describe 'events', ->
+      it 'should wire events on extant children upon request', ->
+        view = new ListView(new List([ 1, 2, 3 ]), { app: testApp })
+        dom = view.artifact()
+        view.wireEvents()
 
-      library = new Library()
-      library.register(Number, require('../../lib/view/literal').LiteralView, context: 'test')
-      app = new App( views: library )
+        dom.children().eq(0).data('view')._wired.should.equal(true)
+        dom.children().eq(1).data('view')._wired.should.equal(true)
+        dom.children().eq(2).data('view')._wired.should.equal(true)
 
-      dom = (new ListView(l, { app, renderItem })).artifact()
+      it 'should wire events on new children when added', ->
+        l = new List([ 1 ])
+        view = new ListView(l, { app: testApp })
+        dom = view.artifact()
+        view.wireEvents()
 
-      dom.children().length.should.equal(3)
-      for i in [0..2]
-        child = dom.children().eq(i)
-        child.is('li').should.equal(true)
-        child.children().length.should.equal(1)
+        dom.children().eq(0).data('view')._wired.should.equal(true)
+        l.add(2)
+        dom.children().eq(1).data('view')._wired.should.equal(true)
+        l.add(3)
+        dom.children().eq(2).data('view')._wired.should.equal(true)
 
-        checkLiteral(child.children(':first-child'), i + 1)
+      it 'should destroy all child views when destroyed', ->
+        l = new List([ 1, 2, 3 ])
+        view = new ListView(l, { app: testApp })
+        dom = view.artifact()
+        view.wireEvents() # we do this just so we have easy access to the subviews via .data('view'):
 
-    it 'should wire events on extant children upon request', ->
-      view = new ListView(new List([ 1, 2, 3 ]), { app: testApp })
-      dom = view.artifact()
-      view.wireEvents()
+        subviews = dom.children().map(-> $(this).data('view')).toArray()
+        destroyed = 0
+        (subview._destroy = -> destroyed += 1) for subview in subviews
 
-      dom.children().eq(0).children().data('view')._wired.should.equal(true)
-      dom.children().eq(1).children().data('view')._wired.should.equal(true)
-      dom.children().eq(2).children().data('view')._wired.should.equal(true)
-
-    it 'should wire events on new children when added', ->
-      l = new List([ 1 ])
-      view = new ListView(l, { app: testApp })
-      dom = view.artifact()
-      view.wireEvents()
-
-      dom.children().eq(0).children().data('view')._wired.should.equal(true)
-      l.add(2)
-      dom.children().eq(1).children().data('view')._wired.should.equal(true)
-      l.add(3)
-      dom.children().eq(2).children().data('view')._wired.should.equal(true)
-
-    it 'should wire events on changing flattened varying children when added', ->
-      v = new Varying(1)
-      l = new List([ v ])
-      view = new ListView(l, { app: testApp })
-      dom = view.artifact()
-      view.wireEvents()
-
-      dom.children().eq(0).children().data('view')._wired.should.equal(true)
-      v.set(2)
-      dom.children().eq(0).children().data('view')._wired.should.equal(true)
-
-    it 'should destroy all child views when destroyed', ->
-      l = new List([ 1, 2, 3 ])
-      view = new ListView(l, { app: testApp })
-      dom = view.artifact()
-      view.wireEvents() # we do this just so we have easy access to the subviews via .data('view'):
-
-      subviews = dom.children().children().map(-> $(this).data('view')).toArray()
-      destroyed = 0
-      (subview._destroy = -> destroyed += 1) for subview in subviews
-
-      view.destroy()
-      destroyed.should.equal(3)
+        view.destroy()
+        destroyed.should.equal(3)
 
   describe 'set', ->
     # this is all really just a plumbing check; the SetView renders entirely
@@ -216,9 +274,5 @@ describe 'view', ->
       dom.children().length.should.equal(3)
 
       for i in [0..2]
-        child = dom.children().eq(i)
-        child.is('li').should.equal(true)
-        child.children().length.should.equal(1)
-
-        checkLiteral(child.children(':first-child'), i + 1)
+        checkLiteral(dom.children().eq(i), i + 1)
 

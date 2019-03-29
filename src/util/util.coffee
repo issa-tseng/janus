@@ -21,7 +21,7 @@ asList = (x) ->
   else if x.isMappable
     x
   else
-    console.error('got an unexpected value for EnumAttribute#values')
+    console.error('got an unexpected value for EnumAttribute#values', x)
     new List()
 
 module.exports = { stringifier, asList }

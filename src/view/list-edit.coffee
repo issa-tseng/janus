@@ -4,30 +4,17 @@ $ = require('janus-dollar')
 { ListView } = require('./list')
 
 # handle move button events.
-moveHandler = (direction) -> (event, subject, view, dom) ->
-  event.preventDefault()
+moveHandler = (direction) -> (event, subject, view) ->
   moveButton = $(event.target)
   return if moveButton.hasClass('disabled')
-
-  # update the internal model.
-  li = moveButton.closest('li')
-  dest = li.prevAll().length + direction
-  view.options.list.move(subject, dest)
-
-  # List#move does not emit added/removed so manipulate the dom ourselves.
-  parent = li.parent()
-  li.detach()
-  children = parent.children()
-  if dest is children.length
-    parent.append(li)
-  else
-    children.eq(dest).before(li)
+  view.options.list.move(subject, moveButton.parent().prevAll().length + direction)
+  return
 
 ListEditItemView = class extends DomView.build($('
     <div class="janus-list-editItem">
-      <a class="janus-list-editItem-moveUp">Move Up</a>
-      <a class="janus-list-editItem-moveDown">Move Down</a>
-      <a class="janus-list-editItem-remove">Remove</a>
+      <button class="janus-list-editItem-moveUp">Move Up</button>
+      <button class="janus-list-editItem-moveDown">Move Down</button>
+      <button class="janus-list-editItem-remove">Remove</button>
       <div class="janus-list-editItem-dragHandle"></div>
       <div class="janus-list-editItem-contents"></div>
     </div>
@@ -54,10 +41,7 @@ ListEditItemView = class extends DomView.build($('
 
   # TODO: is there some way to do this without breaking into the class?
   _render: -> this._doRender(true)
-
-  _attach: (dom) ->
-    this._doRender(false)
-    return
+  _attach: (dom) -> this._doRender(false); return
 
   # we have to render ourselves, as we need to enable options.renderItem().
   # but, it's really not that bad. we just rely on a mutator anyway.
@@ -80,14 +64,14 @@ ListEditItemView = class extends DomView.build($('
     # rather than handle the dragHandle ourselves and impose our opinion on how
     # it should be done, feel free to attach your own library, and all you have
     # to do is trigger 'janus-list-itemMoved' on the dom node that moved.
-    this.artifact().closest('li').on('janus-itemMoved', (event) =>
+    this.artifact().on('janus-itemMoved', (event) =>
       return if event.isDefaultPrevented()
       event.preventDefault()
       this.options.list.move(this.subject, $(event.target).prevAll().length)
     )
 
 class ListEditView extends ListView
-  dom: -> $('<ul class="janus-list janus-list-edit"/>')
+  dom: -> $('<div class="janus-list janus-list-edit"/>')
   _initialize: ->
     super()
 

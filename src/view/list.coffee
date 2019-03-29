@@ -1,11 +1,21 @@
-{ Varying, DomView, mutators, from, List, Set } = require('janus')
+{ Varying, DomView, mutators, List, Set } = require('janus')
 { identity } = require('janus').util
 
 $ = require('janus-dollar')
 
+# used to fool the render mutator into thinking there is a container element.
+empty = $([])
+class Wrapper
+  constructor: (@contents) ->
+  children: -> this.contents
+  empty: ->
+  append: (appended) -> this.contents = appended
+
+# used so we don't wrap a from.varying(new Varying()) just to rewrap it on point.
+dummyFrom = (item) -> { all: { point: -> new Varying(item) } }
+
 class ListView extends DomView
-  dom: -> $('<ul class="janus-list"/>')
-  itemDom: -> $('<li/>')
+  dom: -> $('<div class="janus-list"/>')
 
   _initialize: ->
     this._point = this.pointer()
@@ -18,38 +28,48 @@ class ListView extends DomView
     # simply map the subject list into a list of their resulting views.
     # subviews work themselves out as a result as they are based on views
     # returned by the Library.
-    this._mappedBindings = this.subject.map((item) => this._bindingForItem(item, this.itemDom()))
+    this._mappedBindings = this.subject.map((item) => this._bindingForItem(item))
     this._hookBindings(dom, this._mappedBindings) # actually add/remove them from dom.
 
     # we'll have to manually add the initial set as the map will have
     # already executed and fired its events.
-    insertNode(dom, binding.dom, idx) for binding, idx in this._mappedBindings.list
+    dom.append(binding.dom) for binding, idx in this._mappedBindings.list
 
     dom # return
 
   # perhaps more than the other attaches, the list attach is somewhat sensitive
   # to the on-page state lining up with the model state. if the elements don't
   # line up, some really strange things can happen!
-  # it is theoretically possible to do some heuristic checks (eg do the lengths
-  # match up?) but apart from complaining it's not clear what we can do to fix
-  # it; part of attach() is completely faith-based.
   _attach: (dom) ->
     point = this.pointer()
 
     # first, and attach views for each extant node+element.
-    bindings = dom.children().map((idx, node) =>
-      this._bindingForItem(this.subject.list[idx], $(node), false)
-    ).get()
+    # here it gets a little tricky because we might have to account for cases where
+    # each view actually has multiple root nodes.
+    contents = dom.contents()
+    if contents.length is this.subject.length_
+      # in this case we assume everything is a single node (should be the common case).
+      bindings = contents.map((idx, node) =>
+        this._bindingForItem(this.subject.list[idx], $(node), false)
+      ).get()
+    else # otherwise we have to figure out each child's length:
+      ptr = 0
+      bindings = for item in this.subject.list
+        # we do so by creating a throwaway binding and seeing how long its dom is.
+        # TODO: possible minor perf improvement by just checking app view library
+        # for the view class and checking View.fragment.length
+        testBinding = this._bindingForItem(item)
+        length = testBinding.dom.length
+        testBinding.view.get()?.destroy()
+        this._bindingForItem(item, $(contents.slice(ptr, (ptr += length))), false)
 
     # now what we do is sort of ugly; we still want to directly map the list
     # elements to mutator bindings, but we don't want to do this on the first
-    # pass. so... we work rather impurely the first go-around.
+    # pass. so... we work impurely to behave differently the first go-around.
     initial = true
     this._mappedBindings = this.subject.map((item) =>
-      if initial is true
-        bindings.shift()
-      else
-        this._bindingForItem(item, this.itemDom())
+      if initial is true then bindings.shift()
+      else this._bindingForItem(item)
     )
     initial = false
 
@@ -60,21 +80,28 @@ class ListView extends DomView
   _hookBindings: (dom, bindings) ->
     # when our mapped bindings change, we mutate our dom.
     this.listenTo(bindings, 'added', (binding, idx) =>
-      insertNode(dom, binding.dom, idx)
+      if (idx + 1) is this.subject.length_ then dom.append(binding.dom)
+      else this._mappedBindings.list[idx + 1].dom.eq(0).before(binding.dom)
       binding.view.get()?.wireEvents() if this._wired is true
+    )
+    this.listenTo(bindings, 'moved', (binding, idx) =>
+      if (idx + 1) is this.subject.length_ then dom.append(binding.dom)
+      else this._mappedBindings.list[idx + 1].dom.eq(0).before(binding.dom)
     )
     this.listenTo(bindings, 'removed', (binding) ->
       binding.view.get()?.destroy()
       binding.stop()
       binding.dom.remove()
     )
+    return
 
   # take a container and populate it with a view given the standard
   # pointed binding. remember the dom element so we can actually add it.
-  _bindingForItem: (item, node, immediate = true) ->
-    mutator = mutators.render(from.varying(Varying.of(item)))
-    binding = this.options.renderItem(mutator)(node, this._point, immediate)
-    binding.dom = node
+  _bindingForItem: (item, node = empty, immediate = true) ->
+    wrapper = new Wrapper(node)
+    mutator = mutators.render(dummyFrom(item))
+    binding = this.options.renderItem(mutator)(wrapper, this._point, immediate)
+    binding.dom = wrapper.contents
     binding
 
   wireEvents: ->
@@ -103,15 +130,6 @@ class ListView extends DomView
 class SetView extends ListView
   constructor: (set, options) -> super(set?._list, options)
 
-
-insertNode = (dom, itemDom, idx) ->
-  children = dom.children()
-  if idx is 0
-    dom.prepend(itemDom)
-  else if idx is children.length
-    dom.append(itemDom)
-  else
-    children.eq(idx).before(itemDom)
 
 module.exports = {
   ListView

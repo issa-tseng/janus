@@ -1,5 +1,6 @@
 
 module.exports =
+
   view:
     list: require('./view/list')
     listEdit: require('./view/list-edit')
@@ -12,7 +13,9 @@ module.exports =
     enumAttributeList: require('./view/enum-attribute-list')
     types: require('./view/types')
 
-    registerWith: (library) -> view.registerWith(library) for _, view of this when view isnt this.registerWith
+    registerWith: (library) ->
+      view.registerWith(library) for _, view of this when view isnt this.registerWith
+      return
 
   varying: require('./varying')
 
