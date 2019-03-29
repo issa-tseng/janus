@@ -12,12 +12,7 @@ defaultMutators = require('./mutators')
 
 # do a shuffle-dance to wrap a dom node so that .find() will select the root node
 # as expected, but without assuming which jquery/zepto/etc library is being used.
-wrap = (dom) ->
-  dom.prepend('<div/>')
-  wrapper = dom.children(':first-child')
-  wrapper.remove()
-  wrapper.append(dom)
-  wrapper
+wrap = (dom) -> dom.wrapAll('<div/>').parent()
 
 # run our selectors and learn how to get to those elements in the fragment with
 # simple tree-walks. this makes view generation faster as we can cache the selector
