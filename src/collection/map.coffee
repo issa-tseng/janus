@@ -217,7 +217,7 @@ class Map extends Enumerable
 
   # Gets the number of k/v pairs in this Map. Depends on enumeration.
   Object.defineProperty(@prototype, 'length', get: -> this.length$ ?= Varying.managed((=> this.enumerate()), (it) -> it.length))
-  Object.defineProperty(@prototype, 'length_', get: -> this.enumerate_().length_)
+  Object.defineProperty(@prototype, 'length_', get: -> this.enumerate_().length)
 
   __destroy: ->
     # jettison all likely ties to other objects.
