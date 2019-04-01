@@ -78,6 +78,13 @@ describe 'List', ->
       for val, idx in [ 4, 8, 15, 16, 23, 42 ]
         l.at_(idx).should.equal(val)
 
+    it 'should add elements given a negative inde', ->
+      l = new List([ 4, 8, 23 ])
+      l.add([ 15, 16 ], -1)
+      l.length_.should.equal(5)
+      for val, idx in [ 4, 8, 15, 16, 23 ]
+        l.at_(idx).should.equal(val)
+
     it 'should add single new elements in the middle', ->
       l = new List([ 4, 8, 16, 23, 42 ])
 

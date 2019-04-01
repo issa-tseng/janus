@@ -73,6 +73,7 @@ class List extends OrderedMappable
   add: (elems, idx = this.list.length) ->
     # Normalize the argument to an array, then dump in our items.
     elems = [ elems ] unless util.isArray(elems)
+    idx = this.list.length + idx if idx < 0
     if idx is this.list.length and elems.length is 1
       this.list.push(elems[0]) # for perf. matters a lot in big batches.
     else
