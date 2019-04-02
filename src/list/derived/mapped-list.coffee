@@ -14,13 +14,13 @@ class MappedEntry extends Model.build(
 
 
 MappedEntryView = DomView.build($('
-  <div class="list-entry list-mapped">
-    <span class="list-index"/>
-    <span class="list-value value-parent"/>
-    <span class="list-function"/>
-    <span class="list-value value-child"/>
+  <div class="data-pair">
+    <span class="pair-key"/>
+    <span class="pair-value value-parent"/>
+    <span class="pair-function"/>
+    <span class="pair-value value-child"/>
   </div>'), template(
-  find('.list-index').text(from('parent.list').and('index').all.flatMap((list, index) ->
+  find('.pair-key').text(from('parent.list').and('index').all.flatMap((list, index) ->
     if index is -1 then list.length.map((x) -> x - 1)
     else index
   ))
@@ -28,7 +28,7 @@ MappedEntryView = DomView.build($('
   find('.value-parent').render(from('parent.value').map(inspect))
   find('.value-child').render(from('child.value').map(inspect))
 
-  find('.list-function').on('mouseenter', (event, entry, view) ->
+  find('.pair-function').on('mouseenter', (event, entry, view) ->
     return unless view.options.app.flyout?
     wf = new WrappedFunction(entry.get_('child.list').mapper, [ entry.get_('parent.value') ])
     view.options.app.flyout($(event.target), wf, 'panel')
@@ -36,7 +36,7 @@ MappedEntryView = DomView.build($('
 ))
 
 MappedListView = DomView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).build($('
-  <div class="janus-inspect-panel janus-inspect-list">
+  <div class="janus-inspect-panel janus-inspect-list list-mapped">
     <div class="panel-title">
       Mapped List
       <button class="janus-inspect-pin" title="Pin"/>

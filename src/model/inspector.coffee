@@ -1,5 +1,5 @@
 { Map, Model, bind, from } = require('janus')
-{ KVPair } = require('../common/kv-pair-model')
+{ DataPair } = require('../common/data-pair-model')
 
 oneOf = (xs...) ->
   (return x) for x in xs when x?
@@ -19,7 +19,7 @@ class WrappedModel extends Model.build(
       .and('target').get('uid')
       .all.map(oneOf))
 
-    bind('pairs', from('target').map((target) -> target.enumerate().map((key) -> new KVPair({ target, key }))))
+    bind('pairs', from('target').map((target) -> target.enumerate().map((key) -> new DataPair({ target, key }))))
   )
 
   isInspector: true
@@ -30,7 +30,7 @@ class WrappedModel extends Model.build(
 
 module.exports = {
   WrappedModel,
-  KVPair,
+  DataPair,
   registerWith: (library) ->
     library.register(Map, WrappedModel.wrap)
     library.register(Model, WrappedModel.wrap)

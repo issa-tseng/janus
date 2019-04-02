@@ -1,6 +1,7 @@
 { DomView, template, find, from, Model, bind, dēfault } = require('janus')
 { ListInspector } = require('./inspector')
-{ KVPair } = require('../common/kv-pair-model')
+{ DataPair } = require('../common/data-pair-model')
+{ DataPairView } = require('../common/data-pair-view')
 $ = require('janus-dollar')
 { inspect } = require('../inspect')
 { min, max } = Math
@@ -10,13 +11,21 @@ $ = require('janus-dollar')
 # LIST ENTRY VIEW
 
 ListEntry = DomView.build($('
-  <div class="list-entry">
+  <div class="data-pair">
     <button class="list-insert" title="Insert Item"/>
     <hr/>
-    <div class="list-pair"/>
-  </div>'), template(
-  find('.list-pair').render(from.subject())
-))
+    <div class="pair-k">
+      <span class="pair-key"/>
+      <span class="pair-delimeter"/>
+    </div>
+    <div class="pair-v">
+      <div class="pair-edit"></div>
+      <span class="pair-value"></span>
+      <button class="pair-clear" title="Unset Value"/>
+    </div>
+  </div>'),
+  DataPairView.template
+)
 
 
 ################################################################################
@@ -67,14 +76,14 @@ ListPanelView = DomView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).b
 
   find('.list-list')
     .render(from('target').and.vm('take.actual').asVarying().all.map((target, take) ->
-      target.enumerate().take(take).map((key) -> new KVPair({ target, key }))
+      target.enumerate().take(take).map((key) -> new DataPair({ target, key }))
     ))
     .options({ renderItem: (r) -> r.context('list-entry') })
 
   moreButton
 
   find('.list-last-item').render(from('target').and.vm('length')
-    .all.map((target, length) -> new KVPair({ target, key: length - 1 })))
+    .all.map((target, length) -> new DataPair({ target, key: length - 1 })))
 
   find('.janus-inspect-list').on('click', '.list-insert', (event, subject, view) ->
     event.stopPropagation() # don't pop multiple up the stack
@@ -84,7 +93,7 @@ ListPanelView = DomView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).b
     valuator = view.options.app.popValuator('Insert List Item', (result) ->
       idx =
         if target.hasClass('list-insert-last') then undefined
-        else target.closest('li').prevAll().length
+        else target.closest('.list-entry').prevAll().length
       subject.get_('target').add(result, idx)
     )
 
@@ -99,7 +108,7 @@ module.exports = {
   moreButton
   ListEntry, ListPanelVM, ListPanelView
   registerWith: (library) ->
-    library.register(KVPair, ListEntry, context: 'list-entry')
+    library.register(DataPair, ListEntry, context: 'list-entry')
     library.register(ListInspector, ListPanelView, context: 'panel')
 }
 
