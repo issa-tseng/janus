@@ -14,12 +14,12 @@ ApplicantView = DomView.build($('
 ))
 
 FunctionEntityView = DomView.build($('
-  <div class="janus-inspect-entity janus-inspect-function">
+  <span class="janus-inspect-entity janus-inspect-function">
     <span class="entity-title">Function</span>
     <span class="entity-content">
       <span class="function-name"/>(<span class="function-args"/>)</span>
     </span>
-  </div>'), template(
+  </span>'), template(
 
   find('.function-name').text(from('target').map((f) -> if exists(f.name) then f.name else 'λ'))
   find('.function-args').render(from('arg.pairs'))

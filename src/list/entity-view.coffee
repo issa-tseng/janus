@@ -15,13 +15,13 @@ class ListEntityVM extends Model.build(
     this.set('take', 6) if this.get_('subject').get_('target').length_ is 6
 
 ListEntityView = DomView.withOptions({ viewModelClass: ListEntityVM }).build($('
-  <div class="janus-inspect-entity janus-inspect-list">
+  <span class="janus-inspect-entity janus-inspect-list">
     <span class="entity-title"><span class="entity-type"/></span>
     <span class="entity-content">
       <span class="list-values"></span>
       <button class="entity-more list-more">&hellip;<span class="entity-more-count"/> more</button>
     </span>
-  </div>'), template(
+  </span>'), template(
 
   find('.entity-type').text(from('type'))
 

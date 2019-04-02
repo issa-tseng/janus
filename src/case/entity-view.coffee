@@ -5,12 +5,12 @@ $ = require('janus-dollar')
 { exists } = require('../util')
 
 CaseEntityView = DomView.build($('
-  <div class="janus-inspect-entity janus-inspect-case">
+  <span class="janus-inspect-entity janus-inspect-case">
     <span class="entity-title">Case<span class="entity-subtitle"/></span>
     <span class="entity-content">
       <span class="case-value"></span>
     </span>
-  </div>'), template(
+  </span>'), template(
 
   find('.entity-subtitle')
     .classed('has-subtitle', from('name').map(exists))

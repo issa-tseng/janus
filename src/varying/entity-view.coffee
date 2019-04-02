@@ -4,13 +4,13 @@ $ = require('janus-dollar')
 { WrappedVarying } = require('./inspector')
 
 VaryingEntityView = DomView.build($('
-  <div class="janus-inspect-entity janus-inspect-varying">
+  <span class="janus-inspect-entity janus-inspect-varying">
     <span class="entity-title">Varying</span>
     <span class="entity-content">
       <span class="varying-unknown" title="No observers, so no value. Click to force.">�</span>
       <span class="varying-value"></span>
     </span>
-  </div>'), template(
+  </span>'), template(
 
   find('.varying-unknown')
     .classed('unknown', from('observations').flatMap((os) -> os.length)

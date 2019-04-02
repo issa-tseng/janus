@@ -5,13 +5,13 @@ $ = require('janus-dollar')
 
 
 DomViewEntityView = DomView.build($('
-  <div class="janus-inspect-entity janus-inspect-domview">
+  <span class="janus-inspect-entity janus-inspect-domview">
     <span class="entity-title">DomView<span class="domview-subtype"/></span>
     <span class="entity-content">
       <span class="domview-mutation-count"/>
       <span class="domview-mutation-label"/>
     </span>
-  </div>'), template(
+  </span>'), template(
 
   find('.domview-subtype').text(from('subtype'))
   find('.domview-mutation-count').text(from('mutations').flatMap((ms) -> ms.length))

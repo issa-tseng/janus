@@ -4,13 +4,13 @@ $ = require('janus-dollar')
 { inspect } = require('../inspect')
 
 AttributeEntityView = DomView.build($('
-  <div class="janus-inspect-entity janus-inspect-attribute">
+  <span class="janus-inspect-entity janus-inspect-attribute">
     <span class="entity-title"/>
     <span class="entity-content">
       "<span class="attribute-key"/>"
       of <span class="attribute-parent"/>
     </span>
-  </div>'), template(
+  </span>'), template(
     find('.entity-title').text(from('type'))
 
     find('.attribute-parent').render(from('parent').map(inspect))
