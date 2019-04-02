@@ -83,10 +83,8 @@ deduceMutators = (view) ->
   operations = []
   fragment = {
     find: (selector) -> { map: -> { map: -> new DomSpy(selector, operations) } }
-    children: -> fragment
-    prepend: noop
-    append: noop
-    remove: noop
+    wrapAll: -> this
+    parent: -> fragment
     get: noop
   }
 
