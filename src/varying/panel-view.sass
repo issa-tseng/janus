@@ -1,17 +1,9 @@
 // TODO: copied blindly from janus-studio; reorganize
 $sin-45: 0.70710678118
 $cos-45: $sin-45 // so we don't get confused.
-
-$color-fade: #666
-$color-ultrafade: #999
-$color-barelythere: #ececec
-
-$color-normal: #222
-$color-active: #00a7fb
-$color-bad: #600
-
-$color-panel-bg: #f7f7f7
-$color-highlight-bg: #fadd00
+$highlight-color: #fadd00
+$active-color: #08a4ec
+$inactive-color: #555
 
 
 .varying-tree
@@ -23,8 +15,6 @@ $color-highlight-bg: #fadd00
   $value-size: 1.4em
   $lambda-size: 1.4em
 
-  $active-color: #08a4ec
-  $inactive-color: #555
   $value-color: #85d316
   $inner-color: #999
 
@@ -35,7 +25,7 @@ $color-highlight-bg: #fadd00
 
     .varying-node
       display: block
-      background-color: $color-panel-bg
+      background-color: #fff
       border: $node-border-width solid $active-color
       border-radius: $node-size
       float: left
@@ -92,7 +82,7 @@ $color-highlight-bg: #fadd00
           top: $value-size / 2
           width: 1.6em
 
-    > .value
+    .valueBlock
       align-items: center
       display: flex
       min-height: $node-outer-size
@@ -146,7 +136,7 @@ $color-highlight-bg: #fadd00
         $icon-size: 1.3em
         $offset: -0.3em
 
-        color: $color-bad
+        color: red
         content: '×'
         font-size: $icon-size
         left: $inner-padding / $icon-size + $offset
@@ -168,7 +158,7 @@ $color-highlight-bg: #fadd00
       display: none
       font-weight: bold
       height: $lambda-size
-      line-height: 1.2em
+      line-height: 1.3em
       margin-left: $node-outer-radius - ($lambda-size / 2)
       position: relative
       text-align: center
@@ -280,46 +270,58 @@ $color-highlight-bg: #fadd00
     top: ($node-size - $inner-size) / -2
 
 .reaction
-  .time
-    font-size: 0.9em
-    padding-bottom: 0.5em
+  display: inline-block
 
-    .minor
-      color: $color-fade
-      opacity: 0.7
+  &:before
+    content: '>'
+    display: none
 
-  .reaction-part
-    overflow: hidden
-    .reaction-part-id
-      float: left
-      font-size: 1.2em
-      font-weight: bold
-    .reaction-part-delta
-      float: right
+  .rxn-value
+    background: #eee
+    border-radius: 0.2em
+    cursor: default
+    padding: 0.3em 0.5em
 
-  .reaction-intermediate
-    .ellipsis
-      font-size: 2.4em
-      font-weight: bold
-
-    .multiple
-      bottom: 0.5em
-      color: $color-ultrafade
-      font-size: 0.9em
+    &:before
+      border: 1px solid $inactive-color
+      border-radius: 1em
+      content: ''
+      display: inline-block
+      height: 0.8em
       position: relative
+      top: 0.1em
+      width: 0.8em
 
-  .reaction-root
-    padding-top: 0.35em
-
-  &.singular
-    .reaction-intermediate, .reaction-root
+    > span
       display: none
+      max-width: 8em
+      font-size: 1.1rem
+      overflow: hidden
+      text-overflow: ellipsis
+      white-space: nowrap
+
+.reaction.target-changed
+  .rxn-value
+    background: #e4e4e4
+    > span
+      display: inline-block
+    &:before
+      border-color: $active-color
+      margin-right: 0.4em
+
+.reaction + .reaction.target-unchanged
+  margin-left: -0.2em
+  .rxn-value
+    border-radius: 0 0.2em 0.2em 0
+
+.reaction + .reaction.target-changed:before
+  display: inline
 
 .varying-delta
   overflow: hidden
 
   &.has-delta
-    background-color: $color-highlight-bg
+    background-color: $highlight-color
     .delta
       display: inline
 
@@ -330,4 +332,22 @@ $color-highlight-bg: #fadd00
     padding: 0.2em
     &:before
       content: '»'
+
+.janus-inspect-varying.janus-inspect-panel
+  .derivation-arg
+    display: none
+    &.has-arg
+      display: inline
+      &:before
+        content: '('
+      &:after
+        content: ')'
+
+  .varying-reactions.has-reactions + .varying-reactions-none
+    display: none
+
+  .varying-snapshot
+    display: none
+  &.selected-rxn .varying-snapshot
+    display: block
 

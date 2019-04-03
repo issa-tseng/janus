@@ -12,48 +12,21 @@ $ = require('janus-dollar')
 # REACTION VIEW (list)
 
 ReactionVM = Model.build(
-  bind('at', from.subject('at').map(DateTime.fromJSDate)) # TODO: not always correct?
-  bind('change_count', from.subject('changes').flatMap((cs) -> cs.length))
-  bind('target', from.subject('changes').flatMap((cs) -> cs.at(-1)))
-  bind('root', from('target').and.subject().get('root').all.map((t, r) -> r unless t is r))
+  bind('target-inspector', from('view').map((v) -> v.closest(WrappedVarying).first().get_().subject))
+  bind('snapshot', from('target-inspector').get('id').and.subject()
+    .all.flatMap((id, rxn) -> rxn.get("tree.#{id}")))
+  bind('changed', from('snapshot').get('changed'))
 )
 
-ReactionView = DomView.withOptions({ viewModelClass: ReactionVM }).build($('
-    <div class="reaction">
-      <div class="time"><span class="minor"/><span class="major"/></div>
-
-      <div class="reaction-part reaction-inspectionTarget">
-        <div class="reaction-part-id"/>
-        <div class="reaction-part-delta"/>
-      </div>
-      <div class="reaction-intermediate">
-        <span class="ellipsis">&vellip;</span>
-        <span class="multiple">&times;<span class="count"/></span>
-      </div>
-      <div class="reaction-part reaction-root">
-        <div class="reaction-part-id"/>
-        <div class="reaction-part-delta"/>
-      </div>
-    </div>
-  '), template(
-
-    find('.time .minor').text(from.vm('at').map((t) -> t.toFormat("HH:mm:")))
-    find('.time .major').text(from.vm('at').map((t) -> t.toFormat("ss.SSS")))
-
-    find('.reaction').classed('singular', from.vm('target').and('root').all.map((x, y) -> x is y))
-
-    find('.reaction-inspectionTarget .reaction-part-id').text(from.vm('target').get('id').map((id) -> "##{id}"))
-    find('.reaction-inspectionTarget .reaction-part-delta').render(from.vm('target')).context('delta')
-
-    find('.reaction-intermediate').classed('hide', from.vm('change_count').map((x) -> x < 3))
-    find('.reaction-intermediate .count').text(from.vm('change_count').map((cc) -> cc - 2))
-
-    find('.reaction-root').classed('hide', from.vm('root').map((r) -> !r?))
-    find('.reaction-root .reaction-part-id').text(from.vm('root').get('id').map((id) -> "##{id}"))
-    find('.reaction-root .reaction-part-delta').render(from.vm('root')).context('delta')
-  )
-)
-
+ReactionView = DomView.withOptions({ viewModelClass: ReactionVM }).build(
+  $('<div class="reaction"><span class="rxn-value"/></div>'),
+  template(
+    find('.reaction')
+      .classed('target-changed', from.vm('changed'))
+      .classed('target-unchanged', from.vm('changed').map((x) -> !x))
+    find('.rxn-value')
+      .render(from.vm('snapshot').flatMap(((vi) -> vi?.get('new_value').map(inspect))))
+))
 
 ################################################################################
 # VARYING DELTA ("x -> y") VIEW
@@ -94,7 +67,7 @@ VaryingTreeView = DomView.build($('
     <div class="varying-tree">
       <div class="main">
         <div class="node"/>
-        <div class="value"/>
+        <div class="valueBlock"/>
       </div>
       <div class="aux">
         <div class="varying-tree-inner varying-tree-innerNew"/>
@@ -117,7 +90,7 @@ VaryingTreeView = DomView.build($('
 
     # TODO: ehhh on these context names?
     find('.node').render(from.subject()).context('node')
-    find('.value').render(from.subject()).context('delta')
+    find('.valueBlock').render(from.subject()).context('delta')
 
     find('.mapping').on('mouseenter', (event, wrapped, view) ->
       args = []
@@ -145,32 +118,34 @@ VaryingTreeView = DomView.build($('
 # VARYING PANEL
 
 class VaryingPanel extends Model.build(
-  attribute('active_reaction', class extends attribute.Enum
+  attribute('selected-rxn', class extends attribute.Enum
     nullable: true
-    values: -> this.model.get('subject').flatMap((wv) -> wv.get('reactions'))
+    values: -> from.subject('reactions')
     default: -> null
   )
+  bind('active-rxn', from('hovered-rxn').and('selected-rxn').all.map((h, s) -> h ? s))
 )
 
 VaryingView = DomView.withOptions({ viewModelClass: VaryingPanel }).build($('
     <div class="janus-inspect-panel janus-inspect-varying">
       <div class="panel-title">
         <span class="varying-title"/> #<span class="varying-id"/>
-        <span class="varying-snapshot">
-          Snapshot
-          <button class="varying-snapshot-close" title="Close Snapshot"/>
-        </span>
         <button class="janus-inspect-pin" title="Pin"/>
-      </div>
-      <div class="panel-sidebar">
-        <div class="panel-sidebar-title">Reactions</div>
-        <div class="panel-sidebar-content varying-reactions"/>
       </div>
       <div class="panel-derivation">
         Given by <span class="varying-owner"/>
         via .<span class="derivation-method"/><span class="derivation-arg"/>
       </div>
       <div class="panel-content">
+        <div class="varying-reaction-bar">
+          <label>Reactions</label>
+          <div class="varying-reactions"/>
+          <span class="varying-reactions-none">(none tracked)</span>
+        </div>
+        <div class="varying-snapshot">
+          Change snapshot at <span class="varying-snapshot-time"/>
+          <button class="varying-snapshot-close" title="Close Snapshot"/>
+        </div>
         <div class="varying-inert">
           Inert (no observers).
           <a class="varying-observe" href="#react">Observe now</a>.
@@ -179,14 +154,9 @@ VaryingView = DomView.withOptions({ viewModelClass: VaryingPanel }).build($('
       </div>
     </div>
   '), template(
+    find('.janus-inspect-varying').classed('selected-rxn', from.vm('selected-rxn').map(exists))
     find('.varying-title').text(from('title'))
     find('.varying-id').text(from('id'))
-
-    find('.varying-snapshot').classed('hide', from.vm('active_reaction').map((x) -> !x?))
-    find('.varying-snapshot-close').on('click', (event, s, { viewModel }) ->
-      event.preventDefault()
-      viewModel.unset('active_reaction')
-    )
 
     find('.panel-derivation').classed('hide', from('owner').map((x) -> !x?))
     find('.varying-owner').render(from('owner').map(inspect))
@@ -195,21 +165,27 @@ VaryingView = DomView.withOptions({ viewModelClass: VaryingPanel }).build($('
       .classed('has-arg', from('derivation').get('arg').map(exists))
       .render(from('derivation').get('arg').map(inspect))
 
-    find('.varying-inert').classed('hide', from('observations')
-      .flatMap((obs) -> obs?.nonEmpty()))
+    find('.varying-reactions')
+      .classed('has-reactions', from('reactions').flatMap((rs) -> rs.nonEmpty()))
+      .render(from.vm().attribute('selected-rxn'))
+        .context('edit').criteria( style: 'list' )
+      .on('mouseover', '.reaction', (event, s, { viewModel }) ->
+        viewModel.set('hovered-rxn', $(event.currentTarget).view().subject))
+      .on('mouseleave', (event, s, { viewModel }) -> viewModel.unset('hovered-rxn'))
 
+    find('.varying-snapshot-time').text(from.vm('active-rxn').get('at').map((t) ->
+      DateTime.fromJSDate(t).toFormat("HH:mm:ss.SSS")))
+    find('.varying-snapshot-close').on('click', (e, s, { vm }) -> vm.unset('selected-rxn'))
+
+    find('.varying-inert').classed('hide', from('observations').flatMap((obs) -> obs?.nonEmpty()))
     find('.varying-observe').on('click', (event, subject) ->
       event.preventDefault()
       subject.varying.react()
     )
 
-    find('.varying-tree').render(from.subject().and.vm('active_reaction').all.flatMap((wv, ar) ->
+    find('.varying-tree').render(from.subject().and.vm('active-rxn').all.flatMap((wv, ar) ->
       if ar? then wv.get('id').flatMap((id) -> ar.get("tree.#{id}")) else wv
     )).context('tree')
-
-    find('.varying-reactions').render(from.vm().attribute('active_reaction'))
-      .context('edit').criteria( style: 'list' )
-      .options(from.subject().map((wv) -> { renderItem: (x) -> x.options( settings: { target: wv } ) }))
   )
 )
 
