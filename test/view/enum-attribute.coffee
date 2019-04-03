@@ -15,14 +15,14 @@ describe 'view', ->
 
     it 'renders an option tag for each value', ->
       class TestAttribute extends attribute.Enum
-        values: -> [ 'alpha', 'bravo', 'charlie' ]
+        _values: -> [ 'alpha', 'bravo', 'charlie' ]
 
       select = (new EnumAttributeEditView(new TestAttribute(new Model(), 'test'))).artifact()
       select.children().length.should.equal(3)
 
     it 'renders appropriate text given primitive values', ->
       class TestAttribute extends attribute.Enum
-        values: -> [ 'test', 1, true, false ]
+        _values: -> [ 'test', 1, true, false ]
 
       select = (new EnumAttributeEditView(new TestAttribute(new Model(), 'test'))).artifact()
       select.children().length.should.equal(4)
@@ -30,7 +30,7 @@ describe 'view', ->
 
     it 'renders appropriate text given options.stringify', ->
       class TestAttribute extends attribute.Enum
-        values: -> [ 'test', 1, true, false ]
+        _values: -> [ 'test', 1, true, false ]
 
       stringify = (x) -> "#{x}!"
       select = (new EnumAttributeEditView(new TestAttribute(new Model(), 'test'), { stringify })).artifact()
@@ -39,7 +39,7 @@ describe 'view', ->
 
     it 'renders appropriate text given attribute#stringify', ->
       class TestAttribute extends attribute.Enum
-        values: -> [ 'test', 1, true, false ]
+        _values: -> [ 'test', 1, true, false ]
         stringify: (x) -> "#{x}?"
 
       select = (new EnumAttributeEditView(new TestAttribute(new Model(), 'test'))).artifact()
@@ -48,7 +48,7 @@ describe 'view', ->
 
     it 'prefers options.stringify over attribute#stringify', ->
       class TestAttribute extends attribute.Enum
-        values: -> [ 'test', 1, true, false ]
+        _values: -> [ 'test', 1, true, false ]
         stringify: (x) -> "#{x}?"
 
       stringify = (x) -> "#{x}!"
@@ -58,7 +58,7 @@ describe 'view', ->
 
     it 'updates text values if given a Varying text', ->
       class TestAttribute extends attribute.Enum
-        values: -> [ 'test', 1, true, false ]
+        _values: -> [ 'test', 1, true, false ]
 
       v = new Varying('!')
       stringify = (x) -> v.map((y) -> "#{x}#{y}")
@@ -72,7 +72,7 @@ describe 'view', ->
     it 'renders additional option tags for new values', ->
       values = new List([ 'alpha', 'bravo', 'charlie' ])
       class TestAttribute extends attribute.Enum
-        values: -> values
+        _values: -> values
 
       select = (new EnumAttributeEditView(new TestAttribute(new Model(), 'test'))).artifact()
       select.children().length.should.equal(3)
@@ -88,7 +88,7 @@ describe 'view', ->
     it 'removes option tags for removed values', ->
       values = new List([ 'alpha', 'bravo', 'charlie', 'delta' ])
       class TestAttribute extends attribute.Enum
-        values: -> values
+        _values: -> values
 
       select = (new EnumAttributeEditView(new TestAttribute(new Model(), 'test'))).artifact()
       select.children().length.should.equal(4)
@@ -103,7 +103,7 @@ describe 'view', ->
 
     it 'populates the select with the correct value initially', ->
       class TestAttribute extends attribute.Enum
-        values: -> new List([ 'alpha', 'bravo', 'charlie', 'delta' ])
+        _values: -> new List([ 'alpha', 'bravo', 'charlie', 'delta' ])
 
       select = (new EnumAttributeEditView(new TestAttribute(new Model({ test: 'charlie' }), 'test'))).artifact()
       select.children(':selected').length.should.equal(1)
@@ -111,7 +111,7 @@ describe 'view', ->
 
     it 'updates the selected value if the model changes', ->
       class TestAttribute extends attribute.Enum
-        values: -> new List([ 'alpha', 'bravo', 'charlie', 'delta' ])
+        _values: -> new List([ 'alpha', 'bravo', 'charlie', 'delta' ])
 
       m = new Model({ test: 'charlie' })
       view = new EnumAttributeEditView(new TestAttribute(m, 'test'))
@@ -128,7 +128,7 @@ describe 'view', ->
       mval = new Model()
       arrval = []
       class TestAttribute extends attribute.Enum
-        values: -> new List([ mval, arrval ])
+        _values: -> new List([ mval, arrval ])
 
       m = new Model()
       view = new EnumAttributeEditView(new TestAttribute(m, 'test'))
@@ -145,7 +145,7 @@ describe 'view', ->
 
     it 'updates the model if the selected value changes', ->
       class TestAttribute extends attribute.Enum
-        values: -> new List([ 'alpha', 'bravo', 'charlie', 'delta' ])
+        _values: -> new List([ 'alpha', 'bravo', 'charlie', 'delta' ])
 
       m = new Model({ test: 'charlie' })
       view = new EnumAttributeEditView(new TestAttribute(m, 'test'))
@@ -162,7 +162,7 @@ describe 'view', ->
 
     it 'sets the model value upon event wiring to the apparent value', ->
       class TestAttribute extends attribute.Enum
-        values: -> [ 'alpha', 'bravo', 'charlie', 'delta' ]
+        _values: -> [ 'alpha', 'bravo', 'charlie', 'delta' ]
 
       m = new Model()
       view = new EnumAttributeEditView(new TestAttribute(m, 'test'))
@@ -173,7 +173,7 @@ describe 'view', ->
 
     it 'inserts a blank placeholder if the field is declared nullable', ->
       class TestAttribute extends attribute.Enum
-        values: -> [ 'alpha', 'bravo', 'charlie' ]
+        _values: -> [ 'alpha', 'bravo', 'charlie' ]
         nullable: true
 
       select = (new EnumAttributeEditView(new TestAttribute(new Model(), 'test'))).artifact()
@@ -183,7 +183,7 @@ describe 'view', ->
     it 'deals well with a Varying values list ref changing wholesale', ->
       v = new Varying([ 'alpha', 'bravo', 'charlie' ])
       class TestAttribute extends attribute.Enum
-        values: -> v
+        _values: -> v
 
       select = (new EnumAttributeEditView(new TestAttribute(new Model(), 'test'))).artifact()
       select.children().length.should.equal(3)
@@ -195,7 +195,7 @@ describe 'view', ->
 
     it 'deals well with a from expression', ->
       class TestAttribute extends attribute.Enum
-        values: -> from('list')
+        _values: -> from('list')
 
       model = new Model({ list: new List([ 'xray', 'yankee', 'zulu' ]) })
       select = (new EnumAttributeEditView(new TestAttribute(model, 'test'))).artifact()
@@ -207,7 +207,7 @@ describe 'view', ->
 
     it 'inserts a blank placeholder if the field is declared nullable', ->
       class TestAttribute extends attribute.Enum
-        values: -> [ 'alpha', 'bravo', 'charlie' ]
+        _values: -> [ 'alpha', 'bravo', 'charlie' ]
         nullable: true
 
       select = (new EnumAttributeEditView(new TestAttribute(new Model(), 'test'))).artifact()
@@ -217,7 +217,7 @@ describe 'view', ->
     describe 'attach', ->
       it 'should leave the initial markup alone', ->
         class TestAttribute extends attribute.Enum
-          values: -> [ 'alpha', 'bravo', 'charlie' ]
+          _values: -> [ 'alpha', 'bravo', 'charlie' ]
 
         dom = $('<select><option value="alpha">a</option><option value="bravo">b</option><option value="charlie">c</option></select>')
         (new EnumAttributeEditView(new TestAttribute(new Model(), 'test'))).attach(dom)
@@ -227,7 +227,7 @@ describe 'view', ->
 
       it 'should still set the correct model values on change', ->
         class TestAttribute extends attribute.Enum
-          values: -> [ 'alpha', 'bravo', 'charlie' ]
+          _values: -> [ 'alpha', 'bravo', 'charlie' ]
 
         select = $('<select><option value="alpha">a</option><option value="bravo">b</option><option value="charlie">c</option></select>')
         m = new Model()
@@ -242,7 +242,7 @@ describe 'view', ->
       it 'should replace options correctly', ->
         l = new List([ 'alpha', 'bravo', 'charlie' ])
         class TestAttribute extends attribute.Enum
-          values: -> l
+          _values: -> l
 
         select = $('<select><option value="alpha">a</option><option value="bravo">b</option><option value="charlie">c</option></select>')
         view = (new EnumAttributeEditView(new TestAttribute(new Model(), 'test')))
@@ -260,7 +260,7 @@ describe 'view', ->
       it 'should update label text on stringify change', ->
         l = new List([ 'alpha', 'bravo', 'charlie' ])
         class TestAttribute extends attribute.Enum
-          values: -> l
+          _values: -> l
 
         select = $('<select><option value="alpha">a</option><option value="bravo">b</option><option value="charlie">c</option></select>')
         btext = new Varying('bravo')
@@ -274,7 +274,7 @@ describe 'view', ->
       it 'should bind new options correctly', ->
         l = new List([ 'alpha', 'bravo', 'charlie' ])
         class TestAttribute extends attribute.Enum
-          values: -> l
+          _values: -> l
 
         select = $('<select><option value="alpha">a</option><option value="bravo">b</option><option value="charlie">c</option></select>')
         dtext = new Varying('delta')

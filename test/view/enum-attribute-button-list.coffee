@@ -28,7 +28,7 @@ checkLiteral = (dom, text) ->
   dom.text().should.equal(text)
 
 describe 'view', ->
-  describe 'enum attribute (list)', ->
+  describe 'enum attribute (button list)', ->
     it 'should render an unordered list element of the appropriate classes (and a wrapper)', ->
       dom = (new EnumAttributeListEditView(new attribute.Enum(new Model(), 'test'), { app: testApp })).artifact()
       dom.is('div').should.equal(true)
@@ -40,7 +40,7 @@ describe 'view', ->
 
     it 'should render a wrapper for each list item', ->
       class TestAttribute extends attribute.Enum
-        values: -> [ 1, 2, 3 ]
+        _values: -> [ 1, 2, 3 ]
       dom = (new EnumAttributeListEditView(new TestAttribute(new Model(), 'test'), { app: testApp })).artifact()
       listDom = dom.children().eq(0)
 
@@ -50,7 +50,7 @@ describe 'view', ->
 
     it 'should deal with from expressions', ->
       class TestAttribute extends attribute.Enum
-        values: -> from('options')
+        _values: -> from('options')
 
       model = new Model({ options: [ 1, 2, 3 ] })
       dom = (new EnumAttributeListEditView(new TestAttribute(model, 'test'), { app: testApp })).artifact()
@@ -69,7 +69,7 @@ describe 'view', ->
 
       renderItem = (render) -> render.context('test')
       class TestAttribute extends attribute.Enum
-        values: -> [ 1, 2, 3 ]
+        _values: -> [ 1, 2, 3 ]
       dom = (new EnumAttributeListEditView(new TestAttribute(new Model(), 'test'), { app, renderItem })).artifact()
 
       targets = dom.find('> div.janus-list > .janus-list-selectItem > .janus-list-selectItem-contents > .janus-literal')
@@ -86,7 +86,7 @@ describe 'view', ->
 
       renderWrapper = (render) -> render.context('test')
       class TestAttribute extends attribute.Enum
-        values: -> [ 1, 2, 3 ]
+        _values: -> [ 1, 2, 3 ]
       dom = (new EnumAttributeListEditView(new TestAttribute(new Model(), 'test'), { app, renderWrapper })).artifact()
       listDom = dom.children()
 
@@ -95,14 +95,14 @@ describe 'view', ->
 
     it 'should default the button label to "Select"', ->
       class TestAttribute extends attribute.Enum
-        values: -> [ 1, 2, 3 ]
+        _values: -> [ 1, 2, 3 ]
       dom = (new EnumAttributeListEditView(new TestAttribute(new Model(), 'test'), { app: testApp })).artifact()
 
       dom.find('button:first').text().should.equal('Select')
 
     it 'should allow specifying the button label', ->
       class TestAttribute extends attribute.Enum
-        values: -> [ 1, 2, 3 ]
+        _values: -> [ 1, 2, 3 ]
       v = new Varying('test')
       buttonLabel = -> v
       dom = (new EnumAttributeListEditView(new TestAttribute(new Model(), 'test'), { app: testApp, buttonLabel })).artifact()
@@ -114,7 +114,7 @@ describe 'view', ->
 
     it 'should apply a selected class to the selected item', ->
       class TestAttribute extends attribute.Enum
-        values: -> [ 1, 2, 3 ]
+        _values: -> [ 1, 2, 3 ]
       m = new Model({ test: 2 })
       dom = (new EnumAttributeListEditView(new TestAttribute(m, 'test'), { app: testApp })).artifact()
 
@@ -128,7 +128,7 @@ describe 'view', ->
 
     it 'should update the model value when select is clicked', ->
       class TestAttribute extends attribute.Enum
-        values: -> [ 1, 2, 3 ]
+        _values: -> [ 1, 2, 3 ]
       m = new Model()
       view = new EnumAttributeListEditView(new TestAttribute(m, 'test'), { app: testApp })
       dom = view.artifact()
@@ -155,7 +155,7 @@ describe 'view', ->
     describe 'attach', ->
       it 'should leave the existing elements alone', ->
         class TestAttribute extends attribute.Enum
-          values: -> new List([ 1, 2, 3, 4, 5 ])
+          _values: -> new List([ 1, 2, 3, 4, 5 ])
         view = new EnumAttributeListEditView(new TestAttribute(new Model(), 'test'), { app: testApp })
         dom = $('<div><div><div><span>dummy 1</span></div><div><span>dummy 2</span></div><div><span>dummy 3</span></div><div><span>dummy 4</span></div><div><span>dummy 5</span></div></div></div>')
         view.attach(dom)
@@ -166,7 +166,7 @@ describe 'view', ->
       it 'should replace appropriate elements', ->
         l = new List([ 1, 2, 3, 4, 5 ])
         class TestAttribute extends attribute.Enum
-          values: -> l
+          _values: -> l
         view = new EnumAttributeListEditView(new TestAttribute(new Model(), 'test'), { app: testApp })
         selectDom = (new ListSelectItemView()).dom()
         dom = $('<div><div><div>dummy 1</div><div>dummy 2</div><div></div><div>dummy 4</div><div>dummy 5</div></div></div>')

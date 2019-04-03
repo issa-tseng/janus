@@ -1,7 +1,6 @@
 { Varying, DomView, from, template, find, mutators, Base, List } = require('janus')
 { Enum } = require('janus').attribute
 { identity } = require('janus').util
-{ asList } = require('../util/util')
 
 $ = require('janus-dollar')
 
@@ -47,29 +46,24 @@ ListSelectItemView = class extends DomView.build($('
 # eventually (TODO) it would be nice to not have the wrapper div. But for now
 # it simplifies the problem by quite a bit.
 EnumAttributeListEditView = DomView.build($('<div class="janus-enumSelect"/>'), template(
-  find('div')
-    .render(from.self().flatMap((view) ->
-      values = view.subject.values()
-      values = values.all.point(view.subject.model.pointer()) if values.all?.point?
-      Varying.of(values).map(asList)
-    ))
-      .options(from.self().map((view) ->
-        # very very similar to ListEditView but with different default values. could
-        # probably be combined.
-        ogRenderItem = view.options.renderItem ? identity
-        modifiedRenderItem = (render) -> ogRenderItem(render.context('summary'))
-        renderWrapper = view.options.renderWrapper ? identity
+  find('div').render(from.subject().flatMap((attr) -> attr.values()))
+    .options(from.self().map((view) ->
+      # very very similar to ListEditView but with different default values. could
+      # probably be combined.
+      ogRenderItem = view.options.renderItem ? identity
+      modifiedRenderItem = (render) -> ogRenderItem(render.context('summary'))
+      renderWrapper = view.options.renderWrapper ? identity
 
-        {
-          renderItem: (render) => renderWrapper(render
-            .context('select-wrapper')
-            .options({
-              renderItem: modifiedRenderItem,
-              enum: view.subject,
-              buttonLabel: view.options.buttonLabel
-            }))
-        }
-      ))
+      {
+        renderItem: (render) => renderWrapper(render
+          .context('select-wrapper')
+          .options({
+            renderItem: modifiedRenderItem,
+            enum: view.subject,
+            buttonLabel: view.options.buttonLabel
+          }))
+      }
+    ))
 ))
 
 

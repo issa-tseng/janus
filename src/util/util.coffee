@@ -12,17 +12,5 @@ stringifier = (view) ->
   else
     new Varying((x) -> x?.toString() ? '')
 
-# standard resolution for taking a value and trying to derive a List out of it.
-asList = (x) ->
-  if !x?
-    new List()
-  else if isArray(x)
-    new List(x)
-  else if x.isMappable
-    x
-  else
-    console.error('got an unexpected value for EnumAttribute#values', x)
-    new List()
-
-module.exports = { stringifier, asList }
+module.exports = { stringifier }
 

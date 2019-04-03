@@ -1,7 +1,7 @@
 { Varying, DomView, from, template, find, Base, List } = require('janus')
 { Enum } = require('janus').attribute
 { isArray, isPrimitive, uniqueId } = require('janus').util
-{ stringifier, asList } = require('../util/util')
+{ stringifier } = require('../util/util')
 
 $ = require('janus-dollar')
 
@@ -22,15 +22,10 @@ class EnumAttributeEditView extends DomView
     return
 
   _optionsList: ->
-    values = this.subject.values()
-    values = values.all.point(this.subject.model.pointer()) if values.all?.point?
-    Varying.of(values).map((values) =>
-      list = asList(values)
-      if this.subject.nullable is true
-        new List([ null ]).concat(list)
-      else
-        list
-    )
+    if this.subject.nullable is true
+      this.subject.values().map((l) -> new List([ null ]).concat(l))
+    else
+      this.subject.values()
 
   _render: ->
     select = this.dom()

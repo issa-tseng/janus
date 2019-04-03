@@ -21,7 +21,7 @@ describe 'view', ->
   describe 'enum attribute (list)', ->
     it 'should render the list as normal', ->
       class TestAttribute extends attribute.Enum
-        values: -> [ 1, 2, 3 ]
+        _values: -> [ 1, 2, 3 ]
       dom = (new EnumAttributeListEditView(new TestAttribute(new Model(), 'test'), { app: testApp })).artifact()
 
       list = dom.children().eq(0)
@@ -31,7 +31,7 @@ describe 'view', ->
 
     it 'should should resolve from bindings', ->
       class TestAttribute extends attribute.Enum
-        values: -> from('options').map((l) -> l.map((x) -> x * 2))
+        _values: -> from('options').map((l) -> l.map((x) -> x * 2))
       model = new Model({ options: new List([ 1, 2 ]) })
       dom = (new EnumAttributeListEditView(new TestAttribute(model, 'test'), { app: testApp })).artifact()
       list = dom.children().eq(0)
@@ -47,7 +47,7 @@ describe 'view', ->
 
     it 'should set the attribute value when click occurs', ->
       class TestAttribute extends attribute.Enum
-        values: -> [ 1, 2, 3 ]
+        _values: -> [ 1, 2, 3 ]
       model = new Model()
       view = new EnumAttributeListEditView(new TestAttribute(model, 'test'), { app: testApp })
       dom = view.artifact()
@@ -60,7 +60,7 @@ describe 'view', ->
 
     it 'should not set the attribute value if the event has default prevented', ->
       class TestAttribute extends attribute.Enum
-        values: -> [ 1, 2, 3 ]
+        _values: -> [ 1, 2, 3 ]
       model = new Model()
       view = new EnumAttributeListEditView(new TestAttribute(model, 'test'), { app: testApp })
       dom = view.artifact()
