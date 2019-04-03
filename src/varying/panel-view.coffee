@@ -120,7 +120,7 @@ VaryingTreeView = DomView.build($('
 class VaryingPanel extends Model.build(
   attribute('selected-rxn', class extends attribute.Enum
     nullable: true
-    values: -> from.subject('reactions')
+    _values: -> from.subject('reactions')
     default: -> null
   )
   bind('active-rxn', from('hovered-rxn').and('selected-rxn').all.map((h, s) -> h ? s))
