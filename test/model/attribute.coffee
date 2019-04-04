@@ -102,6 +102,42 @@ describe 'Attribute', ->
         result.should.be.a.Number
         (result > 1400000000000).should.equal(true)
 
+    describe 'enum type', ->
+      it 'should by default give an empty Varying[List]', ->
+        attr = new attribute.Enum(new Model(), 'test')
+        values = attr.values()
+        values.isVarying.should.equal(true)
+        values.get().should.be.an.instanceof(List)
+        values.get().length_.should.equal(0)
+
+      it 'should give the specified array if declared', ->
+        class TestAttribute extends attribute.Enum
+          _values: -> [ 'red', 'blue', 'green' ]
+
+        attr = new TestAttribute(new Model(), 'test')
+        values = attr.values()
+        values.get().should.be.an.instanceof(List)
+        values.get().list.should.eql([ 'red', 'blue', 'green' ])
+
+      it 'should give the specified list if declared', ->
+        class TestAttribute extends attribute.Enum
+          _values: -> new List([ 'red', 'blue', 'green' ])
+
+        attr = new TestAttribute(new Model(), 'test')
+        values = attr.values()
+        values.get().should.be.an.instanceof(List)
+        values.get().list.should.eql([ 'red', 'blue', 'green' ])
+
+      it 'should resolve a from binding if given', ->
+        class TestAttribute extends attribute.Enum
+          _values: -> from('list')
+
+        m = new Model({ list: new List([ 'red', 'blue', 'green' ]) })
+        attr = new TestAttribute(m, 'test')
+        values = attr.values()
+        values.get().should.be.an.instanceof(List)
+        values.get().list.should.eql([ 'red', 'blue', 'green' ])
+
     describe 'model type', ->
       it 'should delegate deserialization to the model class', ->
         called = false

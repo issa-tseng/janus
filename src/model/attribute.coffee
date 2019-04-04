@@ -4,7 +4,7 @@ types = require('../core/types')
 { Map } = require('../collection/map')
 { Varying } = require('../core/varying')
 { List } = require('../collection/list')
-{ isFunction } = require('../util/util')
+{ isFunction, isArray } = require('../util/util')
 
 
 # This derivation theoretically means that `Attributes` can contain schemas,
@@ -42,7 +42,17 @@ class Attribute extends Model
 class TextAttribute extends Attribute
 
 class EnumAttribute extends Attribute
-  values: -> new List([])
+  values: -> this.values$ ?= do =>
+    vs = this._values()
+    vs = vs.all.point(this.model.pointer()) if vs?.all?
+    Varying.of(vs).map((xs) ->
+      if !xs? then new List()
+      else if isArray(xs) then new List(xs)
+      else if xs.isMappable then xs
+      else new List()
+    )
+
+  _values: -> new List([])
   nullable: false
 
 class NumberAttribute extends Attribute
