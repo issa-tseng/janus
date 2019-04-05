@@ -20,6 +20,17 @@ class Model extends Map
     super(data, options)
     this._bind() # kick off bindings only after basic init.
 
+  # we override here to make one small optimization: if the requested key is
+  # bound, we just return the binding that we already necessarily have anyway
+  # rather than make it all go through an extra layer.
+  get: (key) ->
+    if this._bindings? and (binding = this._bindings[key])?
+      varying = binding.parent
+      varying.__owner ?= this # TODO: again, still don't like this #145
+      varying
+    else
+      super(key)
+
   # Get an data about this model. Differs from Map#get only in that it looks at
   # attributes for default values (and potentially writes them).
   # TODO: a lot of copypasta from Map, but we have a different flowpath because

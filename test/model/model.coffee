@@ -34,6 +34,29 @@ describe 'Model', ->
       new TestModel({ a: 42 })
       result.should.equal(42)
 
+  describe 'get', ->
+    it 'should return an appropriate Varying given a bound var', ->
+      class TestModel extends Model.build(
+        bind('y', from('x').map((x) -> x * 2))
+      )
+      model = new TestModel({ x: 4 })
+      result = model.get('y')
+      result.isVarying.should.equal(true)
+      result.get().should.equal(8)
+
+    it 'should return an appropriate Varying given a non-bound var', ->
+      model = new Model({ x: 4 })
+      result = model.get('x')
+      result.isVarying.should.equal(true)
+      result.get().should.equal(4)
+
+    it 'should not crash if bound vars are get()ed before _bindings init', ->
+      class TestModel extends Model.build(
+        bind('y', from('x').map((x) -> x * 2)))
+        _initialize: -> this.get('y').react(this.set('z'))
+      m = new TestModel({ x: 4 })
+      m.get_('z').should.equal(8) # really the test is that nothing crashes
+
   describe 'get_', ->
     it 'should return the default value if defined', ->
       class TestAttribute extends attributes.Attribute
