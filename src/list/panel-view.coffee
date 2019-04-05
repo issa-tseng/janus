@@ -93,7 +93,7 @@ ListPanelView = DomView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).b
     valuator = view.options.app.popValuator('Insert List Item', (result) ->
       idx =
         if target.hasClass('list-insert-last') then undefined
-        else target.closest('.list-entry').prevAll().length
+        else target.closest('.data-pair').prevAll().length
       subject.get_('target').add(result, idx)
     )
 
