@@ -29,7 +29,7 @@ class ListView extends DomView
     # subviews work themselves out as a result as they are based on views
     # returned by the Library.
     this._mappedBindings = this.subject.map((item) => this._bindingForItem(item))
-    this._hookBindings(dom, this._mappedBindings) # actually add/remove them from dom.
+    this._hookBindings(dom, this._mappedBindings)
 
     # we'll have to manually add the initial set as the map will have
     # already executed and fired its events.
@@ -80,12 +80,12 @@ class ListView extends DomView
   _hookBindings: (dom, bindings) ->
     # when our mapped bindings change, we mutate our dom.
     this.listenTo(bindings, 'added', (binding, idx) =>
-      if (idx + 1) is this.subject.length_ then dom.append(binding.dom)
+      if (idx + 1) is this._mappedBindings.length_ then dom.append(binding.dom)
       else this._mappedBindings.list[idx + 1].dom.eq(0).before(binding.dom)
       binding.view.get()?.wireEvents() if this._wired is true
     )
     this.listenTo(bindings, 'moved', (binding, idx) =>
-      if (idx + 1) is this.subject.length_ then dom.append(binding.dom)
+      if (idx + 1) is this._mappedBindings.length_ then dom.append(binding.dom)
       else this._mappedBindings.list[idx + 1].dom.eq(0).before(binding.dom)
     )
     this.listenTo(bindings, 'removed', (binding) ->

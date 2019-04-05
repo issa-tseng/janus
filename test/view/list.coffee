@@ -75,6 +75,16 @@ describe 'view', ->
         dom.children().length.should.equal(5)
         checkLiteral(dom.children().eq(1), 5)
 
+      it 'should correctly block add new elements', ->
+        l = new List([ 1, 2, 3 ])
+        dom = (new ListView(l, { app: testApp })).artifact()
+
+        l.add([ 4, 5, 6 ])
+        dom.children().length.should.equal(6)
+        checkLiteral(dom.children().eq(3), 4)
+        checkLiteral(dom.children().eq(4), 5)
+        checkLiteral(dom.children().eq(5), 6)
+
       it 'should correctly add multi-root subviews', ->
         l = new List([ 1, 2 ])
         dom = (new ListView(l, { app: testApp })).artifact()
