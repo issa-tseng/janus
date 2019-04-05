@@ -58,6 +58,43 @@ describe 'view', ->
       dom.children().eq(0).children().eq(2).trigger('click')
       model.get_('test').should.equal(3)
 
+    it 'should set the checked class on the selected item', ->
+      class TestAttribute extends attribute.Enum
+        _values: -> [ 1, 2, 3, 3 ]
+      model = new Model()
+      view = new EnumAttributeListEditView(new TestAttribute(model, 'test'), { app: testApp })
+      dom = view.artifact()
+      view.wireEvents()
+
+      dom.children().eq(0).children('.checked').length.should.equal(0)
+      dom.children().eq(0).children().eq(1).trigger('click')
+      dom.children().eq(0).children('.checked').length.should.equal(1)
+      dom.children().eq(0).children().eq(1).hasClass('checked').should.equal(true)
+
+      dom.children().eq(0).children().eq(0).trigger('click')
+      dom.children().eq(0).children('.checked').length.should.equal(1)
+      dom.children().eq(0).children().eq(0).hasClass('checked').should.equal(true)
+
+      dom.children().eq(0).children().eq(2).trigger('click')
+      dom.children().eq(0).children('.checked').length.should.equal(2)
+      dom.children().eq(0).children().eq(2).hasClass('checked').should.equal(true)
+      dom.children().eq(0).children().eq(3).hasClass('checked').should.equal(true)
+
+    it 'should use the provided checked class', ->
+      class TestAttribute extends attribute.Enum
+        _values: -> [ 1, 2, 3, 3 ]
+      model = new Model()
+      view = new EnumAttributeListEditView(new TestAttribute(model, 'test'), { app: testApp, checkedClass: 'yes' })
+      dom = view.artifact()
+      view.wireEvents()
+
+      dom.children().eq(0).children('.checked').length.should.equal(0)
+      dom.children().eq(0).children('.yes').length.should.equal(0)
+      dom.children().eq(0).children().eq(1).trigger('click')
+      dom.children().eq(0).children('.checked').length.should.equal(0)
+      dom.children().eq(0).children('.yes').length.should.equal(1)
+      dom.children().eq(0).children().eq(1).hasClass('yes').should.equal(true)
+
     it 'should not set the attribute value if the event has default prevented', ->
       class TestAttribute extends attribute.Enum
         _values: -> [ 1, 2, 3 ]

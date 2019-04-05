@@ -1,6 +1,7 @@
 { Varying, DomView, from, template, find, mutators, Base, List } = require('janus')
 { Enum } = require('janus').attribute
 { identity } = require('janus').util
+{ ListView } = require('./list')
 
 $ = require('janus-dollar')
 
@@ -13,10 +14,23 @@ class EnumAttributeListEditView extends DomView.build(
 )
 
   _wireEvents: ->
-    list = this.artifact()
-    list.on('click', '> .janus-list > *', (event) =>
+    attr = this.subject
+    dom = this.artifact()
+
+    dom.on('click', '> .janus-list > *', (event) =>
       return if event.isDefaultPrevented() is true
       this.subject.setValue($(event.currentTarget).data('view').subject)
+    )
+
+    list = dom.children(':first')
+    checkedClass = this.options.checkedClass ? 'checked'
+    this.reactTo(Varying.all([ attr.values(), attr.getValue() ]), (values, selected) =>
+      list.children().removeClass(checkedClass)
+
+      listView = this.into(ListView).first().get_()
+      for binding, idx in listView._mappedBindings.list when values.get_(idx) is selected
+        binding.dom.addClass(checkedClass)
+      return
     )
     return
 
