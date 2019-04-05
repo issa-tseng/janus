@@ -92,6 +92,8 @@ getDerivation = (varying) ->
   else if owner.isMap is true
     for key, watch of owner._watches when watch is varying
       return new Derivation('get', key)
+    for key, binding of owner._bindings when binding.parent is varying
+      return new Derivation('get', key)
   else if owner.isList is true
     for _, { idx, v } of owner._watches when v is varying
       return new Derivation('get', idx)
