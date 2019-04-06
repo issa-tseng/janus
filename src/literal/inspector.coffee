@@ -2,8 +2,6 @@
 { List, dēfault, Model, bind, from, dēfault } = require('janus')
 { DateTime } = require('luxon')
 { isPrimitive, isArray } = require('janus').util
-{ ListInspector } = require('../list/inspector')
-
 
 TruncatingLiteral = Model.build(
   # expects string: String
@@ -35,9 +33,10 @@ inspectLiteral = (x) ->
   else
     x
 
-
-class ArrayInspector extends ListInspector.build(dēfault('type', 'Array'))
-  @inspect: (array) -> new ArrayInspector(new List(array))
+class ArrayInspector extends Model
+  isInspector: true
+  update: -> this.set('length', this.get_('target').length)
+  @inspect: (target) -> new ArrayInspector({ target, type: 'Array', length: target.length })
 
 class DateInspector extends Model
   @inspect: (date) -> new DateInspector({ target: DateTime.fromJSDate(date) })
