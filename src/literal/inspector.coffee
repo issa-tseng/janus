@@ -39,6 +39,7 @@ class ArrayInspector extends Model
   @inspect: (target) -> new ArrayInspector({ target, type: 'Array', length: target.length })
 
 class DateInspector extends Model
+  isInspector: true
   @inspect: (date) -> new DateInspector({ target: DateTime.fromJSDate(date) })
 
 module.exports = {
