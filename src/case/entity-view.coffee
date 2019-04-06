@@ -5,7 +5,7 @@ $ = require('janus-dollar')
 { exists } = require('../util')
 
 CaseEntityView = DomView.build($('
-  <span class="janus-inspect-entity janus-inspect-case">
+  <span class="janus-inspect-entity janus-inspect-case no-panel">
     <span class="entity-title">Case<span class="entity-subtitle"/></span>
     <span class="entity-content">
       <span class="case-value"></span>
