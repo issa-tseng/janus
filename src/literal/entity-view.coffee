@@ -1,24 +1,7 @@
-{ floor } = Math
-{ DomView, template, find, from, Model, bind, dēfault } = require('janus')
+{ DomView, template, find, from } = require('janus')
+{ TruncatingLiteral, DateInspector } = require('./inspector')
 $ = require('janus-dollar')
 
-TruncatingLiteral = Model.build(
-  # expects string: String
-
-  # skipping use of BooleanAttribute for now to keep the html classes consistent.
-  # eventually the stdlib button renderer should take custom classes.
-  dēfault('truncate', true)
-
-  bind('more_count', from('string').map((str) ->
-    more = str.length - 300
-    if more >= 1000000
-      "#{floor(more / 100000) / 10}M"
-    else if more > 1000
-      "#{floor(more / 100) / 10}K"
-    else
-      more
-  ))
-)
 
 TruncatingLiteralView = DomView.build($('
   <span class="janus-inspect-entity janus-literal">
@@ -36,9 +19,23 @@ TruncatingLiteralView = DomView.build($('
     .on('click', (_, subject) -> subject.set('truncate', false))
 ))
 
+DateTimeLiteralView = DomView.build($('
+  <span class="janus-inspect-entity janus-inspect-date no-panel">
+    <span class="entity-title">Date</span>
+    <span class="entity-content">
+      <span class="date-date"/>T<span class="date-time"/><span class="date-tz"/>
+    </span>
+  </span>'), template(
+  find('.date-date').text(from('target').map((date) -> date.toISODate()))
+  find('.date-time').text(from('target').map((date) -> date.toFormat('HH:mm:ss.SSS')))
+  find('.date-tz').text(from('target').map((date) -> date.toFormat('ZZ')))
+))
+
 module.exports = {
   TruncatingLiteral,
+  DateTimeLiteralView,
   registerWith: (library) ->
     library.register(TruncatingLiteral, TruncatingLiteralView)
+    library.register(DateInspector, DateTimeLiteralView)
 }
 
