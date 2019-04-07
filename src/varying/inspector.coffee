@@ -23,7 +23,7 @@ reactShim = (f_, immediate) ->
     rxn = wrapper.get_('active_reactions').at_(0)
     hadExtant = rxn?
     if !hadExtant
-      rxn = new Reaction(wrapper, '(internal)')
+      rxn = new Reaction(wrapper, false)
       wrapper.reactions.add(rxn)
 
     # push the reaction one step rootwards.
@@ -208,7 +208,7 @@ class Reaction extends Model.build(
 
   _initialize: ->
     this.set('at', new Date())
-    this.set('root', this.addNode(this.get_('root')))
+    this.set('root', this.addNode(this.get_('root'))) # TODO: this hurts to read
 
   getNode: (wrapped) -> this.get_("tree.#{wrapped.get_('id')}") if wrapped?
   watchNode: (wrapped) -> this.watch("tree.#{wrapped.get_('id')}") if wrapped?

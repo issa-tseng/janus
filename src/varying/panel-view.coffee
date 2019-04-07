@@ -24,6 +24,7 @@ ReactionView = DomView.withOptions({ viewModelClass: ReactionVM }).build(
     find('.reaction')
       .classed('target-changed', from.vm('changed'))
       .classed('target-unchanged', from.vm('changed').map((x) -> !x))
+      .classed('internal', from('caller').map((c) -> c is false))
     find('.rxn-value')
       .render(from.vm('snapshot').flatMap(((vi) -> vi?.get('new_value').map(inspect))))
 ))
