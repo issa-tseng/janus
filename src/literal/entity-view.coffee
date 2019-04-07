@@ -1,4 +1,4 @@
-{ DomView, template, find, from, dēfault, List, bind } = require('janus')
+{ DomView, template, find, from, dēfault, List, bind, Trait } = require('janus')
 { ListEntityVM, moreButton } = require('../list/entity-view')
 { TruncatingLiteral, DateInspector, ArrayInspector } = require('./inspector')
 $ = require('janus-dollar')
@@ -41,9 +41,11 @@ DateTimeLiteralView = DomView.build($('
 ################################################################################
 # ARRAY LITERAL
 
-class ArrayEntityVM extends ListEntityVM.build(
+ListForArray = Trait(
   dēfault('list-bump', 0)
-  bind('list', from.subject('target').and('list-bump').all.map((a) -> new List(a))))
+  bind('list', from.subject('target').and('list-bump').all.map((a) -> new List(a)))
+)
+class ArrayEntityVM extends ListEntityVM.build(ListForArray)
   update: ->
     this.set('list-bump', this.get_('list-bump') + 1)
     this.get_('subject').update()
@@ -69,6 +71,7 @@ ArrayEntityView = DomView.withOptions({ viewModelClass: ArrayEntityVM }).build($
 module.exports = {
   TruncatingLiteral,
   DateTimeLiteralView,
+  ListForArray, ArrayEntityVM, ArrayEntityView,
   registerWith: (library) ->
     library.register(TruncatingLiteral, TruncatingLiteralView)
     library.register(DateInspector, DateTimeLiteralView)

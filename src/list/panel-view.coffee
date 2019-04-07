@@ -77,8 +77,7 @@ ListPanelView = DomView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).b
   find('.list-list')
     .render(from('target').and.vm('take.actual').asVarying().all.map((target, take) ->
       target.enumerate().take(take).map((key) -> new DataPair({ target, key }))
-    ))
-    .options({ renderItem: (r) -> r.context('list-entry') })
+    )).options({ renderItem: (r) -> r.context('list-entry') })
 
   moreButton
 

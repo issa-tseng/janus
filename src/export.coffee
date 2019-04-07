@@ -38,6 +38,7 @@ module.exports = {
       mapped: require('./list/derived/mapped-list')
     literal:
       entity: require('./literal/entity-view')
+      panel: require('./literal/panel-view')
     model:
       panel: require('./model/panel-view')
       entity: require('./model/entity-view')
