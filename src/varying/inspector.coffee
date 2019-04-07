@@ -20,8 +20,8 @@ reactShim = (f_, immediate) ->
   # instance and push it rootwards.
   initialCompute = (this._refCount is 0) and (this._recompute?)
   if initialCompute
-    rxn = wrapper.get_('active_reactions').at_(0)
-    hadExtant = rxn?
+    rxn = wrapper.rxn
+    hadExtant = rxn? and rxn.get_('active') is true
     if !hadExtant
       rxn = new Reaction(wrapper, false)
       wrapper.reactions.add(rxn)
@@ -46,20 +46,22 @@ reactShim = (f_, immediate) ->
 propagateShim = ->
   wrapper = this._wrapper
   # log to the existing reaction or create a new one (which logs for us).
-  if (extantRxn = wrapper.get_('active_reactions').at_(0))?
-    extantRxn.logChange(wrapper, this._value)
+  rxn = wrapper.rxn
+  if rxn?.get_('active') is true
+    hadExtant = true
+    rxn.logChange(wrapper, this._value)
   else
-    newRxn = new Reaction(wrapper, arguments.callee.caller)
-    wrapper.reactions.add(newRxn)
-    newRxn.logChange(wrapper, this._value)
+    rxn = new Reaction(wrapper, arguments.callee.caller)
+    wrapper.reactions.add(rxn)
+    rxn.logChange(wrapper, this._value)
 
-  handleInner(wrapper, this, extantRxn ? newRxn)
+  handleInner(wrapper, this, rxn)
   if this._value?
     wrapper.set('_value', this._value)
   else
     wrapper.unset('_value')
   Object.getPrototypeOf(this)._propagate.call(this)
-  newRxn?.set('active', false)
+  rxn.set('active', false) unless hadExtant
   return
 
 # this helper digests possible new inners and does the needful.
@@ -114,8 +116,6 @@ class WrappedVarying extends Model.build(
 
     bind('derived', from('mapped').and('flattened').all.map((m, f) -> m or f))
     bind('value', from('_value').map((x) -> if x?.isNothing is true then null else x))
-
-    bind('active_reactions', from('reactions').map((rxns) -> rxns.filter((rxn) -> rxn.get('active'))))
   )
 
   isInspector: true
