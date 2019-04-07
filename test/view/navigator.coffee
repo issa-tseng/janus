@@ -333,8 +333,8 @@ describe 'view navigator', ->
         newsubtree.add(new A())
         root._bindings[2].view.set(newsubtree)
         result.length_.should.equal(2)
-        result.get_(0).should.equal(root) # TODO: these assertions will need to be reversed when uniqlist order constancy is implemented.
-        result.get_(1).should.equal(newsubtree)
+        result.get_(0).should.equal(newsubtree)
+        result.get_(1).should.equal(root)
 
   describe 'first/last', ->
     describe 'as terminus', ->
