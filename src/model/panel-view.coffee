@@ -1,10 +1,11 @@
-{ DomView, template, find, from } = require('janus')
+{ template, find, from } = require('janus')
+{ InspectorView } = require('../common/inspector')
 $ = require('janus-dollar')
 { WrappedModel } = require('./inspector')
 
 
-ModelPanelView = DomView.build($('
-  <div class="janus-inspect-panel janus-inspect-model">
+ModelPanelView = InspectorView.build($('
+  <div class="janus-inspect-panel janus-inspect-model highlights">
     <div class="panel-title">
       <span class="model-type"/><span class="model-subtype"/>
       <button class="janus-inspect-pin" title="Pin"/>

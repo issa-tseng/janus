@@ -1,5 +1,6 @@
 { min, max } = Math
-{ DomView, template, find, from, Model, attribute, bind, dēfault } = require('janus')
+{ template, find, from, Model, attribute, bind, dēfault } = require('janus')
+{ InspectorView } = require('../common/inspector')
 $ = require('janus-dollar')
 { inspect } = require('../inspect')
 { ListInspector } = require('./inspector')
@@ -26,8 +27,8 @@ moreButton = template(
     )
 )
 
-ListEntityView = DomView.withOptions({ viewModelClass: ListEntityVM }).build($('
-  <span class="janus-inspect-entity janus-inspect-list">
+ListEntityView = InspectorView.withOptions({ viewModelClass: ListEntityVM }).build($('
+  <span class="janus-inspect-entity janus-inspect-list highlights">
     <span class="entity-title"><span class="entity-type"/></span>
     <span class="entity-content">
       <span class="list-values"></span>

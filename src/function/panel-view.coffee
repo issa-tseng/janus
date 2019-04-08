@@ -1,10 +1,11 @@
-{ DomView, template, find, from } = require('janus')
+{ template, find, from } = require('janus')
+{ InspectorView } = require('../common/inspector')
 { WrappedFunction } = require('./inspector')
 { deindent } = require('../util')
 $ = require('janus-dollar')
 
-FunctionPanelView = DomView.build($('
-  <div class="janus-inspect-panel janus-inspect-function">
+FunctionPanelView = InspectorView.build($('
+  <div class="janus-inspect-panel janus-inspect-function highlights">
     <div class="panel-title">
       Function
       <button class="janus-inspect-pin" title="Pin"/>

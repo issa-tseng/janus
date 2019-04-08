@@ -1,4 +1,5 @@
 { DomView, template, find, from } = require('janus')
+{ InspectorView } = require('../common/inspector')
 $ = require('janus-dollar')
 { Applicant, WrappedFunction } = require('./inspector')
 { exists } = require('../util')
@@ -13,8 +14,8 @@ ApplicantView = DomView.build($('
   find('.applicant-value').render(from('value').map((v) -> inspect(v) if v?))
 ))
 
-FunctionEntityView = DomView.build($('
-  <span class="janus-inspect-entity janus-inspect-function">
+FunctionEntityView = InspectorView.build($('
+  <span class="janus-inspect-entity janus-inspect-function highlights">
     <span class="entity-title">Function</span>
     <span class="entity-content">
       <span class="function-name"/>(<span class="function-args"/>)</span>

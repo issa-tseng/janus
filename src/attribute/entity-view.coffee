@@ -1,10 +1,11 @@
-{ DomView, template, find, from } = require('janus')
+{ template, find, from } = require('janus')
+{ InspectorView } = require('../common/inspector')
 $ = require('janus-dollar')
 { AttributeInspector } = require('./inspector')
 { inspect } = require('../inspect')
 
-AttributeEntityView = DomView.build($('
-  <span class="janus-inspect-entity janus-inspect-attribute">
+AttributeEntityView = InspectorView.build($('
+  <span class="janus-inspect-entity janus-inspect-attribute highlights">
     <span class="entity-title"/>
     <span class="entity-content">
       "<span class="attribute-key"/>"

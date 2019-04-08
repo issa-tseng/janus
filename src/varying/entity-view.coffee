@@ -1,10 +1,11 @@
-{ DomView, template, find, from } = require('janus')
+{ template, find, from } = require('janus')
+{ InspectorView } = require('../common/inspector')
 $ = require('janus-dollar')
 { inspect } = require('../inspect')
 { WrappedVarying } = require('./inspector')
 
-VaryingEntityView = DomView.build($('
-  <span class="janus-inspect-entity janus-inspect-varying">
+VaryingEntityView = InspectorView.build($('
+  <span class="janus-inspect-entity janus-inspect-varying highlights">
     <span class="entity-title">Varying</span>
     <span class="entity-content">
       <span class="varying-unknown" title="No observers, so no value. Click to force.">�</span>

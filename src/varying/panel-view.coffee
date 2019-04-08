@@ -1,4 +1,5 @@
 { Varying, Model, attribute, bind, DomView, template, find, from } = require('janus')
+{ InspectorView } = require('../common/inspector')
 $ = require('janus-dollar')
 { DateTime } = require('luxon')
 
@@ -18,8 +19,8 @@ ReactionVM = Model.build(
   bind('changed', from('snapshot').get('changed'))
 )
 
-ReactionView = DomView.withOptions({ viewModelClass: ReactionVM }).build(
-  $('<div class="reaction"><span class="rxn-value"/></div>'),
+class ReactionView extends DomView.withOptions({ viewModelClass: ReactionVM }).build(
+  $('<div class="reaction highlights"><span class="rxn-value"/></div>'),
   template(
     find('.reaction')
       .classed('target-changed', from.vm('changed'))
@@ -28,6 +29,7 @@ ReactionView = DomView.withOptions({ viewModelClass: ReactionVM }).build(
     find('.rxn-value')
       .render(from.vm('snapshot').flatMap(((vi) -> vi?.get('new_value').map(inspect))))
 ))
+  highlight: -> this.subject
 
 ################################################################################
 # VARYING DELTA ("x -> y") VIEW
@@ -52,10 +54,9 @@ VaryingDeltaView = DomView.build($('
 ################################################################################
 # VARYING NODE VIEW
 # TODO: feels like there should be a lighter weight approach.
-# TODO: should this really have an entity class?
 
-VaryingNodeView = DomView.build($('
-  <div class="varying-node janus-inspect-entity">
+VaryingNodeView = InspectorView.build($('
+  <div class="varying-node highlights">
     <div class="inner-marker"/>
     <div class="value-marker"/>
   </div>
@@ -127,8 +128,8 @@ class VaryingPanel extends Model.build(
   bind('active-rxn', from('hovered-rxn').and('selected-rxn').all.map((h, s) -> h ? s))
 )
 
-VaryingView = DomView.withOptions({ viewModelClass: VaryingPanel }).build($('
-    <div class="janus-inspect-panel janus-inspect-varying">
+VaryingView = InspectorView.withOptions({ viewModelClass: VaryingPanel }).build($('
+    <div class="janus-inspect-panel janus-inspect-varying highlights">
       <div class="panel-title">
         <span class="varying-title"/> #<span class="varying-id"/>
         <button class="janus-inspect-pin" title="Pin"/>

@@ -1,4 +1,5 @@
 { DomView, template, find, from } = require('janus')
+{ InspectorView } = require('../common/inspector')
 $ = require('janus-dollar')
 { Mutation, DomViewInspector } = require('./inspector')
 { inspect } = require('../inspect')
@@ -24,8 +25,8 @@ MutationView = DomView.build($('
   find('.mutation-binding').render(from('binding').map(inspect))
 ))
 
-class DomViewPanelView extends DomView.build($('
-    <div class="janus-inspect-panel janus-inspect-domview">
+class DomViewPanelView extends InspectorView.build($('
+    <div class="janus-inspect-panel janus-inspect-domview highlights">
       <div class="panel-title">
         DomView<span class="domview-subtype"/>
         <button class="janus-inspect-pin" title="Pin"/>

@@ -1,4 +1,5 @@
 { DomView, template, find, from } = require('janus')
+{ InspectorView } = require('../common/inspector')
 { ListPanelVM, moreButton } = require('../list/panel-view')
 { DataPair } = require('../common/data-pair-model')
 { ListForArray, ArrayEntityVM } = require('./entity-view')
@@ -21,8 +22,8 @@ ArrayEntryView = DomView.build($('
 class ArrayPanelVM extends ListPanelVM.ShowsLast.build(ListForArray)
   update: ArrayEntityVM.prototype.update
 
-ArrayPanelView = DomView.withOptions({ viewModelClass: ArrayPanelVM }).build($('
-  <div class="janus-inspect-panel janus-inspect-list">
+ArrayPanelView = InspectorView.withOptions({ viewModelClass: ArrayPanelVM }).build($('
+  <div class="janus-inspect-panel janus-inspect-list highlights">
     <div class="panel-title">
       Array
       <button class="array-update" title="Update"/>

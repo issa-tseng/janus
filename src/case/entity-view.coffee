@@ -1,11 +1,12 @@
-{ DomView, template, find, from } = require('janus')
+{ template, find, from } = require('janus')
+{ InspectorView } = require('../common/inspector')
 $ = require('janus-dollar')
 { inspect } = require('../inspect')
 { WrappedCase } = require('./inspector')
 { exists } = require('../util')
 
-CaseEntityView = DomView.build($('
-  <span class="janus-inspect-entity janus-inspect-case no-panel">
+CaseEntityView = InspectorView.build($('
+  <span class="janus-inspect-entity janus-inspect-case no-panel highlights">
     <span class="entity-title">Case<span class="entity-subtitle"/></span>
     <span class="entity-content">
       <span class="case-value"></span>

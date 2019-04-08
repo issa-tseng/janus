@@ -1,4 +1,5 @@
 { DomView, template, find, from, dēfault, List, bind, Trait } = require('janus')
+{ InspectorView } = require('../common/inspector')
 { ListEntityVM, moreButton } = require('../list/entity-view')
 { TruncatingLiteral, DateInspector, ArrayInspector } = require('./inspector')
 $ = require('janus-dollar')
@@ -52,8 +53,8 @@ class ArrayEntityVM extends ListEntityVM.build(ListForArray)
     return
 
 # we use list classes here because we do want pretty much all of its styles.
-ArrayEntityView = DomView.withOptions({ viewModelClass: ArrayEntityVM }).build($('
-  <span class="janus-inspect-entity janus-inspect-list">
+ArrayEntityView = InspectorView.withOptions({ viewModelClass: ArrayEntityVM }).build($('
+  <span class="janus-inspect-entity janus-inspect-list highlights">
     <span class="entity-title">Array</span>
     <span class="entity-content">
       <span class="list-values"></span>

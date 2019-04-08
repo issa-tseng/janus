@@ -1,11 +1,12 @@
-{ DomView, template, find, from } = require('janus')
+{ template, find, from } = require('janus')
+{ InspectorView } = require('../common/inspector')
 $ = require('janus-dollar')
 { DomViewInspector } = require('./inspector')
 { pluralize } = require('../util')
 
 
-DomViewEntityView = DomView.build($('
-  <span class="janus-inspect-entity janus-inspect-domview">
+DomViewEntityView = InspectorView.build($('
+  <span class="janus-inspect-entity janus-inspect-domview highlights">
     <span class="entity-title">DomView<span class="domview-subtype"/></span>
     <span class="entity-content">
       <span class="domview-mutation-count"/>

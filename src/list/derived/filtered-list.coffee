@@ -1,4 +1,5 @@
 { DomView, template, find, from, Model, bind } = require('janus')
+{ InspectorView } = require('../../common/inspector')
 $ = require('janus-dollar')
 { inspect } = require('../../inspect')
 { ListPanelVM, moreButton } = require('../panel-view')
@@ -46,8 +47,8 @@ FilteredEntryView = DomView.build($('
 FilteredListVM = ListPanelVM.build(
   bind('length', from.subject('target').flatMap((l) -> l.parent.length)))
 
-FilteredListView = DomView.withOptions({ viewModelClass: FilteredListVM }).build($('
-  <div class="janus-inspect-panel janus-inspect-list list-filtered">
+FilteredListView = InspectorView.withOptions({ viewModelClass: FilteredListVM }).build($('
+  <div class="janus-inspect-panel janus-inspect-list list-filtered highlights">
     <div class="panel-title">
       Filtered List
       <button class="janus-inspect-pin" title="Pin"/>

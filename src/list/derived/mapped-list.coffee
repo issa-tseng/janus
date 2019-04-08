@@ -1,4 +1,5 @@
 { DomView, template, find, from, Model, bind } = require('janus')
+{ InspectorView } = require('../../common/inspector')
 $ = require('janus-dollar')
 { inspect } = require('../../inspect')
 { ListPanelVM, moreButton } = require('../panel-view')
@@ -35,8 +36,8 @@ MappedEntryView = DomView.build($('
   )
 ))
 
-MappedListView = DomView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).build($('
-  <div class="janus-inspect-panel janus-inspect-list list-mapped">
+MappedListView = InspectorView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).build($('
+  <div class="janus-inspect-panel janus-inspect-list list-mapped highlights">
     <div class="panel-title">
       Mapped List
       <button class="janus-inspect-pin" title="Pin"/>

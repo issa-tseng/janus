@@ -1,12 +1,13 @@
-{ DomView, template, find, from } = require('janus')
+{ template, find, from } = require('janus')
+{ InspectorView } = require('../common/inspector')
 $ = require('janus-dollar')
 { AttributeInspector } = require('./inspector')
 { inspect } = require('../inspect')
 
 yn = (bool) -> if bool is true then 'yes' else 'no'
 
-AttributePanelView = DomView.build($('
-  <div class="janus-inspect-panel janus-inspect-attribute">
+AttributePanelView = InspectorView.build($('
+  <div class="janus-inspect-panel janus-inspect-attribute highlights">
     <div class="panel-title">
       <span class="attribute-type"/>
       <button class="janus-inspect-pin" title="Pin"/>

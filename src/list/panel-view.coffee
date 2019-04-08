@@ -1,4 +1,5 @@
 { DomView, template, find, from, Model, bind, dēfault } = require('janus')
+{ InspectorView } = require('../common/inspector')
 { ListInspector } = require('./inspector')
 { DataPair } = require('../common/data-pair-model')
 { DataPairView } = require('../common/data-pair-view')
@@ -56,8 +57,8 @@ moreButton = template(
     )
 )
 
-ListPanelView = DomView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).build($('
-  <div class="janus-inspect-panel janus-inspect-list">
+ListPanelView = InspectorView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).build($('
+  <div class="janus-inspect-panel janus-inspect-list highlights">
     <div class="panel-title">
       List
       <button class="janus-inspect-pin" title="Pin"/>
