@@ -20,11 +20,8 @@ reactShim = (f_, immediate) ->
   # instance and push it rootwards.
   initialCompute = (this._refCount is 0) and (this._recompute?)
   if initialCompute
-    rxn = wrapper.rxn
-    hadExtant = rxn? and rxn.get_('active') is true
-    rxn = new Reaction(wrapper, false) if !hadExtant # TODO: setting caller false to flag initial compute is lame.
-
-    # this reaction is relevant to us.
+    # TODO: setting caller false to flag initial compute is lame.
+    rxn = wrapper.rxn ? new Reaction(wrapper, false)
     wrapper.reactions.add(rxn)
 
     # push the reaction one step rootwards. we set the rxn pointer rather than adding
@@ -37,37 +34,41 @@ reactShim = (f_, immediate) ->
 
   # now do some more shimwork:
   if initialCompute
-    handleInner(wrapper, this, rxn)
+    handleInner(this, wrapper, rxn)
     wrapper.set('_value', this._value)
     rxn.logChange(wrapper, this._value)
-    rxn.set('active', false) unless hadExtant
   observation
 
 # 2 change propagation toward the leaves by way of #set on some root static Varying,
-#   which we do by tapping into _propagate.
-propagateShim = ->
-  wrapper = this._wrapper
-  # log to the existing reaction or create a new one (which logs for us).
-  rxn = wrapper.rxn
-  if rxn?.get_('active') is true
-    hadExtant = true
-    rxn.logChange(wrapper, this._value)
-  else
-    rxn = new Reaction(wrapper, arguments.callee.caller)
-    wrapper.reactions.add(rxn)
-    rxn.logChange(wrapper, this._value)
+#   which we do by tapping into set and _propagate.
 
-  handleInner(wrapper, this, rxn)
-  if this._value?
-    wrapper.set('_value', this._value)
-  else
-    wrapper.unset('_value')
+# we really only hijack this method to gain access to the caller. it's reproduced
+# here in full rather than called by proxy since it's so short.
+setShim = (value) ->
+  return if this._value is value
+  this._value = value
+
+  wrapper = this._wrapper
+  rxn = wrapper.rxn = new Reaction(wrapper, arguments.callee.caller)
+  wrapper.reactions.add(rxn)
+
+  this._propagate()
+
+# propagate gets called for all changes regardless of root or derived.
+propagateShim = ->
+  # log to the existing reaction or create a new one (which logs for us).
+  wrapper = this._wrapper
+  wrapper.rxn.logChange(wrapper, this._value)
+
+  handleInner(this, wrapper, wrapper.rxn)
+  if this._value? then wrapper.set('_value', this._value)
+  else wrapper.unset('_value')
+
   Object.getPrototypeOf(this)._propagate.call(this)
-  rxn.set('active', false) unless hadExtant
   return
 
 # this helper digests possible new inners and does the needful.
-handleInner = (wrapper, varying, rxn) ->
+handleInner = (varying, wrapper, rxn) ->
   return unless varying._flatten is true
   newInner = varying._inner?.parent
   if (oldInner = wrapper.get_('inner')) isnt newInner
@@ -155,6 +156,7 @@ class WrappedVarying extends Model.build(
     this._trackReactions(a) for a in varying.a if varying.a?
 
     # HIJACK METHODS:
+    varying.set = setShim
     varying._react = reactShim
     varying._propagate = propagateShim
 
