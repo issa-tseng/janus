@@ -126,6 +126,7 @@ class VaryingPanel extends Model.build(
     default: -> null
   )
   bind('active-rxn', from('hovered-rxn').and('selected-rxn').all.map((h, s) -> h ? s))
+  bind('active-rxn-caller', from('active-rxn').get('caller'))
 )
 
 VaryingView = InspectorView.withOptions({ viewModelClass: VaryingPanel }).build($('
@@ -146,6 +147,9 @@ VaryingView = InspectorView.withOptions({ viewModelClass: VaryingPanel }).build(
         </div>
         <div class="varying-snapshot">
           Change snapshot at <span class="varying-snapshot-time"/>
+          <div class="snapshot-initiation">
+            Initiated via <span class="snapshot-caller"/>
+          </div>
           <button class="varying-snapshot-close" title="Close Snapshot"/>
         </div>
         <div class="varying-inert">
@@ -178,6 +182,9 @@ VaryingView = InspectorView.withOptions({ viewModelClass: VaryingPanel }).build(
     find('.varying-snapshot-time').text(from.vm('active-rxn').get('at').map((t) ->
       DateTime.fromJSDate(t).toFormat("HH:mm:ss.SSS")))
     find('.varying-snapshot-close').on('click', (e, s, { vm }) -> vm.unset('selected-rxn'))
+    find('.snapshot-initiation')
+      .classed('hide', from.vm('active-rxn-caller').map((c) -> !c? or c is false))
+    find('.snapshot-caller').render(from.vm('active-rxn-caller').map(inspect))
 
     find('.varying-inert').classed('hide', from('observations').flatMap((obs) -> obs?.nonEmpty()))
     find('.varying-observe').on('click', (event, subject) ->
