@@ -22,12 +22,14 @@ reactShim = (f_, immediate) ->
   if initialCompute
     rxn = wrapper.rxn
     hadExtant = rxn? and rxn.get_('active') is true
-    if !hadExtant
-      rxn = new Reaction(wrapper, false)
-      wrapper.reactions.add(rxn)
+    rxn = new Reaction(wrapper, false) if !hadExtant # TODO: setting caller false to flag initial compute is lame.
 
-    # push the reaction one step rootwards.
-    a._wrapper.reactions.add(rxn) for a in this.a if this.a?
+    # this reaction is relevant to us.
+    wrapper.reactions.add(rxn)
+
+    # push the reaction one step rootwards. we set the rxn pointer rather than adding
+    # directly to its reactions list as we want to let it decide if it's relevant.
+    (a._wrapper.rxn = rxn) for a in this.a if this.a?
 
   # do the normal work.
   observation = Object.getPrototypeOf(this)._react.call(this, f_, immediate)
@@ -171,6 +173,7 @@ class WrappedVarying extends Model.build(
     other = WrappedVarying.hijack(other)
     this.listenTo(other.get_('reactions'), 'added', (r) =>
       unless this.get_('reactions').at_(-1) is r
+        this.rxn = r
         this.get_('reactions').add(r)
         r.addNode(this)
     )
