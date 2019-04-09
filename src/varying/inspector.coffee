@@ -166,7 +166,7 @@ class WrappedVarying extends Model.build(
 
   _addObservation: (observation) ->
     oldStop = observation.stop
-    observation.stop = => this.observations.remove(this); oldStop.call(observation)
+    observation.stop = => this.observations.remove(observation); oldStop.call(observation)
     this.observations.add(observation)
     return
 
