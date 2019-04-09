@@ -190,6 +190,7 @@ class DerivedVarying extends Varying
     # store instance vars.
     this.a = applicants
     this._f = _f
+    this._recompute$ = this._recompute.bind(this, false)
 
     # set up default values.
     this._observers = {}
@@ -221,8 +222,7 @@ class DerivedVarying extends Varying
     # first react upwards if necessary (first reaction) to force values, then
     # immediately recompute to force our own.
     if this._refCount is 0
-      recompute = this._recompute.bind(this, false)
-      this._applicantObs = (a.react(false, recompute) for a in this.a)
+      this._applicantObs = (a.react(false, this._recompute$) for a in this.a)
       this._recompute(true)
 
     # then update our refCount.
@@ -294,6 +294,7 @@ class UnreducedVarying extends DerivedVarying
     # set up the bare minimum.
     this._observers = {}
     this._value = nothing
+    this._recompute$ = this._recompute.bind(this, false)
 
   map: (f) -> new ReducingVarying(this.a, f)
   flatMap: (f) -> new ReducingVarying(this.a, f, true)
