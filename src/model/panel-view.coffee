@@ -1,7 +1,7 @@
 { template, find, from } = require('janus')
 { InspectorView } = require('../common/inspector')
 $ = require('janus-dollar')
-{ WrappedModel } = require('./inspector')
+{ DataPair, WrappedModel } = require('./inspector')
 
 
 ModelPanelView = InspectorView.build($('
@@ -14,7 +14,8 @@ ModelPanelView = InspectorView.build($('
   </div>'), template(
     find('.model-type').text(from('type'))
     find('.model-subtype').text(from('subtype'))
-    find('.panel-content').render(from('pairs'))
+    find('.panel-content').render(from('target')
+      .map((target) -> target.enumerate().map((key) -> new DataPair({ target, key }))))
 ))
 
 

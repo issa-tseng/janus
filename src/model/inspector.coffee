@@ -18,8 +18,6 @@ class WrappedModel extends Model.build(
       .and('target').get('id')
       .and('target').get('uid')
       .all.map(oneOf))
-
-    bind('pairs', from('target').map((target) -> target.enumerate().map((key) -> new DataPair({ target, key }))))
   )
 
   isInspector: true
