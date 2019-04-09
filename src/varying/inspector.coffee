@@ -109,13 +109,8 @@ getDerivation = (varying) ->
 # INSPECTOR CLASS:
 
 class WrappedVarying extends Model.build(
-    attribute('observations', class extends attribute.List
-      default: -> new List()
-    )
-
-    attribute('reactions', class extends attribute.List
-      default: -> new List()
-    )
+    attribute('observations', attribute.List.withDefault())
+    attribute('reactions', attribute.List.withDefault())
 
     bind('derived', from('mapped').and('flattened').all.map((m, f) -> m or f))
     bind('value', from('_value').map((x) -> if x?.isNothing is true then null else x))
