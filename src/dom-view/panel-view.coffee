@@ -29,6 +29,7 @@ class DomViewPanelView extends InspectorView.build($('
     <div class="janus-inspect-panel janus-inspect-domview highlights">
       <div class="panel-title">
         DomView<span class="domview-subtype"/>
+        <button class="domview-flash" title="Show"/>
         <button class="janus-inspect-pin" title="Pin"/>
       </div>
       <div class="panel-derivation">
@@ -47,6 +48,9 @@ class DomViewPanelView extends InspectorView.build($('
     find('.domview-vm-vm').render(from('target').map((view) => inspect(view.vm)))
     find('.domview-subtype').text(from('subtype'))
     find('.domview-mutations').render(from('mutations'))
+
+    find('.domview-flash').on('click', (e, subject, view) ->
+      view.options.app.flash?(subject.get_('target')))
   ))
 
   _render: ->
