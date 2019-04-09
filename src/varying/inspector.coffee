@@ -143,6 +143,7 @@ class WrappedVarying extends Model.build(
 
     # ABSORB EXTANT STATE:
     # grab the current value and extant observations, populate.
+    varying._recompute$?.__owner = varying
     this.set('_value', varying._value)
     this._addObservation(r) for _, r of varying._observers
 

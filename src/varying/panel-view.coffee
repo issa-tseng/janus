@@ -140,7 +140,15 @@ VaryingView = InspectorView.withOptions({ viewModelClass: VaryingPanel }).build(
         via .<span class="derivation-method"/><span class="derivation-arg"/>
       </div>
       <div class="panel-content">
-        <div class="varying-reaction-bar">
+        <div class="varying-bar varying-observation-bar">
+          <label>Observations</label>
+          <span class="varying-observations"/>
+          <span class="varying-inert">
+            Inert (no observers).
+            <button class="varying-observe">Observe now</button>
+          </span>
+        </div>
+        <div class="varying-bar varying-reaction-bar">
           <label>Reactions</label>
           <div class="varying-reactions"/>
           <span class="varying-reactions-none">(none tracked)</span>
@@ -151,10 +159,6 @@ VaryingView = InspectorView.withOptions({ viewModelClass: VaryingPanel }).build(
             Initiated via <span class="snapshot-caller"/>
           </div>
           <button class="varying-snapshot-close" title="Close Snapshot"/>
-        </div>
-        <div class="varying-inert">
-          Inert (no observers).
-          <a class="varying-observe" href="#react">Observe now</a>.
         </div>
         <div class="varying-tree"/>
       </div>
@@ -171,6 +175,17 @@ VaryingView = InspectorView.withOptions({ viewModelClass: VaryingPanel }).build(
       .classed('has-arg', from('derivation').get('arg').map(exists))
       .render(from('derivation').get('arg').map(inspect))
 
+    find('.varying-observations').render(from('observations').map((os) -> os.map((o) ->
+      # TODO: the way this is done, if we pick up an observation and /then/ an inspector
+      # claims the parent varying, we won't pick that new information up at all.
+      inspect(o.f_.__owner ? o.f_)
+    )))
+    find('.varying-inert').classed('hide', from('observations').flatMap((obs) -> obs?.nonEmpty()))
+    find('.varying-observe').on('click', (event, subject) ->
+      event.preventDefault()
+      subject.varying.react()
+    )
+
     find('.varying-reactions')
       .classed('has-reactions', from('reactions').flatMap((rs) -> rs.nonEmpty()))
       .render(from.vm().attribute('selected-rxn'))
@@ -185,12 +200,6 @@ VaryingView = InspectorView.withOptions({ viewModelClass: VaryingPanel }).build(
     find('.snapshot-initiation')
       .classed('hide', from.vm('active-rxn-caller').map((c) -> !c? or c is false))
     find('.snapshot-caller').render(from.vm('active-rxn-caller').map(inspect))
-
-    find('.varying-inert').classed('hide', from('observations').flatMap((obs) -> obs?.nonEmpty()))
-    find('.varying-observe').on('click', (event, subject) ->
-      event.preventDefault()
-      subject.varying.react()
-    )
 
     find('.varying-tree').render(from.subject().and.vm('active-rxn').all.flatMap((wv, ar) ->
       if ar? then wv.get('id').flatMap((id) -> ar.get("tree.#{id}")) else wv
