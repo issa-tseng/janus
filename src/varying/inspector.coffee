@@ -77,8 +77,8 @@ handleInner = (varying, wrapper, rxn) ->
     if newInner?
       wrapper.set('inner', newInner)
       wrapper._trackReactions(newInner)
-      newInner._wrapper.reactions.add(rxn)
-      rxn.logInner(wrapper, WrappedVarying.hijack(newInner))
+      newInner._wrapper.rxn = rxn
+      rxn.logInner(wrapper, newInner._wrapper)
     else
       wrapper.unset('inner')
   return
