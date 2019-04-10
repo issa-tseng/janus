@@ -17,8 +17,9 @@ nameFor = (obj) ->
 class AttributeInspector extends Model.build(
     # we do some extra work here to be sure we aren't causing side-effects:
     bind('value', from('target').and('key').all.flatMap((t, k) ->
-      Map.prototype.get.call(t.model, k)))
-    bind('pairs', from('target').map((target) -> target.enumerate().map((key) -> new DataPair({ target, key }))))
+      Map.prototype.get.call(t.model, k) if t.model?))
+    bind('pairs', from('target').map((target) ->
+      target.enumerate().map((key) -> new DataPair({ target, key }))))
     bind('enum-values', from('target').flatMap((t) ->
       t.values() if t instanceof attribute.Enum))
   )
