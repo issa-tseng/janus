@@ -20,12 +20,7 @@ class AttributeInspector extends Model.build(
       Map.prototype.get.call(t.model, k)))
     bind('pairs', from('target').map((target) -> target.enumerate().map((key) -> new DataPair({ target, key }))))
     bind('enum-values', from('target').flatMap((t) ->
-      return unless t instanceof attribute.Enum
-      # TODO: feels like the enum attribute itself should be doing this.
-      values = t.values()
-      if values?.all? then values.all.point(t.model.pointer()) if values?.all?
-      else values
-    ))
+      t.values() if t instanceof attribute.Enum))
   )
 
   isInspector: true
