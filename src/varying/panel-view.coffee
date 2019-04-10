@@ -119,6 +119,8 @@ VaryingTreeView = DomView.build($('
 ################################################################################
 # VARYING PANEL
 
+downtree = (o) -> o.__downtree ?= new Varying()
+
 class VaryingPanel extends Model.build(
   attribute('selected-rxn', class extends attribute.Enum
     nullable: true
@@ -175,11 +177,8 @@ VaryingView = InspectorView.withOptions({ viewModelClass: VaryingPanel }).build(
       .classed('has-arg', from('derivation').get('arg').map(exists))
       .render(from('derivation').get('arg').map(inspect))
 
-    find('.varying-observations').render(from('observations').map((os) -> os.map((o) ->
-      # TODO: the way this is done, if we pick up an observation and /then/ an inspector
-      # claims the parent varying, we won't pick that new information up at all.
-      inspect(o.f_.__owner ? o.f_)
-    )))
+    find('.varying-observations').render(from('observations').map((os) ->
+      os.flatMap((o) -> downtree(o).map((dt) -> inspect(dt ? o.f_)))))
     find('.varying-inert').classed('hide', from('observations').flatMap((obs) -> obs?.nonEmpty()))
     find('.varying-observe').on('click', (event, subject) ->
       event.preventDefault()

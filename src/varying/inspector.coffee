@@ -6,6 +6,16 @@ serialId = -> ++_serialId
 
 
 ################################################################################
+# UTIL:
+
+# does the minor homework to set the downtree varying on an observation func.
+setDowntree = (o, downtree) ->
+  if o.__downtree? then o.__downtree.set(downtree)
+  else o.__downtree = new Varying(downtree)
+  return
+
+
+################################################################################
 # SHIMS:
 # WrappedVarying will hijack its inspection target and override many of its
 # methods in order to actually do its job. in general, to correctly track reactions
@@ -34,6 +44,7 @@ reactShim = (f_, immediate) ->
 
   # now do some more shimwork:
   if initialCompute
+    setDowntree(o, this) for o in this._applicantObs
     handleInner(this, wrapper, rxn)
     wrapper.set('_value', this._value)
     rxn.logChange(wrapper, this._value)
@@ -75,6 +86,7 @@ handleInner = (varying, wrapper, rxn) ->
     # we are flat and the inner varying has changed.
     wrapper._untrackReactions(oldInner) if oldInner?
     if newInner?
+      setDowntree(varying._inner, varying)
       wrapper.set('inner', newInner)
       wrapper._trackReactions(newInner)
       newInner._wrapper.rxn = rxn
@@ -146,6 +158,7 @@ class WrappedVarying extends Model.build(
     varying._recompute$?.__owner = varying
     this.set('_value', varying._value)
     this._addObservation(r) for _, r of varying._observers
+    setDowntree(o, varying) for o in this._applicantObs if this._applicantObs?
 
     # BUILD TREE:
     # track all our parents' reactions, which also hijacks the whole tree.
