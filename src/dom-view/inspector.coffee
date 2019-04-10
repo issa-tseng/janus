@@ -30,8 +30,7 @@ forceArtifact = (view) ->
     view.artifact()
   catch # something is out of our expectation. force default _render and pray.
     view._render = DomView.prototype._render
-    try
-      view.artifact()
+    try view.artifact()
   return
 
 # the domspy judges, based on the methods that are called on it, which mutator
@@ -151,7 +150,7 @@ class DomViewInspector extends Model.build(
         result
 
     # now we force the artifact so that we can attach to the bindings of this instance.
-    forceArtifact(domview)
+    try domview.artifact()
 
     # we would like to match the generic mutator definitions we've just derived with
     # the actual databindings we just generated, but we need to account for some
