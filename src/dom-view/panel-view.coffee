@@ -9,10 +9,10 @@ $ = require('janus-dollar')
 MutationView = DomView.build($('
   <div class="mutation">
     <div class="mutation-selector"/>
-    <div class="mutation-binding"/>
     <span class="mutation-type">
       <span class="mutation-operation"/><span class="mutation-param"/>
     </span>
+    <div class="mutation-binding"/>
   </div>'), template(
 
   find('.mutation-selector')
