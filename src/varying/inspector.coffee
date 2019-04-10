@@ -169,11 +169,12 @@ class WrappedVarying extends Model.build(
   # for now, naively assume this is the only cross-WV listener to simplify tracking.
   _trackReactions: (other) ->
     other = WrappedVarying.hijack(other)
-    this.listenTo(other.get_('reactions'), 'added', (r) =>
-      unless this.get_('reactions').at_(-1) is r
+    this.listenTo(other.reactions, 'added', (r) =>
+      unless this.reactions.at_(-1) is r
         this.rxn = r
         this.get_('reactions').add(r)
         r.addNode(this)
+      return
     )
   _untrackReactions: (other) -> this.unlistenTo(WrappedVarying.hijack(other))
 
@@ -195,12 +196,7 @@ class SnapshottedVarying extends WrappedVarying
 
 
 class Reaction extends Model.build(
-    attribute('changes', class extends attribute.List
-      default: -> new List()
-    )
-    attribute('active', class extends attribute.Boolean
-      default: -> true
-    )
+    attribute('changes', attribute.List.withDefault())
   )
 
   isReaction: true
