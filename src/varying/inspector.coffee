@@ -159,6 +159,7 @@ class WrappedVarying extends Model.build(
     this.set('_value', varying._value)
     this._addObservation(r) for _, r of varying._observers
     setDowntree(o, varying) for o in this._applicantObs if this._applicantObs?
+    handleInner(varying, this)
 
     # BUILD TREE:
     # track all our parents' reactions, which also hijacks the whole tree.
