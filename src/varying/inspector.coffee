@@ -53,22 +53,19 @@ reactShim = (f_, immediate) ->
 # 2 change propagation toward the leaves by way of #set on some root static Varying,
 #   which we do by tapping into set and _propagate.
 
-# we really only hijack this method to gain access to the caller. it's reproduced
-# here in full rather than called by proxy since it's so short.
+# we really only hijack this method to gain access to the caller. it's reproduced here
+# in full with one additional line rather than called by proxy since it's so short.
 setShim = (value) ->
   return if this._value is value
   this._value = value
-
-  wrapper = this._wrapper
-  rxn = wrapper.rxn = new Reaction(wrapper, arguments.callee.caller)
-  wrapper.reactions.add(rxn)
-
-  this._propagate()
+  this._wrapper.rxn = new Reaction(this._wrapper, arguments.callee.caller)
+  this._propagate() # just jumps down to propagateShim below v v
 
 # propagate gets called for all changes regardless of root or derived.
 propagateShim = ->
   # log to the existing reaction or create a new one (which logs for us).
   wrapper = this._wrapper
+  wrapper.reactions.add(wrapper.rxn)
   wrapper.rxn.logChange(wrapper, this._value)
 
   handleInner(this, wrapper, wrapper.rxn)
@@ -89,8 +86,9 @@ handleInner = (varying, wrapper, rxn) ->
       setDowntree(varying._inner, varying)
       wrapper.set('inner', newInner)
       wrapper._trackReactions(newInner)
-      newInner._wrapper.rxn = rxn
-      rxn.logInner(wrapper, newInner._wrapper)
+      if rxn?
+        newInner._wrapper.rxn = rxn
+        rxn.logInner(wrapper, newInner._wrapper)
     else
       wrapper.unset('inner')
   return
@@ -154,11 +152,10 @@ class WrappedVarying extends Model.build(
     varying = this.varying
 
     # ABSORB EXTANT STATE:
-    # grab the current value and extant observations, populate.
-    varying._recompute$?.__owner = varying
+    # grab the current value and extant up/downtree observations, populate.
     this.set('_value', varying._value)
-    this._addObservation(r) for _, r of varying._observers
     setDowntree(o, varying) for o in this._applicantObs if this._applicantObs?
+    this._addObservation(o) for _, o of varying._observers
     handleInner(varying, this)
 
     # BUILD TREE:
@@ -186,7 +183,6 @@ class WrappedVarying extends Model.build(
     this.listenTo(other.reactions, 'added', (r) =>
       unless this.reactions.at_(-1) is r
         this.rxn = r
-        this.get_('reactions').add(r)
         r.addNode(this)
       return
     )
