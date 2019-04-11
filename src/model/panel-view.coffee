@@ -12,10 +12,9 @@ ModelPanelView = InspectorView.build($('
     </div>
     <div class="panel-content"/>
   </div>'), template(
-    find('.model-type').text(from('type'))
-    find('.model-subtype').text(from('subtype'))
-    find('.panel-content').render(from('target')
-      .map((target) -> target.enumerate().map((key) -> new DataPair({ target, key }))))
+  find('.model-type').text(from('type'))
+  find('.model-subtype').text(from('subtype'))
+  find('.panel-content').render(from.subject().map((mi) -> mi.pairsAll()))
 ))
 
 
