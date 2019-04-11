@@ -90,12 +90,13 @@ ListPanelView = InspectorView.withOptions({ viewModelClass: ListPanelVM.ShowsLas
     target = $(event.target)
     return if target.hasClass('valuating')
     # TODO: don't put strings here:
-    valuator = view.options.app.popValuator('Insert List Item', (result) ->
+    list = subject.get_('target')
+    valuator = view.options.app.popValuator('Insert List Item', ((result) ->
       idx =
         if target.hasClass('list-insert-last') then undefined
         else target.closest('.data-pair').prevAll().length
-      subject.get_('target').add(result, idx)
-    )
+      list.add(result, idx)
+    ), [{ name: 'list', value: list }])
 
     # TODO: less than elegant. i don't like direct stateful mutation.
     target.addClass('valuating')
