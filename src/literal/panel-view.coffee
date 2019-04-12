@@ -1,20 +1,20 @@
-{ DomView, template, find, from } = require('janus')
+{ Model, DomView, template, find, from } = require('janus')
 { InspectorView } = require('../common/inspector')
 { ListPanelVM, moreButton } = require('../list/panel-view')
-{ DataPair } = require('../common/data-pair-model')
 { ListForArray, ArrayEntityVM } = require('./entity-view')
 { ArrayInspector } = require('./inspector')
 $ = require('janus-dollar')
 { inspect } = require('../inspect')
 
-
+class ArrayEntry extends Model
 ArrayEntryView = DomView.build($('
   <div class="data-pair">
-    <span class="pair-k"><span class="pair-key"/></span>
-    <span class="pair-v"><span class="pair-value"/></span>
+    <span class="pair-key"/>
+    <span class="pair-value"/>
   </div>'), template(
   find('.pair-key').text(from('key'))
-  find('.pair-value').render(from('value').map(inspect))
+  find('.pair-value').render(from('target').and('key').all.flatMap((t, k) ->
+    t.get(k).map(inspect)))
 ))
 
 
@@ -37,11 +37,11 @@ ArrayPanelView = InspectorView.withOptions({ viewModelClass: ArrayPanelVM }).bui
   </div>'), template(
   find('.list-list')
     .render(from.vm('list').and.vm('take.actual').asVarying().all.map((target, take) ->
-      target.enumerate().take(take).map((key) -> new DataPair({ target, key }))
-    )).options({ renderItem: (r) -> r.context('array-entry') })
+      target.enumerate().take(take).map((key) -> new ArrayEntry({ target, key }))
+    ))
 
   find('.list-last-item').render(from.vm('list').and('length')
-    .all.map((target, length) -> new DataPair({ target, key: length - 1 })))
+    .all.map((target, length) -> new ArrayEntry({ target, key: length - 1 })))
 
   moreButton
   find('.array-update').on('click', (e, s, { viewModel }) -> viewModel.update())
@@ -51,7 +51,7 @@ ArrayPanelView = InspectorView.withOptions({ viewModelClass: ArrayPanelVM }).bui
 module.exports = {
   ArrayEntryView, ArrayPanelVM, ArrayPanelView
   registerWith: (library) ->
-    library.register(DataPair, ArrayEntryView, context: 'array-entry')
+    library.register(ArrayEntry, ArrayEntryView)
     library.register(ArrayInspector, ArrayPanelView, context: 'panel')
 }
 

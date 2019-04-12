@@ -1,5 +1,4 @@
 { Map, Model, bind, from } = require('janus')
-{ DataPair } = require('../common/data-pair-model')
 
 
 ################################################################################
@@ -23,6 +22,18 @@ class AllKeyList extends KeyList
   _removeKey: (key) ->
     super(key) unless this.target._bindings[key]?
 
+
+################################################################################
+# KEYPAIR MODEL
+# represents a single key/value pair in a map/model
+
+class KeyPair extends Model.build(
+  bind('value', from('target').and('key').all.flatMap((t, k) -> t.get(k)))
+
+  # a little timid on some of these for the sake of Maps so use ?
+  bind('bound', from('target').and('key').all.map((t, k) -> t.constructor.schema?.bindings[k]?))
+  bind('binding', from('target').and('key').all.map((t, k) -> t._bindings?[k]?.parent))
+)
 
 ################################################################################
 # MODEL INSPECTOR
@@ -54,12 +65,12 @@ class WrappedModel extends Model.build(
   enumerateAll: -> this.enumerateAll$ ?= new AllKeyList(this.get_('target'))
   pairsAll: -> this.pairsAll$ ?= do =>
     target = this.get_('target')
-    this.enumerateAll().map((key) -> new DataPair({ target, key }))
+    this.enumerateAll().map((key) -> new KeyPair({ target, key }))
   @wrap: (m) -> if (m.isWrappedModel is true) then m else (new WrappedModel(m))
 
 
 module.exports = {
-  WrappedModel,
+  KeyPair, WrappedModel,
   registerWith: (library) ->
     library.register(Map, WrappedModel.wrap)
     library.register(Model, WrappedModel.wrap)

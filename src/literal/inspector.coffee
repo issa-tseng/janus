@@ -36,7 +36,7 @@ inspectLiteral = (x) ->
 class ArrayInspector extends Model
   isInspector: true
   update: -> this.set('length', this.get_('target').length)
-  @inspect: (target) -> new ArrayInspector({ target, type: 'Array', length: target.length })
+  @inspect: (target) -> new ArrayInspector({ target, length: target.length })
 
 class DateInspector extends Model
   isInspector: true

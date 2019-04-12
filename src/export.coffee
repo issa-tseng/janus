@@ -22,7 +22,6 @@ module.exports = {
       entity: require('./case/entity-view')
     common:
       linkedList: require('./common/linked-list')
-      dataPair: require('./common/data-pair-view')
       textAttribute: require('./common/text-attribute')
     domview:
       panel: require('./dom-view/panel-view')

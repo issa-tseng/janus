@@ -1,5 +1,5 @@
 { Model, Map, attribute, bind, from } = require('janus')
-{ DataPair } = require('../common/data-pair-model')
+{ KeyPair } = require('../model/inspector')
 
 # minified code chews up class constructor names. thankfully, in this case we
 # usually know exactly what the classes are so we can map them directly:
@@ -19,7 +19,7 @@ class AttributeInspector extends Model.build(
     bind('value', from('target').and('key').all.flatMap((t, k) ->
       Map.prototype.get.call(t.model, k) if t.model?))
     bind('pairs', from('target').map((target) ->
-      target.enumerate().map((key) -> new DataPair({ target, key }))))
+      target.enumerate().map((key) -> new KeyPair({ target, key }))))
     bind('enum-values', from('target').flatMap((t) ->
       t.values() if t instanceof attribute.Enum))
   )

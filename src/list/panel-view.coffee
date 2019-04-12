@@ -1,8 +1,6 @@
 { DomView, template, find, from, Model, bind, dēfault } = require('janus')
 { InspectorView } = require('../common/inspector')
 { ListInspector } = require('./inspector')
-{ DataPair } = require('../common/data-pair-model')
-{ DataPairView } = require('../common/data-pair-view')
 $ = require('janus-dollar')
 { inspect } = require('../inspect')
 { min, max } = Math
@@ -11,22 +9,21 @@ $ = require('janus-dollar')
 ################################################################################
 # LIST ENTRY VIEW
 
-ListEntry = DomView.build($('
+class ListEntry extends Model
+ListEntryView = DomView.build($('
   <div class="data-pair">
     <button class="list-insert" title="Insert Item"/>
     <hr/>
-    <div class="pair-k">
-      <span class="pair-key"/>
-      <span class="pair-delimeter"/>
-    </div>
-    <div class="pair-v">
-      <div class="pair-edit"></div>
-      <span class="pair-value"></span>
-      <button class="pair-clear" title="Unset Value"/>
-    </div>
-  </div>'),
-  DataPairView.template
-)
+    <span class="pair-key"/>
+    <span class="pair-value"></span>
+    <button class="pair-clear" title="Unset Value"/>
+  </div>'), template(
+  find('.pair-key').text(from('key')),
+  find('.pair-value').render(from('target').and('key').all.flatMap((t, k) ->
+    t.get(k).map(inspect))),
+  find('.pair-clear').on('click', (_, subject) ->
+    subject.get_('target').unset(subject.get_('key')))
+))
 
 
 ################################################################################
@@ -77,13 +74,13 @@ ListPanelView = InspectorView.withOptions({ viewModelClass: ListPanelVM.ShowsLas
 
   find('.list-list')
     .render(from('target').and.vm('take.actual').asVarying().all.map((target, take) ->
-      target.enumerate().take(take).map((key) -> new DataPair({ target, key }))
-    )).options({ renderItem: (r) -> r.context('list-entry') })
+      target.enumerate().take(take).map((key) -> new ListEntry({ target, key }))
+    ))
 
   moreButton
 
   find('.list-last-item').render(from('target').and.vm('length')
-    .all.map((target, length) -> new DataPair({ target, key: length - 1 })))
+    .all.map((target, length) -> new ListEntry({ target, key: length - 1 })))
 
   find('.janus-inspect-list').on('click', '.list-insert', (event, subject, view) ->
     event.stopPropagation() # don't pop multiple up the stack
@@ -109,7 +106,7 @@ module.exports = {
   moreButton
   ListEntry, ListPanelVM, ListPanelView
   registerWith: (library) ->
-    library.register(DataPair, ListEntry, context: 'list-entry')
+    library.register(ListEntry, ListEntryView)
     library.register(ListInspector, ListPanelView, context: 'panel')
 }
 
