@@ -32,7 +32,7 @@ MappedEntryView = DomView.build($('
   find('.pair-function').on('mouseenter', (event, entry, view) ->
     return unless view.options.app.flyout?
     wf = new WrappedFunction(entry.get_('child.list').mapper, [ entry.get_('parent.value') ])
-    view.options.app.flyout($(event.target), wf, 'panel')
+    view.options.app.flyout($(event.target), wf, context: 'panel')
   )
 ))
 

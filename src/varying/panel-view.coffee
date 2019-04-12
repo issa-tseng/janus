@@ -100,7 +100,7 @@ VaryingTreeView = DomView.build($('
         wa = WrappedVarying.hijack(a)
         args.push(wa.get_('new_value') ? wa.get_('value'))
       wf = new WrappedFunction(wrapped.varying._f, args)
-      view.options.app.flyout?($(event.target), wf, 'panel')
+      view.options.app.flyout?($(event.target), wf, context: 'panel')
     )
 
     find('.varying-tree-innerNew')

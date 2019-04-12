@@ -37,7 +37,7 @@ FilteredEntryView = DomView.build($('
   find('.pair-function').on('mouseenter', (event, entry, view) ->
     return unless view.options.app.flyout?
     wf = new WrappedFunction(entry.get_('filter.function'), [ entry.get_('parent.value') ])
-    view.options.app.flyout($(event.target), wf, 'panel')
+    view.options.app.flyout($(event.target), wf, context: 'panel')
   )
 
   find('.filter-intermediate').render(from('filter.varying').map(inspect))
