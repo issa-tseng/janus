@@ -12,6 +12,7 @@ nameFor = (obj) ->
   else if obj instanceof attribute.Model then 'ModelAttribute'
   else if obj instanceof attribute.List then 'ListAttribute'
   else if obj instanceof attribute.Reference then 'ReferenceAttribute'
+  else if obj.constructor.name is '_Class' then 'Attribute'
   else obj.constructor.name ? 'Attribute'
 
 class AttributeInspector extends Model.build(

@@ -15,9 +15,11 @@ class AllKeyList extends KeyList
   constructor: (target, options) ->
     super(target, options)
 
-    # add all bindings if they haven't already been picked up.
+    # add all bindings and attributes if they haven't already been picked up.
     # _addKey already knows not to add duplicate keys.
     this._addKey(key) for key of target._bindings
+    this._addKey(key) for key of schema.attributes if (schema = target.constructor.schema)?
+    return
 
   _removeKey: (key) ->
     super(key) unless this.target._bindings[key]?
@@ -34,6 +36,8 @@ class KeyPair extends Model.build(
   bind('bound', from('target').and('key').all.map((t, k) -> t.constructor.schema?.bindings[k]?))
   bind('binding', from('target').and('key').all.map((t, k) -> t._bindings?[k]?.parent))
 )
+  _initialize: ->
+    this.set('attribute', this.get_('target').attribute?(this.get_('key')))
 
 ################################################################################
 # MODEL INSPECTOR

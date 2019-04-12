@@ -10,6 +10,9 @@ KeyPairView = DomView.build($('
     <span class="pair-delimeter"/>
     <span class="pair-value"></span>
     <button class="pair-clear" title="Unset Value"/>
+    <div class="pair-attribute">
+      described by <span class="pair-attribute-entity"/>
+    </div>
   </div>'), template(
   find('.data-pair')
     .classed('bound', from('bound'))
@@ -23,6 +26,10 @@ KeyPairView = DomView.build($('
     .attr('title', from('bound').map((b) -> 'This value is bound' if b is true))
   find('.pair-value')
     .render(from('binding').and('value').all.map((b, v) -> inspect(b ? v)))
+
+  find('.pair-attribute').classed('hide', from('attribute').map((x) -> !x?))
+  find('.pair-attribute-entity').render(from('attribute').map(inspect))
+
   find('.pair-clear').on('click', (_, subject) ->
     subject.get_('target').unset(subject.get_('key')))
 ))
