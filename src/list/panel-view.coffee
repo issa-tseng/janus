@@ -68,7 +68,7 @@ ListPanelView = InspectorView.withOptions({ viewModelClass: ListPanelVM.ShowsLas
     </div>
   </div>'), template(
   find('.janus-inspect-list')
-    .classed('read-only', from.app().map((app) -> !(app.popValuator?))
+    .classed('read-only', from.app().map((app) -> !(app.valuator?))
       .and('derived')
       .all.map((x, y) -> (x is true) or (y is true)))
 
@@ -86,15 +86,17 @@ ListPanelView = InspectorView.withOptions({ viewModelClass: ListPanelVM.ShowsLas
     event.stopPropagation() # don't pop multiple up the stack
     target = $(event.target)
     return if target.hasClass('valuating')
-    # TODO: don't put strings here:
     list = subject.get_('target')
-    valuator = view.options.app.popValuator('Insert List Item', ((result) ->
+
+    options = { title: 'Insert List Item', values: [{ name: 'list', value: list }] }
+    valuator = view.options.app.valuator(target, options, ((result) ->
       idx =
         if target.hasClass('list-insert-last') then undefined
         else target.closest('.data-pair').prevAll().length
       list.add(result, idx)
-    ), [{ name: 'list', value: list }])
+    ))
 
+    valuator.destroyWith(view)
     # TODO: less than elegant. i don't like direct stateful mutation.
     target.addClass('valuating')
     valuator.on('destroying', -> target.removeClass('valuating'))
