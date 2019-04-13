@@ -12,6 +12,7 @@
 
 
 _pair = (pair, view) ->
+  return false if pair.get_('bound') is true
   target = pair.get_('target')
   return false if target.isDerivedList is true or target.isDerivedMap is true
 

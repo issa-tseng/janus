@@ -9,7 +9,7 @@ KeyPairView = DomView.build($('
   <div class="data-pair">
     <span class="pair-key"/>
     <span class="pair-delimeter"/>
-    <span class="pair-value" title="Double-click to edit"/>
+    <span class="pair-value"/>
     <button class="pair-clear" title="Unset Value"/>
     <div class="pair-attribute">
       described by <span class="pair-attribute-entity"/>
@@ -26,6 +26,7 @@ KeyPairView = DomView.build($('
     .text(from('bound').map((b) -> if b is true then ' is bound to ' else ':'))
     .attr('title', from('bound').map((b) -> 'This value is bound' if b is true))
   find('.pair-value')
+    .attr('title', from('bound').map((b) -> 'Double-click to edit' unless b is true))
     .render(from('binding').and('value').all.map((b, v) -> inspect(b ? v)))
     .on('dblclick', tryValuate)
 
