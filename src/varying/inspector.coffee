@@ -97,6 +97,7 @@ handleInner = (varying, wrapper, rxn) ->
 ################################################################################
 # OTHER UTIL:
 
+# TODO: probably harmonize this with the datapair target/key schema.
 class Derivation extends Model
   constructor: (method, arg) -> super({ method, arg })
 

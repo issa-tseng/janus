@@ -19,7 +19,7 @@ ListEntryView = DomView.build($('
     <span class="pair-value" title="Double-click to edit"/>
     <button class="pair-clear" title="Unset Value"/>
   </div>'), template(
-  find('.pair-key').text(from('key')),
+  find('.pair-key').text(from('key'))
 
   find('.pair-value')
     .render(from('target').and('key').all.flatMap((t, k) -> t.get(k).map(inspect)))
