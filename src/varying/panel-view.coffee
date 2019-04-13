@@ -4,6 +4,7 @@ $ = require('janus-dollar')
 { DateTime } = require('luxon')
 
 { exists } = require('../util')
+{ valuate } = require('../common/valuate')
 { WrappedFunction } = require('../function/inspector')
 { WrappedVarying, Reaction } = require('./inspector')
 { inspect } = require('../inspect')
@@ -44,10 +45,20 @@ VaryingDeltaView = DomView.build($('
     </span>
   '), template(
 
-    find('.value').render(from('value').all.map(inspect))
+    find('.value').render(from('value').map(inspect))
     find('.new-value').render(from('new_value').map(inspect))
 
     find('.varying-delta').classed('has-delta', from('changed'))
+
+    find('.value')
+      .attr('title', from('derived').and('changed')
+        .all.map((d, c) -> 'Double-click to edit' unless d or c))
+      .on('dblclick', (event, subject, view) ->
+        # don't try to valuate if we are displaying a delta. we don't have to block
+        # on derived varyings here because valuate() will do it for us.
+        return if subject.get_('changed') is true
+        event.preventDefault() if valuate(subject, view)
+      )
   )
 )
 

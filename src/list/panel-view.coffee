@@ -2,7 +2,7 @@
 { InspectorView } = require('../common/inspector')
 { ListInspector } = require('./inspector')
 $ = require('janus-dollar')
-{ valuate } = require('../common/data-pair')
+{ tryValuate } = require('../common/valuate')
 { inspect } = require('../inspect')
 { min, max } = Math
 
@@ -23,12 +23,7 @@ ListEntryView = DomView.build($('
 
   find('.pair-value')
     .render(from('target').and('key').all.flatMap((t, k) -> t.get(k).map(inspect)))
-
-    .on('dblclick', (event, subject, view) ->
-      return if view.closest(ListInspector).first().get_().subject.get_('derived') is true
-      event.preventDefault()
-      valuate('list', subject, view)
-    ),
+    .on('dblclick', tryValuate)
 
   find('.pair-clear').on('click', (_, subject) ->
     subject.get_('target').unset(subject.get_('key')))

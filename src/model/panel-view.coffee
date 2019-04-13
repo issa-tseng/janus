@@ -1,6 +1,6 @@
 { DomView, template, find, from } = require('janus')
 { InspectorView } = require('../common/inspector')
-{ valuate } = require('../common/data-pair')
+{ tryValuate } = require('../common/valuate')
 $ = require('janus-dollar')
 { KeyPair, WrappedModel } = require('./inspector')
 { inspect } = require('../inspect')
@@ -27,11 +27,7 @@ KeyPairView = DomView.build($('
     .attr('title', from('bound').map((b) -> 'This value is bound' if b is true))
   find('.pair-value')
     .render(from('binding').and('value').all.map((b, v) -> inspect(b ? v)))
-    .on('dblclick', (event, subject, view) ->
-      event.preventDefault()
-      type = if subject.get_('target').isModel then 'model' else 'map'
-      valuate(type, subject, view)
-    )
+    .on('dblclick', tryValuate)
 
   find('.pair-attribute').classed('hide', from('attribute').map((x) -> !x?))
   find('.pair-attribute-entity').render(from('attribute').map(inspect))

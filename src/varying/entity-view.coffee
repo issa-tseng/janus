@@ -1,6 +1,7 @@
 { template, find, from } = require('janus')
 { InspectorView } = require('../common/inspector')
 $ = require('janus-dollar')
+{ tryValuate } = require('../common/valuate')
 { inspect } = require('../inspect')
 { WrappedVarying } = require('./inspector')
 
@@ -18,14 +19,14 @@ VaryingEntityView = InspectorView.build($('
       .and('derived')
       .all.map((ol, derived) -> (ol is 0) and derived))
 
-    # TODO: cancellable?
     .on('click', (_, subject) -> subject.varying.react(->))
 
   find('.varying-value').render(from('value').and('immediate')
     .all.map((value, immediate) => inspect(value ? immediate)))
 
-  #.criteria( context: 'inspect', style: 'entity' ),
-  #find('.varying-rxn-count').text(from('reactions').flatMap((rxns) -> rxns.watchLength()))
+  find('.entity-content')
+    .attr('title', from('derived').map((d) -> 'Double-click to edit' unless d is true))
+    .on('dblclick', tryValuate)
 ))
 
 module.exports = {
