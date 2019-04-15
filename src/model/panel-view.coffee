@@ -1,4 +1,5 @@
-{ DomView, template, find, from, Model, attribute } = require('janus')
+{ DomView, template, find, from, Model, attribute, bind, validate } = require('janus')
+{ valid, error } = require('janus').types.validity
 { InspectorView } = require('../common/inspector')
 { tryValuate } = require('../common/valuate')
 $ = require('janus-dollar')
@@ -7,64 +8,30 @@ $ = require('janus-dollar')
 { exists } = require('../util')
 
 
-################################################################################
-# MODEL NEW-PAIR FORM
-# TODO: because of our shortcut of using the popup valuator but not putting the attr key
-# declaration also in the popup, everything about this is really quite ramshackle:
-# 1. tab inputs from attr key do not go to the valuator
-# 2. pressing enter on just the attr key does nothing
-# 3. the valuator is the wrong width
-# 4. it just feels lame
-# fix it someday not forever from now.
-
-class NewPair extends Model.build(
-  attribute('key', attribute.Text)
+# little formview to name new pairs.
+Namer = Model.build(
+  attribute('name', class extends attribute.Text
+    default: ->
+      target = this.model.get_('target')
+      i = 0
+      ++i while target.get_(key = "untitled#{i}")?
+      key
+  )
+  bind('name-exists', from('target').and('name')
+    # TODO: i guess map needs a #has ?
+    .all.flatMap((t, n) -> t.get(n).map(exists) if exists(n)))
+  validate(from('name').map((n) -> if exists(n) then valid() else error()))
 )
-  _initialize: ->
-    model = this.get_('target')
-    i = 0
-    false while model.get_(key = "untitled#{++i}")
-    this.set('key', key)
-
-class NewPairView extends DomView.build($('
-  <div class="new-pair">
-    <div class="new-key"/>
-    <div class="new-value"/>
-    <button class="new-create" title="Create"/>
+class NamerView extends DomView.build($('
+  <div class="namer">
+    <div class="namer-input"/>
+    <div class="namer-warning">This key already exists!</div>
   </div>'), template(
-  find('.new-key').render(from.attribute('key')).context('edit')
-  find('.new-value').render(from('value').map(inspect))
-  find('.new-create').on('click', (e, s, view) -> view.tryCommit())
+  find('.namer-input').render(from.attribute('name')).criteria({ context: 'edit', commit: 'form' })
+  find('.namer-warning').classed('hide', from('name-exists').map((x) -> !x))
 ))
-  _wireEvents: ->
-    dom = this.artifact()
-    subject = this.subject
-    options = { title: 'New Value', values: [{ name: 'parent', value: subject.get_('target') }] }
+  _wireEvents: -> this.artifact().find('input').focus().select()
 
-    this.options.app.valuator(dom.find('.new-key'), options, (value) =>
-      subject.set('value', value)
-      subject.set('value-set', true) # we do this separately so you can set null/undef if you want.
-      this.tryCommit()
-    )
-    this.destroyWith(subject)
-
-    # the valuator will try to set focus on the value. we want to set it back on the key.
-    dom.find('.new-key input').focus().select()
-    return
-
-
-  tryCommit: ->
-    subject = this.subject
-    return unless subject.get_('value-set') is true
-    return unless exists(key = subject.get_('key')?.trim())
-    # TODO: warn if overwriting a key.
-    value = subject.get_('value')
-    subject.get_('target').set(key, value)
-    subject.destroy()
-
-
-################################################################################
-# KEYPAIR / MODEL VIEWS
 
 KeyPairView = DomView.build($('
   <div class="data-pair">
@@ -98,11 +65,7 @@ KeyPairView = DomView.build($('
     subject.get_('target').unset(subject.get_('key')))
 ))
 
-class ModelVM extends Model
-  _initialize: ->
-    this.reactTo(this.get('create'), false, (c) => c?.on('destroying', => this.unset('create')))
-
-ModelPanelView = InspectorView.withOptions({ viewModelClass: ModelVM }).build($('
+ModelPanelView = InspectorView.build($('
   <div class="janus-inspect-panel janus-inspect-model highlights">
     <div class="panel-title">
       <span class="model-type"/><span class="model-subtype"/>
@@ -110,26 +73,30 @@ ModelPanelView = InspectorView.withOptions({ viewModelClass: ModelVM }).build($(
     </div>
     <div class="panel-content">
       <div class="model-pairs"/>
-      <div class="model-create"/>
-      <button class="model-do-create" title="Add New"/>
+      <button class="model-add" title="Add"/>
     </div>
   </div>'), template(
   find('.model-type').text(from('type'))
   find('.model-subtype').text(from('subtype'))
   find('.model-pairs').render(from.subject().map((mi) -> mi.pairsAll()))
+  find('.model-add').on('click', (event, inspector, view) ->
+    target = inspector.get_('target')
+    values = [{ name: 'parent', value: target }]
+    namer = new Namer({ target })
+    namer.destroyWith(view)
 
-  find('.model-create')
-    .classed('creating', from.vm('create').map(exists))
-    .render(from.vm('create'))
-  find('.model-do-create') .on('click', (e, inspector, { vm }) ->
-    vm.set('create', new NewPair({ target: inspector.get_('target') })))
+    options = { title: 'Add Pair', values, rider: namer, focus: false }
+    view.options.app.valuator($(event.target), options, (value) ->
+      # the namer guarantees that the name exists so we just blindly take it.
+      target.set(namer.get_('name'), value))
+  )
 ))
 
 
 module.exports = {
   KeyPairView, ModelPanelView
   registerWith: (library) ->
-    library.register(NewPair, NewPairView)
+    library.register(Namer, NamerView)
     library.register(KeyPair, KeyPairView)
     library.register(WrappedModel, ModelPanelView, context: 'panel')
 }
