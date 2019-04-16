@@ -31,7 +31,11 @@ reactShim = (f_, immediate) ->
   initialCompute = (this._refCount is 0) and (this._recompute?)
   if initialCompute
     # TODO: setting caller false to flag initial compute is lame.
-    rxn = wrapper.rxn ? new Reaction(wrapper, false)
+    rxn =
+      if wrapper.rxn?
+        if wrapper.rxn.get_('done') is true then new Reaction(wrapper, false)
+        else wrapper.rxn
+      else new Reaction(wrapper, false)
     wrapper.reactions.add(rxn)
 
     # push the reaction one step rootwards. we set the rxn pointer rather than adding
@@ -48,24 +52,29 @@ reactShim = (f_, immediate) ->
     handleInner(this, wrapper, rxn)
     wrapper.set('_value', this._value)
     rxn.logChange(wrapper, this._value)
+    rxn.set('done', true)
   observation
 
 # 2 change propagation toward the leaves by way of #set on some root static Varying,
 #   which we do by tapping into set and _propagate.
 
 # we really only hijack this method to gain access to the caller. it's reproduced here
-# in full with one additional line rather than called by proxy since it's so short.
+# in full with some extra lines rather than called by proxy since it's so short.
 setShim = (value) ->
   return if this._value is value
   this._value = value
-  this._wrapper.rxn = new Reaction(this._wrapper, arguments.callee.caller)
+
+  wrapper = this._wrapper
+  wrapper.rxn = new Reaction(wrapper, arguments.callee.caller)
+  wrapper.reactions.add(wrapper.rxn)
+
   this._propagate() # just jumps down to propagateShim below v v
+  wrapper.rxn.set('done', true)
 
 # propagate gets called for all changes regardless of root or derived.
 propagateShim = ->
   # log to the existing reaction or create a new one (which logs for us).
   wrapper = this._wrapper
-  wrapper.reactions.add(wrapper.rxn)
   wrapper.rxn.logChange(wrapper, this._value)
 
   handleInner(this, wrapper, wrapper.rxn)
@@ -178,14 +187,20 @@ class WrappedVarying extends Model.build(
     this.observations.add(observation)
     return
 
-  # for now, naively assume this is the only cross-WV listener to simplify tracking.
+  # when a varying can affect the value of ours, we want to know when a reaction
+  # touches it because it may touch us, and anyway even if it doesn't we want to
+  # know about it (eg: "why isn't this value changing when i think it should?").
+  #
+  # so whenever it logs a reaction so do we, BUT we only want to do this in set()
+  # propagation, not in react() propagation, since in react() propagation /we/
+  # created the reaction and pushed it uptree. so bail in that case.
   _trackReactions: (other) ->
     other = WrappedVarying.hijack(other)
     this.listenTo(other.reactions, 'added', (r) =>
-      unless this.reactions.at_(-1) is r
-        this.rxn = r
-        r.addNode(this)
-      return
+      return if this.rxn is r
+      this.rxn = r
+      this.reactions.add(r)
+      r.addNode(this)
     )
   _untrackReactions: (other) -> this.unlistenTo(WrappedVarying.hijack(other))
 
