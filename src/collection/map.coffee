@@ -230,6 +230,7 @@ class Map extends Enumerable
 
 
 class DerivedMap extends Map
+  isDerivedMap: true
   roError = -> throw new Error('this map is read-only')
 
   for method in [ '_set', 'setAll', 'unset', 'revert' ]
