@@ -85,6 +85,46 @@ describe 'view', ->
         checkLiteral(dom.children().eq(4), 5)
         checkLiteral(dom.children().eq(5), 6)
 
+      it 'should deal correctly with missing views', ->
+        # ie mostly if a library can't find a view for a thing.
+        class A
+        l = new List([ 1, 2, new A(), new A() ])
+        dom = (new ListView(l, { app: testApp })).artifact()
+
+        dom.children().length.should.equal(2)
+        for label, idx in [ 1, 2 ]
+          checkLiteral(dom.children().eq(idx), label)
+
+        l.add(3, 2) # 1 2 3 A A
+        dom.children().length.should.equal(3)
+        for label, idx in [ 1, 2, 3 ]
+          checkLiteral(dom.children().eq(idx), label)
+
+        l.add(5, 4) # 1 2 3 A 5 A
+        dom.children().length.should.equal(4)
+        for label, idx in [ 1, 2, 3, 5 ]
+          checkLiteral(dom.children().eq(idx), label)
+
+        l.set(3, 4) # 1 2 3 4 5 A
+        dom.children().length.should.equal(5)
+        for label, idx in [ 1, 2, 3, 4, 5 ]
+          checkLiteral(dom.children().eq(idx), label)
+
+      it 'should handle reverse-order additions', ->
+        # this can happen because although we provide the illusion of purity, the
+        # tyranny of time means that we /have/ to propagate either reactions or
+        # events first (we chose reactions). listview relies on events.
+        l = new List([ true, false, true ])
+        dom = (new ListView(l, { app: testApp })).artifact()
+
+        l.at(-1).react((x) -> l.add(true) if x isnt true)
+
+        l.add(false)
+        l.list.should.eql([ true, false, true, false, true ])
+        dom.children().length.should.equal(5)
+        for label, idx in [ true, false, true, false, true ]
+          checkLiteral(dom.children().eq(idx), label)
+
       it 'should correctly add multi-root subviews', ->
         l = new List([ 1, 2 ])
         dom = (new ListView(l, { app: testApp })).artifact()

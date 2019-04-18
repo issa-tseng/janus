@@ -76,18 +76,37 @@ class ListView extends DomView
     this._hookBindings(dom, this._mappedBindings)
     return
 
+  # whether we are adding or moving, all we have to do is find the appropriate
+  # spot based on the binding list and insert the elements. but there are a bunch
+  # of odd corner cases:
+  # 1 if a data element has no dom, usually because there was no library entry for it
+  # 2 reverse-order additions (there is a test by this name with a descriptive comment)
+  # so we factor out and do the work here.
+  _insert = (dom, list, it, idx) ->
+    # first, perform and bail early for the easiest and generally most common case.
+    length = list.length
+    return dom.append(it.dom) if (1 + idx) is length
+
+    # if that doesn't work, our goal is to insert the element just before the thing it
+    # should be before. but if it doesn't exist we can just use the following thing, etc.
+    iter = 0
+    while (++iter + idx) < length when (binding = list[iter + idx])?
+      if binding.dom.length > 0
+        binding.dom.eq(0).before(it.dom)
+        return
+
+    # if we never find a thing it should be before, then we just append.
+    dom.append(it.dom)
+
   # used in both render and attach workflows.
+  # TODO: likely bug, if a view doesn't render and something is added immediately before.
   _hookBindings: (dom, bindings) ->
     # when our mapped bindings change, we mutate our dom.
-    this.listenTo(bindings, 'added', (binding, idx) =>
-      if (idx + 1) is this._mappedBindings.length_ then dom.append(binding.dom)
-      else this._mappedBindings.list[idx + 1].dom.eq(0).before(binding.dom)
+    this.listenTo(bindings, 'added', (binding, idx) => 
+      _insert(dom, bindings.list, binding, idx)
       binding.view.get()?.wireEvents() if this._wired is true
     )
-    this.listenTo(bindings, 'moved', (binding, idx) =>
-      if (idx + 1) is this._mappedBindings.length_ then dom.append(binding.dom)
-      else this._mappedBindings.list[idx + 1].dom.eq(0).before(binding.dom)
-    )
+    this.listenTo(bindings, 'moved', (binding, idx) => _insert(dom, bindings.list, binding, idx))
     this.listenTo(bindings, 'removed', (binding) ->
       binding.view.get()?.destroy()
       binding.stop()
