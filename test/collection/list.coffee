@@ -171,6 +171,19 @@ describe 'List', ->
 
       results.should.eql([ [ 15, 2 ] ])
 
+    it 'should return a curried version given partial application', ->
+      l = new List([ 4, 8, 15, 16, 23, 42 ])
+
+      s = l.set(2)
+      l.length_.should.equal(6)
+      for val, idx in [ 4, 8, 15, 16, 23, 42 ]
+        l.at_(idx).should.equal(val)
+
+      s('test')
+      l.length_.should.equal(6)
+      for val, idx in [ 4, 8, 'test', 16, 23, 42 ]
+        l.at_(idx).should.equal(val)
+
   describe 'automated removal', ->
     it 'should remove Base elements that are destroyed', ->
       eventedElem = null
