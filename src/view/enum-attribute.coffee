@@ -5,6 +5,9 @@
 
 $ = require('janus-dollar')
 
+blankEntry = new List([ null ])
+withBlank = (l) -> blankEntry.concat(l)
+
 class EnumAttributeEditView extends DomView
   dom: -> $('<select/>')
 
@@ -22,10 +25,8 @@ class EnumAttributeEditView extends DomView
     return
 
   _optionsList: ->
-    if this.subject.nullable is true
-      this.subject.values().map((l) -> new List([ null ]).concat(l))
-    else
-      this.subject.values()
+    if this.subject.nullable is true then this.subject.values().map(withBlank)
+    else this.subject.values()
 
   _render: ->
     select = this.dom()
