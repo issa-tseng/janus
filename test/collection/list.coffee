@@ -341,6 +341,12 @@ describe 'List', ->
       l.removeAll()
       l.length_.should.equal(0)
 
+    it 'should not remove more than all elements', ->
+      l = new List([ 4, 8, 15, 16, 23, 42 ])
+      l.length.react((x) -> l.add(2) if x is 0)
+      l.removeAll()
+      l.length_.should.equal(1)
+
     it 'should return the removed elements', ->
       (new List([ 4, 8, 15, 16, 23, 42 ])).removeAll().should.eql([ 4, 8, 15, 16, 23, 42 ])
 

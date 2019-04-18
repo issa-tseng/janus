@@ -167,8 +167,11 @@ class List extends OrderedMappable
     elem
 
   # Removes and returns (as array) all elements from a collection.
+  # we take the length and remove at most that many elements in case some application
+  # logic eg adds an element if there aren't any.
   removeAll: ->
-    while this.list.length > 0
+    length = this.list.length
+    while (length-- isnt 0) and (this.list.length > 0)
       elem = this.list.shift()
       _removed(this, 0)
       this.emit('removed', elem, 0)
