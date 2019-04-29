@@ -84,7 +84,7 @@ class Map extends Enumerable
     xIsString = isString(x)
     if xIsString and (y is null)
       this.unset(x)
-    else if xIsString and !y?
+    else if xIsString and y is undefined
       (y) => this.set(x, y)
     else
       yIsPlainObject = isPlainObject(y)
