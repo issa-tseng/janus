@@ -9,23 +9,30 @@ Built around functional ideals and concepts like declarative and reactive progra
 
 [![Build Status](https://img.shields.io/travis/clint-tseng/janus.svg)](http://travis-ci.org/clint-tseng/janus) [![NPM version](https://img.shields.io/npm/v/janus.svg)](https://www.npmjs.com/package/janus)
 
+Basic Usage
+-----------
+
+Janus is distributed exclusively over [NPM](https://www.npmjs.com/package/janus). To use it, include `janus` in your `package.json` file, and begin pulling tools out of the package as you see fit. You can find the latest version information above, and at the top of the documentation website.
+
+If you're still looking for more information, you probably want to read the [Getting Started](http://janusjs.org/intro/getting-started) guide.
+
 Compiling
 ---------
 
-You must have NodeJS 0.10+, and some relatively reasonable version of NPM. We use `make`; all you should have to do is run `make` and everything should build. `make test` runs the tests; `make test-coverage` will give you a coverage report.
+You must have NodeJS 0.10+, and some relatively reasonable version of `npm`. We use `make`; all you should have to do is run `make` and everything should build. `make test` runs the tests; `make test-coverage` will give you a coverage report.
 
 Repositories
 ------------
 
 This repository contains all of core Janus: the main abstractions and data structures, the view and templating system, and the application packages tying everything together.
 
-Most projects will rely on the [Janus Standard Library](https://github.com/clint-tseng/janus-stdlib), which contains useful default view implementations of core Janus components such as Lists and textboxes, as well as many useful ways to manipulate Varying values.
+Most projects will rely on the [`janus-stdlib`](https://github.com/clint-tseng/janus-stdlib), which contains useful default view implementations of core Janus components such as Lists and textboxes, as well as many useful ways to manipulate Varying values.
 
-The documentation website source may be found [in its own repository](https://github.com/clint-tseng/janus-docs). In addition to the markdown text content of the site and its static-site framework, the docs repository also contains all the code relevant to presenting the interactive samples and REPL console.
+The documentation website source may be found at [`janus-docs`](https://github.com/clint-tseng/janus-docs). In addition to the markdown text content of the site and its static-site framework, the docs repository also contains all the code relevant to presenting the interactive samples and REPL console.
 
 However, the core tools and views used by those samples and REPL to inspect into Janus internals may be found at [`janus-inspect`](https://github.com/clint-tseng/janus-inspect).
 
-Finally, the [Janus Samples](https://github.com/clint-tseng/janus-samples) repository contains some illustrative Janus projects, for those who learn best by staring directly at code.
+Finally, the [`janus-samples`](https://github.com/clint-tseng/janus-samples) repository contains some illustrative Janus projects, for those who learn best by staring directly at code.
 
 Future and Roadmap
 ------------------
@@ -57,5 +64,5 @@ Should you make contributions to this project, you agree to have your contributi
 License
 -------
 
-Janus is dual-licensed under the [WTFPL](http://www.wtfpl.net/about/) and the [MIT License](https://opensource.org/licenses/MIT), the latter really being offered only for the sake of organizations for which respectability is a major concern.
+Janus is dual-licensed under the [WTFPL](http://www.wtfpl.net/about/) and the [BSD Zero Clause License](https://spdx.org/licenses/0BSD.html), the latter really being offered only for the sake of organizations for which respectability is a major concern.
 
