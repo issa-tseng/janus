@@ -41,6 +41,14 @@ describe 'collection', ->
       for elem, idx in [ 1, 2 ]
         l.at_(idx).should.equal(elem)
 
+    it 'should handle negative take values', ->
+      v = new Varying(-2)
+      l = (new List([ 1, 2, 3, 4, 5, 6, 7, 8 ])).take(v)
+
+      l.length_.should.equal(6)
+      for elem, idx in [ 1, 2, 3, 4, 5, 6 ]
+        l.at_(idx).should.equal(elem)
+
     it 'should handle additions to the original list', ->
       ol = new List([ 1, 2, 3, 4 ])
       tl = ol.take(5)

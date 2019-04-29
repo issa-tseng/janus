@@ -19,7 +19,10 @@ class TakenList extends DerivedList
     this.listenTo(this.parent, 'moved', (elem, idx, oldIdx) => this._moveElem(elem, oldIdx, idx))
     this.listenTo(this.parent, 'removed', (_, idx) => this._removeAt(idx))
 
-  _take: -> Math.min(this.number.get(), this.parent.list.length)
+  _take: ->
+    number = this.number.get()
+    if number < 0 then this.parent.list.length + number
+    else Math.min(this.number.get(), this.parent.list.length)
 
   _add: (elem, idx, take = this._take()) ->
     super([ elem ], idx) if idx < take # don't add phantom elements far past the end.
