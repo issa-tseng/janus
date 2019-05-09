@@ -1,7 +1,7 @@
 should = require('should')
 
 { Varying } = require('janus')
-{ sticky, debounce, throttle, filter, fromEvent, fromEventNow, fromEvents } = require('../lib/varying')
+{ sticky, debounce, throttle, filter, zipSequential, fromEvent, fromEventNow, fromEvents } = require('../lib/varying')
 
 wait = (time, f) -> setTimeout(f, time)
 
@@ -251,6 +251,24 @@ describe 'varying utils', ->
       filter(((x) -> (x % 2) is 0), v).react((x) -> results.push(x))
       v.set(x) for x in [ 2, 3, 4, 5, 6 ]
       results.should.eql([ undefined, 2, 4, 6 ])
+
+  describe 'zipSequential', ->
+    it 'should return a varying', ->
+      zipSequential(new Varying()).should.be.an.instanceof(Varying)
+
+    it 'should have no initial value', ->
+      result = null
+      zipSequential(new Varying(42)).react((x) -> result = x)
+      result.should.eql([])
+
+    it 'should give the past two values', ->
+      result = null
+      source = new Varying(42)
+      zipSequential(source).react((x) -> result = x)
+      source.set(108)
+      result.should.eql([ 42, 108 ])
+      source.set(72)
+      result.should.eql([ 108, 72 ])
 
   describe 'fromEvent binding', ->
     it 'should return a varying', ->

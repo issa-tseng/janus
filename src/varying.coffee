@@ -84,6 +84,17 @@ varyingUtils = {
       result
     )
 
+  zipSequential: (v) ->
+    Varying.managed(ManagedObservation.with(v), (mo) ->
+      result = new Varying([]) # no initial value.
+      last = nothing
+      mo.react((value) ->
+        result.set([ last, value ]) unless last is nothing
+        last = value
+      )
+      result
+    )
+
   fromEvent: (jq, event, f, immediate = false) ->
     manager = (d_) -> manager.destroy = d_
     Varying.managed((-> manager), (destroyer) ->
