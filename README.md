@@ -1,11 +1,11 @@
 Janus Standard Library
 ======================
 
-The Janus Standard Library is a collection of useful `Model`s, `Collection`s, and `View`s that reflect one opinionated way of building an application on top of [Janus](https://github.com/clint-tseng/janus). Probably the most useful thing it does is provide generic, generally applicable default views for all the default `Attribute` class types, as well as `List`, in both `default` and `edit` contexts.
+The Janus Standard Library is a collection of useful `View`s and `Varying` helpers that reflect one opinionated way of building an application on top of [Janus](https://github.com/issa-tseng/janus). Probably the most useful thing it does is provide generic, generally applicable default views for all the default `Attribute` class types, as well as `List`, in both `default` and `edit` contexts.
 
 It depends on the presence of a DOM manipulation library largely compatible with the jQuery API: jQuery, Zepto, (and Cheerio? [TBD]) are all supported targets.
 
-[![Build Status](https://img.shields.io/travis/clint-tseng/janus-stdlib.svg)](http://travis-ci.org/clint-tseng/janus-stdlib) [![NPM version](https://img.shields.io/npm/v/janus-stdlib.svg)](https://www.npmjs.com/package/janus-stdlib)
+[![Build Status](https://img.shields.io/travis/issa-tseng/janus-stdlib.svg)](http://travis-ci.org/issa-tseng/janus-stdlib) [![NPM version](https://img.shields.io/npm/v/janus-stdlib.svg)](https://www.npmjs.com/package/janus-stdlib)
 
 Usage
 -----
@@ -16,7 +16,7 @@ You can register the entire library wholesale (recommended): `require('janus-std
 
 Or, you can pick and choose what you wish to register; for instance: `view.registerWith(myLibrary) for view in require('janus-stdlib').view when view not in [ 'literal', 'varying' ]`.
 
-As noted above, there needs to be a jQuery-compatible library available. Currently, we default to using a combination of [`domino`](https://github.com/fgnass/domino) and [`jQuery`](https://github.com/jquery/jquery) for server-side rendering and unit testing (this may be replaced by [`Cheerio`](https://cheerio.js.org/) at some point in the future), and we look for jQuery and Zepto on the `window` object client-side. If someone has a better idea on how to inject this dependency without wrapping the entire library in a closure, please open a ticket and file a pull request.
+As noted above, there needs to be a jQuery-compatible library available. Currently, we default to using a combination of [`domino`](https://github.com/fgnass/domino) and [`jQuery`](https://github.com/jquery/jquery) for server-side rendering and unit testing (this may be replaced by [`Cheerio`](https://cheerio.js.org/) at some point in the future), and we require [a local reference to `janus-dollar`](http://janusjs.org/further-reading/dollar) to understand which DOM manipulation library you are using.
 
 Development
 -----------

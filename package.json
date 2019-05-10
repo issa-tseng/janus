@@ -1,6 +1,6 @@
 {
   "name": "janus-stdlib",
-  "author": "Clint Tseng <clint@dontexplain.com>",
+  "author": "Issa Tseng <maintainer@heyissa.com>",
   "description": "The reference set of code components and build tools for Janus",
   "files": [
     "lib"
@@ -8,10 +8,10 @@
   "version": "0.4.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/clint-tseng/janus-stdlib"
+    "url": "https://github.com/issa-tseng/janus-stdlib"
   },
   "bugs": {
-    "url": "https://github.com/clint-tseng/janus-stdlib/issues"
+    "url": "https://github.com/issa-tseng/janus-stdlib/issues"
   },
   "license": "WTFPL",
   "main": "lib/janus-stdlib",
@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "coffee-script": "~1.11",
-    "janus-dollar": "git+https://github.com/clint-tseng/janus-dollar-jquery",
+    "janus-dollar": "git+https://github.com/issa-tseng/janus-dollar-jquery",
     "mocha": "~5",
     "should": "~13",
     "istanbul": "~0.4"
