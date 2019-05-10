@@ -48,6 +48,7 @@ class DomViewPanelView extends InspectorView.build($('
     find('.domview-vm-vm').render(from('target').map((view) => inspect(view.vm)))
     find('.domview-subtype').text(from('subtype'))
     find('.domview-mutations').render(from('mutations'))
+    find('.domview-display').classed('unwired', from('events-unwired'))
 
     find('.domview-flash').on('click', (e, subject, view) ->
       view.options.app.flash?(subject.get_('target')))
@@ -59,7 +60,7 @@ class DomViewPanelView extends InspectorView.build($('
     target = domview.artifact()
     if (target.closest('html').length is 0) or (target.parent().hasClass('domview-display') and (target.closest('.flyout').length isnt 0))
       artifact.find('.domview-display').prepend(target)
-      #domview._wired = false # TODO: feels hackish but maybe it's not.
+      this.subject.set('events-unwired', true) if domview._wired is true
       domview.wireEvents()
     artifact
 
