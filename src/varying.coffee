@@ -95,20 +95,25 @@ varyingUtils = {
       result
     )
 
-  fromEvent: (jq, event, f, immediate = false) ->
+  # either (dom, event, initial, valueMap)
+  # or (dom, event, valueMap) in which case initial is true
+  fromEvent: (jq, event, x, y) ->
+    initial =
+      if y is undefined then true
+      else x
+    f = y ? x
+
     manager = (d_) -> manager.destroy = d_
     Varying.managed((-> manager), (destroyer) ->
       result = new Varying()
 
       f_ = (event) -> result.set(f.call(this, event))
-      f_() if immediate
+      f_() if initial is true
       jq.on(event, f_)
       destroyer(-> jq.off(event, f_))
 
       result
     )
-
-  fromEventNow: (jq, event, f) -> varyingUtils.fromEvent(jq, event, f, true)
 
   fromEvents: (jq, initial, eventMap) ->
     manager = (d_) -> manager.destroy = d_

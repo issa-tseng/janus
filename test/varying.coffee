@@ -1,7 +1,7 @@
 should = require('should')
 
 { Varying } = require('janus')
-{ sticky, debounce, throttle, filter, zipSequential, fromEvent, fromEventNow, fromEvents } = require('../lib/varying')
+{ sticky, debounce, throttle, filter, zipSequential, fromEvent, fromEvents } = require('../lib/varying')
 
 wait = (time, f) -> setTimeout(f, time)
 
@@ -277,15 +277,15 @@ describe 'varying utils', ->
     it 'should register a listener with the event name when first reacted', ->
       registered = []
       jq = { on: ((x) -> registered.push(x)) }
-      v = fromEvent(jq, 'click', null)
+      v = fromEvent(jq, 'click', (->))
       v.react(->)
       v.react(->)
       registered.should.eql([ 'click' ])
 
-    it 'should unregister a listener when first reacted', ->
+    it 'should unregister a listener when stopped', ->
       unregistered = []
       jq = { on: (->), off: ((x) -> unregistered.push(x)) }
-      v = fromEvent(jq, 'click', null)
+      v = fromEvent(jq, 'click', (->))
       o = v.react(->)
       unregistered.should.eql([])
       o.stop()
@@ -306,16 +306,28 @@ describe 'varying utils', ->
       fromEvent(jq, null, ((x) -> x * 2)).react((x) -> results.push(x))
 
       f_(2)
+      results.should.eql([ NaN, 4 ])
+      f_(5)
+      results.should.eql([ NaN, 4, 10 ])
+
+    it 'should not immediately call the mapping function given immediate false', ->
+      f_ = null
+      results = []
+      jq = { on: ((_, x) -> f_ = x) }
+      fromEvent(jq, null, false, ((x) -> x * 2)).react((x) -> results.push(x))
+
+      results.should.eql([ undefined ])
+      f_(2)
       results.should.eql([ undefined, 4 ])
       f_(5)
       results.should.eql([ undefined, 4, 10 ])
 
-    it 'should immediately call the mapping function given fromEventNow', ->
+    it 'should immediately call the mapping function given immediate true', ->
       extern = 0
       f_ = null
       results = []
       jq = { on: ((_, x) -> f_ = x) }
-      fromEventNow(jq, null, (-> extern)).react((x) -> results.push(x))
+      fromEvent(jq, null, true, (-> extern)).react((x) -> results.push(x))
 
       results.should.eql([ 0 ])
       extern = 1
