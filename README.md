@@ -7,12 +7,12 @@ Built around functional ideals and concepts like declarative and reactive progra
 
 **Detailed documentation may be found at the [Janus website](http://janusjs.org).**
 
-[![Build Status](https://img.shields.io/travis/clint-tseng/janus.svg)](http://travis-ci.org/clint-tseng/janus) [![NPM version](https://img.shields.io/npm/v/janus.svg)](https://www.npmjs.com/package/janus)
+[![Build Status](https://img.shields.io/travis/issa-tseng/janus.svg)](http://travis-ci.org/issa-tseng/janus) [![NPM version](https://img.shields.io/npm/v/janus.svg)](https://www.npmjs.com/package/janus)
 
 Basic Usage
 -----------
 
-Janus is distributed exclusively over [NPM](https://www.npmjs.com/package/janus). To use it, include `janus` in your `package.json` file, and begin pulling tools out of the package as you see fit. You can find the latest version information above, and at the top of the documentation website.
+Janus is distributed exclusively over [npm](https://www.npmjs.com/package/janus). To use it, include `janus` in your `package.json` file, and begin pulling tools out of the package as you see fit. You can find the latest version information above, and at the top of the documentation website.
 
 If you're still looking for more information, you probably want to read the [Getting Started](http://janusjs.org/intro/getting-started) guide.
 
@@ -26,13 +26,13 @@ Repositories
 
 This repository contains all of core Janus: the main abstractions and data structures, the view and templating system, and the application packages tying everything together.
 
-Most projects will rely on the [`janus-stdlib`](https://github.com/clint-tseng/janus-stdlib), which contains useful default view implementations of core Janus components such as Lists and textboxes, as well as many useful ways to manipulate Varying values.
+Most projects will rely on the [`janus-stdlib`](https://github.com/issa-tseng/janus-stdlib), which contains useful default view implementations of core Janus components such as Lists and textboxes, as well as many useful ways to manipulate Varying values.
 
-The documentation website source may be found at [`janus-docs`](https://github.com/clint-tseng/janus-docs). In addition to the markdown text content of the site and its static-site framework, the docs repository also contains all the code relevant to presenting the interactive samples and REPL console.
+The documentation website source may be found at [`janus-docs`](https://github.com/issa-tseng/janus-docs). In addition to the markdown text content of the site and its static-site framework, the docs repository also contains all the code relevant to presenting the interactive samples and REPL console.
 
-However, the core tools and views used by those samples and REPL to inspect into Janus internals may be found at [`janus-inspect`](https://github.com/clint-tseng/janus-inspect).
+However, the core tools and views used by those samples and REPL to inspect into Janus internals may be found at [`janus-inspect`](https://github.com/issa-tseng/janus-inspect).
 
-Finally, the [`janus-samples`](https://github.com/clint-tseng/janus-samples) repository contains some illustrative Janus projects, for those who learn best by staring directly at code.
+Finally, the [`janus-samples`](https://github.com/issa-tseng/janus-samples) repository contains some illustrative Janus projects, for those who learn best by staring directly at code.
 
 Future and Roadmap
 ------------------
@@ -50,7 +50,7 @@ Janus is relatively mature and nearing API stabilization. Some minor calls are s
 
 Until version 0.6, authors should be cautious about the fold operations, especially `.join`, `.foldl`, and `.scanl` for moderate-to-large lists, for performance reasons.
 
-A detailed changelog for previous releases may be found [here](https://github.com/clint-tseng/janus/blob/master/CHANGELOG.md).
+A detailed changelog for previous releases may be found [here](https://github.com/issa-tseng/janus/blob/master/CHANGELOG.md).
 
 Community and Contributing
 --------------------------

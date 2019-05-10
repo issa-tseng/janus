@@ -2,14 +2,14 @@
   "name": "janus",
   "description": "the two-faced application library-framework",
   "version": "0.4.0",
-  "author": "Clint Tseng <clint@dontexplain.com>",
+  "author": "Issa Tseng <maintainer@heyissa.com>",
   "homepage": "http://janusjs.org",
   "repository": {
     "type": "git",
-    "url": "git://github.com/clint-tseng/janus.git"
+    "url": "git://github.com/issa-tseng/janus.git"
   },
   "bugs": {
-    "url": "https://github.com/clint-tseng/janus/issues"
+    "url": "https://github.com/issa-tseng/janus/issues"
   },
   "license": "WTFPL",
   "main": "lib/janus",
