@@ -2,14 +2,14 @@
   "name": "janus-inspect",
   "description": "inspection and debugging tools for janus primitives",
   "version": "0.1.0",
-  "author": "Clint Tseng <clint@dontexplain.com>",
+  "author": "Issa Tseng <maintainer@heyissa.com>",
   "homepage": "http://janusjs.org",
   "repository": {
     "type": "git",
-    "url": "git://github.com/clint-tseng/janus-inspect.git"
+    "url": "git://github.com/issa-tseng/janus-inspect.git"
   },
   "bugs": {
-    "url": "https://github.com/clint-tseng/janus-inspect/issues"
+    "url": "https://github.com/issa-tseng/janus-inspect/issues"
   },
   "license": "WTFPL",
   "main": "lib/export",
