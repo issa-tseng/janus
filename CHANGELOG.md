@@ -1,12 +1,13 @@
 Major Changelog
 ===============
 
-## [0.5](https://github.com/clint-tseng/janus/compare/0.4...0.5)
+## [0.5](https://github.com/issa-tseng/janus/compare/0.4...0.5)
 
 With the exception of Collection folds, rework everything in the framework that still felt half-baked, iffy, or dangerous. Many small renamings and major refactors of core components.
 
 * New features:
     * `View#attach()` now works; given a data tree and DOM tree previously rendered by (eg server-side) Janus, instantiates a new View tree and binds it against all the existing DOM points.
+    * The viewtree navigator was introduced, allowing direct navigation around the View tree hierarchy by data key, or subject or View classtype.
 * Breaking changes:
     * Reworked API surface so that instead of eg `length`/`watchLength`, we use `length_`/`length` respectively now throughout. Less memorization, and emphasizes Varying-based computation.
 * Refactors:
@@ -35,7 +36,7 @@ With the exception of Collection folds, rework everything in the framework that 
     * No longer rely on a global singleton (commit to peerDependencies on NPM).
     * ES6 classtree detection now works for subtle corner cases.
 
-## [0.4](https://github.com/clint-tseng/janus/compare/0.3.1...0.4)
+## [0.4](https://github.com/issa-tseng/janus/compare/0.3.1...0.4)
 
 Once again focused on two things. First, a huge number of small-scale quality of life improvements were implemented to provide better answers for awkward syntactical constructions and codify some common-in-practice patterns into simpler forms. Secondly, as part of an important effort to ensure broad language compatibility, the Model and DomView declaration systems were entirely refactored to move away from class-based definition, which were tightly bound with Coffeescript's classdef particulars. The new system also improves behavioural composition.
 
@@ -48,7 +49,7 @@ Once again focused on two things. First, a huge number of small-scale quality of
     * `map.with({ attrs })` shortcut to shadow a Map with the given data override.
     * `default()` and `transient()` Model attribute declaration shortcuts.
 * Big refactors:
-    * Rather than declaring a class with `@_dom` and `@_template` to create a DomView, the new `DomView.build(dom, template)` facility takes a DOM fragment and a `template()` and [constructs a DomView](https://github.com/clint-tseng/janus-samples/blob/master/todo/src/view/todo-list.coffee).
+    * Rather than declaring a class with `@_dom` and `@_template` to create a DomView, the new `DomView.build(dom, template)` facility takes a DOM fragment and a `template()` and [constructs a DomView](https://github.com/issa-tseng/janus-samples/blob/master/todo/src/view/todo-list.coffee).
         * Template mutator definitions can now chain, eg `find('.title').text(from('name')).classed('active', from('enabled'))`. This works even with interally-chaining mutators like `.render()`
         * The new `.on()` declaration isn't technically an idempotent mutator like the others but enables much quicker event wiring definition without having to write a full `_wireEvents` method.
     * `Model` no longer has classdef methods `@attribute` and `@bind`. Now these are declared via `Model.build(…)`.
@@ -56,7 +57,7 @@ Once again focused on two things. First, a huge number of small-scale quality of
         * Class-based inheritance still works if so desired.
         * But preferred is the new Trait system, which is essentially `template()` but for `Model`s, enabling eg `Model.build(TraitA, TraitB, bind(…), attribute(…))`. Traits may contain other Traits. Last write wins.
 
-## [0.3](https://github.com/clint-tseng/janus/compare/0.2...0.3)
+## [0.3](https://github.com/issa-tseng/janus/compare/0.2...0.3)
 
 Focused on two major areas: unbundling and formalizing models as data structures and enumeration/traversal of data structures; and resource lifecycle management. Also improved request/store handling, updated dependencies, and improved test coverage overall.
 
@@ -78,7 +79,7 @@ Focused on two major areas: unbundling and formalizing models as data structures
 * The casing system was upgraded with global attributes, case arity, and case subclassing.
 
 
-## [0.2](https://github.com/clint-tseng/janus/compare/0.1...0.2)
+## [0.2](https://github.com/issa-tseng/janus/compare/0.1...0.2)
 
 Completely overhauled and rewrote the `Varying` abstraction, as well as much of the templating, view, model, and collections systems that were too tightly-bound to `Varying` to escape rewrite. Introduced `case` and `from` as vital core abstractions. Also dramatically increased test coverage, streamlined and removed a bunch of fluff components, and other miscellenia.
 
@@ -87,7 +88,7 @@ Completely overhauled and rewrote the `Varying` abstraction, as well as much of 
 * The `from` system is a reconsideration of how databinding can be declared and executed. Its point-free programming model enables it to be freely leveraged to solve any number of problems unrelated to databinding.
 * `Mutator` and `Template` are ground-up reconsiderations of how to bundle template-like behaviour.
 * `View` and `Model` are impacted insofar as their interfaces to the above are concerned.
-* Alongside this release is the new [`janus-stdlib`](https://github.com/clint-tseng/janus-stdlib), which contains a slew of very useful default View implementations for the objects in the library.
+* Alongside this release is the new [`janus-stdlib`](https://github.com/issa-tseng/janus-stdlib), which contains a slew of very useful default View implementations for the objects in the library.
 
 ## 0.1
 
