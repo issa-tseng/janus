@@ -39,7 +39,7 @@ class DomViewPanelView extends InspectorView.build($('
       <div class="panel-content">
         <div class="domview-mutations"/>
         <div class="domview-display">
-          <span class="domview-display-label">View Preview</span>
+          <div class="domview-display-label">View Preview</div>
         </div>
       </div>
     </div>'), template(
@@ -58,9 +58,10 @@ class DomViewPanelView extends InspectorView.build($('
     artifact = super()
     domview = this.subject.get_('target')
     target = domview.artifact()
-    if (target.closest('html').length is 0) or (target.parent().hasClass('domview-display') and (target.closest('.flyout').length isnt 0))
-      artifact.find('.domview-display').prepend(target)
-      this.subject.set('events-unwired', true) if domview._wired is true
+    detached = target.closest('html').length is 0
+    if detached or (target.parent().hasClass('domview-display') and (target.closest('.flyout').length isnt 0))
+      artifact.find('.domview-display').append(target)
+      this.subject.set('events-unwired', true) if detached and domview._wired is true
       domview.wireEvents()
     artifact
 
