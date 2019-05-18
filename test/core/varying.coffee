@@ -970,6 +970,27 @@ describe 'Varying', ->
       v.react(->)
       count.should.equal(4)
 
+    it 'should recreate resources prior to recompute', ->
+      # TODO: this case should be reproducible in a simpler manner than this.
+      # but it's a subtle case involving the nested resource allocations.
+      { List } = require('../../lib/collection/list')
+      { Traversal } = require('../../lib/collection/traversal')
+      { recurse, varying, value } = require('../../lib/core/types').traversal
+
+      includesDeep = (data, target) ->
+        Traversal.list(data, {
+          map: (k, v) ->
+            if v?.isEnumerable is true then recurse(v)
+            else varying(target.map((tgt) -> value(tgt is v)))
+          reduce: (list) -> list.any()
+        })
+
+      v = includesDeep(new List([ 2, 3, new List([ 42 ]) ]), new Varying(42))
+      o = v.react()
+      o.stop()
+
+      v.react() # this operation crashes when this test fails.
+
     it 'should get value from active managed varyings', ->
       v = Varying.managed((-> 1), (-> 2), (-> 3), (x, y, z) -> new Varying(x + y + z))
       v.react(->)

@@ -219,15 +219,16 @@ class DerivedVarying extends Varying
   set: undefined # disallow!
 
   _react: (f_ = noop) ->
-    # first react upwards if necessary (first reaction) to force values, then
-    # immediately recompute to force our own.
-    if this._refCount is 0
-      this._applicantObs = (a.react(false, this._recompute$) for a in this.a)
-      this._recompute(true)
-
-    # then update our refCount.
+    # first update our refCount so eg managed varying resource populators have an
+    # opportunity to run before possible _recompute().
     this._refCount += 1
     this.refCount$?.set(this._refCount)
+
+    # next react upwards if necessary (first reaction) to force values, then
+    # immediately recompute to force our own.
+    if this._refCount is 1
+      this._applicantObs = (a.react(false, this._recompute$) for a in this.a)
+      this._recompute(true)
 
     # now generate an observation and return it.
     id = uniqueId()
