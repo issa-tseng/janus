@@ -26,7 +26,12 @@ class App extends Model.build(
 
     # Handle reference resolution, both auto and manual.
     if subject?
-      subject.autoResolveWith?(this)
+      # autoresolution of Reference attributes:
+      if (attrs = subject.attributes?())
+        for attr in attrs when attr.isReference is true and attr.autoResolve is true
+          attr.resolveWith(this)
+
+      # manual resolution as specified in options/view properties:
       resolveSource = options.resolve ? view.resolve
       if resolveSource? and isFunction(subject.attribute)
         resolve = if isFunction(resolveSource) then resolveSource() else resolveSource

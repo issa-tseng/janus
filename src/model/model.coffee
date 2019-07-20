@@ -60,16 +60,12 @@ class Model extends Map
 
     value ? null # drop undef to null
 
+  # Get all attribute classes for this model.
+  attributes: -> this.attribute(key) for key of this.constructor.schema.attributes
+
   # Get an attribute class instance for this model by key.
   attribute: (key) -> this._attributes[key] ?=
     new (this.constructor.schema.attributes[key])?(this, key)
-
-  # resolves all resolveable attributes with the given app.
-  autoResolveWith: (app) ->
-    for key of this.constructor.schema.attributes
-      attribute = this.attribute(key)
-      attribute.resolveWith(app) if attribute.isReference is true and attribute.autoResolve is true
-    return
 
   # Actually set up our bindings.
   _bind: ->

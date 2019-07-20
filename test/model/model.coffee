@@ -389,36 +389,13 @@ describe 'Model', ->
       TestModel = Model.build(transient('tempkey'))
       (new TestModel()).attribute('tempkey').transient.should.equal(true)
 
-  describe 'autoresolution', ->
-    it 'should call resolveWith on all known reference attributes', ->
-      calls = []
-      class TestReferenceAttribute extends attributes.Reference
-        resolveWith: (app) -> calls.push([ this.key, app ])
-
-      TestModel = Model.build(
-        attribute('one', TestReferenceAttribute)
-        attribute('two', attributes.Attribute)
-        attribute('three', TestReferenceAttribute)
-        attribute('four', attributes.Attribute)
-      )
-      (new TestModel()).autoResolveWith('app')
-      calls.should.eql([ [ 'one', 'app' ], [ 'three', 'app' ] ])
-
-    it 'should not resolve any attributes not marked for autoresolve', ->
-      calls = []
-      class TestReferenceAttribute extends attributes.Reference
-        resolveWith: (app) -> calls.push([ this.key, app ])
-        @flagged: (x) -> class extends this
-          autoResolve: x
-
-      TestModel = Model.build(
-        attribute('one', TestReferenceAttribute.flagged(false))
-        attribute('two', TestReferenceAttribute.flagged(true))
-        attribute('three', TestReferenceAttribute.flagged(true))
-        attribute('four', attributes.Attribute)
-      )
-      (new TestModel()).autoResolveWith('app')
-      calls.should.eql([ [ 'two', 'app' ], [ 'three', 'app' ] ])
+    it 'should return all defined attribute classes', ->
+      A = Model.build(attribute('a', attributes.Number), attribute('b', attributes.Number))
+      class B extends A
+      attrs = (new B()).attributes()
+      attrs.length.should.equal(2)
+      attrs[0].key.should.equal('a')
+      attrs[1].key.should.equal('b')
 
   describe 'validation', ->
     it 'should return all defined validations on validations()', ->

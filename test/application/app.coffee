@@ -77,12 +77,48 @@ describe 'App model', ->
       results[0].should.be.an.instanceof(A)
 
     describe 'view resolution', ->
-      it 'should call autoresolve if it exists on the subject', ->
-        called = null
-        class A
-        app = new App( views: { get: -> A } )
-        app.view({ autoResolveWith: (x) -> called = x })
-        called.should.equal(app)
+      { Model } = require('../../lib/model/model')
+      { attribute } = require('../../lib/model/schema')
+      attributes = require('../../lib/model/attribute')
+
+      describe 'model attribute autoresolution', ->
+        it 'should call resolveWith on all known reference attributes', ->
+          calls = []
+          class TestReferenceAttribute extends attributes.Reference
+            resolveWith: (app) -> calls.push([ this.key, app ])
+
+          TestModel = Model.build(
+            attribute('one', TestReferenceAttribute)
+            attribute('two', attributes.Attribute)
+            attribute('three', TestReferenceAttribute)
+            attribute('four', attributes.Attribute)
+          )
+          subject = new TestModel()
+
+          class TestView
+          app = new App( views: { get: -> TestView } )
+          app.view(subject)
+          calls.should.eql([ [ 'one', app ], [ 'three', app ] ])
+
+        it 'should not resolve any attributes not marked for autoresolve', ->
+          calls = []
+          class TestReferenceAttribute extends attributes.Reference
+            resolveWith: (app) -> calls.push([ this.key, app ])
+            @flagged: (x) -> class extends this
+              autoResolve: x
+
+          TestModel = Model.build(
+            attribute('one', TestReferenceAttribute.flagged(false))
+            attribute('two', TestReferenceAttribute.flagged(true))
+            attribute('three', TestReferenceAttribute.flagged(true))
+            attribute('four', attributes.Attribute)
+          )
+          subject = new TestModel()
+
+          class TestView
+          app = new App( views: { get: -> TestView } )
+          app.view(subject)
+          calls.should.eql([ [ 'two', app ], [ 'three', app ] ])
 
       it 'should manually resolve requested attributes from viewclass def', ->
         resolvedWith = attr = null
