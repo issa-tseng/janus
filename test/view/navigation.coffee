@@ -1,5 +1,5 @@
 should = require('should')
-{ match } = require('../../lib/view/navigator')
+{ match } = require('../../lib/view/navigation')
 { Model } = require('../../lib/model/model')
 { List } = require('../../lib/collection/list')
 { View } = require('../../lib/view/view')
