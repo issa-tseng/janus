@@ -10,6 +10,8 @@ Base = require('../core/base').Base
 { dynamic, get, subject, attribute, vm, varying, app, self } = require('../core/types').from
 { match } = require('../core/case')
 { NavigatorRoot } = require('./navigator')
+navigation = require('./navigation')
+{ parent_, closest_, into_, intoAll_, parent, closest, into, intoAll } = navigation
 { isFunction, isString } = require('../util/util')
 
 
@@ -60,9 +62,15 @@ class View extends Base
   )
 
   # navigation plumb-throughs
-  into: (selector) -> (this._navigator$ ?= new NavigatorRoot(this)).into(selector)
-  parent: (selector) -> (this._navigator$ ?= new NavigatorRoot(this)).parent(selector)
-  closest: (selector) -> (this._navigator$ ?= new NavigatorRoot(this)).closest(selector)
+  parent: (selector) -> parent(selector, this)
+  parent_: (selector) -> parent_(selector, this)
+  closest: (selector) -> closest(selector, this)
+  closest_: (selector) -> closest_(selector, this)
+  into: (selector) -> into(selector, this)
+  into_: (selector) -> into_(selector, this)
+  intoAll: (selector) -> intoAll(selector, this)
+  intoAll_: (selector) -> intoAll_(selector, this)
+  @navigation: navigation # in case anybody would rather use a functional syntax.
 
 
 module.exports = { View }
