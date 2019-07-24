@@ -111,6 +111,7 @@ class Model extends Map
   # valid or not.
   valid: -> this._valid$ ?=
     this.errors().length.map((length) -> length is 0)
+  valid_: -> this.errors().length_ is 0
 
   # Handles parent changes; mostly exists in Map but we wrap to additionally
   # bail if the changed parent attribute is a bound value; we want that to

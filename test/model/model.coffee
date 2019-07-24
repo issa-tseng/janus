@@ -448,6 +448,23 @@ describe 'Model', ->
       v2.set(types.validity.valid())
       model.valid().get().should.equal(true)
 
+    it 'should provide an immediate answer on valid_()', ->
+      v1 = new Varying(types.validity.error())
+      v2 = new Varying(types.validity.error())
+      TestModel = Model.build(
+        validate(from(v1))
+        validate(from(v2))
+      )
+
+      model = new TestModel()
+      model.valid_().should.equal(false)
+
+      v1.set(types.validity.valid())
+      model.valid_().should.equal(false)
+
+      v2.set(types.validity.valid())
+      model.valid_().should.equal(true)
+
   describe 'trait bundling', ->
     it 'should receive and apply a set of schema definitions', ->
       TestTrait = Trait(
