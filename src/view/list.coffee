@@ -136,6 +136,13 @@ class ListView extends DomView
     this.listenTo(this._wireObservations, 'removed', (obs) -> obs.stop())
     return
 
+  subviews: ->
+    return new List() unless this._mappedBindings?
+    this._mappedBindings.flatMap((binding) -> binding.parent).filter((x) -> x?)
+  subviews_: ->
+    return [] unless this._mappedBindings?
+    subview for binding in this._mappedBindings.list when (subview = binding.parent.get())?
+
   # because we completely ignore how _render is normally done, we also need to
   # do a little dance to get destroy to work.
   __destroy: ->

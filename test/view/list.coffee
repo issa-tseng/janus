@@ -266,6 +266,54 @@ describe 'view', ->
         checkTestModel(dom, 0, mb)
         checkLiteral(dom.contents().eq(3), 'two')
 
+    describe 'subview enumeration', ->
+      describe 'subviews', ->
+        it 'should return an empty list if there is no artifact', ->
+          view = (new ListView(new List([ 1, 2, 3 ]), { app: testApp }))
+          result = view.subviews()
+          result.length_.should.equal(0)
+
+        it 'should return a list of subviews', ->
+          view = (new ListView(new List([ 1, 2, 3 ]), { app: testApp }))
+          view.artifact()
+          result = view.subviews()
+          result.length_.should.equal(3)
+
+          result.at_(0).subject.should.equal(1)
+          result.at_(1).subject.should.equal(2)
+          result.at_(2).subject.should.equal(3)
+
+        it 'should update the subview list', ->
+          list = new List([ 1, 2, 3 ])
+          view = new ListView(list, { app: testApp })
+          view.artifact()
+          result = view.subviews()
+
+          class A
+          list.set(1, new A())
+          list.add(4)
+
+          result.length_.should.equal(3)
+          result.at_(0).subject.should.equal(1)
+          result.at_(1).subject.should.equal(3)
+          result.at_(2).subject.should.equal(4)
+
+      describe 'subviews_', ->
+        it 'should return empty array if there is no artifact', ->
+          (new ListView(new List([ 1, 2, 3 ]), { app: testApp }))
+            .subviews_().should.eql([])
+
+        it 'should return a list of subviews', ->
+          view = (new ListView(new List([ 1, 2, 3 ]), { app: testApp }))
+          view.artifact()
+          view.subviews_().map((x) -> x.subject).should.eql([ 1, 2, 3 ])
+
+        it 'should leave out nonrendered subviews', ->
+          class A
+          view = (new ListView(new List([ 1, new A, 3 ]), { app: testApp }))
+          view.artifact()
+          view.subviews_().map((x) -> x.subject).should.eql([ 1, 3 ])
+
     describe 'parent mutator interface', ->
       it 'should allow chaining on its render mutator', ->
         l = new List([ 1, 2, 3 ])
