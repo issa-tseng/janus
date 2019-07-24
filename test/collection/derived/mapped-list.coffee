@@ -24,6 +24,13 @@ describe 'collection', ->
       m.length_.should.equal(5)
       m.at_(1).should.equal(10)
 
+    it 'should map undefined results', -> # gh156
+      l = new List([ new Varying(0) ])
+      l2 = l.flatMap((x) -> x)
+      l.at_(0).set(undefined)
+      (l2.at_(0) is null).should.equal(true)
+      # TODO: remove someday when List#set handles undefined correctly (see #156)
+
     it 'should remove the correct values', ->
       l = new List([ 1, 2, 3 ])
       m = l.map((x) -> 2 * x)
