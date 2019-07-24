@@ -106,7 +106,6 @@ describe 'Model', ->
       m = new Model({ x: 2 })
       m2 = m.shadow()
       m2.unset('x')
-      console.log(m2.get_('x'))
       (m2.get_('x') is null).should.equal(true)
 
     it 'should by default shadow parent-obtained enumerables', ->
@@ -144,11 +143,9 @@ describe 'Model', ->
       it 'should unset a value if its bound value nulls out', ->
         TestModel = Model.build(bind('inner_id', from('inner').get('id')))
         model = new TestModel( inner: new Model( id: 42 ) )
-        console.log(model.get_('inner_id'))
         model.get_('inner_id').should.equal(42)
 
         model.unset('inner')
-        console.log(model.get_('inner_id'))
         (model.get_('inner_id') is null).should.equal(true)
 
       it 'should map multiple value together', ->
