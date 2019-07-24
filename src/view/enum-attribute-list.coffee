@@ -23,11 +23,12 @@ class EnumAttributeListEditView extends DomView.build(
     )
 
     list = dom.children(':first')
+    listView = this.into_(ListView)
     checkedClass = this.options.checkedClass ? 'checked'
     this.reactTo(Varying.all([ attr.values(), attr.getValue() ]), (values, selected) =>
       list.children().removeClass(checkedClass)
 
-      listView = this.into(ListView).first().get_()
+      # we can't use subviews_ here because we need the indices to line up correctly.
       for binding, idx in listView._mappedBindings.list when values.get_(idx) is selected
         binding.dom.addClass(checkedClass)
       return
