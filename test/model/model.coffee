@@ -58,9 +58,9 @@ describe 'Model', ->
       m.get_('z').should.equal(8) # really the test is that nothing crashes
 
   describe 'get_', ->
-    it 'should return the default value if defined', ->
+    it 'should return the initial value if defined', ->
       class TestAttribute extends attributes.Attribute
-        default: -> 'espresso'
+        initial: -> 'espresso'
       TestModel = Model.build(attribute('latte', TestAttribute))
 
       m = new TestModel()
@@ -69,19 +69,19 @@ describe 'Model', ->
       m2 = new TestModel({ latte: 'good' })
       m2.get_('latte').should.equal('good')
 
-    it 'should not write the default value if not specified', ->
+    it 'should not write the initial value if not specified', ->
       class TestAttribute extends attributes.Attribute
-        default: -> 'espresso'
+        initial: -> 'espresso'
       TestModel = Model.build(attribute('latte', TestAttribute))
 
       m = new TestModel()
       m.get_('latte').should.equal('espresso')
       m.data.should.eql({})
 
-    it 'should write the default value if writeDefault is true', ->
+    it 'should write the initial value if writeInitial is true', ->
       class TestAttribute extends attributes.Attribute
-        default: -> 'espresso'
-        writeDefault: true
+        initial: -> 'espresso'
+        writeInitial: true
       TestModel = Model.build(attribute('latte', TestAttribute))
 
       m = new TestModel()
@@ -90,11 +90,11 @@ describe 'Model', ->
       m.data.should.eql({ latte: 'espresso' })
 
     # before this bugfix, the result of .set() was always written, which meant
-    # that if the default value was undefined, the .set(key) curried function
+    # that if the initial value was undefined, the .set(key) curried function
     # would get written into the model, which we do not want.
-    it 'should not write a default value if writeDefault is true default is undefined', ->
+    it 'should not write a initial value if writeInitial is true initial is undefined', ->
       class TestAttribute extends attributes.Attribute
-        writeDefault: true
+        writeInitial: true
       TestModel = Model.build(attribute('breve', TestAttribute))
 
       m = new TestModel()

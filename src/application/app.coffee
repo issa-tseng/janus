@@ -6,8 +6,8 @@ attributes = require('../model/attribute')
 { isFunction, isArray } = require('../util/util')
 
 class LibraryAttribute extends attributes.Attribute
-  default: -> new Library()
-  writeDefault: true
+  initial: -> new Library()
+  writeInitial: true
 
 class App extends Model.build(
   attribute('views', LibraryAttribute)

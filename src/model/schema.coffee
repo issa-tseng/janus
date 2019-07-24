@@ -13,7 +13,7 @@ module.exports = {
   dfault: (key, value, klass = Attribute) -> (schema) ->
     wrapped = if isFunction(value) then value else (-> value)
     schema.attributes[key] = class extends klass
-      default: wrapped
+      initial: wrapped
 
   Trait: (parts...) -> (schema) ->
     part(schema) for part in parts
@@ -23,11 +23,8 @@ module.exports = {
 # in case some people prefer the consistent syntax:
 module.exports.Trait.build = module.exports.Trait
 
-# and another handy shortcut for a writing default:
+# and another handy shortcut for a writing initial:
 module.exports.dfault.writing = (key, value, klass = Attribute) ->
   module.exports.dfault(key, value, class extends klass
-    writeDefault: true)
-
-# and "dfault" is super annoying..
-module.exports.dēfault = module.exports.dfault
+    writeInitial: true)
 

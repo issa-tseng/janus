@@ -44,36 +44,36 @@ describe 'Attribute', ->
       m.set('testkey', 101)
       results.should.eql([ 42, 47, 101 ])
 
-  describe 'default values', ->
-    it 'will give the default value if no value exists', ->
+  describe 'initial values', ->
+    it 'will give the initial value if no value exists', ->
       m = new Model()
       class TestAttribute extends attribute.Attribute
-        default: -> 42
+        initial: -> 42
 
-      a = new TestAttribute(m, 'default_test')
+      a = new TestAttribute(m, 'initial_test')
       a.getValue_().should.equal(42)
-      # Model#get respecting the default value is tested in model tests.
+      # Model#get respecting the initial value is tested in model tests.
 
     # note these are distinct from the model tests; different codepath.
-    it 'does not write the default value by default', ->
+    it 'does not write the initial value by default', ->
       m = new Model()
       class TestAttribute extends attribute.Attribute
-        default: -> 42
+        initial: -> 42
 
-      a = new TestAttribute(m, 'default_test')
+      a = new TestAttribute(m, 'initial_test')
       a.getValue_().should.equal(42)
       m.data.should.eql({})
 
-    it 'writes the default value if writeDefault is true', ->
+    it 'writes the initial value if writeInitial is true', ->
       m = new Model()
       class TestAttribute extends attribute.Attribute
-        default: -> 42
-        writeDefault: true
+        initial: -> 42
+        writeInitial: true
 
-      a = new TestAttribute(m, 'default_test')
+      a = new TestAttribute(m, 'initial_test')
       m.data.should.eql({})
       a.getValue_().should.equal(42)
-      m.data.should.eql({ default_test: 42 })
+      m.data.should.eql({ initial_test: 42 })
 
   describe 'serialization', ->
     it 'just returns the data by default on deserialization', ->
@@ -171,15 +171,15 @@ describe 'Attribute', ->
         MyAttribute = attribute.Model.of(MyModel)
         MyAttribute.modelClass.should.equal(MyModel)
 
-      it 'should allow Model.withDefault() shortcut definition', ->
-        a = new (attribute.Model.withDefault())(new Model(), 'test')
+      it 'should allow Model.withInitial() shortcut definition', ->
+        a = new (attribute.Model.withInitial())(new Model(), 'test')
         m = a.getValue_()
         m.should.be.an.instanceof(Model)
         a.getValue_().should.equal(m)
 
-      it 'should combine of and withDefault shortcuts correctly', ->
+      it 'should combine of and withInitial shortcuts correctly', ->
         class TestModel extends Model
-        a = new (attribute.Model.of(TestModel).withDefault())(new Model(), 'test')
+        a = new (attribute.Model.of(TestModel).withInitial())(new Model(), 'test')
         a.getValue_().should.be.an.instanceof(TestModel)
 
     describe 'list type', ->
@@ -215,15 +215,15 @@ describe 'Attribute', ->
         MyAttribute = attribute.List.of(MyList)
         MyAttribute.listClass.should.equal(MyList)
 
-      it 'should allow List.withDefault() shortcut definition', ->
-        a = new (attribute.List.withDefault())(new Model(), 'test')
+      it 'should allow List.withInitial() shortcut definition', ->
+        a = new (attribute.List.withInitial())(new Model(), 'test')
         l = a.getValue_()
         l.should.be.an.instanceof(List)
         a.getValue_().should.equal(l)
 
-      it 'should combine of and withDefault shortcuts correctly', ->
+      it 'should combine of and withInitial shortcuts correctly', ->
         class TestList extends List
-        a = new (attribute.List.of(TestList).withDefault())(new Model(), 'test')
+        a = new (attribute.List.of(TestList).withInitial())(new Model(), 'test')
         a.getValue_().should.be.an.instanceof(TestList)
 
     describe 'reference type', ->

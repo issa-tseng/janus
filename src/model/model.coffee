@@ -32,7 +32,7 @@ class Model extends Map
       super(key)
 
   # Get an data about this model. Differs from Map#get only in that it looks at
-  # attributes for default values (and potentially writes them).
+  # attributes for initial values (and potentially writes them).
   # TODO: a lot of copypasta from Map, but we have a different flowpath because
   # attributes may decline shadowing.
   get_: (key) ->
@@ -53,10 +53,10 @@ class Model extends Map
     # now that we have avoided shadowing logic, clear Nothing:
     value = null if value is Nothing
 
-    # and if we still have no value, we want to look at attribute defaults
+    # and if we still have no value, we want to look at attribute initials
     if !value? and attribute?
-      value = attribute.default()
-      this.set(key, value) if (attribute.writeDefault is true) and (value isnt undefined)
+      value = attribute.initial()
+      this.set(key, value) if (attribute.writeInitial is true) and (value isnt undefined)
 
     value ? null # drop undef to null
 
