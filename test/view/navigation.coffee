@@ -2,7 +2,7 @@ should = require('should')
 { match } = require('../../lib/view/navigation')
 { Model } = require('../../lib/model/model')
 { List } = require('../../lib/collection/list')
-{ View } = require('../../lib/view/view')
+{ DomView } = require('../../lib/view/dom-view')
 { Varying } = require('../../lib/core/varying')
 
 # because Views have no implementation and so nobody actually renders subviews
@@ -14,7 +14,7 @@ should = require('should')
 # child"! it is meant to perform INITIAL SETUP of the viewtree. using #add
 # after query initialization violates fundamental assumptions internal to the
 # framework.
-class TreeView extends View
+class TreeView extends DomView
   _initialize: -> this._bindings = [ {}, {} ] # some dummies just to be sure
   add: (subject) ->
     view =
@@ -22,12 +22,6 @@ class TreeView extends View
       else undefined
     this._bindings.push({ view: new Varying(view) })
     view
-
-# and here, we create a thin mock for how the stdlib ListView works.
-# it takes a list of views and mocks up the correct structure to look like bindings for them.
-class ListView extends View
-  constructor: (list) ->
-    this._mappedBindings = list.map((view) -> (new Varying(view)).react(->))
 
 # these tests are /highly repetitive/ and very verbose. whatever. they're tests.
 describe 'view navigation', ->
@@ -82,18 +76,6 @@ describe 'view navigation', ->
       root.into_('x').should.equal(viewA)
       root.into_('y').should.equal(viewB)
 
-    it 'should work with stdlib ListViews', ->
-      class A
-      class B
-      viewA = new TreeView(A)
-      viewB = new TreeView(A)
-      subviews = new List([ viewA, new TreeView(B), null, viewB ])
-      listView = new ListView(subviews)
-      root = new TreeView()
-      root._bindings.push({ view: new Varying(listView) })
-
-      root.into_().into_(A).should.equal(viewA)
-
   describe 'into', ->
     # specific cases are more heavily tested under intoAll below, as into is just
     # intoAll(…).get(0)
@@ -141,18 +123,6 @@ describe 'view navigation', ->
       root.intoAll_('x').should.eql([ viewA ])
       root.intoAll_('y').should.eql([ viewB ])
       root.intoAll_('z').should.eql([])
-
-    it 'should work with stdlib ListViews', ->
-      class A
-      class B
-      viewA = new TreeView(A)
-      viewB = new TreeView(A)
-      subviews = new List([ viewA, new TreeView(B), null, viewB ])
-      listView = new ListView(subviews)
-      root = new TreeView()
-      root._bindings.push({ view: new Varying(listView) })
-
-      root.into_().intoAll_(A).should.eql([ viewA, viewB ])
 
   describe 'intoAll', ->
     it 'should return empty given no present children', ->
@@ -222,29 +192,6 @@ describe 'view navigation', ->
 
       parentModel.set('x', 42)
       result.length_.should.equal(0)
-
-    it 'should work with stdlib ListViews', ->
-      class A
-      class B
-      viewA = new TreeView(A)
-      viewB = new TreeView(A)
-      subviews = new List([ viewA, new TreeView(B), null, viewB ])
-      listView = new ListView(subviews)
-
-      result = listView.intoAll(A)
-      result.length_.should.equal(2)
-      result.get_(0).should.equal(viewA)
-      result.get_(1).should.equal(viewB)
-
-      viewC = new TreeView(A)
-      subviews.add(viewC)
-      result.length_.should.equal(3)
-      result.get_(2).should.equal(viewC)
-
-      subviews.remove(viewB)
-      result.length_.should.equal(2)
-      result.get_(0).should.equal(viewA)
-      result.get_(1).should.equal(viewC)
 
   describe 'parent_', ->
     it 'should return nothing if the parent does not match', ->

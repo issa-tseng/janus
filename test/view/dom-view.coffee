@@ -308,6 +308,77 @@ describe 'DomView', ->
       v.set('test 2')
       artifact.text().should.equal('test 2')
 
+  describe 'subview enumeration', ->
+    describe 'subviews_', ->
+      it 'should return empty array if the view has not yet rendered', ->
+        TestOuter = DomView.build($('<div><div class="child"/></div>'), template(
+          find('.child').render(mockfrom(new Model()))
+        ))
+        TestInner = DomView.build($('<div class="inner"/>'), template())
+        app = { view: (-> new TestInner({})) }
+
+        view = new TestOuter({}, { app })
+        view.subviews_().length.should.equal(0)
+
+      it 'should return views that have been rendered', ->
+        TestOuter = DomView.build($('<div><div class="child"/></div>'), template(
+          find('.child').render(mockfrom(new Model()))
+        ))
+        TestInner = DomView.build($('<div class="inner"/>'), template())
+        app = { view: (-> new TestInner({})) }
+
+        view = new TestOuter({}, { app })
+        view.artifact()
+        view.subviews_().length.should.equal(1)
+        view.subviews_()[0].should.be.an.instanceof(TestInner)
+
+      it 'should not include views that did not actually render', ->
+        TestOuter = DomView.build($('<div><div class="child"/></div>'), template(
+          find('.child').render(mockfrom(new Model()))
+        ))
+        app = { view: (->) }
+
+        view = new TestOuter({}, { app })
+        view.artifact()
+        view.subviews_().length.should.equal(0)
+
+    describe 'subviews', ->
+      it 'should return empty list if the view has not yet rendered', ->
+        TestOuter = DomView.build($('<div><div class="child"/></div>'), template(
+          find('.child').render(mockfrom(new Model()))
+        ))
+        TestInner = DomView.build($('<div class="inner"/>'), template())
+        app = { view: (-> new TestInner({})) }
+
+        view = new TestOuter({}, { app })
+        view.subviews().length_.should.equal(0)
+
+      it 'should return and maintain a list of subviews', ->
+        v = new Varying('test')
+        viewer = -> new TestInner({})
+        TestOuter = DomView.build($('<div><div class="child"/></div>'), template(
+          find('.child').render(mockfrom(v))
+        ))
+        TestInner = DomView.build($('<div class="inner"/>'), template())
+        app = { view: (-> viewer()) }
+
+        view = new TestOuter({}, { app })
+        view.artifact()
+        result = view.subviews()
+
+        result.length_.should.equal(1)
+        first = result.get_(0)
+        first.should.be.an.instanceof(TestInner)
+
+        v.set('test2')
+        result.length_.should.equal(1)
+        result.get_(0).should.be.an.instanceof(TestInner)
+        result.get_(0).should.not.equal(first)
+
+        viewer = ->
+        v.set('test3')
+        result.length_.should.equal(0)
+
   describe 'client event wiring', ->
     it 'should call _wireEvents', ->
       called = false

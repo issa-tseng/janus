@@ -61,6 +61,10 @@ class View extends Base
     self (x) => if isFunction(x) then Varying.of(x(this)) else Varying.of(this)
   )
 
+  # navigation information
+  subviews: -> new List()
+  subviews_: -> []
+
   # navigation plumb-throughs
   parent: (selector) -> parent(selector, this)
   parent_: (selector) -> parent_(selector, this)

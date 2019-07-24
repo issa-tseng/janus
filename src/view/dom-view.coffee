@@ -1,4 +1,7 @@
+{ Base } = require('../core/base')
 View = require('./view').View
+{ List } = require('../collection/list')
+{ identity } = require('../util/util')
 
 class DomView extends View
   constructor: (@subject, @options = {}) ->
@@ -38,6 +41,18 @@ class DomView extends View
         this.reactTo(binding.view, (view) -> view?.wireEvents())
     return
   _wireEvents: -> # implement me!
+
+  # actually implement the subviews methods:
+  subviews: ->
+    return new List() unless this._bindings?
+    (this.subviews$ ?= Base.managed(=>
+      (new List(binding.view for binding in this._bindings when binding.view?))
+        .flatMap(identity) # we don't really have List[Varying[T]] -> List[T] yet.
+        .filter((x) -> x?)
+    ))()
+  subviews_: ->
+    return [] unless this._bindings?
+    return (view for binding in this._bindings when (view = binding.view?.get())?)
 
   __destroy: ->
     if this._bindings?
