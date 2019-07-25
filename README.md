@@ -16,23 +16,32 @@ Janus is distributed exclusively over [npm](https://www.npmjs.com/package/janus)
 
 If you're still looking for more information, you probably want to read the [Getting Started](http://janusjs.org/intro/getting-started) guide.
 
-Compiling
----------
+Monorepository
+--------------
 
-You must have NodeJS 0.10+, and some relatively reasonable version of `npm`. We use `make`; all you should have to do is run `make` and everything should build. `make test` runs the tests; `make test-coverage` will give you a coverage report.
+Janus uses a [Lerna monorepo](https://lerna.js.org) model for managing its core packages. This makes it easier to manage changes across the different packages, and to maintain integration tests that ensure they work well together. The Development section below describes how this works.
 
-Repositories
-------------
+The core Janus package is located under [`janus/`](https://github.com/issa-tseng/janus/tree/master/janus). It contains the foundational abstractions, data structures, view and templating systems, and the application packages that form a complete but minimal frontend application framework.
 
-This repository contains all of core Janus: the main abstractions and data structures, the view and templating system, and the application packages tying everything together.
+Most projects will rely on the standard library, found under [`stdlib/`](https://github.com/issa-tseng/janus/tree/master/stdlib), which contains useful default view implementations of core Janus components such as lists and textboxes, as well as many handy ways to manipulate Varying values.
 
-Most projects will rely on the [`janus-stdlib`](https://github.com/issa-tseng/janus-stdlib), which contains useful default view implementations of core Janus components such as Lists and textboxes, as well as many useful ways to manipulate Varying values.
+Here as well is Inspect, which provides tools and views that can be used to introspect into Janus internals. They are immensely useful for development and debugging, and are the primary workhorses behind the interactive sample and console on the Janus website, as well as Janus Studio. You can find them under [`inspect/`](https://github.com/issa-tseng/janus/tree/master/inspect).
 
-The documentation website source may be found at [`janus-docs`](https://github.com/issa-tseng/janus-docs). In addition to the markdown text content of the site and its static-site framework, the docs repository also contains all the code relevant to presenting the interactive samples and REPL console.
+Other Repositories
+------------------
 
-However, the core tools and views used by those samples and REPL to inspect into Janus internals may be found at [`janus-inspect`](https://github.com/issa-tseng/janus-inspect).
+The documentation website source may be found at [`janus-docs`](https://github.com/issa-tseng/janus-docs). In addition to the markdown text content of the site and its static-site framework, the docs repository also contains the control flow backing the interactive samples and REPL console.
 
-Finally, the [`janus-samples`](https://github.com/issa-tseng/janus-samples) repository contains some illustrative Janus projects, for those who learn best by staring directly at code.
+As well, the [`janus-samples`](https://github.com/issa-tseng/janus-samples) repository contains some illustrative Janus projects, for those who learn best by staring directly at code.
+
+Development
+-----------
+
+To get started working on Janus code, you'll first need Node 0.10+ and npm. We use `make` to handle all our builds: `make build-all` will bootstrap the repository for you (installing dependencies and running `lerna bootstrap` to cross-link the development packages with each other), and rebuild each of the packages. If you run into trouble here, try rerunning `lerna bootstrap` or `lerna link` directly.
+
+You can use `make test-all` to run all the tests across all packages at once, with a single result report.
+
+You can also work on each package individually; once you `cd` into a package directory a separate `Makefile` will be present which will typically allow you to `make` just the files in that repository, `make test` just those tests, or `make test-coverage` to get a coverage report.
 
 Future and Roadmap
 ------------------
@@ -64,5 +73,5 @@ Should you make contributions to this project, you agree to have your contributi
 License
 -------
 
-Janus is dual-licensed under the [WTFPL](http://www.wtfpl.net/about/) and the [BSD Zero Clause License](https://spdx.org/licenses/0BSD.html), the latter really being offered only for the sake of organizations for which respectability is a major concern.
+Janus is dual-licensed under the [WTFPL](http://www.wtfpl.net/about/) and the [BSD Zero Clause License](https://spdx.org/licenses/0BSD.html).
 
