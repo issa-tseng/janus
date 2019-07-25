@@ -5,7 +5,7 @@
   "files": [
     "lib"
   ],
-  "version": "0.4.0",
+  "version": "0.5.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/issa-tseng/janus-stdlib"
@@ -19,11 +19,12 @@
     "test": "make test"
   },
   "peerDependencies": {
-    "janus": "~0.4",
+    "janus": "~0.5",
     "janus-dollar": ">=0"
   },
   "devDependencies": {
     "coffee-script": "~1.11",
+    "janus": "~0.5",
     "janus-dollar": "git+https://github.com/issa-tseng/janus-dollar-jquery",
     "mocha": "~5",
     "should": "~13",
