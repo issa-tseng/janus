@@ -1,0 +1,359 @@
+// TODO: copied blindly from janus-studio; reorganize
+$sin-45: 0.70710678118
+$cos-45: $sin-45 // so we don't get confused.
+$highlight-color: #fadd00
+$active-color: #08a4ec
+$inactive-color: #555
+
+
+.varying-tree
+  $node-size: 2.8em
+  $node-border-width: 0.2em
+  $node-outer-size: $node-size + ($node-border-width * 2)
+  $node-outer-radius: $node-outer-size / 2
+  $inner-size: 2em
+  $value-size: 1.4em
+  $lambda-size: 1.4em
+
+  $value-color: #85d316
+  $inner-color: #999
+
+  .main
+    &:after
+      @include reify
+      clear: both
+
+    .varying-node
+      display: block
+      background-color: #fff
+      border: $node-border-width solid $active-color
+      border-radius: $node-size
+      float: left
+      height: $node-size
+      margin-right: 1em
+      position: relative
+      width: $node-size
+      z-index: 1
+
+      .inner-marker
+        $border-size: 0.2em
+        $centering: ($node-size / 2) - ($inner-size / 2) - $border-size
+        border: $border-size solid $inner-color
+        border-radius: $inner-size
+        display: none
+        height: $inner-size
+        left: $centering
+        position: absolute
+        top: $centering
+        width: $inner-size
+
+        &:after
+          $length: 2.5em
+          $dist-x: $sin-45 * (($inner-size / 2) + ($length / 2))
+          $dist-y: $sin-45 * (($inner-size / 2) - (2 * $border-size))
+
+          @include reify
+          background: linear-gradient(0deg, $active-color, $inner-color)
+          height: $length
+          left: ($inner-size / 2) + $dist-x
+          position: absolute
+          top: ($inner-size / 2) + $dist-y
+          transform: rotate(-45deg)
+          width: 0.2em
+
+      .value-marker
+        $centering: ($node-size / 2) - ($value-size / 2)
+        background: $value-color
+        border-radius: $value-size
+        height: $value-size
+        left: $centering
+        opacity: 0.3
+        position: absolute
+        top: $centering
+        width: $value-size
+
+        &:after
+          @include reify
+          border-bottom: 1px solid $value-color
+          display: none
+          height: 0
+          left: 100%
+          position: absolute
+          top: $value-size / 2
+          width: 1.6em
+
+    .valueBlock
+      align-items: center
+      display: flex
+      min-height: $node-outer-size
+
+  .tags
+    float: left
+
+    li
+      background: #999
+      border-radius: 0.3em
+      color: #fff
+      float: left
+      font-size: 0.8em
+      letter-spacing: -0.05em
+      margin: 0.1em
+        right: 0.5em
+      padding: 0.2em 0.4em
+      text-transform: uppercase
+
+  &.hasInner > .main .inner-marker
+    display: block
+  &.hasValue > .main .value-marker
+    opacity: 1
+    &:after
+      display: block
+  &.flattened > .main .node
+    border-style: dotted
+
+  .aux
+    $inner-padding: 3.5em
+
+    display: none
+    padding-top: 0.2em
+    position: relative
+
+    &:before
+      @include reify
+      border-left: 1px solid $inactive-color
+      bottom: -1em
+      left: ($node-outer-size / 2)
+      position: absolute
+      top: 0
+      width: 0
+      z-index: 2
+
+    .varying-tree-innerNew.hasNewInner + .varying-tree-inner.hasMainInner
+      > .varying-tree
+        opacity: 0.35
+
+      &:before
+        $icon-size: 1.3em
+        $offset: -0.3em
+
+        color: red
+        content: '×'
+        font-size: $icon-size
+        left: $inner-padding / $icon-size + $offset
+        position: absolute
+        top: $offset
+
+    .varying-tree-inner
+      margin-top: 0.3em
+      padding-left: $inner-padding
+      position: relative
+      z-index: 1
+
+    .mapping
+      background-color: $inactive-color
+      border-radius: 9999px
+      clear: both
+      color: #fff
+      cursor: default
+      display: none
+      font-weight: bold
+      height: $lambda-size
+      line-height: 1.3em
+      margin-left: $node-outer-radius - ($lambda-size / 2)
+      position: relative
+      text-align: center
+      width: $lambda-size
+      z-index: 3
+
+      span
+        font-size: 0.9em
+
+  .varying-tree-nexts
+    margin-top: 0.1em // TODO: why?
+
+  &.reducing > .varying-tree-nexts
+    margin-top: -1 * ($lambda-size / 2)
+
+  $indent: 1em
+  $slant-length: 1em
+  $slant-offset: $slant-length * $cos-45
+  .linkedList-node
+    .linkedList-next.hasNext
+      margin-left: $node-outer-size / 2
+      margin-bottom: -1 * $slant-offset
+      padding-left: $indent
+      position: relative
+
+      &:before
+        @include reify
+        border-top: 1px solid $inactive-color
+        left: -1 * $slant-offset
+        position: absolute
+        top: 0
+        width: $indent + $node-outer-radius
+
+      .linkedList-node:before
+        @include reify
+        border-left: 1px solid $inactive-color
+        bottom: -1em
+        left: 0
+        position: absolute
+        top: $slant-offset
+
+      &:after
+        $offset: ($slant-length * $cos-45) / 2
+        @include reify
+        border-left: 1px solid $inactive-color
+        height: $slant-length
+        left: $indent + $node-outer-radius - $offset
+        top: -1px
+        transform: rotate(-45deg)
+        position: absolute
+
+      + .linkedList-contents
+        padding-top: $slant-offset + 0.5em
+
+    .linkedList-contents
+      padding-top: $slant-offset
+
+  .varying-tree-nexts > .linkedList > .linkedList-node > .linkedList-next.hasNext
+    &:before
+      left: 0
+      width: $indent + $node-outer-radius - $slant-offset
+    > .linkedList-node:before
+      top: 0
+
+  &.mapped > .aux
+    .mapping
+      display: block
+    &:after
+      @include reify
+      background: $inactive-color
+      bottom: $lambda-size / 2
+      //clip-path: url(#lambda) # someday, maybe
+      left: $node-outer-radius - ($lambda-size / 2)
+      opacity: 0.4
+      position: absolute
+      top: -0.3em
+      width: $lambda-size
+
+  &.derived > .aux
+    display: block
+
+  &.derived > .main .node
+    border-color: $inactive-color
+    .inner-marker:after
+      background: linear-gradient(0deg, $inactive-color, $inner-color)
+  &.derived.hasObservations
+    > .main .node
+      border-color: $active-color
+      .inner-marker:after
+        background: linear-gradient(0deg, $active-color, $inner-color)
+    > .aux
+      &:before
+        border-left-color: $active-color
+      .mapping
+        background-color: $active-color
+      &:after
+        background: $active-color
+    .linkedList-next.hasNext
+      &:before
+        border-top-color: $active-color
+      .linkedList-node:before
+        border-left-color: $active-color
+      &:after
+        border-left-color: $active-color
+
+  &.hasValue > .aux:before
+    top: ($node-size - $value-size) / -2 - $node-border-width
+  &.hasInner > .aux:before
+    top: ($node-size - $inner-size) / -2
+
+.reaction
+  display: inline-block
+
+  &:before
+    content: '>'
+    display: none
+
+  .rxn-value
+    background: #eee
+    border-radius: 0.2em
+    cursor: default
+    padding: 0.3em 0.5em
+
+    &:before
+      border: 1px solid $inactive-color
+      border-radius: 1em
+      content: ''
+      display: inline-block
+      height: 0.8em
+      position: relative
+      top: 0.1em
+      width: 0.8em
+
+    > span
+      display: none
+      max-width: 8em
+      font-size: 1.1rem
+      overflow: hidden
+      text-overflow: ellipsis
+      white-space: nowrap
+
+  &.internal:before
+    display: inline
+
+.reaction.target-changed
+  .rxn-value
+    background: #e4e4e4
+    > span
+      display: inline-block
+    &:before
+      border-color: $active-color
+      margin-right: 0.4em
+
+.reaction + .reaction.target-unchanged
+  margin-left: -0.2em
+  .rxn-value
+    border-radius: 0 0.2em 0.2em 0
+
+.reaction.target-unchanged + .reaction.target-unchanged
+  margin-left: 0
+
+.reaction + .reaction.target-changed:before
+  display: inline
+
+.varying-delta
+  overflow: hidden
+
+  &.has-delta
+    background-color: $highlight-color
+    .delta
+      display: inline
+
+  .delta
+    display: none
+
+  .separator
+    padding: 0.2em
+    &:before
+      content: '»'
+
+.janus-inspect-varying.janus-inspect-panel
+  .derivation-arg
+    display: none
+    &.has-arg
+      display: inline
+      &:before
+        content: '('
+      &:after
+        content: ')'
+
+  .varying-reactions.has-reactions + .varying-reactions-none
+    display: none
+
+  .varying-snapshot
+    display: none
+  &.selected-rxn .varying-snapshot
+    display: block
+

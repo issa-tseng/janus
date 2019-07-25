@@ -1,0 +1,180 @@
+@import 'styles/util'
+
+
+////////////////////////////////////////////////////////////////////////////////
+// GENERAL BASE STYLES
+
+.janus-inspect-pin
+  display: none
+
+
+////////////////////////////////////////////////////////////////////////////////
+// ENTITY BASE STYLES
+
+.janus-inspect-entity
+  display: inline // TODO: just make it a span dummy
+
+  .entity-title
+    font-weight: bold
+
+  .entity-content
+    margin-left: -0.2em
+
+    &:before, &:after
+      font-weight: bold
+    &:before
+      content: '['
+    &:after
+      content: ']'
+
+  .entity-title:hover
+    color: red
+
+    + .entity-content
+      &:before, &:after
+        color: red
+
+      .entity-title
+        color: inherit
+      .entity-content
+        &:before, &:after
+          color: inherit
+
+  .entity-more
+    display: none
+  .entity-more.has-more
+    display: inline
+
+
+////////////////////////////////////////////////////////////////////////////////
+// CASE BASE STYLES
+
+.janus-inspect-case.janus-inspect-entity
+  .entity-subtitle.has-subtitle:before
+    content: '.'
+
+
+////////////////////////////////////////////////////////////////////////////////
+// LIST BASE STYLES
+
+.janus-inspect-list.janus-inspect-entity
+  .entity-subtitle.has-subtitle:before
+    content: '.'
+
+  .list-values .janus-list
+    display: inline
+
+    > span
+      display: inline
+
+      &:after
+        content: ','
+        padding-right: 0.3em
+      &:last-child:after
+        content: none
+
+.janus-inspect-list.janus-inspect-panel
+  .data-pair
+    hr
+      display: none
+
+  &.read-only
+    .list-insert, .pair-clear
+      display: none !important
+
+  .list-last-item
+    display: none
+  .list-more.has-more + .list-last-item
+    display: block
+
+
+////////////////////////////////////////////////////////////////////////////////
+// MODEL BASE STYLES
+
+.janus-inspect-model.janus-inspect-entity
+  .model-pairs
+    color: #888
+
+////////////////////////////////////////////////////////////////////////////////
+// ATTRIBUTE BASE STYLES
+
+.janus-inspect-attribute.janus-inspect-entity
+  .janus-inspect-model
+    .entity-title, .entity-content:before, .entity-content:after
+      font-weight: normal
+
+////////////////////////////////////////////////////////////////////////////////
+// DATAPAIR BASE STYLES
+
+.data-pair
+  overflow: hidden
+
+  &.bound .pair-delimeter
+    padding-left: 0.2em
+
+  .pair-clear
+    padding: 0.25em
+    &:before
+      content: '×'
+
+////////////////////////////////////////////////////////////////////////////////
+// VARYING BASE STYLES
+
+.janus-inspect-varying.janus-inspect-entity
+  .varying-unknown
+    display: none
+
+    &.unknown
+      border: 1px dotted #888
+      border-radius: 99px
+      color: #888
+      cursor: pointer
+      display: inline
+      padding: 2px 3px
+
+      + .varying-value
+        display: none
+
+@import './varying/panel-view'
+
+////////////////////////////////////////////////////////////////////////////////
+// FUNCTION BASE STYLES
+
+.janus-inspect-function.janus-inspect-entity
+  .function-args
+    .janus-list
+      display: inline
+
+    .janus-inspect-applicant:after
+      content: ', '
+    .janus-inspect-applicant:last-child:after
+      content: none
+
+.janus-inspect-function.janus-inspect-panel
+  .panel-derivation
+    display: none
+  &.has-known .panel-derivation
+    display: block
+
+.janus-inspect-applicant
+  &.has-value .applicant-name
+    font-weight: bold
+    &:after
+      content: ': '
+
+////////////////////////////////////////////////////////////////////////////////
+// DOMVIEW BASE STYLES
+
+.mutation
+  overflow: hidden
+
+  .mutation-type
+    float: left
+
+  .mutation-binding
+    float: right
+
+.janus-inspect-domview .domview-display
+  .domview-display-label:only-child
+    display: none
+

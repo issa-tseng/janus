@@ -1,0 +1,34 @@
+{
+  "name": "janus-inspect",
+  "description": "inspection and debugging tools for janus primitives",
+  "version": "0.1.0",
+  "author": "Issa Tseng <maintainer@heyissa.com>",
+  "homepage": "http://janusjs.org",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/issa-tseng/janus-inspect.git"
+  },
+  "bugs": {
+    "url": "https://github.com/issa-tseng/janus-inspect/issues"
+  },
+  "license": "WTFPL",
+  "main": "lib/export",
+  "scripts": {
+    "test": "make test"
+  },
+  "engines": {
+    "node": ">= 6.0"
+  },
+  "peerDependencies": {
+    "cherow": "~1",
+    "janus": "~0",
+    "janus-dollar": "~0",
+    "luxon": "~1"
+  },
+  "devDependencies": {
+    "coffee-script": "~1.12",
+    "node-sass": "~3",
+    "mocha": "~5",
+    "should": "~11"
+  }
+}

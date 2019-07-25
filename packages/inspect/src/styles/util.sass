@@ -1,0 +1,55 @@
+@mixin reify
+  content: ''
+  display: block
+
+@mixin fill($margin: 0)
+  bottom: $margin
+  left: $margin
+  position: absolute
+  right: $margin
+  top: $margin
+
+@mixin no-select
+  cursor: default
+  -webkit-user-select: none
+
+@mixin bare-textbox
+  background: transparent
+  border: none
+  display: block
+  margin: 0
+  outline: none
+  padding: 0
+  -webkit-appearance: none
+
+@mixin bare-button
+  background: transparent
+  border: none
+  margin: 0
+  outline: none
+  padding: 0
+  text-align: left
+  -webkit-appearance: none
+
+@mixin triangle($direction, $color, $size)
+  $bordered: none
+  $borderless: none
+  @if $direction == 'up'
+    $bordered: 'bottom'
+    $borderless: 'top'
+  @if $direction == 'right'
+    $bordered: 'left'
+    $borderless: 'right'
+  @if $direction == 'down'
+    $bordered: 'top'
+    $borderless: 'bottom'
+  @if $direction == 'left'
+    $bordered: 'right'
+    $borderless: 'left'
+
+  border: $size solid transparent
+  border-#{$borderless}-width: 0
+  border-#{$bordered}-color: $color
+  height: 0
+  width: 0
+
