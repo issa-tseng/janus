@@ -29,8 +29,8 @@
     "coffee-script": "~1.12",
     "janus": "~0.5",
     "janus-dollar": "git+https://github.com/issa-tseng/janus-dollar-jquery",
-    "node-sass": "~3",
     "mocha": "~5",
-    "should": "~11"
+    "node-sass": "~4",
+    "should": "~13"
   }
 }

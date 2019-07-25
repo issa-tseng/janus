@@ -21,7 +21,7 @@ test-debug: build node_modules
 	node --debug-brk --inspect node_modules/mocha/bin/mocha --compilers coffee:coffee-script/register --recursive
 
 test-coverage: build node_modules
-	node node_modules/.bin/istanbul cover node_modules/.bin/_mocha -- --compilers coffee:coffee-script/register --recursive
+	node node_modules/.bin/nyc --reporter=lcov node_modules/.bin/_mocha --compilers coffee:coffee-script/register --recursive test
 
 clean:
 	rm -rf lib

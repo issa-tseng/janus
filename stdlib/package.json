@@ -27,7 +27,7 @@
     "janus": "~0.5",
     "janus-dollar": "git+https://github.com/issa-tseng/janus-dollar-jquery",
     "mocha": "~5",
-    "should": "~13",
-    "istanbul": "~0.4"
+    "nyc": "~14",
+    "should": "~13"
   }
 }
