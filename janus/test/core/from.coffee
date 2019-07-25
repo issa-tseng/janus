@@ -7,70 +7,51 @@ Varying = require('../../lib/core/varying').Varying
 
 id = (x) -> x
 
-should.Assertion.add('val', (->
-  this.params = { operator: 'to be a val' }
-  this.obj.should.be.an.Object()
-
-  this.obj.map.should.be.a.Function()
-  this.obj.flatMap.should.be.a.Function()
-  this.obj.and.should.be.a.Function()
-  this.obj.all.should.be.an.Object()
-), true)
-
-# this only checks (some) default conjunctions! custom-built chainers will have
-# a different shape.
-should.Assertion.add('conjunction', (->
-  this.params = { operator: 'to be a default conjunction' }
-  this.obj.should.be.a.Function()
-  this.obj.get.should.be.a.Function()
-  this.obj.attribute.should.be.a.Function()
-  this.obj.varying.should.be.a.Function()
-), true)
-
-should.Assertion.add('terminus', (->
-  this.params = { operator: 'to be a terminus' }
-  this.obj.should.be.an.Object()
-
-  this.obj.point.should.be.a.Function()
-  this.obj.flatMap.should.be.a.Function()
-  this.obj.map.should.be.a.Function()
-  this.obj.all.should.equal(this.obj)
-), true)
-
-should.Assertion.add('varying', (->
-  this.params = { operator: 'to be a Varying' }
-
-  this.obj.flatMap.should.be.a.Function()
-  this.obj.map.should.be.a.Function()
-
-  this.obj.react.should.be.a.Function()
-), true)
-
 describe 'from', ->
+  should.Assertion.add('val', (->
+    this.params = { operator: 'to be a val' }
+    this.obj.should.be.an.Object()
+
+    this.obj.map.should.be.a.Function()
+    this.obj.flatMap.should.be.a.Function()
+    this.obj.and.should.be.a.Function()
+    this.obj.all.should.be.an.Object()
+  ), true)
+
   describe 'initial val', ->
     it 'should return a val-looking thing', ->
-      from('a').should.be.a.val()
+      should(from('a')).be.a.val()
 
     it 'should contain functions that return val-looking things', ->
-      from.get('b').should.be.a.val()
-      from.attribute('b').should.be.a.val()
-      from.varying('b').should.be.a.val()
+      should(from.get('b')).be.a.val()
+      should(from.attribute('b')).be.a.val()
+      should(from.varying('b')).be.a.val()
 
     it 'should not contain function called dynamic', ->
       (from.dynamic?).should.equal(false)
 
   describe 'val', ->
     it 'should return a val-looking thing on map', ->
-      from('a').map(->).should.be.a.val()
+      should(from('a').map(->)).be.a.val()
 
     it 'should return a val-looking thing on flatMap', ->
-      from('a').flatMap(->).should.be.a.val()
+      should(from('a').flatMap(->)).be.a.val()
 
     it 'should return a conjunction-looking thing on and', ->
-      from('a').and.should.be.a.conjunction()
+      conjunction = from('a').and
+      conjunction.should.be.a.Function()
+      conjunction.get.should.be.a.Function()
+      conjunction.attribute.should.be.a.Function()
+      conjunction.varying.should.be.a.Function()
 
     it 'should return a terminus-looking thing on all', ->
-      from('a').all.should.be.a.terminus()
+      terminus = from('a').all
+      terminus.should.be.an.Object()
+
+      terminus.point.should.be.a.Function()
+      terminus.flatMap.should.be.a.Function()
+      terminus.map.should.be.a.Function()
+      terminus.all.should.equal(terminus)
 
   describe 'point', ->
     it 'should return a true varying', ->
