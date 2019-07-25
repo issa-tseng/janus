@@ -1,7 +1,13 @@
 {
   "name": "root",
   "private": true,
+  "scripts": {
+    "test": "make test-all"
+  },
   "devDependencies": {
-    "lerna": "^3.15.0"
+    "lerna": "^3.15.0",
+    "coffeescript": "~1.12",
+    "mocha": "~5",
+    "should": "~13"
   }
 }
