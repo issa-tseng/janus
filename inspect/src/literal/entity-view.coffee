@@ -2,7 +2,7 @@
 { InspectorView } = require('../common/inspector')
 { ListEntityVM, moreButton } = require('../list/entity-view')
 { TruncatingLiteral, DateInspector, ArrayInspector } = require('./inspector')
-$ = require('janus-dollar')
+$ = require('../dollar')
 { inspect } = require('../inspect')
 
 ################################################################################

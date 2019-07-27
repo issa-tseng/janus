@@ -2,7 +2,7 @@
 { InspectorView } = require('../common/inspector')
 { WrappedFunction } = require('./inspector')
 { deindent, exists } = require('../util')
-$ = require('janus-dollar')
+$ = require('../dollar')
 
 FunctionPanelView = InspectorView.build($('
   <div class="janus-inspect-panel janus-inspect-function highlights">

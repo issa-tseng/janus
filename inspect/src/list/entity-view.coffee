@@ -1,7 +1,7 @@
 { min, max } = Math
 { template, find, from, Model, attribute, bind, initial } = require('janus')
 { InspectorView } = require('../common/inspector')
-$ = require('janus-dollar')
+$ = require('../dollar')
 { inspect } = require('../inspect')
 { ListInspector } = require('./inspector')
 { exists } = require('../util')

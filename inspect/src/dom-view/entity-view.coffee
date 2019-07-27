@@ -1,6 +1,6 @@
 { template, find, from } = require('janus')
 { InspectorView } = require('../common/inspector')
-$ = require('janus-dollar')
+$ = require('../dollar')
 { DomViewInspector } = require('./inspector')
 { pluralize } = require('../util')
 

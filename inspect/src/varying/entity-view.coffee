@@ -1,6 +1,6 @@
 { template, find, from } = require('janus')
 { InspectorView } = require('../common/inspector')
-$ = require('janus-dollar')
+$ = require('../dollar')
 { tryValuate } = require('../common/valuate')
 { inspect } = require('../inspect')
 { WrappedVarying } = require('./inspector')

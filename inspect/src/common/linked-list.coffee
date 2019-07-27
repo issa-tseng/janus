@@ -1,6 +1,6 @@
 { Model, bind, List, DomView, template, find, from } = require('janus')
 
-$ = require('janus-dollar')
+$ = require('../dollar')
 
 
 # these classes are mostly to facilitate the treeviews involved with rendering

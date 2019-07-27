@@ -1,6 +1,6 @@
 { DomView, template, find, from, Model, bind } = require('janus')
 { InspectorView } = require('../../common/inspector')
-$ = require('janus-dollar')
+$ = require('../../dollar')
 { inspect } = require('../../inspect')
 { ListPanelVM, moreButton } = require('../panel-view')
 { ListInspector } = require('../inspector')

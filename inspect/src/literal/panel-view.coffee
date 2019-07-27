@@ -3,7 +3,7 @@
 { ListPanelVM, moreButton } = require('../list/panel-view')
 { ListForArray, ArrayEntityVM } = require('./entity-view')
 { ArrayInspector } = require('./inspector')
-$ = require('janus-dollar')
+$ = require('../dollar')
 { inspect } = require('../inspect')
 
 class ArrayEntry extends Model

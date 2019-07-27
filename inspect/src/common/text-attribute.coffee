@@ -1,5 +1,5 @@
 { DomView, template, find, from, attribute } = require('janus')
-$ = require('janus-dollar')
+$ = require('../dollar')
 
 FormCommitTextView = DomView.build($('<input type="text" spellcheck="false"/>'), template(
   find('input')

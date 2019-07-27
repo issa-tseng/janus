@@ -1,6 +1,6 @@
 { Varying, Model, attribute, bind, DomView, template, find, from } = require('janus')
 { InspectorView } = require('../common/inspector')
-$ = require('janus-dollar')
+$ = require('../dollar')
 { DateTime } = require('luxon')
 
 { exists } = require('../util')

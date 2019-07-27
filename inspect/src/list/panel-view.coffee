@@ -1,7 +1,7 @@
 { DomView, template, find, from, Model, bind, initial } = require('janus')
 { InspectorView } = require('../common/inspector')
 { ListInspector } = require('./inspector')
-$ = require('janus-dollar')
+$ = require('../dollar')
 { tryValuate } = require('../common/valuate')
 { inspect } = require('../inspect')
 { min, max } = Math

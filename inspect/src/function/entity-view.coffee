@@ -1,6 +1,6 @@
 { DomView, template, find, from } = require('janus')
 { InspectorView } = require('../common/inspector')
-$ = require('janus-dollar')
+$ = require('../dollar')
 { Applicant, WrappedFunction } = require('./inspector')
 { exists } = require('../util')
 { inspect } = require('../inspect')

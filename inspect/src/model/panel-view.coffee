@@ -2,7 +2,7 @@
 { valid, error } = require('janus').types.validity
 { InspectorView } = require('../common/inspector')
 { tryValuate } = require('../common/valuate')
-$ = require('janus-dollar')
+$ = require('../dollar')
 { KeyPair, WrappedModel } = require('./inspector')
 { inspect } = require('../inspect')
 { exists } = require('../util')

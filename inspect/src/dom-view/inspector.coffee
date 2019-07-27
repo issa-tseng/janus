@@ -1,6 +1,6 @@
 { DomView, Varying, List, Model, attribute, bind, from, types, Library } = require('janus')
 { isPlainObject } = require('janus').util
-$ = require('janus-dollar')
+#$ = require('../dollar')
 { noop } = require('../util')
 
 
@@ -11,7 +11,7 @@ $ = require('janus-dollar')
 
 # util.
 last = (arr) -> arr[arr.length - 1]
-div = $('<div/>')
+div = $('<div/>') # TODO: relying on global here.
 
 # TODO: not perfect enough an imitation for some cases probably:
 class DummyApp extends Model
