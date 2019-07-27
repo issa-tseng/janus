@@ -26,9 +26,11 @@
     "luxon": "~1"
   },
   "devDependencies": {
-    "coffee-script": "~1.12",
-    "janus": "~0.5",
+    "cherow": "~1",
+    "coffee-script": "1.12.2",
+    "janus": "~0",
     "janus-dollar": "git+https://github.com/issa-tseng/janus-dollar-jquery",
+    "luxon": "~1",
     "mocha": "~5",
     "node-sass": "~4",
     "should": "~13"
