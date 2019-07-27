@@ -10,7 +10,7 @@ module.exports = {
   validate: (binding) -> (schema) -> schema.validations.push(binding)
 
   transient: (key) -> (schema) -> schema.attributes[key] = TransientAttribute
-  dfault: (key, value, klass = Attribute) -> (schema) ->
+  initial: (key, value, klass = Attribute) -> (schema) ->
     wrapped = if isFunction(value) then value else (-> value)
     schema.attributes[key] = class extends klass
       initial: wrapped
@@ -24,7 +24,7 @@ module.exports = {
 module.exports.Trait.build = module.exports.Trait
 
 # and another handy shortcut for a writing initial:
-module.exports.dfault.writing = (key, value, klass = Attribute) ->
-  module.exports.dfault(key, value, class extends klass
+module.exports.initial.writing = (key, value, klass = Attribute) ->
+  module.exports.initial(key, value, class extends klass
     writeInitial: true)
 

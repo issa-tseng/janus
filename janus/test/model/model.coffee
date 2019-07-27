@@ -5,7 +5,7 @@ types = require('../../lib/core/types')
 
 Model = require('../../lib/model/model').Model
 attributes = require('../../lib/model/attribute')
-{ attribute, bind, dfault, validate, transient, Trait } = require('../../lib/model/schema')
+{ attribute, bind, initial, validate, transient, Trait } = require('../../lib/model/schema')
 
 Varying = require('../../lib/core/varying').Varying
 { List } = require('../../lib/collection/list')
@@ -369,17 +369,17 @@ describe 'Model', ->
       model.attribute('attr').should.equal(model.attribute('attr'))
 
     it 'should allow default shortcut for defining a default value', ->
-      TestModel = Model.build(dfault('test', 42))
+      TestModel = Model.build(initial('test', 42))
       (new TestModel()).get_('test').should.equal(42)
 
     it 'should take a function with default for defining a default value', ->
       i = 0
-      TestModel = Model.build(dfault('test', -> ++i))
+      TestModel = Model.build(initial('test', -> ++i))
       (new TestModel()).get_('test').should.equal(1)
       (new TestModel()).get_('test').should.equal(2)
 
     it 'should allow for the attribute class to be defined with @default', ->
-      TestModel = Model.build(dfault('test', 42, attributes.Number))
+      TestModel = Model.build(initial('test', 42, attributes.Number))
       (new TestModel()).attribute('test').should.be.an.instanceof(attributes.Number)
 
     it 'should allow @transient shortcut to declare an attribute transient', ->

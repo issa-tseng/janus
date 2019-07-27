@@ -43,7 +43,7 @@
         return schema.attributes[key] = TransientAttribute;
       };
     },
-    dfault: function(key, value, klass) {
+    initial: function(key, value, klass) {
       if (klass == null) {
         klass = Attribute;
       }
@@ -81,11 +81,11 @@
 
   module.exports.Trait.build = module.exports.Trait;
 
-  module.exports.dfault.writing = function(key, value, klass) {
+  module.exports.initial.writing = function(key, value, klass) {
     if (klass == null) {
       klass = Attribute;
     }
-    return module.exports.dfault(key, value, (function(superClass) {
+    return module.exports.initial(key, value, (function(superClass) {
       extend(_Class, superClass);
 
       function _Class() {
