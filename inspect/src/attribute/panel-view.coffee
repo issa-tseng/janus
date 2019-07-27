@@ -36,7 +36,7 @@ AttributePanelView = InspectorView.build($('
     find('.attribute-key').text(from('key'))
     find('.attribute-parent').render(from('parent').map(inspect))
     find('.attribute-value').render(from('value').map(inspect))
-    find('.attribute-writes-default').text(from('target').map((t) -> yn(t.writeDefault)))
+    find('.attribute-writes-initial').text(from('target').map((t) -> yn(t.writeInitial)))
     find('.attribute-transient').text(from('target').map((t) -> yn(t.transient)))
     find('.attribute-pairs')
       .classed('has-pairs', from('pairs').flatMap((p) -> p.nonEmpty()))

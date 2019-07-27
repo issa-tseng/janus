@@ -1,5 +1,5 @@
 { min, max } = Math
-{ template, find, from, Model, attribute, bind, dēfault } = require('janus')
+{ template, find, from, Model, attribute, bind, initial } = require('janus')
 { InspectorView } = require('../common/inspector')
 $ = require('janus-dollar')
 { inspect } = require('../inspect')
@@ -7,7 +7,7 @@ $ = require('janus-dollar')
 { exists } = require('../util')
 
 class ListEntityVM extends Model.build(
-  dēfault('take-setting', 5)
+  initial('take-setting', 5)
   bind('take-actual', from('take-setting').and.subject('length')
     .all.map((setting, length) -> if setting + 1 >= length then length else setting))
 

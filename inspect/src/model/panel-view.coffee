@@ -11,7 +11,7 @@ $ = require('janus-dollar')
 # little formview to name new pairs.
 Namer = Model.build(
   attribute('name', class extends attribute.Text
-    default: ->
+    initial: ->
       target = this.model.get_('target')
       i = 0
       ++i while target.get_(key = "untitled#{i}")?

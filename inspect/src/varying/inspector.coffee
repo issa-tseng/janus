@@ -129,8 +129,8 @@ getDerivation = (varying) ->
 # INSPECTOR CLASS:
 
 class WrappedVarying extends Model.build(
-    attribute('observations', attribute.List.withDefault())
-    attribute('reactions', attribute.List.withDefault())
+    attribute('observations', attribute.List.withInitial())
+    attribute('reactions', attribute.List.withInitial())
 
     bind('derived', from('mapped').and('flattened').all.map((m, f) -> m or f))
     bind('value', from('_value').map((x) -> if x?.isNothing is true then null else x))
@@ -222,7 +222,7 @@ class SnapshottedVarying extends WrappedVarying
 
 
 class Reaction extends Model.build(
-    attribute('changes', attribute.List.withDefault())
+    attribute('changes', attribute.List.withInitial())
   )
 
   isReaction: true

@@ -1,7 +1,7 @@
-{ Model, dēfault, bind, from, List } = require('janus')
+{ Model, initial, bind, from, List } = require('janus')
 
 class ListInspector extends Model.build(
-  dēfault('type', 'List')
+  initial('type', 'List')
 
   bind('derived', from('target').map((list) -> list.isDerivedList is true))
   bind('length', from('target').flatMap((list) -> list.length))
@@ -24,10 +24,10 @@ class ListInspector extends Model.build(
 # DERIVED LIST TYPES
 
 ListInspector.Mapped = class extends ListInspector.build(
-  dēfault('type', 'MappedList'))
+  initial('type', 'MappedList'))
 
 ListInspector.Filtered = class extends ListInspector.build(
-  dēfault('type', 'FilteredList'))
+  initial('type', 'FilteredList'))
 
 
 module.exports = {

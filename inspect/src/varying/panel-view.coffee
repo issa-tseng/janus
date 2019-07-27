@@ -14,7 +14,7 @@ $ = require('janus-dollar')
 # REACTION VIEW (list)
 
 ReactionVM = Model.build(
-  bind('target-inspector', from('view').map((v) -> v.closest(WrappedVarying).first().get_().subject))
+  bind('target-inspector', from('view').map((v) -> v.closest_(WrappedVarying).subject))
   bind('snapshot', from('target-inspector').get('id').and.subject()
     .all.flatMap((id, rxn) -> rxn.get("tree.#{id}")))
   bind('changed', from('snapshot').get('changed'))
@@ -136,7 +136,7 @@ class VaryingPanel extends Model.build(
   attribute('selected-rxn', class extends attribute.Enum
     nullable: true
     _values: -> from.subject('reactions')
-    default: -> null
+    initial: -> null
   )
   bind('active-rxn', from('hovered-rxn').and('selected-rxn').all.map((h, s) -> h ? s))
   bind('active-rxn-caller', from('active-rxn').get('caller'))

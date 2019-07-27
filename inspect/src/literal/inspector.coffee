@@ -1,5 +1,5 @@
 { floor } = Math
-{ List, dēfault, Model, bind, from, dēfault } = require('janus')
+{ List, initial, Model, bind, from } = require('janus')
 { DateTime } = require('luxon')
 { isPrimitive, isArray } = require('janus').util
 
@@ -8,7 +8,7 @@ TruncatingLiteral = Model.build(
 
   # skipping use of BooleanAttribute for now to keep the html classes consistent.
   # eventually the stdlib button renderer should take custom classes.
-  dēfault('truncate', true)
+  initial('truncate', true)
 
   bind('more_count', from('string').map((str) ->
     more = str.length - 300

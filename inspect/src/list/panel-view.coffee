@@ -1,4 +1,4 @@
-{ DomView, template, find, from, Model, bind, dēfault } = require('janus')
+{ DomView, template, find, from, Model, bind, initial } = require('janus')
 { InspectorView } = require('../common/inspector')
 { ListInspector } = require('./inspector')
 $ = require('janus-dollar')
@@ -36,7 +36,7 @@ ListEntryView = DomView.build($('
 # TODO: a LOT of overlap with ListEntityVM
 class ListPanelVM extends Model.build(
   bind('length', from.subject('target').flatMap((l) -> l.length))
-  dēfault('take.setting', 10)
+  initial('take.setting', 10)
   bind('take.actual', from('take.setting').and('length').and('shows-last')
     .all.map((setting, length, showsLast) ->
       threshold = if showsLast is true then 2 else 1
@@ -45,7 +45,7 @@ class ListPanelVM extends Model.build(
   bind('tail', from('length').and('take.actual').all.map((l, t) -> max(0, l - t)))
 )
 ListPanelVM.ShowsLast = ListPanelVM.build(
-  dēfault('shows-last', true))
+  initial('shows-last', true))
 
 moreButton = template(
   find('.list-more-count').text(from.vm('tail').and.vm('shows-last')
