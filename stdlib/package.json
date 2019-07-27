@@ -23,7 +23,7 @@
     "janus-dollar": ">=0"
   },
   "devDependencies": {
-    "coffee-script": "~1.11",
+    "coffee-script": "1.12.2",
     "janus": "~0.5",
     "janus-dollar": "git+https://github.com/issa-tseng/janus-dollar-jquery",
     "mocha": "~5",
