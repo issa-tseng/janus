@@ -1,7 +1,7 @@
 { Varying, DomView, mutators, List, Set } = require('janus')
 { identity } = require('janus').util
 
-$ = require('janus-dollar')
+$ = require('./dollar')
 
 # used to fool the render mutator into thinking there is a container element.
 empty = $([])

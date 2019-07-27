@@ -8,7 +8,7 @@
 
   Text = require('janus').attribute.Text;
 
-  $ = require('janus-dollar');
+  $ = require('./dollar');
 
   textAttributeTemplate = function(type, handler) {
     return template(find('input').attr('type', from.self().map(function(view) {

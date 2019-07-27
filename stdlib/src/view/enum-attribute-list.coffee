@@ -3,7 +3,7 @@
 { identity } = require('janus').util
 { ListView } = require('./list')
 
-$ = require('janus-dollar')
+$ = require('./dollar')
 
 class EnumAttributeListEditView extends DomView.build(
   $('<div class="janus-enum-select"/>')

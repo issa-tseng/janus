@@ -5,7 +5,7 @@ should = require('should')
 { ListView } = require('../../lib/view/list')
 { ListSelectItemView, EnumAttributeListEditView, registerWith } = require('../../lib/view/enum-attribute-button-list')
 
-$ = require('janus-dollar')
+$ = require('../../lib/view/dollar')
 
 # register LiteralView for our tests to make our lives easier.
 testLibrary = new Library()

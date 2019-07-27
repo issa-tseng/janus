@@ -8,7 +8,7 @@
 
   identity = require('janus').util.identity;
 
-  $ = require('janus-dollar');
+  $ = require('./dollar');
 
   empty = $([]);
 

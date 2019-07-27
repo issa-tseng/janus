@@ -12,7 +12,7 @@
 
   ListView = require('./list').ListView;
 
-  $ = require('janus-dollar');
+  $ = require('./dollar');
 
   EnumAttributeListEditView = (function(superClass) {
     extend(EnumAttributeListEditView, superClass);

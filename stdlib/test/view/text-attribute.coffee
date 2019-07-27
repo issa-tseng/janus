@@ -3,7 +3,7 @@ should = require('should')
 { Varying, Model, attribute, App, Library } = require('janus')
 { TextAttributeEditView, MultilineTextAttributeEditView } = require('../../lib/view/text-attribute')
 
-$ = require('janus-dollar')
+$ = require('../../lib/view/dollar')
 
 describe 'view', ->
   describe 'text attribute', ->

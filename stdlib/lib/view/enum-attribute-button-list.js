@@ -10,7 +10,7 @@
 
   identity = require('janus').util.identity;
 
-  $ = require('janus-dollar');
+  $ = require('./dollar');
 
   ListSelectItemView = (function(superClass) {
     var base, ref1;

@@ -1,7 +1,7 @@
 { Varying, DomView, from, template, find, Base } = require('janus')
 { Text } = require('janus').attribute
 
-$ = require('janus-dollar')
+$ = require('./dollar')
 
 textAttributeTemplate = (type, handler) -> template(
   find('input')

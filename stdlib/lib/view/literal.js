@@ -4,7 +4,7 @@
 
   ref = require('janus'), DomView = ref.DomView, template = ref.template, find = ref.find, from = ref.from;
 
-  $ = require('janus-dollar');
+  $ = require('./dollar');
 
   LiteralView = DomView.build($('<span class="janus-literal"/>'), template(find('span').text(from(function(subject) {
     return subject;

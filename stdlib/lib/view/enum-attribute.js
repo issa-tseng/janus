@@ -12,7 +12,7 @@
 
   stringifier = require('../util/util').stringifier;
 
-  $ = require('janus-dollar');
+  $ = require('./dollar');
 
   blankEntry = new List([null]);
 

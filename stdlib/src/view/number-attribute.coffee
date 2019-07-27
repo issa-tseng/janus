@@ -2,7 +2,7 @@
 { Number } = require('janus').attribute
 { TextAttributeEditView } = require('./text-attribute')
 
-$ = require('janus-dollar')
+$ = require('./dollar')
 
 NumberAttributeEditView = DomView.build(
   $('<input/>'),

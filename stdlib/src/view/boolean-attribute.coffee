@@ -2,7 +2,7 @@
 { Boolean } = require('janus').attribute
 { stringifier } = require('../util/util')
 
-$ = require('janus-dollar')
+$ = require('./dollar')
 
 BooleanAttributeEditView = DomView.build($('<input type="checkbox"/>'), template(
   find('input')

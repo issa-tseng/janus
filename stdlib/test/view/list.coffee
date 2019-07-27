@@ -3,7 +3,7 @@ should = require('should')
 { Varying, DomView, template, find, from, List, Set, App, Library, Model } = require('janus')
 { ListView, SetView } = require('../../lib/view/list')
 
-$ = require('janus-dollar')
+$ = require('../../lib/view/dollar')
 
 # TODO: there is some kind of bug (i'm pretty sure it's not us, and it's not jquery,
 # and it is domino) that shuffles this textnode to the end if i put it exactly here,

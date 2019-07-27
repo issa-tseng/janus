@@ -3,7 +3,7 @@ should = require('should')
 { Varying, Model, attribute, List, from } = require('janus')
 { EnumAttributeEditView } = require('../../lib/view/enum-attribute')
 
-$ = require('janus-dollar')
+$ = require('../../lib/view/dollar')
 
 checkText = (select, expected) -> select.children().eq(idx).text().should.equal(text) for text, idx in expected
 

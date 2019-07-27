@@ -8,7 +8,7 @@
 
   stringifier = require('../util/util').stringifier;
 
-  $ = require('janus-dollar');
+  $ = require('./dollar');
 
   BooleanAttributeEditView = DomView.build($('<input type="checkbox"/>'), template(find('input').prop('checked', from.self().flatMap(function(view) {
     return view.subject.getValue();

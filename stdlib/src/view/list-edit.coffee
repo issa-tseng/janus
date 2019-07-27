@@ -1,6 +1,6 @@
 { Varying, DomView, mutators, from, template, find, Base, List } = require('janus')
 
-$ = require('janus-dollar')
+$ = require('./dollar')
 { ListView } = require('./list')
 
 # handle move button events.

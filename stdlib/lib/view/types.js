@@ -4,7 +4,7 @@
 
   ref = require('janus'), DomView = ref.DomView, template = ref.template, find = ref.find, from = ref.from, types = ref.types;
 
-  $ = require('janus-dollar');
+  $ = require('./dollar');
 
   SuccessResultView = DomView.build($('<div class="janus-successResult"/>'), template(find('div').render(from.self().map(function(view) {
     return view.subject.get();

@@ -2,7 +2,7 @@
 { Enum } = require('janus').attribute
 { identity } = require('janus').util
 
-$ = require('janus-dollar')
+$ = require('./dollar')
 
 ListSelectItemView = class extends DomView.build($('
     <div class="janus-list-selectItem">

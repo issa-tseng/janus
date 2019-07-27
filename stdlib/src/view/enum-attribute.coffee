@@ -3,7 +3,7 @@
 { isArray, isPrimitive, uniqueId } = require('janus').util
 { stringifier } = require('../util/util')
 
-$ = require('janus-dollar')
+$ = require('./dollar')
 
 blankEntry = new List([ null ])
 withBlank = (l) -> blankEntry.concat(l)

@@ -1,6 +1,6 @@
 { Varying, DomView, template, find, from } = require('janus')
 
-$ = require('janus-dollar')
+$ = require('./dollar')
 
 VaryingView = DomView.build($('<div class="janus-varying"/>'), template(
   find('div').render(from((subject) -> subject))

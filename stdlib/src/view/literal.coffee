@@ -1,6 +1,6 @@
 { DomView, template, find, from } = require('janus')
 
-$ = require('janus-dollar')
+$ = require('./dollar')
 
 LiteralView = DomView.build($('<span class="janus-literal"/>'), template(
   find('span').text(from((subject) -> subject))

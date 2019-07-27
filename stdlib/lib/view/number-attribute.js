@@ -8,7 +8,7 @@
 
   TextAttributeEditView = require('./text-attribute').TextAttributeEditView;
 
-  $ = require('janus-dollar');
+  $ = require('./dollar');
 
   NumberAttributeEditView = DomView.build($('<input/>'), TextAttributeEditView._baseTemplate('number', function(event, subject) {
     return subject.setValue(parseFloat(event.target.value));
