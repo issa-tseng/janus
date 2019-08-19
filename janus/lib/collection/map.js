@@ -94,7 +94,7 @@
       xIsString = isString(x);
       if (xIsString && (y === null)) {
         return this.unset(x);
-      } else if (xIsString && y === void 0) {
+      } else if (xIsString && arguments.length === 1) {
         return (function(_this) {
           return function(y) {
             return _this.set(x, y);

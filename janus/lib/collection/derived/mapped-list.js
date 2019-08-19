@@ -93,7 +93,7 @@
           }
           bidx = _this._bindings.list.indexOf(binding);
           if (bidx >= 0) {
-            return _this._set(bidx, newValue != null ? newValue : null);
+            return _this._set(bidx, newValue);
           }
         };
       })(this));

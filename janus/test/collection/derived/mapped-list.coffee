@@ -28,8 +28,7 @@ describe 'collection', ->
       l = new List([ new Varying(0) ])
       l2 = l.flatMap((x) -> x)
       l.at_(0).set(undefined)
-      (l2.at_(0) is null).should.equal(true)
-      # TODO: remove someday when List#set handles undefined correctly (see #156)
+      (l2.at_(0) is undefined).should.equal(true)
 
     it 'should remove the correct values', ->
       l = new List([ 1, 2, 3 ])

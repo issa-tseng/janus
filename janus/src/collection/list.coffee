@@ -97,7 +97,7 @@ class List extends OrderedMappable
 
   # Sets a single value at a given index. Emits events as appropriate.
   set: (idx, value) ->
-    return ((v) => this.set(idx, v)) if value is undefined
+    return ((v) => this.set(idx, v)) if arguments.length is 1 # use arity to check curry (gh#156)
     idx = this.length_ + idx if idx < 0
 
     if 0 <= idx and idx < this.length_

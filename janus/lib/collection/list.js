@@ -140,7 +140,7 @@
 
     List.prototype.set = function(idx, value) {
       var removed;
-      if (value === void 0) {
+      if (arguments.length === 1) {
         return ((function(_this) {
           return function(v) {
             return _this.set(idx, v);
