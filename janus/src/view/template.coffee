@@ -79,9 +79,19 @@ find.build = build
 # templates are collections of mutations. they are immutable and just declarative.
 # in fact, all template() does remember a bunch of functions and recursively call
 # them all later. after pointing, it returns an array of the resulting `Observation`s.
-template = (xs...) -> (fragment) ->
-  prebound = (x(fragment) for x in xs)
-  (dom, point, immediate) -> Array.prototype.concat.apply([], (f(dom, point, immediate) for f in prebound))
+concat = Array.prototype.concat
+templateSentinel = Symbol('template')
+template = (xs...) ->
+  result = (fragment) ->
+    prebound = (x(fragment) for x in xs)
+    (dom, point, immediate) -> concat.apply([], (f(dom, point, immediate) for f in prebound))
+
+  # decorate named templates
+  result[templateSentinel] = true
+  result[xs.shift()] = result if typeof xs[0] is 'string'
+  (result[k] = v) for k, v of x for x in xs when x[templateSentinel] is true
+
+  result
 
 
 module.exports = { find, template }

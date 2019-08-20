@@ -273,3 +273,33 @@ describe 'templater', ->
       cb = (val) -> m(-> val)
       template(cb(1), template(cb(2), template(cb(3), cb(4))))()().should.eql([ 1, 2, 3, 4 ])
 
+    describe 'named templates', ->
+      it 'should not try to execute namestrings in templates', ->
+        all = []
+        cb = (val) -> m((x) -> all.push(val, x))
+
+        template('name', cb(1), cb(2), cb(3))(9)
+        all.should.eql([ 1, 9, 2, 9, 3, 9 ])
+
+      it 'should expose its own named template if given', ->
+        t = template('named', (->), (->), (->))
+        t.named.should.equal(t)
+
+      it 'should expose named subtemplates (one level)', ->
+        ta = template('inner', (->))
+        tb = template((->), ta)
+        tb.inner.should.equal(ta)
+
+      it 'should expose named subtemplates (two levels)', ->
+        ta = template('innermost', (->))
+        tb = template('inner', (->), ta)
+        tc = template((->), tb, (->))
+        tc.inner.should.equal(tb)
+        tc.innermost.should.equal(ta)
+
+      it 'should not bind names on nontemplates', ->
+        cb = (->)
+        cb.nontemplatename = cb
+        t = template(cb)
+        (t.nontemplatename?).should.equal(false)
+
