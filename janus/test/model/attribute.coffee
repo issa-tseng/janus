@@ -144,7 +144,7 @@ describe 'Attribute', ->
         class TestModel extends Model
           @deserialize: -> called = true; 42
         class TestAttribute extends attribute.Model
-          @modelClass: TestModel
+          modelClass: TestModel
 
         TestAttribute.deserialize({}).should.equal(42)
         called.should.equal(true)
@@ -154,14 +154,14 @@ describe 'Attribute', ->
         class TestModel extends Model
           serialize: -> called = true; 42
         class TestAttribute extends attribute.Model
-          @modelClass: TestModel
+          modelClass: TestModel
 
         (new TestAttribute(new Model(), 'whatever')).serialize().should.equal(42)
         called.should.equal(true)
 
       it 'should not serialize if transient', ->
         class TestAttribute extends attribute.Model
-          @modelClass: Model
+          modelClass: Model
           transient: true
 
         should((new TestAttribute(new Model(), 'whatever')).serialize()).equal(undefined)
@@ -169,7 +169,7 @@ describe 'Attribute', ->
       it 'should allow Model.of(x) shortcut definition', ->
         class MyModel extends Model
         MyAttribute = attribute.Model.of(MyModel)
-        MyAttribute.modelClass.should.equal(MyModel)
+        MyAttribute.prototype.modelClass.should.equal(MyModel)
 
       it 'should allow Model.withInitial() shortcut definition', ->
         a = new (attribute.Model.withInitial())(new Model(), 'test')
@@ -188,7 +188,7 @@ describe 'Attribute', ->
         class TestList extends List
           @deserialize: -> called = true; 42
         class TestAttribute extends attribute.List
-          @listClass: TestList
+          listClass: TestList
 
         TestAttribute.deserialize({}).should.equal(42)
         called.should.equal(true)
@@ -198,14 +198,14 @@ describe 'Attribute', ->
         class TestList extends List
           serialize: -> called = true; 42
         class TestAttribute extends attribute.List
-          @listClass: TestList
+          listClass: TestList
 
         (new TestAttribute(new Model(), 'whatever')).serialize().should.equal(42)
         called.should.equal(true)
 
       it 'should not serialize if transient', ->
         class TestAttribute extends attribute.List
-          @listClass: List
+          listClass: List
           transient: true
 
         should((new TestAttribute(new Model(), 'whatever')).serialize()).equal(undefined)
@@ -213,7 +213,7 @@ describe 'Attribute', ->
       it 'should allow List.of(x) shortcut definition', ->
         class MyList extends List
         MyAttribute = attribute.List.of(MyList)
-        MyAttribute.listClass.should.equal(MyList)
+        MyAttribute.prototype.listClass.should.equal(MyList)
 
       it 'should allow List.withInitial() shortcut definition', ->
         a = new (attribute.List.withInitial())(new Model(), 'test')

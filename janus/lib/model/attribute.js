@@ -173,17 +173,17 @@
       return ModelAttribute.__super__.constructor.apply(this, arguments);
     }
 
-    ModelAttribute.modelClass = Model;
+    ModelAttribute.prototype.modelClass = Model;
 
     ModelAttribute.prototype.writeInitial = true;
 
     ModelAttribute.deserialize = function(data) {
-      return this.modelClass.deserialize(data);
+      return this.prototype.modelClass.deserialize(data);
     };
 
     ModelAttribute.prototype.serialize = function() {
       if (this.transient !== true) {
-        return this.constructor.modelClass.prototype.serialize.call(this.getValue_());
+        return this.modelClass.prototype.serialize.call(this.getValue_());
       }
     };
 
@@ -195,7 +195,7 @@
           return _Class.__super__.constructor.apply(this, arguments);
         }
 
-        _Class.modelClass = modelClass;
+        _Class.prototype.modelClass = modelClass;
 
         return _Class;
 
@@ -211,7 +211,7 @@
         }
 
         _Class.prototype.initial = function() {
-          return new this.constructor.modelClass();
+          return new this.modelClass();
         };
 
         return _Class;
@@ -230,17 +230,17 @@
       return ListAttribute.__super__.constructor.apply(this, arguments);
     }
 
-    ListAttribute.listClass = List;
+    ListAttribute.prototype.listClass = List;
 
     ListAttribute.prototype.writeInitial = true;
 
     ListAttribute.deserialize = function(data) {
-      return this.listClass.deserialize(data);
+      return this.prototype.listClass.deserialize(data);
     };
 
     ListAttribute.prototype.serialize = function() {
       if (this.transient !== true) {
-        return this.constructor.listClass.prototype.serialize.call(this.getValue_());
+        return this.listClass.prototype.serialize.call(this.getValue_());
       }
     };
 
@@ -252,7 +252,7 @@
           return _Class.__super__.constructor.apply(this, arguments);
         }
 
-        _Class.listClass = listClass;
+        _Class.prototype.listClass = listClass;
 
         return _Class;
 
@@ -268,7 +268,7 @@
         }
 
         _Class.prototype.initial = function() {
-          return new this.constructor.listClass();
+          return new this.listClass();
         };
 
         return _Class;

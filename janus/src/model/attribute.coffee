@@ -64,30 +64,30 @@ class DateAttribute extends Attribute
   serialize: -> this.getValue_()?.getTime() unless this.transient is true
 
 class ModelAttribute extends Attribute
-  @modelClass: Model
+  modelClass: Model
 
   writeInitial: true
 
-  @deserialize: (data) -> this.modelClass.deserialize(data)
-  serialize: -> this.constructor.modelClass.prototype.serialize.call(this.getValue_()) unless this.transient is true
+  @deserialize: (data) -> this.prototype.modelClass.deserialize(data)
+  serialize: -> this.modelClass.prototype.serialize.call(this.getValue_()) unless this.transient is true
 
   @of: (modelClass) -> class extends this
-    @modelClass: modelClass
+    modelClass: modelClass
   @withInitial: -> class extends this
-    initial: -> new (this.constructor.modelClass)()
+    initial: -> new (this.modelClass)()
 
 class ListAttribute extends Attribute
-  @listClass: List
+  listClass: List
 
   writeInitial: true
 
-  @deserialize: (data) -> this.listClass.deserialize(data)
-  serialize: -> this.constructor.listClass.prototype.serialize.call(this.getValue_()) unless this.transient is true
+  @deserialize: (data) -> this.prototype.listClass.deserialize(data)
+  serialize: -> this.listClass.prototype.serialize.call(this.getValue_()) unless this.transient is true
 
   @of: (listClass) -> class extends this
-    @listClass: listClass
+    listClass: listClass
   @withInitial: -> class extends this
-    initial: -> new (this.constructor.listClass)()
+    initial: -> new (this.listClass)()
 
 class ReferenceAttribute extends Attribute
   isReference: true
