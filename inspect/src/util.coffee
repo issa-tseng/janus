@@ -30,7 +30,7 @@ deindent = (s) ->
   lines = s.split('\n')
   rest = lines.slice(1)
   for line in rest
-    indent = /^( +)/.exec(line)?[1]?.length
+    indent = /^( +)/.exec(line)?[1]?.length ? 0
     minIndent = indent if indent < minIndent
   [ lines[0] ].concat(line.slice(minIndent) for line in rest).join('\n')
 
