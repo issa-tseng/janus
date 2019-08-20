@@ -15,18 +15,6 @@ class ListEntityVM extends Model.build(
     .all.map((all, taken) -> max(0, all - taken)))
 )
 
-# TODO: it would sure be nice to have janus#138 fixed because it is sad to have
-# this not be inline with the rest.
-moreButton = template(
-  find('.entity-more-count').text(from.vm('more-count'))
-  find('.entity-more')
-    .classed('has-more', from.vm('more-count').map((x) -> x > 0))
-    .on('click', (e, s, { viewModel }) ->
-      taken = viewModel.get_('take-setting')
-      viewModel.set('take-setting', taken + min(25, taken))
-    )
-)
-
 ListEntityView = InspectorView.withOptions({ viewModelClass: ListEntityVM }).build($('
   <span class="janus-inspect-entity janus-inspect-list highlights">
     <span class="entity-title"><span class="entity-type"/></span>
@@ -39,11 +27,20 @@ ListEntityView = InspectorView.withOptions({ viewModelClass: ListEntityVM }).bui
   find('.list-values').render(from('target').and.vm('take-actual').asVarying()
     .all.map((list, take) -> list.take(take).map(inspect)))
 
-  moreButton
+  template(
+    'moreButton'
+    find('.entity-more-count').text(from.vm('more-count'))
+    find('.entity-more')
+      .classed('has-more', from.vm('more-count').map((x) -> x > 0))
+      .on('click', (e, s, { viewModel }) ->
+        taken = viewModel.get_('take-setting')
+        viewModel.set('take-setting', taken + min(25, taken))
+      )
+  )
 ))
 
 module.exports = {
-  ListEntityVM, ListEntityView, moreButton,
+  ListEntityVM, ListEntityView,
   registerWith: (library) ->
     library.register(ListInspector, ListEntityView)
 }

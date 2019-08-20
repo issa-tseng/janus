@@ -1,6 +1,6 @@
 { DomView, template, find, from, initial, List, bind, Trait } = require('janus')
 { InspectorView } = require('../common/inspector')
-{ ListEntityVM, moreButton } = require('../list/entity-view')
+{ ListEntityVM, ListEntityView } = require('../list/entity-view')
 { TruncatingLiteral, DateInspector, ArrayInspector } = require('./inspector')
 $ = require('../dollar')
 { inspect } = require('../inspect')
@@ -65,7 +65,7 @@ ArrayEntityView = InspectorView.withOptions({ viewModelClass: ArrayEntityVM }).b
   find('.list-values').render(from.vm('list').and.vm('take-actual').asVarying()
     .all.map((list, take) -> list.take(take).map(inspect)))
 
-  moreButton
+  ListEntityView.template.moreButton
   find('.array-update').on('click', (e, s, { viewModel }) -> viewModel.update())
 ))
 

@@ -2,7 +2,7 @@
 { InspectorView } = require('../../common/inspector')
 $ = require('../../dollar')
 { inspect } = require('../../inspect')
-{ ListPanelVM, moreButton } = require('../panel-view')
+{ ListPanelVM, ListPanelView } = require('../panel-view')
 { ListInspector } = require('../inspector')
 { WrappedFunction } = require('../../function/inspector')
 
@@ -59,7 +59,7 @@ MappedListView = InspectorView.withOptions({ viewModelClass: ListPanelVM.ShowsLa
   )
   find('.list-last-item').render(from('target').map((list) -> new MappedEntry(list, -1)))
 
-  moreButton
+  ListPanelView.template.moreButton
 ))
 
 module.exports = {

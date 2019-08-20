@@ -1,6 +1,6 @@
 { Model, DomView, template, find, from } = require('janus')
 { InspectorView } = require('../common/inspector')
-{ ListPanelVM, moreButton } = require('../list/panel-view')
+{ ListPanelVM, ListPanelView } = require('../list/panel-view')
 { ListForArray, ArrayEntityVM } = require('./entity-view')
 { ArrayInspector } = require('./inspector')
 $ = require('../dollar')
@@ -43,7 +43,7 @@ ArrayPanelView = InspectorView.withOptions({ viewModelClass: ArrayPanelVM }).bui
   find('.list-last-item').render(from.vm('list').and('length')
     .all.map((target, length) -> new ArrayEntry({ target, key: length - 1 })))
 
-  moreButton
+  ListPanelView.template.moreButton
   find('.array-update').on('click', (e, s, { viewModel }) -> viewModel.update())
 ))
 

@@ -47,17 +47,6 @@ class ListPanelVM extends Model.build(
 ListPanelVM.ShowsLast = ListPanelVM.build(
   initial('shows-last', true))
 
-moreButton = template(
-  find('.list-more-count').text(from.vm('tail').and.vm('shows-last')
-    .all.map((x, showsLast) -> if showsLast is true then x - 1 else x))
-  find('.list-more')
-    .classed('has-more', from.vm('tail').map((t) -> t > 0))
-    .on('click', (e, s, { viewModel }) ->
-      taken = viewModel.get_('take.setting')
-      viewModel.set('take.setting', taken + min(100, taken))
-    )
-)
-
 ListPanelView = InspectorView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).build($('
   <div class="janus-inspect-panel janus-inspect-list highlights">
     <div class="panel-title">
@@ -81,7 +70,17 @@ ListPanelView = InspectorView.withOptions({ viewModelClass: ListPanelVM.ShowsLas
       target.enumerate().take(take).map((key) -> new ListEntry({ target, key }))
     ))
 
-  moreButton
+  template(
+    'moreButton'
+    find('.list-more-count').text(from.vm('tail').and.vm('shows-last')
+      .all.map((x, showsLast) -> if showsLast is true then x - 1 else x))
+    find('.list-more')
+      .classed('has-more', from.vm('tail').map((t) -> t > 0))
+      .on('click', (e, s, { viewModel }) ->
+        taken = viewModel.get_('take.setting')
+        viewModel.set('take.setting', taken + min(100, taken))
+      )
+  )
 
   find('.list-last-item').render(from('target').and.vm('length')
     .all.map((target, length) -> new ListEntry({ target, key: length - 1 })))
@@ -109,7 +108,6 @@ ListPanelView = InspectorView.withOptions({ viewModelClass: ListPanelVM.ShowsLas
 
 
 module.exports = {
-  moreButton
   ListEntry, ListPanelVM, ListPanelView
   registerWith: (library) ->
     library.register(ListEntry, ListEntryView)

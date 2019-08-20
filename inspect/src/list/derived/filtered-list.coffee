@@ -2,7 +2,7 @@
 { InspectorView } = require('../../common/inspector')
 $ = require('../../dollar')
 { inspect } = require('../../inspect')
-{ ListPanelVM, moreButton } = require('../panel-view')
+{ ListPanelVM, ListPanelView } = require('../panel-view')
 { ListInspector } = require('../inspector')
 { WrappedFunction } = require('../../function/inspector')
 { identity } = require('../../util')
@@ -67,7 +67,7 @@ FilteredListView = InspectorView.withOptions({ viewModelClass: FilteredListVM })
     list.parent.enumerate().take(take).map((index) -> new FilteredEntry(list, index)))
   )
 
-  moreButton
+  ListPanelView.template.moreButton
 ))
 
 module.exports = {
