@@ -133,7 +133,7 @@ class Model extends Map
   @deserialize: (data) ->
     for key, attribute of this.schema.attributes
       prop = deepGet(data, key)
-      deepSet(data, key)(attribute.deserialize(prop)) if prop?
+      deepSet(data, key)(attribute.deserialize(prop, this)) if prop?
 
     new this(data)
 

@@ -167,6 +167,8 @@
   })(Attribute);
 
   ModelAttribute = (function(superClass) {
+    var RecursiveModelAttribute;
+
     extend(ModelAttribute, superClass);
 
     function ModelAttribute() {
@@ -219,11 +221,54 @@
       })(this);
     };
 
+    ModelAttribute.Recursive = RecursiveModelAttribute = (function(superClass1) {
+      extend(RecursiveModelAttribute, superClass1);
+
+      function RecursiveModelAttribute() {
+        return RecursiveModelAttribute.__super__.constructor.apply(this, arguments);
+      }
+
+      RecursiveModelAttribute.prototype.writeInitial = true;
+
+      RecursiveModelAttribute.deserialize = function(data, klass) {
+        return klass.deserialize(data);
+      };
+
+      RecursiveModelAttribute.prototype.serialize = function() {
+        var ref1;
+        if (this.transient !== true) {
+          return (ref1 = this.getValue_()) != null ? ref1.serialize() : void 0;
+        }
+      };
+
+      RecursiveModelAttribute.withInitial = function() {
+        return (function(superClass2) {
+          extend(_Class, superClass2);
+
+          function _Class() {
+            return _Class.__super__.constructor.apply(this, arguments);
+          }
+
+          _Class.prototype.initial = function() {
+            return new this.model.constructor();
+          };
+
+          return _Class;
+
+        })(this);
+      };
+
+      return RecursiveModelAttribute;
+
+    })(Attribute);
+
     return ModelAttribute;
 
   })(Attribute);
 
   ListAttribute = (function(superClass) {
+    var RecursiveListAttribute;
+
     extend(ListAttribute, superClass);
 
     function ListAttribute() {
@@ -275,6 +320,56 @@
 
       })(this);
     };
+
+    ListAttribute.Recursive = RecursiveListAttribute = (function(superClass1) {
+      extend(RecursiveListAttribute, superClass1);
+
+      function RecursiveListAttribute() {
+        return RecursiveListAttribute.__super__.constructor.apply(this, arguments);
+      }
+
+      RecursiveListAttribute.prototype.writeInitial = true;
+
+      RecursiveListAttribute.deserialize = function(data, klass) {
+        var datum;
+        return new (List.of(klass))((function() {
+          var i, len, results;
+          results = [];
+          for (i = 0, len = data.length; i < len; i++) {
+            datum = data[i];
+            results.push(klass.deserialize(datum));
+          }
+          return results;
+        })());
+      };
+
+      RecursiveListAttribute.prototype.serialize = function() {
+        var ref1;
+        if (this.transient !== true) {
+          return (ref1 = this.getValue_()) != null ? ref1.serialize() : void 0;
+        }
+      };
+
+      RecursiveListAttribute.withInitial = function() {
+        return (function(superClass2) {
+          extend(_Class, superClass2);
+
+          function _Class() {
+            return _Class.__super__.constructor.apply(this, arguments);
+          }
+
+          _Class.prototype.initial = function() {
+            return new (List.of(this.model.constructor))();
+          };
+
+          return _Class;
+
+        })(this);
+      };
+
+      return RecursiveListAttribute;
+
+    })(Attribute);
 
     return ListAttribute;
 

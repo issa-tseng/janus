@@ -468,7 +468,7 @@ describe 'List', ->
         @deserialize: -> 42
 
       class TestList extends List
-        @modelClass: TestModel
+        modelClass: TestModel
 
       TestList.deserialize([ 1, 2, 3, 4 ]).list.should.eql([ 42, 42, 42, 42 ])
 
@@ -477,7 +477,7 @@ describe 'List', ->
         @deserialize: undefined
 
       class TestList extends List
-        @modelClass: TestModel
+        modelClass: TestModel
 
       TestList.deserialize([ 1, 2, 3, 4 ]).list.should.eql([ 1, 2, 3, 4 ])
 
@@ -485,7 +485,7 @@ describe 'List', ->
     it 'should set the modelClass property', ->
       class TestModel extends Model
       TestList = List.of(TestModel)
-      TestList.modelClass.should.equal(TestModel)
+      TestList.prototype.modelClass.should.equal(TestModel)
 
     it 'should deserialize as the given model', ->
       class TestModel extends Model

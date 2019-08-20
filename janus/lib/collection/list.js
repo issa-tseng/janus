@@ -363,11 +363,11 @@
       var datum, items;
       items = (function() {
         var i, len, results;
-        if ((this.modelClass != null) && util.isFunction(this.modelClass.deserialize)) {
+        if ((this.prototype.modelClass != null) && util.isFunction(this.prototype.modelClass.deserialize)) {
           results = [];
           for (i = 0, len = data.length; i < len; i++) {
             datum = data[i];
-            results.push(this.modelClass.deserialize(datum));
+            results.push(this.prototype.modelClass.deserialize(datum));
           }
           return results;
         } else {
@@ -385,7 +385,7 @@
           return _Class.__super__.constructor.apply(this, arguments);
         }
 
-        _Class.modelClass = modelClass;
+        _Class.prototype.modelClass = modelClass;
 
         return _Class;
 

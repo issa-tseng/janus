@@ -63,6 +63,11 @@ class DateAttribute extends Attribute
   @deserialize: (data) -> new Date(data)
   serialize: -> this.getValue_()?.getTime() unless this.transient is true
 
+# TODO: here and in ListAttribute, we ignore the value's own inherited serialize
+# method and explicitly call the declared modelClass/listClass prototype on the
+# data. but we don't do that for the recursive versions because we don't have that
+# declaration. this inconsistency is weird and scary but also changing how serialize
+# works can be scary too. and possibly serialize deals with null values?
 class ModelAttribute extends Attribute
   modelClass: Model
 
@@ -76,6 +81,13 @@ class ModelAttribute extends Attribute
   @withInitial: -> class extends this
     initial: -> new (this.modelClass)()
 
+  @Recursive: class RecursiveModelAttribute extends Attribute
+    writeInitial: true
+    @deserialize: (data, klass) -> klass.deserialize(data)
+    serialize: -> this.getValue_()?.serialize() unless this.transient is true
+    @withInitial: -> class extends this
+      initial: -> new (this.model.constructor)()
+
 class ListAttribute extends Attribute
   listClass: List
 
@@ -88,6 +100,13 @@ class ListAttribute extends Attribute
     listClass: listClass
   @withInitial: -> class extends this
     initial: -> new (this.listClass)()
+
+  @Recursive: class RecursiveListAttribute extends Attribute
+    writeInitial: true
+    @deserialize: (data, klass) -> new (List.of(klass))(klass.deserialize(datum) for datum in data)
+    serialize: -> this.getValue_()?.serialize() unless this.transient is true
+    @withInitial: -> class extends this
+      initial: -> new (List.of(this.model.constructor))()
 
 class ReferenceAttribute extends Attribute
   isReference: true

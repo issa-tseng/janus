@@ -216,7 +216,7 @@
         attribute = ref3[key];
         prop = deepGet(data, key);
         if (prop != null) {
-          deepSet(data, key)(attribute.deserialize(prop));
+          deepSet(data, key)(attribute.deserialize(prop, this));
         }
       }
       return new this(data);

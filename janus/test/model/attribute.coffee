@@ -182,6 +182,40 @@ describe 'Attribute', ->
         a = new (attribute.Model.of(TestModel).withInitial())(new Model(), 'test')
         a.getValue_().should.be.an.instanceof(TestModel)
 
+    describe 'recursive model type', ->
+      # TODO: the way this test file is written is somewhat awkward, due to legacy
+      # reasons.. should be easy but annoying to refactor.
+      defattr = require('../../lib/model/schema').attribute
+      it 'should deserialize as the appropriate class', ->
+        class TestModel extends Model.build(
+          defattr('x', attribute.Model.Recursive))
+
+        result = TestModel.deserialize({ x: { x: { y: 42 } } })
+        result.get_('x').should.be.an.instanceof(TestModel)
+        result.get_('x').get_('x').should.be.an.instanceof(TestModel)
+        result.get_('x').get_('x').get_('y').should.equal(42)
+
+      it 'should serialize with the model method by default', ->
+        class TestModel extends Model.build(
+          defattr('x', attribute.Model.Recursive))
+          serialize: -> { serialized: super() }
+
+        result = TestModel.deserialize({ x: { y: 42 } }).serialize()
+        result.should.eql({ serialized: { x: { serialized: { y: 42 } } } })
+
+      it 'should serialize with the attribute method if given', ->
+        class TestModel extends Model.build(
+          defattr('x', class extends attribute.Model.Recursive
+            serialize: -> { serialized: true }))
+
+        result = TestModel.deserialize({ x: { y: 42 } }).serialize()
+        result.should.eql({ x: { serialized: true } })
+
+      it 'should work with withInitial', ->
+        class TestModel extends Model.build(
+          defattr('x', attribute.Model.Recursive.withInitial()))
+        (new TestModel()).get_('x').should.be.an.instanceof(TestModel)
+
     describe 'list type', ->
       it 'should delegate deserialization to the list class', ->
         called = false
@@ -225,6 +259,46 @@ describe 'Attribute', ->
         class TestList extends List
         a = new (attribute.List.of(TestList).withInitial())(new Model(), 'test')
         a.getValue_().should.be.an.instanceof(TestList)
+
+    describe 'recursive list type', ->
+      # TODO: see note under 'recursive model type'
+      defattr = require('../../lib/model/schema').attribute
+      it 'should deserialize as the appropriate class', ->
+        class TestModel extends Model.build(
+          defattr('xs', attribute.List.Recursive))
+
+        result = TestModel.deserialize({ xs: [{ xs: [{ y: 42 }] }, { y: 14 }] })
+        result.get_('xs').should.be.an.instanceof(List)
+        result.get_('xs').modelClass.should.equal(TestModel)
+        result.get_('xs').get_(0).should.be.an.instanceof(TestModel)
+        result.get_('xs').get_(1).should.be.an.instanceof(TestModel)
+        result.get_('xs').get_(0).get_('xs').should.be.an.instanceof(List)
+        result.get_('xs').get_(0).get_('xs').modelClass.should.equal(TestModel)
+        result.get_('xs').get_(0).get_('xs').get_(0).should.be.an.instanceof(TestModel)
+
+      it 'should serialize with the model method by default', ->
+        class TestModel extends Model.build(
+          defattr('xs', attribute.List.Recursive))
+          serialize: -> { serialized: super() }
+
+        result = TestModel.deserialize({ xs: [{ xs: [{ y: 42 }] }, { y: 14 }] }).serialize()
+        result.should.eql({ serialized: { xs: [
+          { serialized: { xs: [{ serialized: { y: 42 } }] } },
+          { serialized: { y: 14 } }
+        ] } })
+
+      it 'should serialize with the attribute method if given', ->
+        class TestModel extends Model.build(
+          defattr('xs', class extends attribute.List.Recursive
+            serialize: -> { serialized: true }))
+
+        result = TestModel.deserialize({ xs: [{ y: 42 }] }).serialize()
+        result.should.eql({ xs: { serialized: true } })
+
+      it 'should work with withInitial', ->
+        class TestModel extends Model.build(
+          defattr('xs', attribute.List.Recursive.withInitial()))
+        (new TestModel()).get_('xs').modelClass.should.equal(TestModel)
 
     describe 'reference type', ->
       it 'should only try to resolve once', ->

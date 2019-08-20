@@ -247,15 +247,15 @@ class List extends OrderedMappable
 
   @deserialize: (data) ->
     items =
-      if this.modelClass? and util.isFunction(this.modelClass.deserialize)
-        this.modelClass.deserialize(datum) for datum in data
+      if this.prototype.modelClass? and util.isFunction(this.prototype.modelClass.deserialize)
+        this.prototype.modelClass.deserialize(datum) for datum in data
       else
         data
 
     new this(items)
 
   @of: (modelClass) -> class extends this
-    @modelClass: modelClass
+    modelClass: modelClass
 
 class DerivedList extends List
   isDerivedList: true
