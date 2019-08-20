@@ -388,7 +388,15 @@
 
     ReferenceAttribute.prototype.autoResolve = true;
 
+    ReferenceAttribute.prototype._initialize = function() {
+      return this._result = new Varying();
+    };
+
     ReferenceAttribute.prototype.request = null;
+
+    ReferenceAttribute.prototype.result = function() {
+      return this.result$ != null ? this.result$ : this.result$ = this._result.flatten();
+    };
 
     ReferenceAttribute.prototype.resolveWith = function(app) {
       var observation, request;
@@ -414,6 +422,7 @@
             if (result == null) {
               return;
             }
+            _this._result.set(result);
             return observation = _this.reactTo(result, function(x) {
               return types.result.success.match(x, function(y) {
                 return _this.setValue(y);

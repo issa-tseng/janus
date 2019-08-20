@@ -113,8 +113,11 @@ class ReferenceAttribute extends Attribute
   transient: true
   autoResolve: true
 
+  _initialize: -> this._result = new Varying()
+
   # a plain request, a function that gives a plain request, or a from() chain which gives one.
   request: null
+  result: -> this.result$ ?= this._result.flatten()
 
   resolveWith: (app) ->
     return if this._resolving is true
@@ -138,6 +141,7 @@ class ReferenceAttribute extends Attribute
           else
             app.resolve(request)
         return unless result?
+        this._result.set(result)
         observation = this.reactTo(result, (x) => types.result.success.match(x, (y) => this.setValue(y)))
     )
     return

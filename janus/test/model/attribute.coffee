@@ -376,6 +376,20 @@ describe 'Attribute', ->
         v.react(->)
         calledWith.should.equal(6.582)
 
+      it 'should surface the inner result', ->
+        vattr = new Varying()
+        vreq = new Varying()
+        class TestModel extends Model
+          get: -> vattr
+
+        m = new TestModel()
+        ref = new (attribute.Reference.to({ isRequest: true }))(m, 'test')
+        ref.resolveWith({ resolve: -> vreq })
+        vattr.react(->)
+        vreq.set(types.result.success(42))
+
+        types.result.success.match(ref.result().get()).should.equal(true)
+
       it 'should set the model value given successful results', ->
         vattr = new Varying()
         vreq = new Varying()
