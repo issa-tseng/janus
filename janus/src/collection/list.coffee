@@ -11,10 +11,6 @@ util = require('../util/util')
 # handlers that update watches depending on the given operation. like Map,
 # these are funcs rather than methods because i don't actually really understand
 # whether method inlining happens or not.
-#
-# when we /add/ elements, we update each individual index watch /before/ we
-# update the length, so that values are present by the time lists look for them.
-# when we /remove/ them, we do the opposite. otherwise, we get bugs like gh148.
 _added = (list, midx, value) ->
   length = list.length_
   reverseThreshold = midx - length
@@ -43,13 +39,13 @@ _moved = (list, oldIdx, newIdx, value) ->
 # here we have to do goofy things about the length because we have been shortened.
 _removed = (list, midx) ->
   length = list.length_
-  list.length$?.set(length)
   reverseThreshold = midx - length - 1
   for _, { v, idx } of list._watches
     if idx < 0
       if idx >= reverseThreshold then v.set(list.list[length + idx])
     else
       if idx >= midx then v.set(list.list[idx])
+  list.length$?.set(length)
   return
 
 
@@ -85,9 +81,9 @@ class List extends OrderedMappable
     for elem, subidx in elems
       # fire events:
       iidx = idx + subidx
-      _added(this, iidx, elem)
       this.emit('added', elem, iidx)
       elem?.emit?('addedTo', this, iidx)
+      _added(this, iidx, elem)
 
       # If the item is destroyed, automatically remove it from our collection.
       if util.isFunction(elem?.destroy) and (this.isDerivedList isnt true)
@@ -102,14 +98,14 @@ class List extends OrderedMappable
 
     if 0 <= idx and idx < this.length_
       removed = this.list[idx]
-      _removed(this, idx)
       this.emit('removed', removed, idx)
       removed?.emit?('removedFrom', this, idx)
+      _removed(this, idx)
 
     this.list[idx] = value
-    _added(this, idx, value)
     this.emit('added', value, idx)
     value?.emit?('addedTo', this, idx)
+    _added(this, idx, value)
     return
 
   # Removes one item from the collection by reference and returns it.
@@ -131,9 +127,9 @@ class List extends OrderedMappable
       else
         this.list.splice(idx, 1)[0]
 
-    _removed(this, idx)
     this.emit('removed', removed, idx)
     removed?.emit?('removedFrom', this, idx)
+    _removed(this, idx)
     removed
   removeAt: _removeAt
   unset: _removeAt
@@ -173,9 +169,9 @@ class List extends OrderedMappable
     length = this.list.length
     while (length-- isnt 0) and (this.list.length > 0)
       elem = this.list.shift()
-      _removed(this, 0)
       this.emit('removed', elem, 0)
       elem?.emit?('removedFrom', this, 0)
+      _removed(this, 0)
       elem
 
   # Get an element from this collection by index.

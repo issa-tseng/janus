@@ -54,13 +54,10 @@
   _removed = function(list, midx) {
     var _, idx, length, ref, ref1, ref2, reverseThreshold, v;
     length = list.length_;
-    if ((ref = list.length$) != null) {
-      ref.set(length);
-    }
     reverseThreshold = midx - length - 1;
-    ref1 = list._watches;
-    for (_ in ref1) {
-      ref2 = ref1[_], v = ref2.v, idx = ref2.idx;
+    ref = list._watches;
+    for (_ in ref) {
+      ref1 = ref[_], v = ref1.v, idx = ref1.idx;
       if (idx < 0) {
         if (idx >= reverseThreshold) {
           v.set(list.list[length + idx]);
@@ -70,6 +67,9 @@
           v.set(list.list[idx]);
         }
       }
+    }
+    if ((ref2 = list.length$) != null) {
+      ref2.set(length);
     }
   };
 
@@ -119,13 +119,13 @@
       for (subidx = i = 0, len = elems.length; i < len; subidx = ++i) {
         elem = elems[subidx];
         iidx = idx + subidx;
-        _added(this, iidx, elem);
         this.emit('added', elem, iidx);
         if (elem != null) {
           if (typeof elem.emit === "function") {
             elem.emit('addedTo', this, iidx);
           }
         }
+        _added(this, iidx, elem);
         if (util.isFunction(elem != null ? elem.destroy : void 0) && (this.isDerivedList !== true)) {
           (function(_this) {
             return (function(elem) {
@@ -152,22 +152,22 @@
       }
       if (0 <= idx && idx < this.length_) {
         removed = this.list[idx];
-        _removed(this, idx);
         this.emit('removed', removed, idx);
         if (removed != null) {
           if (typeof removed.emit === "function") {
             removed.emit('removedFrom', this, idx);
           }
         }
+        _removed(this, idx);
       }
       this.list[idx] = value;
-      _added(this, idx, value);
       this.emit('added', value, idx);
       if (value != null) {
         if (typeof value.emit === "function") {
           value.emit('addedTo', this, idx);
         }
       }
+      _added(this, idx, value);
     };
 
     List.prototype.remove = function(which) {
@@ -188,13 +188,13 @@
         return;
       }
       removed = idx === 0 ? this.list.shift() : idx === this.list.length - 1 ? this.list.pop() : this.list.splice(idx, 1)[0];
-      _removed(this, idx);
       this.emit('removed', removed, idx);
       if (removed != null) {
         if (typeof removed.emit === "function") {
           removed.emit('removedFrom', this, idx);
         }
       }
+      _removed(this, idx);
       return removed;
     };
 
@@ -238,13 +238,13 @@
       results = [];
       while ((length-- !== 0) && (this.list.length > 0)) {
         elem = this.list.shift();
-        _removed(this, 0);
         this.emit('removed', elem, 0);
         if (elem != null) {
           if (typeof elem.emit === "function") {
             elem.emit('removedFrom', this, 0);
           }
         }
+        _removed(this, 0);
         results.push(elem);
       }
       return results;

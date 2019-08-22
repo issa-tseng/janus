@@ -22,6 +22,17 @@
       return this;
     };
 
+    Base.prototype._on = function(type, listener) {
+      if (this.events == null) {
+        this.events = new EventEmitter({
+          delimeter: ':',
+          maxListeners: 0
+        });
+      }
+      this.events.prependListener(type, listener);
+      return this;
+    };
+
     Base.prototype.off = function(type, listener) {
       var ref;
       if ((ref = this.events) != null) {

@@ -122,26 +122,34 @@
   })(DerivedList);
 
   IndexList = (function(superClass) {
+    var update;
+
     extend(IndexList, superClass);
 
-    function IndexList(parent) {
-      this.parent = parent;
-      IndexList.__super__.constructor.call(this);
-      this._lengthObservation = this.reactTo(this.parent.length, (function(_this) {
-        return function(length) {
-          var idx, j, l, ourLength, ref1, ref2, ref3, ref4;
-          ourLength = _this.length_;
-          if (length > ourLength) {
-            for (idx = j = ref1 = ourLength, ref2 = length; ref1 <= ref2 ? j < ref2 : j > ref2; idx = ref1 <= ref2 ? ++j : --j) {
-              _this._add(idx);
-            }
-          } else if (length < ourLength) {
-            for (idx = l = ref3 = ourLength, ref4 = length; l > ref4; idx = l += -1) {
-              _this._removeAt(idx - 1);
-            }
+    update = function(parent, self) {
+      return function() {
+        var idx, j, l, length, ourLength, ref1, ref2, ref3, ref4;
+        length = parent.length_;
+        ourLength = self.length_;
+        if (length > ourLength) {
+          for (idx = j = ref1 = ourLength, ref2 = length; ref1 <= ref2 ? j < ref2 : j > ref2; idx = ref1 <= ref2 ? ++j : --j) {
+            self._add(idx);
           }
-        };
-      })(this));
+        } else if (length < ourLength) {
+          for (idx = l = ref3 = ourLength, ref4 = length; l > ref4; idx = l += -1) {
+            self._removeAt(idx - 1);
+          }
+        }
+      };
+    };
+
+    function IndexList(parent1) {
+      this.parent = parent1;
+      IndexList.__super__.constructor.call(this);
+      this._update = update(this.parent, this);
+      this.parent._on('added', this._update);
+      this.parent._on('removed', this._update);
+      this._update();
     }
 
     IndexList.prototype.mapPairs = function(f) {
@@ -161,7 +169,8 @@
     };
 
     IndexList.prototype.__destroy = function() {
-      this._lengthObservation.stop();
+      this.parent.off('added', this._update);
+      this.parent.off('removed', this._update);
     };
 
     return IndexList;

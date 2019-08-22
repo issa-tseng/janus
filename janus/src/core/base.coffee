@@ -22,6 +22,10 @@ class Base
     this.events ?= new EventEmitter({ delimeter: ':', maxListeners: 0 })
     this.events.on(type, listener)
     this
+  _on: (type, listener) -> # prepends event for system events
+    this.events ?= new EventEmitter({ delimeter: ':', maxListeners: 0 })
+    this.events.prependListener(type, listener)
+    this
   off: (type, listener) -> this.events?.off(type, listener); this
   emit: (e, x, y) -> # falls through as the original returns boolean.
     return false unless this.events?

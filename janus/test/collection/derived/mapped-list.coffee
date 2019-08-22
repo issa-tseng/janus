@@ -48,6 +48,13 @@ describe 'collection', ->
       for elem, idx in [ 4, 2, 6 ]
         m.at_(idx).should.equal(elem)
 
+    it 'should not map the wrong value given length reaction side effects', ->
+      l = new List([ 1 ])
+      l2 = l.map((x) -> x + 100)
+      l.length.react((len) -> l.add(0) if len is 0)
+      l.removeAt(0)
+      l2.list.should.eql([ 100 ])
+
   describe 'flatMapped list', ->
     it 'should populate initially with appropriate values', ->
       v = new Varying(2)

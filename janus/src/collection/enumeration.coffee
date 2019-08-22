@@ -78,23 +78,31 @@ class KeyList extends DerivedList
   flatMapPairs: (f) -> this.flatMap((key) => Varying.flatMapAll(f, new Varying(key), this.target.get(key)))
 
 class IndexList extends DerivedList
+  update = (parent, self) -> ->
+    length = parent.length_
+    ourLength = self.length_
+    if length > ourLength
+      self._add(idx) for idx in [ourLength...length]
+    else if length < ourLength
+      self._removeAt(idx - 1) for idx in [ourLength...length] by -1
+    return
+
   constructor: (@parent) ->
     super()
-
-    this._lengthObservation = this.reactTo(this.parent.length, (length) =>
-      ourLength = this.length_
-      if length > ourLength
-        this._add(idx) for idx in [ourLength...length]
-      else if length < ourLength
-        this._removeAt(idx - 1) for idx in [ourLength...length] by -1
-      return
-    )
+    this._update = update(this.parent, this)
+    this.parent._on('added', this._update)
+    this.parent._on('removed', this._update)
+    this._update()
 
   # (flat)mapPairs takes f: (k, v) -> x and returns List[x]
   mapPairs: (f) -> this.flatMap((idx) => Varying.mapAll(f, new Varying(idx), this.parent.at(idx)))
   flatMapPairs: (f) -> this.flatMap((idx) => Varying.flatMapAll(f, new Varying(idx), this.parent.at(idx)))
 
-  __destroy: -> this._lengthObservation.stop(); return
+  __destroy: ->
+    this.parent.off('added', this._update)
+    this.parent.off('removed', this._update)
+    return
+
 
 _dynamic = (suffix) -> (obj, options) ->
   type = if obj.isMappable is true then 'list' else if obj.isMap is true then 'map'
