@@ -1,6 +1,7 @@
 # in which liam neeson comes and beats in your face until you return the
 # correct data structure.
 
+{ min, max } = Math
 DerivedList = require('../list').DerivedList
 Varying = require('../../core/varying').Varying
 
@@ -21,8 +22,8 @@ class TakenList extends DerivedList
 
   _take: ->
     number = this.number.get()
-    if number < 0 then this.parent.list.length + number
-    else Math.min(this.number.get(), this.parent.list.length)
+    if number < 0 then max(0, this.parent.list.length + number)
+    else min(this.number.get(), this.parent.list.length)
 
   _add: (elem, idx, take = this._take()) ->
     super([ elem ], idx) if idx < take # don't add phantom elements far past the end.

@@ -49,6 +49,15 @@ describe 'collection', ->
       for elem, idx in [ 1, 2, 3, 4, 5, 6 ]
         l.at_(idx).should.equal(elem)
 
+    it 'should not try to take less than zero values', ->
+      v = new Varying(-2)
+      l1 = new List([ 1, 2, 3, 4, 5, 6, 7, 8 ])
+      l2 = l1.take(v)
+      l2.length_.should.equal(6)
+
+      l1.removeAll()
+      l2.length_.should.equal(0) # really not inflooping here is the assertion
+
     it 'should handle additions to the original list', ->
       ol = new List([ 1, 2, 3, 4 ])
       tl = ol.take(5)
