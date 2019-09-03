@@ -1,23 +1,21 @@
-Varying = require('../core/varying').Varying
-
-foldBase = (update) -> (collection) ->
-  result = new Varying(null)
-  watched = 0
-
-  collection.length.react (length) ->
-    for idx in [watched...length]
-      do (idx) ->
-        collection.at(idx).react((value) -> result.set(update(value, idx, collection)))
-    watched = length
-
-  result
+{ Base } = require('../core/base')
+{ Varying } = require('../core/varying')
 
 folds =
   apply: (collection, f) ->
     collection.length.flatMap((length) ->
       Varying.all(collection.at(idx) for idx in [0..collection.length_]).map(f))
 
-  join: (collection, joiner) -> foldBase((_, _2, collection) -> collection.list.join(joiner))(collection)
+  join: (collection, joiner) -> Varying.managed(
+    -> new Base(),
+    (listener) ->
+      result = new Varying()
+      update = -> result.set(collection.list.join(joiner))
+      listener.listenTo(collection, 'added', update)
+      listener.listenTo(collection, 'moved', update)
+      listener.listenTo(collection, 'removed', update)
+      result
+  )
 
   scanl: (collection, memo, f) ->
     self = new Varying()
