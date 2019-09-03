@@ -89,7 +89,7 @@ template = (xs...) ->
   # decorate named templates
   result[templateSentinel] = true
   result[xs.shift()] = result if typeof xs[0] is 'string'
-  (result[k] = v) for k, v of x for x in xs when x[templateSentinel] is true
+  (result[k] = v) for k, v of x for x in xs when x?[templateSentinel] is true
 
   result
 

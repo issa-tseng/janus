@@ -135,7 +135,7 @@
     }
     for (i = 0, len = xs.length; i < len; i++) {
       x = xs[i];
-      if (x[templateSentinel] === true) {
+      if ((x != null ? x[templateSentinel] : void 0) === true) {
         for (k in x) {
           v = x[k];
           result[k] = v;
