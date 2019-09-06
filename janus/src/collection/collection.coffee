@@ -46,7 +46,7 @@ class Enumerable extends Base
   serialize: -> Traversal.natural_(this, Traversal.default.serialize)
 
   modified: -> if this._parent? then this.diff(this._parent) else new Varying(false)
-  diff: (other) -> Traversal.list(this, Traversal.default.diff, { other })
+  diff: (other) -> Traversal.list([ this, other ], Traversal.default.diff)
 
 # A `Mappable` provides map-like functions (map, filter, etc) and fires `add`
 # and `remove` events for every element that is added or removed from the list.

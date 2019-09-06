@@ -66,9 +66,7 @@
     };
 
     Enumerable.prototype.diff = function(other) {
-      return Traversal.list(this, Traversal["default"].diff, {
-        other: other
-      });
+      return Traversal.list([this, other], Traversal["default"].diff);
     };
 
     return Enumerable;

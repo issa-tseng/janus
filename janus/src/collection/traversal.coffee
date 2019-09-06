@@ -5,94 +5,58 @@
 { recurse, delegate, defer, varying, value, nothing } = require('../core/types').traversal
 
 
-# core mechanism:
+# this is the function that (once context is supplied) is fed directly to flatMapPairs
+# to actually perform value mapping per data pair.
+pair = (fs, recurser, obj, immediate) -> (key, val) ->
+  attribute = obj.attribute(key) if obj.isModel is true
 
-# TODO: the method of passing state here is far from my favourite. someone
-# please come up with something smarter/faster/cleaner.
-# TODO: if someone can come up with a clever way to implement diff etc without
-# relying on context, all of this gets way simpler.
+  fix((recontext) -> (fs) -> fix((rematch) -> match(
+    recurse (into) -> recurser(into, fs)
+    delegate (to) -> rematch(to(key, val, obj, attribute))
+    defer (to) -> recontext(Object.assign({}, fs, to)) # TODO: filter to obj attrs?
+    varying (v) -> if immediate is true then rematch(v.get()) else v.map(rematch)
+    value (x) -> x
+    nothing -> undefined
+  ))(fs.map(key, val, obj, attribute)))(fs)
 
-# called to process the action given by the caller in their map() function.
-# calls on the local context to perform various concrete actions. used by
-# both the live traversals up here and the static ones at the bottom.
-matchAction = (local) -> fix((rematch) -> match(
-  recurse (into, context) -> local.root(into, local, context ? local.context)
-
-  delegate (to, context) ->
-    newlocal = Object.assign({}, local, { context })
-    matchAction(newlocal)(to(local.key, local.value, local.obj, local.attribute, context ? local.context))
-  defer (to, context) ->
-    newlocal = Object.assign({}, local, { context, map: to })
-    matchAction(newlocal)(to(local.key, local.value, local.obj, local.attribute, context ? local.context))
-
-  varying (v) ->
-    # we can indiscriminately flatMap because the only valid final values here
-    # are case instances anyway, so we can't squash anything we oughtn't.
-    mapped = v.flatMap(rematch)
-    if local.immediate is true then mapped.get() else mapped
-
+# entrypoint; called top-level before actually performing the structure traversal, so
+# there is a chance at each recursion layer to intervene with some other action.
+# only by returning a recurse action (or not defining a recurse func, which returns
+# a recurse action) will recursion actually be performed.
+root = (traverse) -> (fs, recurser, obj) -> fix((rematch) -> match(
+  recurse (into) -> traverse(fs, recurser, into)
+  delegate (to) -> rematch(to(obj))
+  defer (to) -> root(traverse)(Object.assign({}, fs, to), recurser, obj)
+  varying (v) -> v.flatMap(rematch) # flat because Varying.managed if fs.reduce?
   value (x) -> x
   nothing -> undefined
-))
+))((fs.recurse ? recurse)(obj))
 
-# the general param should supply: root, obj, map, context, [reduce, recurse].
-processElem = (general) -> (key, value) ->
-  obj = general.obj
-  attribute = obj.attribute(key) if obj.isModel is true
-  local = Object.assign({}, general, { key, value, attribute })
-  matchAction(local)(general.map(key, value, obj, attribute, general.context))
-
-# entrypoint; called top-level before actually traversing a data structure, so
-# the first recurse() call enters the structure itself.
-processRoot = (general, process) -> fix((matchRootAction) -> match(
-  recurse (into, context) -> process(Object.assign({}, general, { obj: into, context }))
-  varying (v, context) ->
-    mapped = v.flatMap(matchRootAction)
-    if general.immediate is true then mapped.get() else mapped
-  otherwise (x) -> matchAction(general)(x)
-))((general.recurse ? recurse)(general.obj, general.context))
-
-# wraps reduction in a managed varying for resource management.
-# TODO: the double-call is not my favourite. same for the resource func.
-reducer = (general, resource) -> ->
-  if general.reduce? then Varying.managed(resource(), general.reduce) else resource()()
+# generate our two actual root funcs with our two traversal methodologies, for
+# use by Traversal.(natural|list); the immediate versions do their own structure work.
+naturalRoot = root((fs, recurser, obj) -> obj.flatMapPairs(pair(fs, recurser, obj)))
+listRoot = root((fs, recurser, obj) ->
+  result = obj.enumerate().flatMapPairs(pair(fs, recurser, obj))
+  if fs.reduce? then Varying.managed((-> result), fs.reduce) else result
+)
 
 # the actual runners that set state and call into the above. the first two return
-# live traversals; the second two just do the work. both depend on matchAction above.
+# live traversals; the second two just do the work.
 Traversal =
-  natural: (obj, fs, context = {}) ->
-    general = Object.assign({}, fs, { obj, context, root: Traversal.natural })
-    fmapper = processElem(general) # init first to save calls.
-    processRoot(general, -> general.obj.flatMapPairs(fmapper))
+  natural: (obj, fs) -> naturalRoot(fs, Traversal.natural, obj)
+  list: (obj, fs) -> listRoot(fs, Traversal.list, obj)
 
-  list: (obj, fs, context = {}) ->
-    general = Object.assign({}, fs, { obj, context, root: Traversal.list })
-    fmapper = processElem(general) # ditto saving calls.
-    processRoot(general, reducer(general, -> -> general.obj.enumerate().flatMapPairs(fmapper)))
+  natural_: (obj, fs) ->
+    lpair = pair(fs, Traversal.natural_, obj, true)
+    if obj.isMappable is true then lpair(key, obj.get_(key)) for key in obj.enumerate_()
+    else
+      result = {}
+      deepSet(result, key)(lpair(key, obj.get_(key))) for key in obj.enumerate_()
+      result
 
-  # these two inner blocks are rather repetitive but i'm reluctant to pull them into a
-  # function for perf reasons.
-  #
-  # n.b. val instead of value because coffeescript scoping is a mess.
-  natural_: (obj, fs, context = {}) ->
-    result = if obj.isMappable is true then [] else {}
-    set = if obj.isMappable is true then ((k, v) -> result[k] = v) else ((k, v) -> deepSet(result, k)(v))
-    for key in obj.enumerate_()
-      val = obj.get_(key)
-      attribute = obj.attribute(key) if obj.isModel is true
-      local = Object.assign({}, fs, { obj, key, value: val, attribute, context, immediate: true, root: Traversal.natural_ })
-      set(key, matchAction(local)(local.map(key, val, obj, attribute, context)))
-    result
-
-  list_: (obj, fs, context = {}) ->
-    (fs.reduce ? identity)(
-      for key in obj.enumerate_() 
-        val = obj.get_(key)
-        attribute = obj.attribute(key) if obj.isModel is true
-        local = Object.assign({}, fs, { obj, key, value: val, attribute, context, immediate: true, root: Traversal.list_ })
-        matchAction(local)(local.map(key, val, obj, attribute, context))
-    )
-
+  list_: (obj, fs) ->
+    lpair = pair(fs, Traversal.list_, obj, true)
+    lpair(key, obj.get_(key)) for key in obj.enumerate_()
 
 # default impl:
 Traversal.default =
@@ -112,25 +76,23 @@ Traversal.default =
         nothing
 
   diff:
-    recurse: (obj, { other }) ->
-      if (obj?.isEnumerable is true and other?.isEnumerable is true) and (obj.isMappable is other.isMappable)
-        varying(Varying.mapAll(obj.length, other.length, (la, lb) ->
-          if la isnt lb then value(true) else recurse(obj, { other })
+    recurse: ([ oa, ob ]) ->
+      if (oa?.isEnumerable is true and ob?.isEnumerable is true) and (oa.isMappable is ob.isMappable)
+        varying(Varying.mapAll(oa.length, ob.length, (la, lb) ->
+          if la isnt lb then value(true)
+          else recurse(oa.flatMapPairs((k, va) -> ob.get(k).map((vb) -> [ va, vb ])))
         ))
       else
-        value(new Varying(obj isnt other))
-    map: (k, va, obj, attribute, { other }) ->
-      varying(other.get(k).map((vb) ->
-        if va? and vb?
-          if (va?.isEnumerable is true and vb?.isEnumerable is true) and (va.isMappable is vb.isMappable)
-            recurse(va, { other: vb })
-          else
-            value(va isnt vb)
+        value(new Varying(oa isnt ob))
+    map: (k, [ va, vb ], _, attribute) ->
+      if va? and vb?
+        if (va?.isEnumerable is true and vb?.isEnumerable is true) and (va.isMappable is vb.isMappable)
+          recurse([ va, vb ])
         else
-          value(va? or vb?)
-      ))
+          value(va isnt vb)
+      else
+        value(va? or vb?)
     reduce: (list) -> list.any()
-
 
 module.exports = { Traversal }
 
