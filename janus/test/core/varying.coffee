@@ -978,12 +978,12 @@ describe 'Varying', ->
       { recurse, varying, value } = require('../../lib/core/types').traversal
 
       includesDeep = (data, target) ->
-        Traversal.list(data, {
+        Traversal.list({
           map: (k, v) ->
             if v?.isEnumerable is true then recurse(v)
             else varying(target.map((tgt) -> value(tgt is v)))
           reduce: (list) -> list.any()
-        })
+        }, data)
 
       v = includesDeep(new List([ 2, 3, new List([ 42 ]) ]), new Varying(42))
       o = v.react()

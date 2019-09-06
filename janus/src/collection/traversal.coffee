@@ -7,11 +7,11 @@
 
 # this is the function that (once context is supplied) is fed directly to flatMapPairs
 # to actually perform value mapping per data pair.
-pair = (fs, recurser, obj, immediate) -> (key, val) ->
+pair = (recurser, fs, obj, immediate) -> (key, val) ->
   attribute = obj.attribute(key) if obj.isModel is true
 
   fix((recontext) -> (fs) -> fix((rematch) -> match(
-    recurse (into) -> recurser(into, fs)
+    recurse (into) -> recurser(fs, into)
     delegate (to) -> rematch(to(key, val, obj, attribute))
     defer (to) -> recontext(Object.assign({}, fs, to)) # TODO: filter to obj attrs?
     varying (v) -> if immediate is true then rematch(v.get()) else v.map(rematch)
@@ -23,8 +23,8 @@ pair = (fs, recurser, obj, immediate) -> (key, val) ->
 # there is a chance at each recursion layer to intervene with some other action.
 # only by returning a recurse action (or not defining a recurse func, which returns
 # a recurse action) will recursion actually be performed.
-root = (traverse) -> (fs, recurser, obj) -> fix((rematch) -> match(
-  recurse (into) -> traverse(fs, recurser, into)
+root = (traverse) -> (recurser, fs, obj) -> fix((rematch) -> match(
+  recurse (into) -> traverse(recurser, fs, into)
   delegate (to) -> rematch(to(obj))
   defer (to) -> root(traverse)(Object.assign({}, fs, to), recurser, obj)
   varying (v) -> v.flatMap(rematch) # flat because Varying.managed if fs.reduce?
@@ -34,28 +34,28 @@ root = (traverse) -> (fs, recurser, obj) -> fix((rematch) -> match(
 
 # generate our two actual root funcs with our two traversal methodologies, for
 # use by Traversal.(natural|list); the immediate versions do their own structure work.
-naturalRoot = root((fs, recurser, obj) -> obj.flatMapPairs(pair(fs, recurser, obj)))
-listRoot = root((fs, recurser, obj) ->
-  result = obj.enumerate().flatMapPairs(pair(fs, recurser, obj))
+naturalRoot = root((recurser, fs, obj) -> obj.flatMapPairs(pair(recurser, fs, obj)))
+listRoot = root((recurser, fs, obj) ->
+  result = obj.enumerate().flatMapPairs(pair(recurser, fs, obj))
   if fs.reduce? then Varying.managed((-> result), fs.reduce) else result
 )
 
 # the actual runners that set state and call into the above. the first two return
 # live traversals; the second two just do the work.
 Traversal =
-  natural: (obj, fs) -> naturalRoot(fs, Traversal.natural, obj)
-  list: (obj, fs) -> listRoot(fs, Traversal.list, obj)
+  natural: (fs, obj) -> naturalRoot(Traversal.natural, fs, obj)
+  list: (fs, obj) -> listRoot(Traversal.list, fs, obj)
 
-  natural_: (obj, fs) ->
-    lpair = pair(fs, Traversal.natural_, obj, true)
+  natural_: (fs, obj) ->
+    lpair = pair(Traversal.natural_, fs, obj, true)
     if obj.isMappable is true then lpair(key, obj.get_(key)) for key in obj.enumerate_()
     else
       result = {}
       deepSet(result, key)(lpair(key, obj.get_(key))) for key in obj.enumerate_()
       result
 
-  list_: (obj, fs) ->
-    lpair = pair(fs, Traversal.list_, obj, true)
+  list_: (fs, obj) ->
+    lpair = pair(Traversal.list_, fs, obj, true)
     lpair(key, obj.get_(key)) for key in obj.enumerate_()
 
 # default impl:

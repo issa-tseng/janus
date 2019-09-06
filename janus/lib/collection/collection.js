@@ -54,7 +54,7 @@
     };
 
     Enumerable.prototype.serialize = function() {
-      return Traversal.natural_(this, Traversal["default"].serialize);
+      return Traversal.natural_(Traversal["default"].serialize, this);
     };
 
     Enumerable.prototype.modified = function() {
@@ -66,7 +66,7 @@
     };
 
     Enumerable.prototype.diff = function(other) {
-      return Traversal.list([this, other], Traversal["default"].diff);
+      return Traversal.list(Traversal["default"].diff, [this, other]);
     };
 
     return Enumerable;

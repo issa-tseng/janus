@@ -20,18 +20,18 @@ describe 'traversal', ->
       ss = new Map( d: 1 )
       s = new Map( a: 1, b: 2, c: ss )
       results = []
-      Traversal.list(s, map: (k, v, o) ->
+      Traversal.list({ map: (k, v, o) ->
         if v.isMap is true
           recurse(v)
         else
           results.push(k, v, o)
           nothing
-      )
+      }, s)
       results.should.eql([ 'a', 1, s, 'b', 2, s, 'd', 1, ss ])
 
     it 'should process straight value results as a map', ->
       s = new Map( a: 1, b: 2, c: 3 )
-      l = Traversal.list(s, map: (k, v) -> value("#{k}#{v}"))
+      l = Traversal.list({ map: (k, v) -> value("#{k}#{v}") }, s)
 
       l.length_.should.equal(3)
       for val, idx in [ 'a1', 'b2', 'c3' ]
@@ -39,7 +39,7 @@ describe 'traversal', ->
 
     it 'should result in undefined when nothing is passed', ->
       s = new Map( a: 1, b: 2, c: 3 )
-      l = Traversal.list(s, map: (k, v) -> if v < 3 then nothing else value(v))
+      l = Traversal.list({ map: (k, v) -> if v < 3 then nothing else value(v) }, s)
 
       l.length_.should.equal(3)
       for val, idx in [ undefined, undefined, 3 ]
@@ -47,12 +47,10 @@ describe 'traversal', ->
 
     it 'should delegate to another function given mapping delegate', ->
       s = new Map( a: 1, b: 2, c: 3 )
-      l = Traversal.list(s, map: (k, v) ->
-        if v < 3
-          delegate((k, v) -> if v < 2 then value('x') else value('y'))
-        else
-          value(v)
-      )
+      l = Traversal.list({ map: (k, v) ->
+        if v < 3 then delegate((k, v) -> if v < 2 then value('x') else value('y'))
+        else value(v)
+      }, s)
 
       l.length_.should.equal(3)
       for val, idx in [ 'x', 'y', 3 ]
@@ -60,10 +58,10 @@ describe 'traversal', ->
 
     it 'should delegate to another function given recursing delegate', ->
       s = new Map( a: 1, b: 2, c: 3 )
-      l = Traversal.list(s, {
+      l = Traversal.list({
         recurse: -> delegate(recurse)
         map: (k, v) -> value(v)
-      })
+      }, s)
 
       l.length_.should.equal(3)
       for val, idx in [ 1, 2, 3 ]
@@ -72,24 +70,22 @@ describe 'traversal', ->
     it 'should return control to the original configuration after delegation', ->
       calls = []
       s = new Map( a: 1, b: 2, c: new Map( d: 4, e: new Map( f: 6 ) ) )
-      l = Traversal.list(s, {
+      l = Traversal.list({
         recurse: (obj) ->
           calls.push('recursed')
           if obj.length_ > 2 then recurse(obj)
           else delegate((obj) -> calls.push('delegated'); recurse(obj))
         map: (k, v) -> if v.isEnumerable then recurse(v) else value(v)
-      })
+      }, s)
 
       calls.should.eql([ 'recursed', 'recursed', 'delegated', 'recursed', 'delegated' ])
 
     it 'should recurse into subobjects if requested', ->
       s = new Map( a: 1, b: 2, c: new Map( d: 3, e: 4 ) )
-      l = Traversal.list(s, map: (k, v) ->
-        if v.isMap is true
-          recurse(v)
-        else
-          value("#{k}#{v}")
-      )
+      l = Traversal.list({ map: (k, v) ->
+        if v.isMap is true then recurse(v)
+        else value("#{k}#{v}")
+      }, s)
 
       l.length_.should.equal(3)
       for val, idx in [ 'a1', 'b2' ]
@@ -103,7 +99,7 @@ describe 'traversal', ->
     it 'should use a varying if passed', ->
       s = new Map( a: 1, b: 2, c: 3 )
       v = new Varying(0)
-      l = Traversal.list(s, map: (k, y) -> varying(v.map((x) -> value("#{k}#{y + x}"))))
+      l = Traversal.list({ map: (k, y) -> varying(v.map((x) -> value("#{k}#{y + x}"))) }, s)
 
       l.length_.should.equal(3)
       for val, idx in [ 'a1', 'b2', 'c3' ]
@@ -116,7 +112,7 @@ describe 'traversal', ->
 
     it 'should defer permanently to another map configuration if defer is passed', ->
       s = new Map( a: 1, b: 2, c: new Map( d: 3, e: 4 ) )
-      l = Traversal.list(s, map: (k, v) ->
+      l = Traversal.list({ map: (k, v) ->
         if v.isMap is true
           defer(
             map: (k, v) ->
@@ -125,7 +121,7 @@ describe 'traversal', ->
           )
         else
           value("#{k}#{v}")
-      )
+      }, s)
 
       l.length_.should.equal(3)
       for val, idx in [ 'a1', 'b2' ]
@@ -138,7 +134,7 @@ describe 'traversal', ->
 
     it 'should defer permanently to another map+recurse configuration if defer is passed', ->
       s = new Map( a: 1, b: 2, c: new Map( d: 3, e: 4, f: new Map( a: 5 ) ) )
-      l = Traversal.list(s, map: (k, v) ->
+      l = Traversal.list({ map: (k, v) ->
         if v.isMap is true
           defer(
             recurse: (obj) ->
@@ -150,7 +146,7 @@ describe 'traversal', ->
           )
         else
           value("#{k}#{v}")
-      )
+      }, s)
 
       l.length_.should.equal(3)
       for val, idx in [ 'a1', 'b2' ]
@@ -164,11 +160,9 @@ describe 'traversal', ->
     it 'should reduce with the given function if given', ->
       s = new Map( a: 1, b: 2, c: new Map( d: 3, e: 4 ) )
       f = (_, v) ->
-        if v.isMap is true
-          recurse(v)
-        else
-          value(v)
-      result = Traversal.list(s, { map: f, reduce: sum }, null)
+        if v.isMap is true then recurse(v)
+        else value(v)
+      result = Traversal.list({ map: f, reduce: sum }, s)
 
       result.should.be.an.instanceof(Varying)
       result.get().should.equal(10)
@@ -178,17 +172,15 @@ describe 'traversal', ->
 
       results = []
       m = new TestModel( a: 1, b: 2 )
-      Traversal.list(m, map: (k, v, o, a) -> results.push(k, a))
+      Traversal.list({ map: (k, v, o, a) -> results.push(k, a) }, m)
       results.should.eql([ 'a', undefined, 'b', m.attribute('b') ])
 
     it 'should work with nested lists', ->
       s = new Map( a: 1, b: new List([ 2, 3 ]), d: 4 )
-      l = Traversal.list(s, map: (k, v) ->
-        if v.isMappable is true
-          recurse(v)
-        else
-          value("#{k}#{v}")
-      )
+      l = Traversal.list({ map: (k, v) ->
+        if v.isMappable is true then recurse(v)
+        else value("#{k}#{v}")
+      }, s)
 
       l.length_.should.equal(3)
       l.at_(0).should.equal('a1')
@@ -198,12 +190,10 @@ describe 'traversal', ->
       l.at_(2).should.equal('d4')
 
     it 'should work with root lists', ->
-      l = Traversal.list(new List([ 1, new Map( a: 2, b: 3 ), 4 ]), map: (k, v) ->
-        if v.isMap is true
-          recurse(v)
-        else
-          value("#{k}#{v}")
-      )
+      l = Traversal.list({ map: (k, v) ->
+        if v.isMap is true then recurse(v)
+        else value("#{k}#{v}")
+      }, new List([ 1, new Map( a: 2, b: 3 ), 4 ]))
 
       l.length_.should.equal(3)
       l.at_(0).should.equal('01')
@@ -219,39 +209,35 @@ describe 'traversal', ->
       ss = new Map( d: 1 )
       s = new Map( a: 1, b: 2, c: ss )
       results = []
-      Traversal.list_(s, map: (k, v, o) ->
+      Traversal.list_({ map: (k, v, o) ->
         if v.isMap is true
           recurse(v)
         else
           results.push(k, v, o)
           nothing
-      )
+      }, s)
       results.should.eql([ 'a', 1, s, 'b', 2, s, 'd', 1, ss ])
 
     it 'should recurse correctly', ->
       s = new Map( a: 1, b: new Map( c: 2, d: 3 ), e: new List([ 4, 5 ]), f: 6 )
-      a = Traversal.list_(s, map: (k, v, o) ->
-        if v.isEnumerable is true
-          recurse(v)
-        else
-          value("#{k}#{v}")
-      )
+      a = Traversal.list_({ map: (k, v, o) ->
+        if v.isEnumerable is true then recurse(v)
+        else value("#{k}#{v}")
+      }, s)
       a.should.eql([ 'a1', [ 'c2', 'd3' ], [ '04', '15' ], 'f6' ])
 
     it 'should handle varying results appropriately', ->
       vary = new Varying(2)
       s = new Map( a: 1, b: 2, c: 3 )
-      a = Traversal.list_(s, map: (k, v) -> varying(vary.map((x) -> value(v + x))))
+      a = Traversal.list_({ map: (k, v) -> varying(vary.map((x) -> value(v + x))) }, s)
       a.should.eql([ 3, 4, 5 ])
 
     it 'should delegate to another function given delegate', ->
       s = new Map( a: 1, b: 2, c: 3 )
-      o = Traversal.list_(s, map: (k, v) ->
-        if v < 3
-          delegate((k, v) -> if v < 2 then value('x') else value('y'))
-        else
-          value(v)
-      )
+      o = Traversal.list_({ map: (k, v) ->
+        if v < 3 then delegate((k, v) -> if v < 2 then value('x') else value('y'))
+        else value(v)
+      }, s)
 
       o.should.eql([ 'x', 'y', 3 ])
 
@@ -260,38 +246,36 @@ describe 'traversal', ->
     it 'should supply the appropriate parameters', ->
       results = []
       l = new List([ 4, 8 ])
-      Traversal.natural(l, map: (k, v, o) ->
+      Traversal.natural({ map: (k, v, o) ->
         results.push(k, v, o)
         nothing
-      )
+      }, l)
 
       TestModel = Model.build(attribute('b', attributes.BooleanAttribute))
       m = new TestModel( a: 15, b: 16 )
-      Traversal.natural(m, map: (k, v, o, a) ->
+      Traversal.natural({ map: (k, v, o, a) ->
         results.push(k, v, o, a)
         nothing
-      )
+      }, m)
 
       results.should.eql([ 0, 4, l, 1, 8, l, 'a', 15, m, undefined, 'b', 16, m, m.attribute('b') ])
 
     it 'should map a list to a list', ->
-      l = Traversal.natural(new List([ 2, 4, 6, 8, 10 ]), map: (k, v) -> value(k + v))
+      l = Traversal.natural({ map: (k, v) -> value(k + v) }, new List([ 2, 4, 6, 8, 10 ]))
       l.length_.should.equal(5)
       for val, idx in [ 2, 5, 8, 11, 14 ]
         l.at_(idx).should.equal(val)
 
     it 'should map a map to a map', ->
-      s = Traversal.natural(new Map( a: 1, b: 2, c: 3 ), map: (k, v) -> value("#{k}#{v}"))
+      s = Traversal.natural({ map: (k, v) -> value("#{k}#{v}") }, new Map( a: 1, b: 2, c: 3 ))
       s.data.should.eql({ a: 'a1', b: 'b2', c: 'c3' })
 
     it 'should recursively map like types', ->
       source = new Map( a: 1, b: new List([ 2, new Map( c: 3, d: 4 ) ]), e: new Map( f: 5 ) )
-      s = Traversal.natural(source, map: (k, v) ->
-        if v.isEnumerable is true
-          recurse(v)
-        else
-          value("#{k}#{v}")
-      )
+      s = Traversal.natural({ map: (k, v) ->
+        if v.isEnumerable is true then recurse(v)
+        else value("#{k}#{v}")
+      }, source)
 
       s.should.be.an.instanceof(Map)
       s.get_('a').should.equal('a1')
@@ -308,12 +292,10 @@ describe 'traversal', ->
 
     it 'should delegate to another function given delegate', ->
       s = new Map( a: 1, b: 2, c: 3 )
-      r = Traversal.natural(s, map: (k, v) ->
-        if v < 3
-          delegate((k, v) -> if v < 2 then value('x') else value('y'))
-        else
-          value(v)
-      )
+      r = Traversal.natural({ map: (k, v) ->
+        if v < 3 then delegate((k, v) -> if v < 2 then value('x') else value('y'))
+        else value(v)
+      }, s)
 
       r.get_('a').should.equal('x')
       r.get_('b').should.equal('y')
@@ -324,47 +306,43 @@ describe 'traversal', ->
     it 'should supply the appropriate parameters', ->
       results = []
       l = new List([ 4, 8 ])
-      Traversal.natural_(l, map: (k, v, o) ->
+      Traversal.natural_({, map: (k, v, o) ->
         results.push(k, v, o)
         nothing
-      )
+      }, l)
 
       TestModel = Model.build(attribute('b', attributes.BooleanAttribute))
       m = new TestModel( a: 15, b: 16 )
-      Traversal.natural_(m, map: (k, v, o, a) ->
+      Traversal.natural_({ map: (k, v, o, a) ->
         results.push(k, v, o, a)
         nothing
-      )
+      }, m)
 
       results.should.eql([ 0, 4, l, 1, 8, l, 'a', 15, m, undefined, 'b', 16, m, m.attribute('b') ])
 
     it 'should map a list to a list', ->
-      a = Traversal.natural_(new List([ 2, 4, 6, 8, 10 ]), map: (k, v) -> value(k + v))
+      a = Traversal.natural_({ map: (k, v) -> value(k + v) }, new List([ 2, 4, 6, 8, 10 ]))
       a.should.eql([ 2, 5, 8, 11, 14 ])
 
     it 'should map a map to a map', ->
-      o = Traversal.natural_(new Map( a: 1, b: 2, c: 3 ), map: (k, v) -> value("#{k}#{v}"))
+      o = Traversal.natural_({ map: (k, v) -> value("#{k}#{v}") }, new Map( a: 1, b: 2, c: 3 ))
       o.should.eql({ a: 'a1', b: 'b2', c: 'c3' })
 
     it 'should recursively map like types', ->
       source = new Map( a: 1, b: new List([ 2, new Map( c: 3, d: 4 ) ]), e: new Map( f: 5 ) )
-      o = Traversal.natural_(source, map: (k, v) ->
-        if v.isEnumerable is true
-          recurse(v)
-        else
-          value("#{k}#{v}")
-      )
+      o = Traversal.natural_({ map: (k, v) ->
+        if v.isEnumerable is true then recurse(v)
+        else value("#{k}#{v}")
+      }, source)
 
       o.should.eql({ a: 'a1', b: [ '02', { c: 'c3', d: 'd4' } ], e: { f: 'f5' } })
 
     it 'should delegate to another function given delegate', ->
       s = new Map( a: 1, b: 2, c: 3 )
-      o = Traversal.natural_(s, map: (k, v) ->
-        if v < 3
-          delegate((k, v) -> if v < 2 then value('x') else value('y'))
-        else
-          value(v)
-      )
+      o = Traversal.natural_({ map: (k, v) ->
+        if v < 3 then delegate((k, v) -> if v < 2 then value('x') else value('y'))
+        else value(v)
+      }, s)
 
       o.should.eql({ a: 'x', b: 'y', c: 3 })
 

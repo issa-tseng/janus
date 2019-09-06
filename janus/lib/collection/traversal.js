@@ -10,7 +10,7 @@
 
   ref2 = require('../core/types').traversal, recurse = ref2.recurse, delegate = ref2.delegate, defer = ref2.defer, varying = ref2.varying, value = ref2.value, nothing = ref2.nothing;
 
-  pair = function(fs, recurser, obj, immediate) {
+  pair = function(recurser, fs, obj, immediate) {
     return function(key, val) {
       var attribute;
       if (obj.isModel === true) {
@@ -20,7 +20,7 @@
         return function(fs) {
           return fix(function(rematch) {
             return match(recurse(function(into) {
-              return recurser(into, fs);
+              return recurser(fs, into);
             }), delegate(function(to) {
               return rematch(to(key, val, obj, attribute));
             }), defer(function(to) {
@@ -43,11 +43,11 @@
   };
 
   root = function(traverse) {
-    return function(fs, recurser, obj) {
+    return function(recurser, fs, obj) {
       var ref3;
       return fix(function(rematch) {
         return match(recurse(function(into) {
-          return traverse(fs, recurser, into);
+          return traverse(recurser, fs, into);
         }), delegate(function(to) {
           return rematch(to(obj));
         }), defer(function(to) {
@@ -63,13 +63,13 @@
     };
   };
 
-  naturalRoot = root(function(fs, recurser, obj) {
-    return obj.flatMapPairs(pair(fs, recurser, obj));
+  naturalRoot = root(function(recurser, fs, obj) {
+    return obj.flatMapPairs(pair(recurser, fs, obj));
   });
 
-  listRoot = root(function(fs, recurser, obj) {
+  listRoot = root(function(recurser, fs, obj) {
     var result;
-    result = obj.enumerate().flatMapPairs(pair(fs, recurser, obj));
+    result = obj.enumerate().flatMapPairs(pair(recurser, fs, obj));
     if (fs.reduce != null) {
       return Varying.managed((function() {
         return result;
@@ -80,15 +80,15 @@
   });
 
   Traversal = {
-    natural: function(obj, fs) {
-      return naturalRoot(fs, Traversal.natural, obj);
+    natural: function(fs, obj) {
+      return naturalRoot(Traversal.natural, fs, obj);
     },
-    list: function(obj, fs) {
-      return listRoot(fs, Traversal.list, obj);
+    list: function(fs, obj) {
+      return listRoot(Traversal.list, fs, obj);
     },
-    natural_: function(obj, fs) {
+    natural_: function(fs, obj) {
       var i, j, key, len, len1, lpair, ref3, ref4, result, results;
-      lpair = pair(fs, Traversal.natural_, obj, true);
+      lpair = pair(Traversal.natural_, fs, obj, true);
       if (obj.isMappable === true) {
         ref3 = obj.enumerate_();
         results = [];
@@ -107,9 +107,9 @@
         return result;
       }
     },
-    list_: function(obj, fs) {
+    list_: function(fs, obj) {
       var i, key, len, lpair, ref3, results;
-      lpair = pair(fs, Traversal.list_, obj, true);
+      lpair = pair(Traversal.list_, fs, obj, true);
       ref3 = obj.enumerate_();
       results = [];
       for (i = 0, len = ref3.length; i < len; i++) {
