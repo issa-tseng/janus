@@ -31,6 +31,11 @@ util =
   # Self-explanatory.
   identity: (x) -> x
 
+  # Doesn't work good for methods, but great for funcs:
+  curry2: (f) -> (x, y) ->
+    if arguments.length is 2 then f(x, y)
+    else (y) -> f(x, y)
+
 
   #### Array Utils
   # Exactly what you think it is.

@@ -37,6 +37,15 @@ describe 'traversal', ->
       for val, idx in [ 'a1', 'b2', 'c3' ]
         l.at_(idx).should.equal(val)
 
+    it 'should curry', ->
+      s = new Map( a: 1, b: 2, c: 3 )
+      f = Traversal.list({ map: (k, v) -> value("#{k}#{v}") })
+      l = f(s)
+
+      l.length_.should.equal(3)
+      for val, idx in [ 'a1', 'b2', 'c3' ]
+        l.at_(idx).should.equal(val)
+
     it 'should result in undefined when nothing is passed', ->
       s = new Map( a: 1, b: 2, c: 3 )
       l = Traversal.list({ map: (k, v) -> if v < 3 then nothing else value(v) }, s)

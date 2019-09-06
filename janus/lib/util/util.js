@@ -39,6 +39,17 @@
     identity: function(x) {
       return x;
     },
+    curry2: function(f) {
+      return function(x, y) {
+        if (arguments.length === 2) {
+          return f(x, y);
+        } else {
+          return function(y) {
+            return f(x, y);
+          };
+        }
+      };
+    },
     foldLeft: function(value) {
       return function(arr, f) {
         var elem, i, len;

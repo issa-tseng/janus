@@ -1,5 +1,5 @@
 { Varying } = require('../core/varying')
-{ identity, isFunction, deepSet, fix } = require('../util/util')
+{ identity, isFunction, deepSet, fix, curry2 } = require('../util/util')
 
 { match, otherwise } = require('../core/case')
 { recurse, delegate, defer, varying, value, nothing } = require('../core/types').traversal
@@ -43,20 +43,22 @@ listRoot = root((recurser, fs, obj) ->
 # the actual runners that set state and call into the above. the first two return
 # live traversals; the second two just do the work.
 Traversal =
-  natural: (fs, obj) -> naturalRoot(Traversal.natural, fs, obj)
-  list: (fs, obj) -> listRoot(Traversal.list, fs, obj)
+  natural: curry2((fs, obj) -> naturalRoot(Traversal.natural, fs, obj))
+  list: curry2((fs, obj) -> listRoot(Traversal.list, fs, obj))
 
-  natural_: (fs, obj) ->
+  natural_: curry2((fs, obj) ->
     lpair = pair(Traversal.natural_, fs, obj, true)
     if obj.isMappable is true then lpair(key, obj.get_(key)) for key in obj.enumerate_()
     else
       result = {}
       deepSet(result, key)(lpair(key, obj.get_(key))) for key in obj.enumerate_()
       result
+  )
 
-  list_: (fs, obj) ->
+  list_: curry2((fs, obj) ->
     lpair = pair(Traversal.list_, fs, obj, true)
     lpair(key, obj.get_(key)) for key in obj.enumerate_()
+  )
 
 # default impl:
 Traversal.default =
