@@ -30,6 +30,15 @@ describe 'collection', ->
       l.at_(0).set(undefined)
       (l2.at_(0) is undefined).should.equal(true)
 
+    it 'should map array values', -> # gh163
+      l = new List([ 0, 1, 2 ])
+      l2 = l.flatMap((x) -> [ x, -x ])
+
+      l2.length_.should.equal(3)
+      l2.at_(0).should.eql([ 0, -0 ])
+      l2.at_(1).should.eql([ 1, -1 ])
+      l2.at_(2).should.eql([ 2, -2 ])
+
     it 'should remove the correct values', ->
       l = new List([ 1, 2, 3 ])
       m = l.map((x) -> 2 * x)

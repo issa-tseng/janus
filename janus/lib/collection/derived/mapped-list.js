@@ -98,7 +98,7 @@
         };
       })(this));
       this._bindings.add(binding, idx);
-      FlatMappedList.__super__._add.call(this, initial, idx);
+      FlatMappedList.__super__._add.call(this, [initial], idx);
     };
 
     FlatMappedList.prototype._removeAt = function(idx) {

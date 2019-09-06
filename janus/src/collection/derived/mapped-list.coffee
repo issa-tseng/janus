@@ -40,7 +40,7 @@ class FlatMappedList extends DerivedList
     )
 
     this._bindings.add(binding, idx)
-    super(initial, idx)
+    super([ initial ], idx)
     return
 
   _removeAt: (idx) ->
