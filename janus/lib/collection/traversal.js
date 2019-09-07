@@ -68,14 +68,12 @@
   });
 
   listRoot = root(function(recurser, fs, obj) {
-    var result;
-    result = obj.enumerate().flatMapPairs(pair(recurser, fs, obj));
     if (fs.reduce != null) {
       return Varying.managed((function() {
-        return result;
+        return obj.enumerate().flatMapPairs(pair(recurser, fs, obj));
       }), fs.reduce);
     } else {
-      return result;
+      return obj.enumerate().flatMapPairs(pair(recurser, fs, obj));
     }
   });
 

@@ -36,8 +36,9 @@ root = (traverse) -> (recurser, fs, obj) -> fix((rematch) -> match(
 # use by Traversal.(natural|list); the immediate versions do their own structure work.
 naturalRoot = root((recurser, fs, obj) -> obj.flatMapPairs(pair(recurser, fs, obj)))
 listRoot = root((recurser, fs, obj) ->
-  result = obj.enumerate().flatMapPairs(pair(recurser, fs, obj))
-  if fs.reduce? then Varying.managed((-> result), fs.reduce) else result
+  if fs.reduce?
+    Varying.managed((-> obj.enumerate().flatMapPairs(pair(recurser, fs, obj))), fs.reduce)
+  else obj.enumerate().flatMapPairs(pair(recurser, fs, obj))
 )
 
 # the actual runners that set state and call into the above. the first two return
