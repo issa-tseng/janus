@@ -2,10 +2,6 @@ should = require('should')
 
 { Case, match, otherwise } = require('../../lib/core/case')
 
-unapply1 = (kase) -> (x) -> new kase(x, (f) -> f(x))
-unapply2 = (kase) -> (x, y) -> new kase(x, (f) -> f(x, y))
-unapply3 = (kase) -> (x, y, z) -> new kase(x, (f) -> f(x, y, z))
-
 describe 'case', ->
   describe 'set', ->
     describe 'definition', ->
@@ -18,53 +14,15 @@ describe 'case', ->
         { mycase } = Case.build('mycase')
         mycase().toString().should.equal('case[mycase]: undefined')
 
-      it 'should take a mix of decorated and undecorated cases: (str, obj)', ->
-        { success, fail } = Case.build('success', fail: unapply2)
-        success.should.be.a.Function()
-        fail.should.be.a.Function()
-        fail.length.should.equal(2)
-
-      it 'should take a mix of decorated and undecorated cases: (obj, str)', ->
-        { success, fail } = Case.build(success: unapply2, 'fail')
-        success.should.be.a.Function()
-        success.length.should.equal(2)
-        fail.should.be.a.Function()
-
-      it 'should take a mix of decorated and undecorated cases: (str, obj, str)', ->
-        { dunno, success, fail } = Case.build('dunno', success: unapply2, 'fail')
-        dunno.should.be.a.Function()
-        success.should.be.a.Function()
-        success.length.should.equal(2)
-        fail.should.be.a.Function()
-
-      it 'should take arity global option and use it throughout', ->
-        { success, fail } = Case.withOptions({ arity: 2 }).build('success', 'fail' )
-        success.length.should.equal(2)
-        fail.length.should.equal(2)
-
-      it 'should let case unapply override global arity option', ->
-        { success, fail } = Case.withOptions({ arity: 3 }).build('success', fail: unapply2)
-        success.length.should.equal(3)
-        fail.length.should.equal(2)
-
       it 'should read child cases from direct arrays', ->
         { nothing, something, onething, twothings } = Case.build('nothing', something: [ 'onething', 'twothings' ])
         onething(1).toString().should.equal('case[onething]: 1')
         twothings(2).toString().should.equal('case[twothings]: 2')
 
-      it 'should read child cases from prop definition', ->
-        { nothing, something, onething, twothings } = Case.build('nothing', something: { 'onething': unapply1, 'twothings': unapply1 })
-        onething(1).toString().should.equal('case[onething]: 1')
-        twothings(2).toString().should.equal('case[twothings]: 2')
-
       it 'should read twice-nested child cases', ->
-        cases = Case.build('nothing', something: [ onething: [ 'redfish', 'bluefish' ], twothings: { pairfish: unapply1 } ] )
+        cases = Case.build('nothing', something: [ onething: [ 'redfish', 'bluefish' ], twothings: [ 'pairfish' ] ] )
         for x, y in [ 'nothing', 'redfish', 'bluefish', 'pairfish' ]
           cases[x](y).toString().should.equal("case[#{x}]: #{y}")
-
-      it 'should set unapply for child cases appropriately', ->
-        { nesteda, nestedb } = Case.build(top: [ nesteda: [ nestedb: unapply3 ] ])
-        nestedb.length.should.equal(3)
 
     describe 'instance', ->
       it 'should get the inner value no matter what on .get()', ->
@@ -131,12 +89,6 @@ describe 'case', ->
         { success, fail } = Case.build('success', 'fail')
         success.match(success(1)).should.equal(true)
         fail.match(success(1)).should.equal(false)
-
-      it 'uses unapply as appropriate', ->
-        { success, fail } = Case.withOptions({ arity: 2 }).build('success', 'fail')
-        results = []
-        success.match(success(1, 2), (x, y) -> results.push(x, y))
-        results.should.eql([ 1, 2 ])
 
       it 'matches child cases', ->
         { pending, complete, success, fail } = Case.build('pending', 'complete': [ 'success', 'fail' ])
@@ -226,31 +178,6 @@ describe 'case', ->
         { success, fail } = Case.build('success', 'fail')
         m = match(
           success (x) -> matched = x
-          otherwise -> null
-        )
-
-        m(success(true)).should.equal(true)
-        matched.should.equal(true)
-
-      it 'should work correctly for the default arity option', ->
-        a = b = c = null
-        { success, fail } = Case.withOptions({ arity: 3 }).build('success', 'fail')
-        m = match(
-          success (x, y, z) -> a = x; b = y; c = z
-          otherwise -> null
-        )
-
-        m(success(1, 2, 3))
-        a.should.equal(1)
-        b.should.equal(2)
-        c.should.equal(3)
-
-      it 'should allow for custom unapply', ->
-        matched = false
-
-        { success, fail } = Case.build(success: ((kase) -> (x) -> new kase(x, (f) -> f( result: x ))), 'fail')
-        m = match(
-          success (x) -> matched = x.result
           otherwise -> null
         )
 

@@ -8,43 +8,21 @@
 #
 # For a while we avoided instanceof for this mechanism because peerDependencies
 # can get annoying, but instanceof is fast and strcmp is heavy and slow.
-#
-# We aim to be fairly flexible as to the nature of the value storage. Because we
-# have no true pattern-matching and all matches are done purely on the container
-# case class type, the value itself may be a black box. So rather than store a
-# value, we store an unapply function which can be fed a function to forward its
-# data into. This allows multi-arity or custom value expressions. But we do
-# still need to get the original first argument due to our reuse of the same
-# case construction term as part of the matching syntax.
-#
-# However, in any configuration other than 1-arity default, case loses its last
-# monadic vestiges (we haven't yet done flatten), because the box no longer
-# understands how to rebox after operations like map, in particular because map
-# only ever returns arity-1. So .map() is performed as a functional composition
-# post-unapply which necessarily reduces down to a single return value. Subsequent
-# maps will only receive that mapped result.
 
-{ isPlainObject, isString, isArray, isFunction, capitalize, identity } = require('../util/util')
+{ isPlainObject, isString, capitalize, identity } = require('../util/util')
 
 class Case
   isCaseInstance: true
-  constructor: (@x1, @unapply) ->
-  map: (f) -> new this.constructor(undefined, (g) => g(this.unapply(f)))
-  toString: -> "case[#{this.name}]: #{this.get()}"
+  constructor: (@_value) ->
+  get: -> this._value
+  map: (f) -> new this.constructor(f(this._value))
+  toString: -> "case[#{this.name}]: #{this._value}"
 
 # used to decorate ctors below:
 singleMatch = (type) -> (x, f_) ->
   if f_?
-    if x instanceof type then x.unapply(f_)
+    if x instanceof type then f_(x._value)
   else x instanceof type
-
-# use these by default given arity === idx.
-defaultUnapplies = [
-  (kase) -> (x1) -> new kase(x1, (f) -> f())
-  (kase) -> (x1) -> new kase(x1, (f) -> f(x1))
-  (kase) -> (x1, x2) -> new kase(x1, (f) -> f(x1, x2))
-  (kase) -> (x1, x2, x3) -> new kase(x1, (f) -> f(x1, x2, x3))
-]
 
 # reduce boilerplate in fullDefcase below:
 deftype = (base, name, abstract) -> class extends base
@@ -52,12 +30,8 @@ deftype = (base, name, abstract) -> class extends base
   name: name
 
 # the bulk of the work is here, defining the case set.
-defaultOptions = { arity: 1 }
-defcase = (options) -> { build: (args...) ->
-  options = Object.assign({}, defaultOptions, options)
-
+defcase = (args...) ->
   types = {}
-  unapplies = {}
   base = class extends Case
     types: types
 
@@ -69,63 +43,47 @@ defcase = (options) -> { build: (args...) ->
       else # x is an object with k/v pairs defining types.
         for k, v of x
           v = [ v ] if isPlainObject(v) # allow {} or [] nesting.
-
-          if isArray(v) # k: [ ..child types.. ]
-            recurse(v, (types[k] = deftype(localBase, k, true)))
-          else # k: unapply func.
-            unapplies[k] = v
-            types[k] = deftype(localBase, k, false)
+          recurse(v, (types[k] = deftype(localBase, k, true)))
     return
   recurse(args, base)
 
   # create a constructor for each type, with some decoration:
   ctors = {}
   for name, type of types
-    ctors[name] = ctor =
-      if unapplies[name]? then unapplies[name](type)
-      else defaultUnapplies[options.arity](type)
+    ctors[name] = ctor = ((T) -> (x) -> new T(x))(type)
     Object.assign(ctor, { isCase: true, type, match: singleMatch(type) })
 
   # decorate methods now that we have the full type and ctors set:
   for name, type of types when type.prototype.abstract isnt true
     Name = capitalize(name) # still just a string but name/Name reflect cap'z'n
     self = -> this
-    typeArity = ctors[name].length
-    getter =
-      if typeArity is 0 then (->)
-      else if typeArity is 1 then -> this.unapply(identity)
-      else -> this.unapply((xs...) -> xs)
-
-    type.prototype.get = getter
 
     base.prototype["#{name}OrElse"] = identity
-    type.prototype["#{name}OrElse"] = getter
+    type.prototype["#{name}OrElse"] = Case.prototype.get
 
     base.prototype["get#{Name}"] = self
-    type.prototype["get#{Name}"] = getter
+    type.prototype["get#{Name}"] = Case.prototype.get
 
     base.prototype["map#{Name}"] = self
     type.prototype["map#{Name}"] = Case.prototype.map
 
   # hand back the constructors only.
   ctors
-}
 
 # form the final output builder (defaults to no options):
-Case.build = defcase().build
-Case.withOptions = defcase
+Case.build = defcase
 
-# matches anything, but will not unapply; returns the case itself.
+# matches anything, but will return the case itself.
 class Otherwise
-  constructor: (@x1) ->
-otherwise = (x1) -> new Otherwise(x1)
+  constructor: (@_f) ->
+otherwise = (f) -> new Otherwise(f)
 
 # runs through conditions until one matches, or use otherwise.
 match = (conds...) -> (kase) ->
   return if kase?.abstract is true
   for cond in conds
-    return kase.unapply(cond.x1) if kase instanceof cond.constructor
-    return cond.x1(kase) if cond instanceof Otherwise
+    return cond._value(kase._value) if kase instanceof cond.constructor
+    return cond._f(kase) if cond instanceof Otherwise
   return
 
 module.exports = { Case, match, otherwise }
