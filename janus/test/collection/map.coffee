@@ -3,7 +3,7 @@ should = require('should')
 { Varying } = require('../../lib/core/varying')
 types = require('../../lib/core/types')
 { Map } = require('../../lib/collection/map')
-{ KeyList } = require('../../lib/collection/enumeration')
+{ KeySet } = require('../../lib/collection/enumeration')
 
 describe 'Map', ->
   describe 'core', ->
@@ -352,29 +352,16 @@ describe 'Map', ->
         s2.get_('c').should.equal(4)
 
   describe 'enumeration', ->
-    it 'should return a KeyList of itself when asked for an enumeration', ->
+    it 'should return a KeySet of itself when asked for an enumeration', ->
       s = new Map( a: 1, b: 2, c: { d: 3 } )
       kl = s.enumerate()
-      kl.should.be.an.instanceof(KeyList)
+      kl.should.be.an.instanceof(KeySet)
       kl.list.should.eql([ 'a', 'b', 'c.d' ])
-
-    it 'should pass options along appropriately', ->
-      s = new Map( a: 1, b: 2, c: { d: 3 } )
-      kl = s.enumerate( scope: 'direct', include: 'all' )
-      kl.scope.should.equal('direct')
-      kl.include.should.equal('all')
 
     it 'should return an array of keys when asked to enumerate', ->
       s = new Map( a: 1, b: 2, c: { d: 3 } )
       ks = s.enumerate_()
       ks.should.eql([ 'a', 'b', 'c.d' ])
-
-    it 'should pass option to the static enumerator', ->
-      s = new Map( a: 1, b: 2, c: { d: 3 } )
-      s2 = s.shadow()
-      s2.set( c: { e: 4 }, f: 5 )
-      ks = s.enumerate_( scope: 'direct', include: 'all' )
-      ks.should.eql([ 'a', 'b', 'c', 'c.d' ])
 
     it 'should allow the length to be watched', ->
       results = []

@@ -3,58 +3,58 @@ should = require('should')
 { Varying } = require('../../lib/core/varying')
 { Map } = require('../../lib/collection/map')
 { List } = require('../../lib/collection/list')
-{ KeyList, IndexList, Enumeration } = require('../../lib/collection/enumeration')
+{ KeySet, IndexList, Enumeration } = require('../../lib/collection/enumeration')
 
 describe 'map enumeration', ->
   describe 'keylist', ->
     describe 'key tracking', ->
       it 'should include all initial keys', ->
         s = new Map( a: 1, b: 2, c: 3 )
-        kl = new KeyList(s)
+        kl = new KeySet(s)
 
         kl.length_.should.equal(3)
-        for val, idx in [ 'a', 'b', 'c' ]
-          kl.at_(idx).should.equal(val)
+        for val in [ 'a', 'b', 'c' ]
+          kl.includes_(val).should.equal(true)
 
       it 'should include all initial nested value keys', ->
         s = new Map( a: 1, b: 2, c: { d: 3, e: { f: 4 } } )
-        kl = new KeyList(s)
+        kl = new KeySet(s)
 
         kl.length_.should.equal(4)
-        for val, idx in [ 'a', 'b', 'c.d', 'c.e.f' ]
-          kl.at_(idx).should.equal(val)
+        for val in [ 'a', 'b', 'c.d', 'c.e.f' ]
+          kl.includes_(val).should.equal(true)
 
       it 'should update to reflect new keys', ->
         s = new Map( a: 1, b: { c: 2, d: 3 } )
-        kl = new KeyList(s)
+        kl = new KeySet(s)
 
         s.set('z', 9)
         kl.length_.should.equal(4)
-        for val, idx in [ 'a', 'b.c', 'b.d', 'z' ]
-          kl.at_(idx).should.equal(val)
+        for val in [ 'a', 'b.c', 'b.d', 'z' ]
+          kl.includes_(val).should.equal(true)
 
         s.set('b.e', 4)
         kl.length_.should.equal(5)
-        for val, idx in [ 'a', 'b.c', 'b.d', 'z', 'b.e' ]
-          kl.at_(idx).should.equal(val)
+        for val in [ 'a', 'b.c', 'b.d', 'z', 'b.e' ]
+          kl.includes_(val).should.equal(true)
 
       it 'should update to reflect removed keys', ->
         s = new Map( a: 1, b: { c: 2, d: 3 }, e: 4 )
-        kl = new KeyList(s)
+        kl = new KeySet(s)
 
         s.unset('a')
         kl.length_.should.equal(3)
-        for val, idx in [ 'b.c', 'b.d', 'e' ]
-          kl.at_(idx).should.equal(val)
+        for val in [ 'b.c', 'b.d', 'e' ]
+          kl.includes_(val).should.equal(true)
 
         s.unset('b.d')
         kl.length_.should.equal(2)
-        for val, idx in [ 'b.c', 'e' ]
-          kl.at_(idx).should.equal(val)
+        for val in [ 'b.c', 'e' ]
+          kl.includes_(val).should.equal(true)
 
-      it 'should not be affected by changing keys', ->
+      it 'should not be affected by changing values', ->
         s = new Map( a: 1, b: { c: 2, d: 3 }, e: 4 )
-        kl = new KeyList(s)
+        kl = new KeySet(s)
 
         evented = 0
         kl.on('added', -> evented += 1)
@@ -65,82 +65,34 @@ describe 'map enumeration', ->
 
         evented.should.equal(0)
         kl.length_.should.equal(4)
-        for val, idx in [ 'a', 'b.c', 'b.d', 'e' ]
-          kl.at_(idx).should.equal(val)
+        for val in [ 'a', 'b.c', 'b.d', 'e' ]
+          kl.includes_(val).should.equal(true)
 
       it 'should handle shadowed all-scope correctly', ->
         s = new Map( a: 1, b: 2 )
         s2 = s.shadow()
         s2.set( c: { d: 3, e: 4 }, f: 5 )
 
-        kl = new KeyList(s2, scope: 'all' )
+        kl = new KeySet(s2, scope: 'all' )
         kl.length_.should.equal(5)
-        for val, idx in [ 'c.d', 'c.e', 'f', 'a', 'b' ]
-          kl.at_(idx).should.equal(val)
+        for val in [ 'c.d', 'c.e', 'f', 'a', 'b' ]
+          kl.includes_(val).should.equal(true)
 
         s2.set('g', 6)
         kl.length_.should.equal(6)
-        for val, idx in [ 'c.d', 'c.e', 'f', 'a', 'b', 'g' ]
-          kl.at_(idx).should.equal(val)
+        for val in [ 'c.d', 'c.e', 'f', 'a', 'b', 'g' ]
+          kl.includes_(val).should.equal(true)
 
         s.set('h', 7)
         kl.length_.should.equal(7)
-        for val, idx in [ 'c.d', 'c.e', 'f', 'a', 'b', 'g', 'h' ]
-          kl.at_(idx).should.equal(val)
-
-      it 'should handle shadowed direct-scope correctly', ->
-        s = new Map( a: 1, b: 2 )
-        s2 = s.shadow()
-        s2.set( c: { d: 3, e: 4 }, f: 5 )
-
-        kl = new KeyList(s2, scope: 'direct' )
-        kl.length_.should.equal(3)
-        for val, idx in [ 'c.d', 'c.e', 'f' ]
-          kl.at_(idx).should.equal(val)
-
-        s.set('g', 6)
-        kl.length_.should.equal(3)
-        for val, idx in [ 'c.d', 'c.e', 'f' ]
-          kl.at_(idx).should.equal(val)
-
-        s2.set('h', 7)
-        kl.length_.should.equal(4)
-        for val, idx in [ 'c.d', 'c.e', 'f', 'h' ]
-          kl.at_(idx).should.equal(val)
-
-      # values-scope is the default and is already tested above.
-      it 'should handle all-include correctly for initial values', ->
-        s = new Map( a: 1, b: { c: { d: 2, e: 3 } } )
-        kl = new KeyList(s, include: 'all' )
-
-        kl.length_.should.equal(5)
-        for val, idx in [ 'a', 'b.c.d', 'b.c', 'b', 'b.c.e' ]
-          kl.at_(idx).should.equal(val)
-
-      it 'should handle all-include correctly for updates', ->
-        s = new Map( a: 1, b: { c: { d: 2, e: 3 } } )
-        kl = new KeyList(s, include: 'all' )
-
-        s.set('b.c.f.g', 4)
-        kl.length_.should.equal(7)
-        for val, idx in [ 'a', 'b.c.d', 'b.c', 'b', 'b.c.e', 'b.c.f.g', 'b.c.f' ]
-          kl.at_(idx).should.equal(val)
-
-        s.unset('b.c.d') # check that it _doesn't_ prune what still has branches.
-        kl.length_.should.equal(6)
-        for val, idx in [ 'a', 'b.c', 'b', 'b.c.e', 'b.c.f.g', 'b.c.f' ]
-          kl.at_(idx).should.equal(val)
-
-        s.unset('b.c.f') # check that it _does_ prune what no longer has branches.
-        kl.length_.should.equal(4)
-        for val, idx in [ 'a', 'b.c', 'b', 'b.c.e' ]
-          kl.at_(idx).should.equal(val)
+        for val in [ 'c.d', 'c.e', 'f', 'a', 'b', 'g', 'h' ]
+          kl.includes_(val).should.equal(true)
 
     describe 'k/v mapping', ->
       describe 'mapPairs', ->
         it 'should pass k/v pairs into a mapping function', ->
           s = new Map( a: 1, b: 2, c: { d: 3 } )
-          kl = new KeyList(s)
+          kl = new KeySet(s)
 
           mapped = []
           kl.mapPairs((k, v) -> mapped.push(k, v))
@@ -148,7 +100,7 @@ describe 'map enumeration', ->
 
         it 'should result in a list of mapped results', ->
           s = new Map( a: 1, b: 2, c: { d: 3 } )
-          kl = new KeyList(s)
+          kl = new KeySet(s)
 
           m = kl.mapPairs((k, v) -> "#{k}: #{v}")
           m.length_.should.equal(3)
@@ -157,7 +109,7 @@ describe 'map enumeration', ->
 
         it 'should not flatten the result', ->
           s = new Map( a: 1, b: 2, c: { d: 3 } )
-          kl = new KeyList(s)
+          kl = new KeySet(s)
 
           m = kl.mapPairs((k, v) -> new Varying(v))
           m.length_.should.equal(3)
@@ -166,7 +118,7 @@ describe 'map enumeration', ->
 
         it 'should update if the original value changes', ->
           s = new Map( a: 1, b: 2, c: { d: 3 } )
-          kl = new KeyList(s)
+          kl = new KeySet(s)
           m = kl.mapPairs((k, v) -> "#{k}: #{v}")
 
           s.set('c.d', 4)
@@ -182,7 +134,7 @@ describe 'map enumeration', ->
       describe 'flatMapPairs', ->
         it 'should flatten the result', ->
           s = new Map( a: 1, b: 2, c: { d: 3 } )
-          kl = new KeyList(s)
+          kl = new KeySet(s)
 
           m = kl.flatMapPairs((k, v) -> new Varying("#{k}: #{v}"))
           m.length_.should.equal(3)
@@ -191,7 +143,7 @@ describe 'map enumeration', ->
 
         it 'should update if the original value or the inner mapping change', ->
           s = new Map( a: 1, b: 2, c: { d: 3 } )
-          kl = new KeyList(s)
+          kl = new KeySet(s)
 
           x = new Varying(0)
           m = kl.flatMapPairs((k, v) -> x.map((y) -> "#{k}: #{v + y}"))
@@ -210,19 +162,13 @@ describe 'map enumeration', ->
             m.at_(idx).should.equal(val)
 
   describe 'module map get_', ->
-    it 'returns all keys by default', ->
+    it 'returns all keys', ->
       s = new Map( a: 1, b: 2, c: { d: { e: 3 }, f: 4 } )
       keys = Enumeration.map_(s)
 
       keys.should.eql([ 'a', 'b', 'c.d.e', 'c.f' ])
 
-    it 'returns all branches if include-all', ->
-      s = new Map( a: 1, b: 2, c: { d: { e: 3 }, f: 4 } )
-      keys = Enumeration.map_(s, include: 'all' )
-
-      keys.should.eql([ 'a', 'b', 'c', 'c.d', 'c.d.e', 'c.f' ])
-
-    it 'returns shadow-inherited keys by default', ->
+    it 'returns shadow-inherited keys', ->
       s = new Map( b: 2, c: { d: { e: 3 } } )
       s2 = s.shadow()
       s2.set( a: 1, c: { f: 4 })
@@ -230,26 +176,12 @@ describe 'map enumeration', ->
 
       keys.should.eql([ 'a', 'c.f', 'b', 'c.d.e' ])
 
-    it 'returns only direct keys if scope-direct', ->
-      s = new Map( b: 2, c: { d: { e: 3 } } )
-      s2 = s.shadow()
-      s2.set( a: 1, c: { f: 4 })
-      keys = Enumeration.map_(s2, scope: 'direct' )
-
-      keys.should.eql([ 'a', 'c.f' ])
-
   describe 'module map get', ->
-    it 'returns a KeyList', ->
+    it 'returns a KeySet', ->
       s = new Map( a: 1, b: 2, c: { d: { e: 3 }, f: 4 } )
       kl = Enumeration.map(s)
-      kl.should.be.an.instanceof(KeyList)
-      kl.target.should.equal(s)
-
-    it 'passes options through', ->
-      s = new Map( a: 1, b: 2, c: { d: { e: 3 }, f: 4 } )
-      kl = Enumeration.map(s, scope: 'direct', include: 'all' )
-      kl.scope.should.equal('direct')
-      kl.include.should.equal('all')
+      kl.should.be.an.instanceof(KeySet)
+      kl.parent.should.equal(s)
 
   describe 'indexlist', ->
     it 'should contain increasing sequential index values', ->
