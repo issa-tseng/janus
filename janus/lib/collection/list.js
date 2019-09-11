@@ -355,7 +355,6 @@
     }
 
     List.prototype.__destroy = function() {
-      this.list = null;
       return this._watches = null;
     };
 

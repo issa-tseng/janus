@@ -238,7 +238,7 @@ class List extends OrderedMappable
 
   __destroy: ->
     # jettison reference-laden data:
-    this.list = null
+    #this.list = null
     this._watches = null
 
   @deserialize: (data) ->

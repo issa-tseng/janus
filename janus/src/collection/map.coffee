@@ -222,8 +222,8 @@ class Map extends Enumerable
   __destroy: ->
     # jettison all likely ties to other objects.
     this._parent = null
-    this.data = null
-    this._watches = null
+    #this.data = null
+    this._watches = Nothing
 
   # Takes in a data hash and populates a new Map (or Map covariant) with its data.
   @deserialize: (data) -> new this(data)

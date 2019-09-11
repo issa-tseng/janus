@@ -306,8 +306,7 @@
 
     Map.prototype.__destroy = function() {
       this._parent = null;
-      this.data = null;
-      return this._watches = null;
+      return this._watches = Nothing;
     };
 
     Map.deserialize = function(data) {
