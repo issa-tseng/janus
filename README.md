@@ -50,8 +50,9 @@ Janus is relatively mature and nearing API stabilization. Some minor calls are s
 
 * `0.6` will be a refactoring of `Collection`:
     * For the most part, the external collection API is entirely satisfactory, in that it resembles a standard collection API. But it merits a revisit.
-    * Everything is eagerly-evaluated, which simplifies a lot of operations, but probably shouldn't be the only option.
+    * Everything is eagerly-evaluated, which simplifies a lot of operations, but probably shouldn't be the only option, or possibly even the default.
     * Some `fold`-related operations are nearly unusable at the moment, performance-wise.
+    * Resource management is tricky because every chained invocation produces an eager object that must be manually deallocated.
     * Alternative approaches to our current system, possibly including a greater focus on lazy evaluation and/or transducers, will be evaluated.
     * The use of such a lazy transducer system in a more-performant render system will be considered.
     * `0.6` should be **almost entirely backward compatible**.

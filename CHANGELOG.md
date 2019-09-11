@@ -22,15 +22,19 @@ With the exception of Collection folds, rework everything in the framework that 
         * `case` no longer typechecks full case set on `match` which makes it a simple tight loop. It also once again relies on `instanceof` and class instances. Generally much more pleasant to look at.
     * Request/Resolve got reworked one last time:
         * Resolvers are now just simple functions (req) -> Varying[types.result[x]] rather than class instances.
-        * `Model` barely knows about request resolution anymore; all it has is an `autoResolveWith(app)` which routes that app to all resolving attributes it owns.
+        * `Model` now knows nothing about request resolution. `App` deals with it directly.
         * All the magic around setting request results into the Model now live on the `ReferenceAttribute` itself, which feels cleaner.
     * `Set` was completely reimplemented and now provides much-closer-to true Set semantics.
     * `Model` issues/validate moved around a little bit; their names make more sense now.
     * `Map` and `List` no longer rely on events to manage their Varying change propagation.
+    * The `KeySet` and `IndexList` enumerations have been rewritten. Most of the options for `KeySet` (formerly `KeyList`) have been eliminated.
+    * `Traversal` has been recoded to properly allow the intended full semantics. The default diff functions have been rewritten to not rely on unintended bugs.
     * `Base` no longer derives from `EventEmitter2`; it lazily instantiates one when it needs it.
+    * `DomView` no longer uses `.withOptions()`; the only option is the viewmodel class, which is an optional leading parameter in `DomView.build`.
 * Quality of life improvements:
     * We now support `Varying.all([ vx, vy, vz ]).react((x, y, z) -> …)` to directly react on multiple Varyings.
     * In ES6, we now allow `for (const x of list)` where list is a Janus `List`.
+    * Named templates allow references into template trees for reuse elsewhere.
 * Fixes:
     * General audit for memory leaks and accidental returns.
     * No longer rely on a global singleton (commit to peerDependencies on NPM).
