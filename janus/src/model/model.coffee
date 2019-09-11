@@ -1,6 +1,7 @@
 # **Model**s contain primarily an attribute bag, a schema for said bag, and
 # eventing around modifications to it.
 
+{ Base } = require('../core/base')
 cases = require('../core/types').from
 { match, otherwise } = require('../core/case')
 types = require('../core/types')
@@ -96,22 +97,23 @@ class Model extends Map
   )
 
   # Returns a list of the validation results that have been bound against this model.
-  validations: -> this._validations$ ?= do =>
+  validations: -> (this._validations$ ?= Base.managed(=>
     { List } = require('../collection/list')
     result = new List(this.constructor.schema.validations)
       .flatMap((binding) => binding.all.point(this.pointer()))
     result.destroyWith(this)
     result
+  ))()
 
   # Returns a list of the currently failing validation results.
   # Unwraps the types.validity.error case class because we know they're errors.
-  errors: -> this._errors$ ?= this.validations().filter(types.validity.error.match).map((error) -> error.getError())
+  errors: -> (this._errors$ ?= Base.managed(=>
+    this.validations().filter(types.validity.error.match).map((error) -> error.getError())))()
 
   # Returns a `Varying` of `true` or `false` depending on whether this model is
   # valid or not.
-  valid: -> this._valid$ ?=
-    this.errors().length.map((length) -> length is 0)
-  valid_: -> this.errors().length_ is 0
+  valid: -> (this._valid$ ?= Base.managed(=> this.errors().length.map((length) -> length is 0)))()
+  valid_: -> this.errors().length_ is 0 # TODO: leaks
 
   # Handles parent changes; mostly exists in Map but we wrap to additionally
   # bail if the changed parent attribute is a bound value; we want that to
