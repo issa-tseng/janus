@@ -18,14 +18,9 @@
     extend(KeySet, superClass);
 
     function KeySet(parent1) {
-      var i, key, len, ref1;
       this.parent = parent1;
       KeySet.__super__.constructor.call(this);
-      ref1 = Enumeration.map_(this.parent);
-      for (i = 0, len = ref1.length; i < len; i++) {
-        key = ref1[i];
-        Set.prototype.add.call(this, key);
-      }
+      this._list.add(Enumeration.map_(this.parent));
       this.listenTo(this.parent, 'changed', (function(_this) {
         return function(key, newValue, oldValue) {
           if ((newValue != null) && (oldValue == null)) {

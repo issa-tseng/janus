@@ -15,7 +15,7 @@
 class KeySet extends Set
   constructor: (@parent) ->
     super()
-    Set.prototype.add.call(this, key) for key in Enumeration.map_(this.parent)
+    this._list.add(Enumeration.map_(this.parent))
     this.listenTo(this.parent, 'changed', (key, newValue, oldValue) =>
       if newValue? and not oldValue? then Set.prototype.add.call(this, key)
       else if oldValue? and not newValue? then Set.prototype.remove.call(this, key)
