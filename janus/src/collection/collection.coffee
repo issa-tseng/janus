@@ -14,9 +14,6 @@ folds = require('./folds')
 { SumFold } = require('./derived/sum-fold')
 
 
-# cache this circularly referenced module once we fetch it:
-Enumeration$ = null
-
 # The base for all data structures. Provides basic enumeration functions around
 # keys/indices, and all classes implementing Enumerable are expected to also
 # provide:
@@ -25,28 +22,23 @@ Enumeration$ = null
 # * set: (key, value) -> value
 # * shadow: -> Enumerable
 #
-# Most classes (not Set) also provide these:
+# Most Enumerables (not Set) also provide these:
 # * mapPairs: ((key, value) -> T) -> [T]
 # * flatMapPairs: ((key, value) -> Varying?[T]) -> [T]
 class Enumerable extends Base
   isEnumerable: true
 
-  # Calls into the Enumeration module to get either a live KeySet or a static
-  # array enumerating the keys of this Map or List. The options are passed
-  # directly to Enumeration and only matter for Maps, but consist of:
-  # * scope: (all|direct) all inherited or only dir
-  enumerate_: (options) -> (Enumeration$ ?= require('./enumeration').Enumeration).get_(this, options)
-  enumerate: (options) ->
+  Enumeration$ = null # circular ref cache
+  enumerate_: -> (Enumeration$ ?= require('./enumeration').Enumeration).get_(this)
+  enumerate: ->
     Enumeration$ ?= require('./enumeration').Enumeration
-    if options?
-      Enumeration$.get(this, options)
-    else
-      (this.enumeration$ ?= Base.managed(=> Enumeration$.get(this)))()
+    (this.enumerate$ ?= Base.managed(=> Enumeration$.get(this)))()
 
   serialize: -> Traversal.natural_(Traversal.default.serialize, this)
 
   modified: -> if this._parent? then this.diff(this._parent) else new Varying(false)
   diff: (other) -> Traversal.list(Traversal.default.diff, [ this, other ])
+
 
 # A `Mappable` provides map-like functions (map, filter, etc) and fires `add`
 # and `remove` events for every element that is added or removed from the list.
@@ -68,25 +60,22 @@ class Mappable extends Enumerable
   sum: -> SumFold.sum(this)
 
 
-# An `OrderedMappable` provides `add` and `remove` events for every element
-# that is added or removed from the list, along with a positional argument.
+# An `OrderedMappable` is index-oriented, and accordingly it provides a positional
+# arugment along with all its events, which now include 'moved'. It also provides
+# some additional order-dependent functionality.
 class OrderedMappable extends Mappable
   isOrderedMappable: true
 
-  # Rely on enumeration to give us mapPairs and flatMapPairs:
+  # rely on enumeration to give us mapPairs and flatMapPairs:
   mapPairs: (f) -> this.enumerate().mapPairs(f)
   flatMapPairs: (f) -> this.enumerate().flatMapPairs(f)
 
+  # order-dependent transformations:
   take: (x) -> new (require('./derived/taken-list').TakenList)(this, x)
-
-  # Can be passed in either as an arg list of Lists or as an array of Lists.
-  concat: (lists...) ->
-    new (require('./derived/catted-list').CattedList)([ this ].concat(lists))
-
-  # value may be Varying[x].
+  concat: (lists...) -> new (require('./derived/catted-list').CattedList)([ this ].concat(lists))
   indexOf: (value) -> IndexOfFold.indexOf(this, value)
 
-  # fold-like operations (ALPHA):
+  # full folds (CAUTION UNTIL v0.6):
   join: (joiner) -> folds.join(this, joiner)
   apply: (f) -> folds.apply(this, f)
   scanl: (memo, f) -> folds.scanl(this, memo, f)

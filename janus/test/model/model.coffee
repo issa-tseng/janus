@@ -524,6 +524,23 @@ describe 'Model', ->
 
       TestModel.deserialize( a: 1, b: { c: 2, d: 3 } ).data.should.eql({ a: 'a1', b: { c: 'bc2', d: 3 } })
 
+  describe 'enumerable inherits', ->
+    it 'should never be modified if there is no parent', ->
+      (new Model()).modified().get().should.equal(false)
+
+    it 'should check modified against its shadow parent', ->
+      parent = new Model()
+      child = parent.shadow()
+
+      result = null
+      child.modified().react((x) -> result = x)
+
+      result.should.equal(false)
+      parent.set('x', 9)
+      result.should.equal(false)
+      child.set('x', 8)
+      result.should.equal(true)
+
   describe 'lifecycle', ->
     it 'should destroy any created attributes when destroyed', ->
       destroyed = 0
