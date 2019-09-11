@@ -71,16 +71,20 @@ class DomView extends View
 
     return
 
-  @withOptions: (options) ->
-    class extends this
-      resolve: options.resolve
-      @viewModelClass: options.viewModelClass
+  @build: (x, y, z) ->
+    if arguments.length is 3
+      viewModelClass = x
+      fragment = y
+      template = z
+    else
+      fragment = x
+      template = y
 
-  @build: (fragment, template) ->
     class extends this
       dom: -> fragment.clone()
       preboundTemplate: template(fragment)
 
+      @viewModelClass = viewModelClass if viewModelClass?
       @fragment: fragment
       @template: template
 

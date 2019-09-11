@@ -15,9 +15,9 @@
   DomView = (function(superClass) {
     extend(DomView, superClass);
 
-    function DomView(subject, options1) {
+    function DomView(subject, options) {
       this.subject = subject;
-      this.options = options1 != null ? options1 : {};
+      this.options = options != null ? options : {};
       DomView.__super__.constructor.call(this, this.subject, this.options);
     }
 
@@ -165,24 +165,16 @@
       }
     };
 
-    DomView.withOptions = function(options) {
-      return (function(superClass1) {
-        extend(_Class, superClass1);
-
-        function _Class() {
-          return _Class.__super__.constructor.apply(this, arguments);
-        }
-
-        _Class.prototype.resolve = options.resolve;
-
-        _Class.viewModelClass = options.viewModelClass;
-
-        return _Class;
-
-      })(this);
-    };
-
-    DomView.build = function(fragment, template) {
+    DomView.build = function(x, y, z) {
+      var fragment, template, viewModelClass;
+      if (arguments.length === 3) {
+        viewModelClass = x;
+        fragment = y;
+        template = z;
+      } else {
+        fragment = x;
+        template = y;
+      }
       return (function(superClass1) {
         extend(_Class, superClass1);
 
@@ -195,6 +187,10 @@
         };
 
         _Class.prototype.preboundTemplate = template(fragment);
+
+        if (viewModelClass != null) {
+          _Class.viewModelClass = viewModelClass;
+        }
 
         _Class.fragment = fragment;
 

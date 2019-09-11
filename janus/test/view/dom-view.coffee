@@ -210,7 +210,7 @@ describe 'DomView', ->
         toString: -> 'view model instance'
       attr = null
       rendered = []
-      TestView = DomView.withOptions({ viewModelClass: ViewModel }).build($('<div/>'), template(
+      TestView = DomView.build(ViewModel, $('<div/>'), template(
         find('div').text(from.vm())
       ))
 
@@ -223,7 +223,7 @@ describe 'DomView', ->
 
       attr = null
       rendered = []
-      TestView = DomView.withOptions({ viewModelClass: ViewModel }).build($('<div/>'), template(
+      TestView = DomView.build(ViewModel, $('<div/>'), template(
         find('div').text(from.vm('test'))
       ))
 
@@ -567,7 +567,8 @@ describe 'DomView', ->
       class MyViewModel extends Model
         id: 'just a viewmodel'
 
-      WithViewModel = DomView.withOptions({ viewModelClass: MyViewModel }).build(
+      WithViewModel = DomView.build(
+        MyViewModel,
         $('<div/>'),
         find('div').text(from.self((view) -> view.viewModel.id))
       )
