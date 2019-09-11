@@ -111,6 +111,13 @@
       })(this)));
     };
 
+    View.prototype.reference = function(x) {
+      var attr;
+      attr = isString(x) ? this.subject.attribute(x) : x;
+      attr.resolveWith(this.options.app);
+      return this.reactTo(attr.model.get(attr.key), (function() {}));
+    };
+
     View.prototype.subviews = function() {
       return new List();
     };

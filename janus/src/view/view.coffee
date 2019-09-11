@@ -61,6 +61,12 @@ class View extends Base
     self (x) => if isFunction(x) then Varying.of(x(this)) else Varying.of(this)
   )
 
+  # manual request resolution. really just some shortcut syntax.
+  reference: (x) ->
+    attr = if isString(x) then this.subject.attribute(x) else x
+    attr.resolveWith(this.options.app)
+    this.reactTo(attr.model.get(attr.key), (->))
+
   # navigation information
   subviews: -> new List()
   subviews_: -> []

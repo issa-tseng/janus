@@ -120,62 +120,6 @@ describe 'App model', ->
           app.view(subject)
           calls.should.eql([ [ 'two', app ], [ 'three', app ] ])
 
-      it 'should manually resolve requested attributes from viewclass def', ->
-        resolvedWith = attr = null
-        subject = {
-          attribute: (key) ->
-            attr = key
-            { isReference: true, resolveWith: (x) -> resolvedWith = x }
-        }
-        class A
-          resolve: 'test'
-        app = new App( views: { get: -> A } )
-        app.view(subject)
-        attr.should.equal('test')
-        resolvedWith.should.equal(app)
-
-      it 'should manually resolve requested attributes from render options', ->
-        resolvedWith = attr = null
-        subject = {
-          attribute: (key) ->
-            attr = key
-            { isReference: true, resolveWith: (x) -> resolvedWith = x }
-        }
-        class A
-        app = new App( views: { get: -> A } )
-        app.view(subject, null, { resolve: 'test' })
-        attr.should.equal('test')
-        resolvedWith.should.equal(app)
-
-      it 'should resolve multiple requested attributes', ->
-        attrs = []
-        resolves = 0
-        subject = {
-          attribute: (key) ->
-            attrs.push(key)
-            { isReference: true, resolveWith: -> resolves += 1 }
-        }
-        class A
-        app = new App( views: { get: -> A } )
-        app.view(subject, null, { resolve: [ 'one', 'two' ] })
-        attrs.should.eql([ 'one', 'two' ])
-        resolves.should.equal(2)
-
-      it 'should have the view react to requested attributes', ->
-        watches = {}
-        subject = {
-          attribute: (key) -> {}
-          get: (key) -> watches[key] ?= new Varying()
-        }
-
-        class A extends Base
-        app = new App( views: { get: -> A } )
-        view = app.view(subject, null, { resolve: 'test' })
-        subject.get('test').refCount().get().should.equal(1)
-
-        view.destroy()
-        subject.get('test').refCount().get().should.equal(0)
-
       it 'should not resolve non-references', ->
         called = false
         subject = { attribute: -> { resolveWith: -> called = true } }

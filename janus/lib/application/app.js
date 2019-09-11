@@ -53,7 +53,7 @@
     });
 
     App.prototype.view = function(subject, criteria, options, parent) {
-      var attr, attrs, i, j, key, keys, klass, len, len1, ref1, resolve, resolveSource, view;
+      var attr, attrs, i, klass, len, view;
       if (criteria == null) {
         criteria = {};
       }
@@ -69,30 +69,11 @@
         parent: parent
       }, options));
       this.emit('createdView', view);
-      if (subject != null) {
-        if ((attrs = typeof subject.attributes === "function" ? subject.attributes() : void 0)) {
-          for (i = 0, len = attrs.length; i < len; i++) {
-            attr = attrs[i];
-            if (attr.isReference === true && attr.autoResolve === true) {
-              attr.resolveWith(this);
-            }
-          }
-        }
-        resolveSource = (ref1 = options.resolve) != null ? ref1 : view.resolve;
-        if ((resolveSource != null) && isFunction(subject.attribute)) {
-          resolve = isFunction(resolveSource) ? resolveSource() : resolveSource;
-          keys = isArray(resolve) ? resolve : [resolve];
-          for (j = 0, len1 = keys.length; j < len1; j++) {
-            key = keys[j];
-            if (!((attribute = subject.attribute(key)) != null)) {
-              continue;
-            }
-            if (attribute.isReference === true) {
-              attribute.resolveWith(this);
-            }
-            if (isFunction(subject.get)) {
-              view.reactTo(subject.get(key), (function() {}));
-            }
+      if ((attrs = subject != null ? typeof subject.attributes === "function" ? subject.attributes() : void 0 : void 0)) {
+        for (i = 0, len = attrs.length; i < len; i++) {
+          attr = attrs[i];
+          if (attr.isReference === true && attr.autoResolve === true) {
+            attr.resolveWith(this);
           }
         }
       }

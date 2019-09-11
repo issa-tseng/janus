@@ -80,3 +80,63 @@ describe 'View', ->
       view = new View()
       from.self().all.point(view.pointer()).get().should.equal(view)
 
+  describe 'reference resolution', ->
+    { App } = require('../../lib/application/app')
+    { attribute } = require('../../lib/model/schema')
+    { Reference } = require('../../lib/model/attribute')
+    { Varying } = require('../../lib/core/varying')
+    types = require('../../lib/core/types')
+
+    it 'should cause a reaction given an attribute', ->
+      appResolved = false
+      class X extends Model.build(
+        attribute 'ref', class extends Reference
+          request: {}
+      )
+      class TestApp extends App
+        resolver: -> ->
+          appResolved = true
+          new Varying(types.result.success(42))
+      app = new TestApp()
+      app.views.register(X, View)
+      x = new X()
+      view = app.view(x)
+
+      view.reference(x.attribute('ref'))
+      appResolved.should.equal(true)
+      x.get_('ref').should.equal(42)
+      x.get('ref').refCount().get().should.equal(1)
+
+    it 'should cause a reaction given an attribute name', ->
+      class X extends Model.build(
+        attribute 'ref', class extends Reference
+          request: {}
+      )
+      class TestApp extends App
+        resolver: -> -> new Varying(types.result.success(42))
+      app = new TestApp()
+      app.views.register(X, View)
+      x = new X()
+      view = app.view(x)
+
+      view.reference('ref')
+      x.get_('ref').should.equal(42)
+      x.get('ref').refCount().get().should.equal(1)
+
+    it 'should provide context and react for not-autoResolve attributes', ->
+      class X extends Model.build(
+        attribute 'ref', class extends Reference
+          autoResolve: false
+          request: {}
+      )
+      class TestApp extends App
+        resolver: -> -> new Varying(types.result.success(42))
+      app = new TestApp()
+      app.views.register(X, View)
+      x = new X()
+      view = app.view(x)
+
+      view.reference('ref')
+      x.get_('ref').should.equal(42)
+      x.get('ref').refCount().get().should.equal(1)
+

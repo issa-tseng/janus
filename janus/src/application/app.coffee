@@ -24,23 +24,10 @@ class App extends Model.build(
     view = new klass(subject, Object.assign({ app: this, parent }, options))
     this.emit('createdView', view)
 
-    # Handle reference resolution, both auto and manual.
-    if subject?
-      # autoresolution of Reference attributes:
-      if (attrs = subject.attributes?())
-        for attr in attrs when attr.isReference is true and attr.autoResolve is true
-          attr.resolveWith(this)
-
-      # manual resolution as specified in options/view properties:
-      resolveSource = options.resolve ? view.resolve
-      if resolveSource? and isFunction(subject.attribute)
-        resolve = if isFunction(resolveSource) then resolveSource() else resolveSource
-        keys = if isArray(resolve) then resolve else [ resolve ]
-        for key in keys when (attribute = subject.attribute(key))?
-          # we fire off an explicit resolve, in case auto was off. we also have
-          # the view react on the key for its lifetime to ensure resolution.
-          attribute.resolveWith(this) if attribute.isReference is true
-          view.reactTo(subject.get(key), (->)) if isFunction(subject.get)
+    # autoresolution of Reference attributes:
+    if (attrs = subject?.attributes?())
+      for attr in attrs when attr.isReference is true and attr.autoResolve is true
+        attr.resolveWith(this)
 
     view
 
