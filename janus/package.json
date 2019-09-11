@@ -1,7 +1,7 @@
 {
   "name": "janus",
   "description": "the two-faced application library-framework",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "author": "Issa Tseng <maintainer@heyissa.com>",
   "homepage": "http://janusjs.org",
   "repository": {
@@ -35,9 +35,9 @@
   "devDependencies": {
     "coffee-script": "1.12.2",
     "domino": "~2",
-    "nyc": "~14",
     "jquery": "~3",
     "mocha": "~5",
+    "nyc": "~14",
     "should": "~13"
   }
 }
