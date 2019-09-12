@@ -47,7 +47,7 @@ class ListPanelVM extends Model.build(
 ListPanelVM.ShowsLast = ListPanelVM.build(
   initial('shows-last', true))
 
-ListPanelView = InspectorView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).build($('
+ListPanelView = InspectorView.build(ListPanelVM.ShowsLast, $('
   <div class="janus-inspect-panel janus-inspect-list highlights">
     <div class="panel-title">
       List

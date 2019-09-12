@@ -47,7 +47,7 @@ FilteredEntryView = DomView.build($('
 FilteredListVM = ListPanelVM.build(
   bind('length', from.subject('target').flatMap((l) -> l.parent.length)))
 
-FilteredListView = InspectorView.withOptions({ viewModelClass: FilteredListVM }).build($('
+FilteredListView = InspectorView.build(FilteredListVM, $('
   <div class="janus-inspect-panel janus-inspect-list list-filtered highlights">
     <div class="panel-title">
       Filtered List

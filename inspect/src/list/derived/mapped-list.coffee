@@ -36,7 +36,7 @@ MappedEntryView = DomView.build($('
   )
 ))
 
-MappedListView = InspectorView.withOptions({ viewModelClass: ListPanelVM.ShowsLast }).build($('
+MappedListView = InspectorView.build(ListPanelVM.ShowsLast, $('
   <div class="janus-inspect-panel janus-inspect-list list-mapped highlights">
     <div class="panel-title">
       Mapped List

@@ -22,7 +22,7 @@ ArrayEntryView = DomView.build($('
 class ArrayPanelVM extends ListPanelVM.ShowsLast.build(ListForArray)
   update: ArrayEntityVM.prototype.update
 
-ArrayPanelView = InspectorView.withOptions({ viewModelClass: ArrayPanelVM }).build($('
+ArrayPanelView = InspectorView.build(ArrayPanelVM, $('
   <div class="janus-inspect-panel janus-inspect-list highlights">
     <div class="panel-title">
       Array

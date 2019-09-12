@@ -15,7 +15,7 @@ class ListEntityVM extends Model.build(
     .all.map((all, taken) -> max(0, all - taken)))
 )
 
-ListEntityView = InspectorView.withOptions({ viewModelClass: ListEntityVM }).build($('
+ListEntityView = InspectorView.build(ListEntityVM, $('
   <span class="janus-inspect-entity janus-inspect-list highlights">
     <span class="entity-title"><span class="entity-type"/></span>
     <span class="entity-content">

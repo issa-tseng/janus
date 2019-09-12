@@ -20,7 +20,7 @@ ReactionVM = Model.build(
   bind('changed', from('snapshot').get('changed'))
 )
 
-class ReactionView extends DomView.withOptions({ viewModelClass: ReactionVM }).build(
+class ReactionView extends DomView.build(ReactionVM, 
   $('<div class="reaction highlights"><span class="rxn-value"/></div>'),
   template(
     find('.reaction')
@@ -142,7 +142,7 @@ class VaryingPanel extends Model.build(
   bind('active-rxn-caller', from('active-rxn').get('caller'))
 )
 
-VaryingView = InspectorView.withOptions({ viewModelClass: VaryingPanel }).build($('
+VaryingView = InspectorView.build(VaryingPanel, $('
     <div class="janus-inspect-panel janus-inspect-varying highlights">
       <div class="panel-title">
         <span class="varying-title"/> #<span class="varying-id"/>

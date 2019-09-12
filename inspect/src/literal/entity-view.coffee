@@ -53,7 +53,7 @@ class ArrayEntityVM extends ListEntityVM.build(ListForArray)
     return
 
 # we use list classes here because we do want pretty much all of its styles.
-ArrayEntityView = InspectorView.withOptions({ viewModelClass: ArrayEntityVM }).build($('
+ArrayEntityView = InspectorView.build(ArrayEntityVM, $('
   <span class="janus-inspect-entity janus-inspect-list highlights">
     <span class="entity-title">Array</span>
     <span class="entity-content">
