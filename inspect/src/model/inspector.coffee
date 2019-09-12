@@ -1,4 +1,4 @@
-{ Map, Model, bind, from } = require('janus')
+{ Map, Set, Model, bind, from } = require('janus')
 
 
 ################################################################################
@@ -6,23 +6,25 @@
 # because enumerations only contain populate keys, we miss bindings that
 # evaluate to nothing. so we need to create something to augment that.
 
-# get a reference to the KeyList class (TODO: should we export these?)
-keyList = (new Map()).enumerate()
-KeyList = keyList.constructor
-keyList.destroy()
+class AllKeySet extends Set
+  constructor: (@parent) ->
+    super()
+    this._list.add(this.parent.enumerate_())
+    Set.prototype.add.call(this, key) for key of this.parent._bindings
+    Set.prototype.add.call(this, key) for key of schema.attributes if (schema = this.parent.constructor.schema)?
 
-class AllKeyList extends KeyList
-  constructor: (target, options) ->
-    super(target, options)
+    this.listenTo(this.parent, 'changed', (key, newValue, oldValue) =>
+      if newValue? and not oldValue?
+        Set.prototype.add.call(this, key)
+      else if oldValue? and not newValue? and not this.parent._bindings[key]?
+        Set.prototype.remove.call(this, key)
+      return
+    )
 
-    # add all bindings and attributes if they haven't already been picked up.
-    # _addKey already knows not to add duplicate keys.
-    this._addKey(key) for key of target._bindings
-    this._addKey(key) for key of schema.attributes if (schema = target.constructor.schema)?
-    return
-
-  _removeKey: (key) ->
-    super(key) unless this.target._bindings[key]?
+  mapPairs: (f) -> this.flatMap((k) => Varying.mapAll(f, new Varying(k), this.parent.get(k)))
+  flatMapPairs: (f) -> this.flatMap((k) => Varying.flatMapAll(f, new Varying(k), this.parent.get(k)))
+  add: undefined
+  remove: undefined
 
 
 ################################################################################
@@ -66,7 +68,7 @@ class WrappedModel extends Model.build(
   isWrappedModel: true
   constructor: (target, options) -> super({ target }, options)
 
-  enumerateAll: -> this.enumerateAll$ ?= new AllKeyList(this.get_('target'))
+  enumerateAll: -> this.enumerateAll$ ?= new AllKeySet(this.get_('target'))
   pairsAll: -> this.pairsAll$ ?= do =>
     target = this.get_('target')
     this.enumerateAll().map((key) -> new KeyPair({ target, key }))
