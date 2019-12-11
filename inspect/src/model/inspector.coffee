@@ -3,7 +3,7 @@
 
 ################################################################################
 # EXTENDED KEY LIST
-# because enumerations only contain populate keys, we miss bindings that
+# because enumerations only contain populated keys, we miss bindings that
 # evaluate to nothing. so we need to create something to augment that.
 
 class AllKeySet extends Set
@@ -70,8 +70,7 @@ class WrappedModel extends Model.build(
 
   enumerateAll: -> this.enumerateAll$ ?= new AllKeySet(this.get_('target'))
   pairsAll: -> this.pairsAll$ ?= do =>
-    target = this.get_('target')
-    this.enumerateAll().map((key) -> new KeyPair({ target, key }))
+    this.enumerateAll().map((key) => new KeyPair({ target: this.get_('target'), key }))
   @wrap: (m) -> if (m.isWrappedModel is true) then m else (new WrappedModel(m))
 
 
