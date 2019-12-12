@@ -51,6 +51,10 @@
       })(this)))();
     };
 
+    Enumerable.prototype.keys_ = Enumerable.prototype.enumerate_;
+
+    Enumerable.prototype.keys = Enumerable.prototype.enumerate;
+
     Enumerable.prototype.serialize = function() {
       return Traversal.natural_(Traversal["default"].serialize, this);
     };

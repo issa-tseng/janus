@@ -34,6 +34,9 @@ class Enumerable extends Base
     Enumeration$ ?= require('./enumeration').Enumeration
     (this.enumerate$ ?= Base.managed(=> Enumeration$.get(this)))()
 
+  keys_: @prototype.enumerate_
+  keys: @prototype.enumerate
+
   serialize: -> Traversal.natural_(Traversal.default.serialize, this)
 
   modified: -> if this._parent? then this.diff(this._parent) else new Varying(false)

@@ -327,6 +327,14 @@
       });
     };
 
+    List.prototype.values_ = function() {
+      return this.list.slice();
+    };
+
+    List.prototype.values = function() {
+      return this;
+    };
+
     List.prototype.shadow = function() {
       var item, newArray;
       newArray = (function() {

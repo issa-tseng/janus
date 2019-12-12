@@ -173,9 +173,9 @@ class Map extends Enumerable
     this.emit('changed', key, newValue, oldValue)
     return
 
-  # Simple shortcuts with familiar names.
-  keys_: Enumerable.prototype.enumerate_
-  keys: Enumerable.prototype.enumerate
+  # Simple shortcuts.
+  values_: -> this.get_(key) for key in this.enumerate_()
+  values: -> this.enumerate().flatMap((k) => this.get(k))
 
   # Maps this map's values onto a new Map, with the same key structure. The
   # mapping functions are passed (key, value) as the arguments.

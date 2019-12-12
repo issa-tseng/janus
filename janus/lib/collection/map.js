@@ -214,9 +214,24 @@
       this.emit('changed', key, newValue, oldValue);
     };
 
-    Map.prototype.keys_ = Enumerable.prototype.enumerate_;
+    Map.prototype.values_ = function() {
+      var i, key, len, ref1, results;
+      ref1 = this.enumerate_();
+      results = [];
+      for (i = 0, len = ref1.length; i < len; i++) {
+        key = ref1[i];
+        results.push(this.get_(key));
+      }
+      return results;
+    };
 
-    Map.prototype.keys = Enumerable.prototype.enumerate;
+    Map.prototype.values = function() {
+      return this.enumerate().flatMap((function(_this) {
+        return function(k) {
+          return _this.get(k);
+        };
+      })(this));
+    };
 
     Map.prototype.mapPairs = function(f) {
       var result;

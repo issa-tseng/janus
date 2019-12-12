@@ -379,6 +379,17 @@ describe 'Map', ->
       s.set('c', 3)
       s.length_.should.equal(3)
 
+    it 'should give all values immediately', ->
+      s = new Map( a: 1, b: 2, c: { d: 3 } )
+      s.values_().should.eql([ 1, 2, 3 ])
+
+    it 'should give all values as a List', ->
+      s = new Map( a: 1, b: 2, c: { d: 3 } )
+      sv = s.values()
+
+      s.set('c.e', 4)
+      sv.list.should.eql([ 1, 2, 3, 4 ])
+
   describe 'mapping', ->
     describe 'mapPairs', ->
       it 'should provide the appropriate k/v arguments to the mapping function', ->

@@ -49,7 +49,6 @@ _removed = (list, midx) ->
   return
 
 
-# We derive off of Model so that we have free access to attributes.
 class List extends OrderedMappable
   isList: true
 
@@ -214,6 +213,10 @@ class List extends OrderedMappable
   empty: -> this.length.map((length) -> length is 0)
   nonEmpty_: -> this.length_ > 0
   nonEmpty: -> this.length.map((length) -> length > 0)
+
+  # Silly mirrors of Map shortcuts for completeness:
+  values_: -> this.list.slice()
+  values: -> this
 
   # A shadow list is really just a clone that has a backreference so that we
   # can determine later if it has changed. We could copy-on-write, but that
