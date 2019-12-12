@@ -68,12 +68,21 @@ describe 'map enumeration', ->
         for val in [ 'a', 'b.c', 'b.d', 'e' ]
           kl.includes_(val).should.equal(true)
 
-      it 'should handle shadowed all-scope correctly', ->
+      it 'should not reinclude shadowed keys', ->
+        s = new Map( x: 42 )
+        s2 = s.shadow()
+        s2.set('x', 108)
+
+        kl = new KeySet(s2)
+        kl.length_.should.equal(1)
+        kl.includes_('x').should.equal(true)
+
+      it 'should handle nested shadowing correctly', ->
         s = new Map( a: 1, b: 2 )
         s2 = s.shadow()
         s2.set( c: { d: 3, e: 4 }, f: 5 )
 
-        kl = new KeySet(s2, scope: 'all' )
+        kl = new KeySet(s2)
         kl.length_.should.equal(5)
         for val in [ 'c.d', 'c.e', 'f', 'a', 'b' ]
           kl.includes_(val).should.equal(true)
@@ -175,6 +184,12 @@ describe 'map enumeration', ->
       keys = Enumeration.map_(s2)
 
       keys.should.eql([ 'a', 'c.f', 'b', 'c.d.e' ])
+
+    it 'should not reinclude shadowed keys', ->
+      s = new Map( x: 42 )
+      s2 = s.shadow()
+      s2.set('x', 108)
+      Enumeration.map_(s2).should.eql([ 'x' ])
 
   describe 'module map get', ->
     it 'returns a KeySet', ->

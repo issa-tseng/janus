@@ -125,8 +125,10 @@
       scanMap = (function(_this) {
         return function(map) {
           return traverse(map.data, function(key) {
-            if (!(result.indexOf(key) >= 0)) {
-              return result.push(key.join('.'));
+            var joined;
+            joined = key.join('.');
+            if (!(result.indexOf(joined) >= 0)) {
+              return result.push(joined);
             }
           });
         };

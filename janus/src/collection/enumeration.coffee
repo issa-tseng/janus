@@ -58,7 +58,10 @@ Enumeration =
 
   map_: (map) ->
     result = []
-    scanMap = (map) => traverse(map.data, (key) => result.push(key.join('.')) unless result.indexOf(key) >= 0)
+    scanMap = (map) => traverse(map.data, (key) =>
+      joined = key.join('.')
+      result.push(joined) unless result.indexOf(joined) >= 0
+    )
     ptr = map
     while ptr?
       scanMap(ptr)
