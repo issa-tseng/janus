@@ -1,7 +1,8 @@
 { DomView, template, find, from, initial, List, bind, Trait } = require('janus')
 { InspectorView } = require('../common/inspector')
 { ListEntityVM, ListEntityView } = require('../list/entity-view')
-{ TruncatingLiteral, DateInspector, ArrayInspector } = require('./inspector')
+{ TruncatingLiteral, DateInspector, ArrayInspector, ObjectInspector } = require('./inspector')
+{ pluralize } = require('../util')
 $ = require('../dollar')
 { inspect } = require('../inspect')
 
@@ -69,13 +70,39 @@ ArrayEntityView = InspectorView.build(ArrayEntityVM, $('
   find('.array-update').on('click', (e, s, { viewModel }) -> viewModel.update())
 ))
 
+################################################################################
+# OBJECT LITERAL
+
+# TODO: don't cheat with model classes here
+ObjectEntityView = InspectorView.build($('
+  <span class="janus-inspect-entity janus-inspect-object highlights">
+    <span class="entity-title">Object</span>
+    <span class="entity-content">
+      <span class="model-identifier"></span>
+      <span class="model-pairs">(<span class="model-count"/> <span class="model-count-label"/>)</span>
+      <button class="object-update"/>
+    </span>
+  </span>'), template(
+
+  find('.model-identifier').text(from('identifier'))
+
+  find('.model-count').text(from('keys').map((k) -> k.length_))
+  find('.model-count-label').text(from('keys').map((k) -> k.length_)
+    .map(pluralize('pair', 'pairs')))
+
+  find('.object-update').on('click', (e, inspector) -> inspector.update())
+))
+
+
 module.exports = {
   TruncatingLiteral,
   DateTimeLiteralView,
   ListForArray, ArrayEntityVM, ArrayEntityView,
+  ObjectEntityView
   registerWith: (library) ->
     library.register(TruncatingLiteral, TruncatingLiteralView)
     library.register(DateInspector, DateTimeLiteralView)
     library.register(ArrayInspector, ArrayEntityView)
+    library.register(ObjectInspector, ObjectEntityView)
 }
 

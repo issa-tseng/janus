@@ -38,15 +38,28 @@ class ArrayInspector extends Model
   update: -> this.set('length', this.get_('target').length)
   @inspect: (target) -> new ArrayInspector({ target, length: target.length })
 
+class ObjectWrapper
+  constructor: (@value) ->
+class ObjectInspector extends Model
+  isInspector: true
+  _initialize: -> this.update()
+  update: ->
+    obj = this.get_('target').value
+    this.set('identifier', obj.name ? obj.title ? obj.label ? obj.id ? obj.uid)
+    this.set('keys', new List(Object.keys(obj)))
+    return
+  @inspect: (obj) -> new ObjectInspector({ target: new ObjectWrapper(obj) })
+
 class DateInspector extends Model
   isInspector: true
   @inspect: (date) -> new DateInspector({ target: DateTime.fromJSDate(date) })
 
 module.exports = {
-  TruncatingLiteral, ArrayInspector, DateInspector,
+  TruncatingLiteral, ArrayInspector, ObjectInspector, DateInspector,
   registerWith: (library) ->
     library.register(type, inspectLiteral) for type in [ String, Number, Boolean, null ]
     library.register(Array, ArrayInspector.inspect)
+    # Object is handled specially in inspect
     library.register(Date, DateInspector.inspect)
     return
 }

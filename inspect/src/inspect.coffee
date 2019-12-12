@@ -1,5 +1,5 @@
 { Library } = require('janus')
-{ stringify } = require('./util')
+{ ObjectInspector } = require('./literal/inspector')
 { isPlainObject, isPrimitive } = require('janus').util
 
 # get inspectors and create inspect().
@@ -16,8 +16,7 @@ require('./varying/inspector').registerWith(inspectorLibrary)
 # one little special case: plain objects are too dangerous to register in the
 # library so instead we trap it here and deal with it.
 inspect = (x) ->
-  # TODO: actual entity/panel for plain Object.
-  if isPlainObject(x) then stringify(x)
+  if isPlainObject(x) then ObjectInspector.inspect(x)
   else if !x? or isPrimitive(x) then inspectorLibrary.get(x)(x) # avoids contortions in logic below
   else if x.destroyed is true then null # TODO: show something here.
   else if x.__inspector? then x.__inspector
