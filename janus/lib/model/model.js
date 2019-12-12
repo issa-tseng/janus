@@ -181,8 +181,14 @@
     };
 
     Model.prototype.valid = function() {
-      return this._valid$ != null ? this._valid$ : this._valid$ = this.errors().length.map(function(length) {
-        return length === 0;
+      return this._valid$ != null ? this._valid$ : this._valid$ = Varying.managed(((function(_this) {
+        return function() {
+          return _this.errors();
+        };
+      })(this)), function(errors) {
+        return errors.length.map(function(length) {
+          return length === 0;
+        });
       });
     };
 

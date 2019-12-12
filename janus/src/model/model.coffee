@@ -112,7 +112,10 @@ class Model extends Map
 
   # Returns a `Varying` of `true` or `false` depending on whether this model is
   # valid or not.
-  valid: -> (this._valid$ ?= Base.managed(=> this.errors().length.map((length) -> length is 0)))()
+  valid: -> this._valid$ ?= Varying.managed(
+    (=> this.errors()),
+    (errors) -> errors.length.map((length) -> length is 0)
+  )
   valid_: -> this.errors().length_ is 0 # TODO: leaks
 
   # Handles parent changes; mostly exists in Map but we wrap to additionally
