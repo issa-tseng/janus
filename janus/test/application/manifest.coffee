@@ -180,6 +180,26 @@ describe 'manifest', ->
         result.should.equal(firstResult)
         done()
 
+  it 'should function as a resolving Thenable', ->
+    { TestModel, TestView, app } = env()
+    Manifest.run(app, new TestModel())
+      .should.be.resolved()
+      .then((result) ->
+        result.should.be.an.instanceOf(TestView)
+      )
+
+  it 'should function as a rejecting Thenable', ->
+    trait = Trait(
+      validate(from('failone').map(failIfTrue(1)))
+      validate(from('failtwo').map(failIfTrue(2)))
+    )
+    { TestModel, TestView, app } = env({ trait })
+    m = Manifest.run(app, new TestModel( failone: true ))
+      .should.be.rejected()
+      .then((errors) ->
+        errors.list.should.eql([ 1 ])
+      )
+
   it 'should isolate its own App events', (done) ->
     result = null
     resolvers = []

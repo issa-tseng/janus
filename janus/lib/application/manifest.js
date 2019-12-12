@@ -92,6 +92,24 @@
       this.stopAll();
     };
 
+    Manifest.prototype.then = function(resolve, reject) {
+      return new Promise((function(_this) {
+        return function(resolve, reject) {
+          return _this.reactTo(_this.result, function(result) {
+            if (!types.result.complete.match(result)) {
+              return;
+            }
+            this.stop();
+            if (types.result.success.match(result)) {
+              resolve(result.get());
+            } else {
+              reject(result.get());
+            }
+          });
+        };
+      })(this)).then(resolve, reject);
+    };
+
     Manifest.run = function(app, model, criteria, options) {
       return new this(app, model, criteria, options);
     };

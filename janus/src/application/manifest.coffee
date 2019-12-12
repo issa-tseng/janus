@@ -74,6 +74,18 @@ class Manifest extends Base
     this.stopAll() # immediately stop listening to things.
     return
 
+  then: (resolve, reject) ->
+    new Promise((resolve, reject) =>
+      this.reactTo(this.result, (result) ->
+        return unless types.result.complete.match(result)
+        this.stop()
+
+        if types.result.success.match(result) then resolve(result.get())
+        else reject(result.get())
+        return
+      )
+    ).then(resolve, reject)
+
   @run: (app, model, criteria, options) -> new this(app, model, criteria, options)
 
 
