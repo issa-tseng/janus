@@ -87,14 +87,11 @@ Traversal.default =
         ))
       else
         value(new Varying(oa isnt ob))
-    map: (k, [ va, vb ], _, attribute) ->
-      if va? and vb?
-        if (va?.isEnumerable is true and vb?.isEnumerable is true) and (va.isMappable is vb.isMappable)
-          recurse([ va, vb ])
-        else
-          value(va isnt vb)
+    map: (k, [ va, vb ]) ->
+      if (va?.isEnumerable is true and vb?.isEnumerable is true) and (va.isMappable is vb.isMappable)
+        recurse([ va, vb ])
       else
-        value(va? or vb?)
+        value(va isnt vb)
     reduce: (list) -> list.any()
 
 module.exports = { Traversal }

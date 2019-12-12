@@ -157,17 +157,13 @@
           return value(new Varying(oa !== ob));
         }
       },
-      map: function(k, arg, _, attribute) {
+      map: function(k, arg) {
         var va, vb;
         va = arg[0], vb = arg[1];
-        if ((va != null) && (vb != null)) {
-          if (((va != null ? va.isEnumerable : void 0) === true && (vb != null ? vb.isEnumerable : void 0) === true) && (va.isMappable === vb.isMappable)) {
-            return recurse([va, vb]);
-          } else {
-            return value(va !== vb);
-          }
+        if (((va != null ? va.isEnumerable : void 0) === true && (vb != null ? vb.isEnumerable : void 0) === true) && (va.isMappable === vb.isMappable)) {
+          return recurse([va, vb]);
         } else {
-          return value((va != null) || (vb != null));
+          return value(va !== vb);
         }
       },
       reduce: function(list) {
