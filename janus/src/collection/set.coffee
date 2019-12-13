@@ -61,7 +61,7 @@ class Set extends Mappable
   # all the list-like functions can get implemented based on our captive list. this
   # does mean that the resulting derivedlists will impose an ordering and indices
   # but i feel like we can live with that. maybe someday we do this custom. (defining
-  # Set#map as returning OrderedMappable solves some philosophical issues anyway.)
+  # Set#map as returning Sequence solves some philosophical issues anyway.)
   filter: (f) -> this._list.filter(f)
   map: (f) -> this._list.map(f)
   flatMap: (f) -> this._list.flatMap(f)

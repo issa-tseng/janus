@@ -4,7 +4,7 @@
 
 { Base } = require('../core/base')
 { Varying } = require('../core/varying')
-{ OrderedMappable } = require('./collection')
+{ Sequence } = require('./collection')
 util = require('../util/util')
 
 
@@ -49,7 +49,7 @@ _removed = (list, midx) ->
   return
 
 
-class List extends OrderedMappable
+class List extends Sequence
   isList: true
 
   # We take a list of elements, and initialize to empty list if nothing is given.
@@ -262,7 +262,7 @@ class DerivedList extends List
   constructor: ->
     # still call Base to set up important things, but skip List constructor as
     # it tries to add the initial items.
-    OrderedMappable.call(this)
+    Sequence.call(this)
     this.list = []
     this._watches = []
     this._initialize?()

@@ -45,6 +45,10 @@ class Enumerable extends Base
 
 # A `Mappable` provides map-like functions (map, filter, etc) and fires `add`
 # and `remove` events for every element that is added or removed from the list.
+#
+# Mathematically speaking, all Enumerable things should also support all these
+# operations. But we haven't implemented most of them for Maps, so for now we
+# have this separation.
 class Mappable extends Enumerable
   isMappable: true
 
@@ -63,11 +67,11 @@ class Mappable extends Enumerable
   sum: -> SumFold.sum(this)
 
 
-# An `OrderedMappable` is index-oriented, and accordingly it provides a positional
+# A `Sequence` is index-oriented, and accordingly it provides a positional
 # arugment along with all its events, which now include 'moved'. It also provides
 # some additional order-dependent functionality.
-class OrderedMappable extends Mappable
-  isOrderedMappable: true
+class Sequence extends Mappable
+  isSequence: true
 
   # rely on enumeration to give us mapPairs and flatMapPairs:
   mapPairs: (f) -> this.enumerate().mapPairs(f)
@@ -85,5 +89,5 @@ class OrderedMappable extends Mappable
   foldl: (memo, f) -> folds.foldl(this, memo, f)
 
 
-module.exports = { Enumerable, Mappable, OrderedMappable }
+module.exports = { Enumerable, Mappable, Sequence }
 
