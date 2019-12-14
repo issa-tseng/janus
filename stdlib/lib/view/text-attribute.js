@@ -49,11 +49,8 @@
     TextAttributeEditView: TextAttributeEditView,
     MultilineTextAttributeEditView: MultilineTextAttributeEditView,
     registerWith: function(library) {
-      library.register(Text, TextAttributeEditView, {
-        context: 'edit'
-      });
+      library.register(Text, TextAttributeEditView);
       return library.register(Text, MultilineTextAttributeEditView, {
-        context: 'edit',
         style: 'multiline'
       });
     }

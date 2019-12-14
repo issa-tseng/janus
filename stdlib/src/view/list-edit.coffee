@@ -80,7 +80,7 @@ class ListEditView extends ListView
     # overridden using renderWrapper), and default the child to an edit context
     # by default. (we also provide a reference to the subject list)
     oldRenderItem = this.options.renderItem
-    modifiedRenderItem = (render) -> oldRenderItem(render.context('edit')) # default to edit
+    modifiedRenderItem = (render) -> oldRenderItem(render)
     this.options.renderWrapper ?= (x) -> x
     this.options.renderItem = (render) =>
       this.options.renderWrapper(
@@ -98,6 +98,6 @@ module.exports = {
     library.register(Boolean, ListEditItemView, context: 'edit-wrapper')
     library.register(String, ListEditItemView, context: 'edit-wrapper')
     library.register(Base, ListEditItemView, context: 'edit-wrapper')
-    library.register(List, ListEditView, context: 'edit')
+    library.register(List, ListEditView)
 }
 

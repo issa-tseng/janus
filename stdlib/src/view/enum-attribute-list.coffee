@@ -39,7 +39,7 @@ class EnumAttributeListEditView extends DomView.build(
 module.exports = {
   EnumAttributeListEditView
   registerWith: (library) ->
-    library.register(Enum, EnumAttributeListEditView, context: 'edit', style: 'list')
+    library.register(Enum, EnumAttributeListEditView, style: 'list')
 }
 
 

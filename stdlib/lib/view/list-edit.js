@@ -94,7 +94,7 @@
       ListEditView.__super__._initialize.call(this);
       oldRenderItem = this.options.renderItem;
       modifiedRenderItem = function(render) {
-        return oldRenderItem(render.context('edit'));
+        return oldRenderItem(render);
       };
       if ((base = this.options).renderWrapper == null) {
         base.renderWrapper = function(x) {
@@ -131,9 +131,7 @@
       library.register(Base, ListEditItemView, {
         context: 'edit-wrapper'
       });
-      return library.register(List, ListEditView, {
-        context: 'edit'
-      });
+      return library.register(List, ListEditView);
     }
   };
 

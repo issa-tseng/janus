@@ -25,7 +25,7 @@ module.exports = {
   TextAttributeEditView,
   MultilineTextAttributeEditView,
   registerWith: (library) ->
-    library.register(Text, TextAttributeEditView, context: 'edit')
-    library.register(Text, MultilineTextAttributeEditView, context: 'edit', style: 'multiline')
+    library.register(Text, TextAttributeEditView)
+    library.register(Text, MultilineTextAttributeEditView, style: 'multiline')
 }
 

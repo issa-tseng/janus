@@ -75,7 +75,7 @@ module.exports = {
     library.register(Boolean, ListSelectItemView, context: 'select-wrapper')
     library.register(String, ListSelectItemView, context: 'select-wrapper')
     library.register(Base, ListSelectItemView, context: 'select-wrapper')
-    library.register(Enum, EnumAttributeListEditView, context: 'edit', style: 'button-list')
+    library.register(Enum, EnumAttributeListEditView, style: 'button-list')
 }
 
 

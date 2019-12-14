@@ -17,9 +17,7 @@
   module.exports = {
     NumberAttributeEditView: NumberAttributeEditView,
     registerWith: function(library) {
-      return library.register(Number, NumberAttributeEditView, {
-        context: 'edit'
-      });
+      return library.register(Number, NumberAttributeEditView);
     }
   };
 

@@ -12,5 +12,5 @@ NumberAttributeEditView = DomView.build(
   )
 )
 
-module.exports = { NumberAttributeEditView, registerWith: (library) -> library.register(Number, NumberAttributeEditView, context: 'edit') }
+module.exports = { NumberAttributeEditView, registerWith: (library) -> library.register(Number, NumberAttributeEditView) }
 

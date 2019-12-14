@@ -223,9 +223,7 @@
   module.exports = {
     EnumAttributeEditView: EnumAttributeEditView,
     registerWith: function(library) {
-      return library.register(Enum, EnumAttributeEditView, {
-        context: 'edit'
-      });
+      return library.register(Enum, EnumAttributeEditView);
     }
   };
 

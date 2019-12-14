@@ -63,7 +63,6 @@
     EnumAttributeListEditView: EnumAttributeListEditView,
     registerWith: function(library) {
       return library.register(Enum, EnumAttributeListEditView, {
-        context: 'edit',
         style: 'list'
       });
     }

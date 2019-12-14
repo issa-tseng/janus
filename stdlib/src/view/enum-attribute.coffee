@@ -150,5 +150,5 @@ class EnumAttributeEditView extends DomView
     update()
     return
 
-module.exports = { EnumAttributeEditView, registerWith: (library) -> library.register(Enum, EnumAttributeEditView, context: 'edit') }
+module.exports = { EnumAttributeEditView, registerWith: (library) -> library.register(Enum, EnumAttributeEditView) }
 

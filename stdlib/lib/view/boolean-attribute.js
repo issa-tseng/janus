@@ -31,11 +31,8 @@
     BooleanAttributeEditView: BooleanAttributeEditView,
     BooleanButtonAttributeEditView: BooleanButtonAttributeEditView,
     registerWith: function(library) {
-      library.register(Boolean, BooleanAttributeEditView, {
-        context: 'edit'
-      });
+      library.register(Boolean, BooleanAttributeEditView);
       return library.register(Boolean, BooleanButtonAttributeEditView, {
-        context: 'edit',
         style: 'button'
       });
     }

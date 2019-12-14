@@ -7,7 +7,7 @@ $ = require('../../lib/view/dollar')
 
 # register LiteralView for our tests to make our lives easier.
 testLibrary = new Library()
-testLibrary.register(Number, require('../../lib/view/literal').LiteralView, context: 'edit')
+testLibrary.register(Number, require('../../lib/view/literal').LiteralView)
 testLibrary.register(Number, ListEditItemView, context: 'edit-wrapper')
 testApp = new App( views: testLibrary )
 
@@ -55,7 +55,7 @@ describe 'view', ->
 
     it 'should allow chaining on its wrapper render mutator', ->
       library = new Library()
-      library.register(Number, require('../../lib/view/literal').LiteralView, context: 'edit')
+      library.register(Number, require('../../lib/view/literal').LiteralView)
       library.register(Number, ListEditItemView, context: 'custom')
       app = new App( views: library )
 

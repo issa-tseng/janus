@@ -91,7 +91,6 @@
         context: 'select-wrapper'
       });
       return library.register(Enum, EnumAttributeListEditView, {
-        context: 'edit',
         style: 'button-list'
       });
     }
