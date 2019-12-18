@@ -135,16 +135,6 @@
       _changed(this, key, value, oldValue);
     };
 
-    Map.prototype.unsetAll = function(attrs) {
-      traverseAll(this.data, (function(_this) {
-        return function(path, value) {
-          if (deepGet(attrs, path) == null) {
-            return _this.unset(path.join('.'));
-          }
-        };
-      })(this));
-    };
-
     Map.prototype.unset = function(key) {
       var oldValue;
       if (this._parent != null) {

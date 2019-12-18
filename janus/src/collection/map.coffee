@@ -109,14 +109,6 @@ class Map extends Enumerable
     _changed(this, key, value, oldValue)
     return
 
-  # Takes an entire data bag, and replaces our own data with it, firing events as needed.
-  unsetAll: (attrs) ->
-    # first clear off data values that are about to no longer exist, then write over.
-    traverseAll(this.data, (path, value) =>
-      this.unset(path.join('.')) unless deepGet(attrs, path)?
-    )
-    return
-
   # Clear the value of some key and returns the cleared value. If we are a shadow
   # copy, we'll actually leave behind a sentinel so that we know not to read into
   # our parent. Fires events as needed.
