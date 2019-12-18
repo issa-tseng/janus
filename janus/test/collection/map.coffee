@@ -156,16 +156,6 @@ describe 'Map', ->
         (map.get_('cafe.vivace') is null).should.equal(true)
         (map.get_('cafe') is null).should.equal(true)
 
-    describe 'unsetAll', ->
-      it 'should clear all keys', ->
-        map = new Map( una: 'bella', tazza: { di: 'caffe' } )
-        map.unsetAll()
-
-        (map.get_('una') is null).should.equal(true)
-        (map.get_('tazza.di') is null).should.equal(true)
-
-        map.data.should.eql({})
-
     describe 'get', ->
       it 'should null out dead keys', ->
         map = new Map( una: 'bella', tazza: { di: 'caffe' } )
