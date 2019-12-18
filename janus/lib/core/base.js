@@ -56,9 +56,9 @@
       }
     };
 
-    Base.prototype.listeners = function() {
+    Base.prototype.listeners = function(name) {
       var ref, ref1;
-      return (ref = (ref1 = this.events) != null ? ref1.listeners() : void 0) != null ? ref : [];
+      return (ref = (ref1 = this.events) != null ? ref1.listeners(name) : void 0) != null ? ref : [];
     };
 
     Base.prototype.removeAllListeners = function(event) {

@@ -32,6 +32,14 @@ describe 'base', ->
       b.emit('testevent3', 42)
       called.should.equal(3)
 
+    it 'should give all listeners by event name', ->
+      a = new Base()
+      a.listeners('testevent').should.eql([])
+
+      cb = (->)
+      a.on('testevent', cb)
+      a.listeners('testevent').should.eql([ cb ])
+
   describe 'reactions', ->
     it 'should react to a Varying', ->
       a = new Base()

@@ -38,7 +38,7 @@ class Base
     else
       EventEmitter.prototype.emit.apply(this.events, arguments)
 
-  listeners: -> this.events?.listeners() ? []
+  listeners: (name) -> this.events?.listeners(name) ? []
   removeAllListeners: (event) -> this.events?.removeAllListeners(event)
 
 
