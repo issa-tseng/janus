@@ -39,6 +39,7 @@ module.exports = {
 
         filtered: require('./list/derived/filtered-list')
         mapped: require('./list/derived/mapped-list')
+        flatmapped: require('./list/derived/flatmapped-list')
       literal:
         entity: require('./literal/entity-view')
         panel: require('./literal/panel-view')
