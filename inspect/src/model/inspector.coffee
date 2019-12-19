@@ -62,6 +62,8 @@ class WrappedModel extends Model.build(
       .and('target').get('id')
       .and('target').get('uid')
       .all.map(oneOf))
+
+    bind('parent', from('target').map((target) -> target._parent))
   )
 
   isInspector: true

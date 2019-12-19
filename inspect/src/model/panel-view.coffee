@@ -71,6 +71,9 @@ ModelPanelView = InspectorView.build($('
       <span class="model-type"/><span class="model-subtype"/>
       <button class="janus-inspect-pin" title="Pin"/>
     </div>
+    <div class="panel-derivation">
+      Shadowed from <span class="model-parent"/>
+    </div>
     <div class="panel-content">
       <div class="model-pairs"/>
       <button class="model-add" title="Add"/>
@@ -78,6 +81,8 @@ ModelPanelView = InspectorView.build($('
   </div>'), template(
   find('.model-type').text(from('type'))
   find('.model-subtype').text(from('subtype'))
+  find('.panel-derivation').classed('hide', from('parent').map((x) -> !x?))
+  find('.model-parent').render(from('parent').map(inspect))
   find('.model-pairs').render(from.subject().map((mi) -> mi.pairsAll()))
   find('.model-add').on('click', (event, inspector, view) ->
     target = inspector.get_('target')
