@@ -11,6 +11,7 @@ require('./function/inspector').registerWith(inspectorLibrary)
 require('./list/inspector').registerWith(inspectorLibrary)
 require('./literal/inspector').registerWith(inspectorLibrary)
 require('./model/inspector').registerWith(inspectorLibrary)
+require('./set/inspector').registerWith(inspectorLibrary)
 require('./varying/inspector').registerWith(inspectorLibrary)
 
 # one little special case: plain objects are too dangerous to register in the

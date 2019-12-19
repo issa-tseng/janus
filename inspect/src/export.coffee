@@ -45,6 +45,9 @@ module.exports = {
       model:
         panel: require('./model/panel-view')
         entity: require('./model/entity-view')
+      set:
+        panel: require('./set/panel-view')
+        entity: require('./set/entity-view')
       varying:
         panel: require('./varying/panel-view')
         entity: require('./varying/entity-view')
