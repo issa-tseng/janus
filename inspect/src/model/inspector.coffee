@@ -1,4 +1,4 @@
-{ Map, Set, Model, bind, from } = require('janus')
+{ Map, Set, Model, bind, from, List } = require('janus')
 
 
 ################################################################################
@@ -64,6 +64,9 @@ class WrappedModel extends Model.build(
       .all.map(oneOf))
 
     bind('parent', from('target').map((target) -> target._parent))
+    bind('validations', from('target').map((target) ->
+      if target.isModel is true then target.validations()
+      else new List()))
   )
 
   isInspector: true

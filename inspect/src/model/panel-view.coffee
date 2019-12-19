@@ -4,6 +4,7 @@
 { tryValuate } = require('../common/valuate')
 $ = require('../dollar')
 { KeyPair, WrappedModel } = require('./inspector')
+{ FlatMappedEntry } = require('../list/derived/flatmapped-list')
 { inspect } = require('../inspect')
 { exists } = require('../util')
 
@@ -77,6 +78,10 @@ ModelPanelView = InspectorView.build($('
     <div class="panel-content">
       <div class="model-pairs"/>
       <button class="model-add" title="Add"/>
+      <div class="model-validation">
+        <label>Model Validations</label>
+        <div class="model-validations"/>
+      </div>
     </div>
   </div>'), template(
   find('.model-type').text(from('type'))
@@ -95,6 +100,10 @@ ModelPanelView = InspectorView.build($('
       # the namer guarantees that the name exists so we just blindly take it.
       target.set(namer.get_('name'), value))
   )
+
+  find('.model-validation').classed('hide', from('validations').flatMap((vs) -> vs.empty()))
+  find('.model-validations').render(from('validations').map((vs) ->
+    vs.enumerate().map((index) -> new FlatMappedEntry(vs, index))))
 ))
 
 
