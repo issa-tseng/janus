@@ -4,6 +4,7 @@ from = require('../../lib/core/from')
 cases = require('../../lib/core/types').from
 { Case, match, otherwise } = require('../../lib/core/case')
 Varying = require('../../lib/core/varying').Varying
+Map = require('../../lib/collection/map').Map
 
 id = (x) -> x
 
@@ -452,4 +453,28 @@ describe 'from', ->
       result = null
       v.react((x) -> result = x)
       result.should.equal('acdc')
+
+  describe 'map interaction', ->
+    it 'should set roots as a single value to maps', ->
+      m = new Map()
+      m.set('from', from)
+      m.data.from.should.equal(from)
+
+    it 'should set vals as a single value to maps', ->
+      m = new Map()
+      f = from('xyz')
+      m.set('from', f)
+      m.data.from.should.equal(f)
+
+    it 'should set conjunctions as a single value to maps', ->
+      m = new Map()
+      f = from('xyz').and
+      m.set('from', f)
+      m.data.from.should.equal(f)
+
+    it 'should set termini as a single value to maps', ->
+      m = new Map()
+      f = from('xyz').all
+      m.set('from', f)
+      m.data.from.should.equal(f)
 

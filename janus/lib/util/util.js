@@ -11,7 +11,7 @@
       return toString.call(obj) === '[object Number]' && !isNaN(obj);
     },
     isPlainObject: function(obj) {
-      return (obj != null) && (typeof obj === 'object') && (obj.constructor === Object);
+      return (obj != null) && Object.getPrototypeOf(obj) === Object.prototype;
     },
     isPrimitive: function(obj) {
       return util.isString(obj) || util.isNumber(obj) || obj === true || obj === false;

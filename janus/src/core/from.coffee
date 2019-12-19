@@ -3,6 +3,12 @@ cases = require('./types').from
 { match, otherwise } = require('./case')
 { fix, identity } = require('../util/util')
 
+# we use these so that the from objects are not plain objects, so they don't get
+# assign piecemeal if they're ever added to a Map.
+FromVal = (->)
+FromTerminus = (->)
+class FromRoot
+
 # helpers to help with point resolution on the applicant chains. the first is
 # used by the intermediate mapping transformers, the second is use by the root.
 tryApply = (x, f) -> (point) ->
@@ -20,7 +26,7 @@ val = (conjunction, applicant, rest = []) ->
   append = (f) -> val(conjunction, tryApply(applicant, f), rest)
   applicants = rest.concat(applicant)
 
-  {
+  (FromVal = (->)).prototype = {
     map: (f) -> append((v) -> v.map(f))
     flatMap: (f) -> append((v) -> v.flatMap(f))
 
@@ -32,14 +38,15 @@ val = (conjunction, applicant, rest = []) ->
     all: terminus(applicants)
     and: conjunction(applicants)
   }
+  new FromVal()
 
 # build takes a set of cases and makes from.method()s out of them.
 build = (cases) ->
-  methods = {}
+  methods = new FromRoot()
   makeVal = (kase) -> (applicants) -> (x) -> val(conjunction, tryPoint(kase(x)), applicants)
   (methods[name] = makeVal(kase)) for name, kase of cases when name isnt 'dynamic'
 
-  base = if cases.dynamic? then makeVal(cases.dynamic) else (-> {})
+  base = if cases.dynamic? then makeVal(cases.dynamic) else (-> new FromRoot())
   conjunction = (applicants) ->
     result = base(applicants)
     result[k] = v(applicants) for k, v of methods
@@ -51,7 +58,7 @@ build = (cases) ->
 # and .point() resolution to actual Varyings, in either order.
 # reifies to an actual Varying upon .point().
 terminus = (applicants, map = identity) ->
-  result = {
+  FromTerminus.prototype = {
     map: (f) -> terminus(applicants, (x) -> map(x).map(f))
     flatMap: (f) -> terminus(applicants, (x) -> map(x).flatMap(f))
 
@@ -64,6 +71,7 @@ terminus = (applicants, map = identity) ->
       v
   }
 
+  result = new FromTerminus()
   result.all = result
   result
 
