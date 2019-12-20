@@ -5,7 +5,7 @@
   "files": [
     "lib"
   ],
-  "version": "0.5.0",
+  "version": "0.5.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/issa-tseng/janus-stdlib"
@@ -24,7 +24,7 @@
   "devDependencies": {
     "coffee-script": "1.12.2",
     "domino": "~2",
-    "janus": "~0.5",
+    "janus": "^0.5.1",
     "jquery": "~3",
     "mocha": "~5",
     "nyc": "~14",
