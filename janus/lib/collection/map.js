@@ -137,7 +137,7 @@
 
     Map.prototype.unset = function(key) {
       var oldValue;
-      if (this._parent != null) {
+      if ((this._parent != null) && this.isDerivedMap !== true) {
         oldValue = this.get_(key);
         deepSet(this.data, key)(Nothing);
       } else {

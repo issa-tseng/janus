@@ -113,7 +113,7 @@ class Map extends Enumerable
   # copy, we'll actually leave behind a sentinel so that we know not to read into
   # our parent. Fires events as needed.
   unset: (key) ->
-    if this._parent?
+    if this._parent? and this.isDerivedMap isnt true
       oldValue = this.get_(key)
       deepSet(this.data, key)(Nothing)
     else
@@ -178,10 +178,8 @@ class Map extends Enumerable
       result.__set(k, f(k, v))
     )
     result.listenTo(this, 'changed', (key, value) =>
-      if value? and value isnt Nothing
-        result.__set(key, f(key, value))
-      else
-        result._unset(key)
+      if value? and value isnt Nothing then result.__set(key, f(key, value))
+      else result._unset(key)
     )
     result
 
