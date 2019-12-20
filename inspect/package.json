@@ -1,7 +1,7 @@
 {
   "name": "janus-inspect",
   "description": "inspection and debugging tools for janus primitives",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "author": "Issa Tseng <maintainer@heyissa.com>",
   "homepage": "http://janusjs.org",
   "repository": {
@@ -30,7 +30,7 @@
   "devDependencies": {
     "cherow": "~1",
     "coffee-script": "1.12.2",
-    "janus": "^0.5.1",
+    "janus": "^0.5.2",
     "luxon": "~1",
     "mocha": "~5",
     "node-sass": "~4",
