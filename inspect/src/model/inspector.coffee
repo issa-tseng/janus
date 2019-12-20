@@ -1,4 +1,4 @@
-{ Map, Set, Model, bind, from, List } = require('janus')
+{ Map, Set, Model, bind, from, List, Varying } = require('janus')
 
 
 ################################################################################
@@ -41,6 +41,13 @@ class KeyPair extends Model.build(
   _initialize: ->
     this.set('attribute', this.get_('target').attribute?(this.get_('key')))
 
+class MappedKeyPair extends KeyPair.build(
+  bind('parent-value', from('target').and('key').all.flatMap((t, k) -> t._parent.get(k)))
+  bind('mapper', from('target').map((t) -> t._mapper)))
+
+class BoundKeyPair extends KeyPair.build(
+  bind('bound', from(Varying.of(true))))
+
 ################################################################################
 # MODEL INSPECTOR
 
@@ -71,17 +78,34 @@ class ModelInspector extends Model.build(
   isInspector: true
   isModelInspector: true
   constructor: (target, options) -> super({ target }, options)
+  PairClass: KeyPair
 
   enumerateAll: -> this.enumerateAll$ ?= new AllKeySet(this.get_('target'))
   pairsAll: -> this.pairsAll$ ?= do =>
-    this.enumerateAll().map((key) => new KeyPair({ target: this.get_('target'), key }))
+    this.enumerateAll().map((key) => new (this.PairClass)({ target: this.get_('target'), key }))
   @inspect: (m) ->
     if (m.isModelInspector is true) then m
+    else if (m.isDerivedMap is true)
+      if m._bindings? then new ModelInspector.FlatMapped(m)
+      else new ModelInspector.Mapped(m)
     else new ModelInspector(m)
+
+########################################
+# DERIVED MAP TYPES
+
+ModelInspector.Mapped = class extends ModelInspector.build(
+  bind('subtype', from(Varying.of('Mapped'))))
+  isTargetDerived: true
+  PairClass: MappedKeyPair
+
+ModelInspector.FlatMapped = class extends ModelInspector.build(
+  bind('subtype', from(Varying.of('FlatMapped'))))
+  isTargetDerived: true
+  PairClass: BoundKeyPair
 
 
 module.exports = {
-  KeyPair, ModelInspector,
+  KeyPair, MappedKeyPair, BoundKeyPair, ModelInspector,
   registerWith: (library) ->
     library.register(Map, ModelInspector.inspect)
     library.register(Model, ModelInspector.inspect)

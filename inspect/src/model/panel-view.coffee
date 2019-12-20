@@ -3,7 +3,8 @@
 { InspectorView } = require('../common/inspector')
 { tryValuate } = require('../common/valuate')
 $ = require('../dollar')
-{ KeyPair, ModelInspector } = require('./inspector')
+{ KeyPair, MappedKeyPair, ModelInspector } = require('./inspector')
+{ WrappedFunction } = require('../function/inspector')
 { FlatMappedEntry } = require('../list/derived/flatmapped-list')
 { inspect } = require('../inspect')
 { exists } = require('../util')
@@ -66,6 +67,23 @@ KeyPairView = DomView.build($('
     subject.get_('target').unset(subject.get_('key')))
 ))
 
+MappedKeyPairView = DomView.build($('
+  <div class="data-pair">
+    <span class="pair-key"/>
+    <span class="pair-delimeter"/>
+    <span class="value-parent"/>
+    <span class="pair-function"/>
+    <span class="pair-value value-child"/>
+  </div>'), template(
+  KeyPairView.template,
+  find('.value-parent').render(from('parent-value').map(inspect))
+  find('.pair-function').on('mouseenter', (event, pair, view) ->
+    return unless view.options.app.flyout?
+    wf = new WrappedFunction(pair.get_('mapper'), [ pair.get_('key'), pair.get_('parent-value') ])
+    view.options.app.flyout($(event.target), wf, context: 'panel')
+  )
+))
+
 ModelPanelView = InspectorView.build($('
   <div class="janus-inspect-panel janus-inspect-model highlights">
     <div class="panel-title">
@@ -73,7 +91,7 @@ ModelPanelView = InspectorView.build($('
       <button class="janus-inspect-pin" title="Pin"/>
     </div>
     <div class="panel-derivation">
-      Shadowed from <span class="model-parent"/>
+      <span class="model-relationship"/> from <span class="model-parent"/>
     </div>
     <div class="panel-content">
       <div class="model-pairs"/>
@@ -87,6 +105,8 @@ ModelPanelView = InspectorView.build($('
   find('.model-type').text(from('type'))
   find('.model-subtype').text(from('subtype'))
   find('.panel-derivation').classed('hide', from('parent').map((x) -> !x?))
+  find('.model-relationship').text(from.subject().map((i) ->
+    if i.isTargetDerived is true then 'Mapped' else 'Shadowed'))
   find('.model-parent').render(from('parent').map(inspect))
   find('.model-pairs').render(from.subject().map((mi) -> mi.pairsAll()))
   find('.model-add').on('click', (event, inspector, view) ->
@@ -112,6 +132,7 @@ module.exports = {
   registerWith: (library) ->
     library.register(Namer, NamerView)
     library.register(KeyPair, KeyPairView)
+    library.register(MappedKeyPair, MappedKeyPairView)
     library.register(ModelInspector, ModelPanelView, context: 'panel')
 }
 
