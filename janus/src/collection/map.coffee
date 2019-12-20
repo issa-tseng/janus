@@ -172,7 +172,7 @@ class Map extends Enumerable
   # Maps this map's values onto a new Map, with the same key structure. The
   # mapping functions are passed (key, value) as the arguments.
   mapPairs: (f) ->
-    result = new DerivedMap()
+    result = new DerivedMap(this, f)
     traverse(this.data, (k, v) ->
       k = k.join('.')
       result.__set(k, f(k, v))
@@ -187,24 +187,25 @@ class Map extends Enumerable
 
   # Flatmaps this map's values onto a new Map, with the same key structure.
   # The mapping functions are passed (key, value) as the arguments.
-  flatMapPairs: (f, klass = DerivedMap) ->
-    result = new klass()
-    varieds = {}
+  flatMapPairs: (f) ->
+    result = new DerivedMap(this, f)
+    result._bindings = bindings = {}
     add = (key) =>
-      varieds[key] ?= this.get(key).flatMap((value) => f(key, value)).react((x) -> result.__set(key, x))
+      bindings[key] ?= Varying.all([ Varying.of(key), this.get(key) ])
+        .flatMap(f).react((x) -> result.__set(key, x))
     traverse(this.data, (k) -> add(k.join('.')))
 
     result.listenTo(this, 'changed', (key, newValue, oldValue) =>
-      if newValue? and !varieds[key]?
+      if newValue? and !bindings[key]?
         # check v[k] rather than oldValue to account for an {} becoming an atom.
         add(key)
       else if oldValue? and !newValue?
-        for k, varied of varieds when k.indexOf(key) is 0
-          varied.stop()
-          delete varieds[k]
+        for k, binding of bindings when k.indexOf(key) is 0
+          binding.stop()
+          delete bindings[k]
         result._unset(key)
     )
-    result.on('destroying', -> varied.stop() for _, varied of varieds)
+    result.on('destroying', -> binding.stop() for _, binding of bindings)
     result
 
   # Gets the number of k/v pairs in this Map. Depends on enumeration.
@@ -223,8 +224,10 @@ class Map extends Enumerable
 
 class DerivedMap extends Map
   isDerivedMap: true
-  roError = -> throw new Error('this map is read-only')
 
+  constructor: (@_parent, @_mapper) -> super()
+
+  roError = -> throw new Error('this map is read-only')
   for method in [ '_set', 'setAll', 'unset', 'revert' ]
     this.prototype["_#{method}"] = this.__super__[method]
     this.prototype[method] = roError

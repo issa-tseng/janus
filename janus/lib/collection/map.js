@@ -225,7 +225,7 @@
 
     Map.prototype.mapPairs = function(f) {
       var result;
-      result = new DerivedMap();
+      result = new DerivedMap(this, f);
       traverse(this.data, function(k, v) {
         k = k.join('.');
         return result.__set(k, f(k, v));
@@ -242,18 +242,13 @@
       return result;
     };
 
-    Map.prototype.flatMapPairs = function(f, klass) {
-      var add, result, varieds;
-      if (klass == null) {
-        klass = DerivedMap;
-      }
-      result = new klass();
-      varieds = {};
+    Map.prototype.flatMapPairs = function(f) {
+      var add, bindings, result;
+      result = new DerivedMap(this, f);
+      result._bindings = bindings = {};
       add = (function(_this) {
         return function(key) {
-          return varieds[key] != null ? varieds[key] : varieds[key] = _this.get(key).flatMap(function(value) {
-            return f(key, value);
-          }).react(function(x) {
+          return bindings[key] != null ? bindings[key] : bindings[key] = Varying.all([Varying.of(key), _this.get(key)]).flatMap(f).react(function(x) {
             return result.__set(key, x);
           });
         };
@@ -263,28 +258,28 @@
       });
       result.listenTo(this, 'changed', (function(_this) {
         return function(key, newValue, oldValue) {
-          var k, varied;
-          if ((newValue != null) && (varieds[key] == null)) {
+          var binding, k;
+          if ((newValue != null) && (bindings[key] == null)) {
             return add(key);
           } else if ((oldValue != null) && (newValue == null)) {
-            for (k in varieds) {
-              varied = varieds[k];
+            for (k in bindings) {
+              binding = bindings[k];
               if (!(k.indexOf(key) === 0)) {
                 continue;
               }
-              varied.stop();
-              delete varieds[k];
+              binding.stop();
+              delete bindings[k];
             }
             return result._unset(key);
           }
         };
       })(this));
       result.on('destroying', function() {
-        var _, results, varied;
+        var _, binding, results;
         results = [];
-        for (_ in varieds) {
-          varied = varieds[_];
-          results.push(varied.stop());
+        for (_ in bindings) {
+          binding = bindings[_];
+          results.push(binding.stop());
         }
         return results;
       });
@@ -327,11 +322,13 @@
 
     extend(DerivedMap, superClass);
 
-    function DerivedMap() {
-      return DerivedMap.__super__.constructor.apply(this, arguments);
-    }
-
     DerivedMap.prototype.isDerivedMap = true;
+
+    function DerivedMap(_parent, _mapper) {
+      this._parent = _parent;
+      this._mapper = _mapper;
+      DerivedMap.__super__.constructor.call(this);
+    }
 
     roError = function() {
       throw new Error('this map is read-only');
