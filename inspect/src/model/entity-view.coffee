@@ -1,7 +1,7 @@
 { template, find, from } = require('janus')
 { InspectorView } = require('../common/inspector')
 $ = require('../dollar')
-{ WrappedModel } = require('./inspector')
+{ ModelInspector } = require('./inspector')
 { pluralize } = require('../util')
 
 
@@ -26,6 +26,6 @@ ModelEntityView = InspectorView.build($('
 
 module.exports = {
   ModelEntityView,
-  registerWith: (library) -> library.register(WrappedModel, ModelEntityView)
+  registerWith: (library) -> library.register(ModelInspector, ModelEntityView)
 }
 

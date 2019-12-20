@@ -49,7 +49,7 @@ oneOf = (xs...) ->
   return
 
 
-class WrappedModel extends Model.build(
+class ModelInspector extends Model.build(
     bind('type', from('target').map((target) -> if target.isModel then 'Model' else 'Map'))
     bind('subtype', from('target')
       .map((target) -> target.constructor.name)
@@ -69,19 +69,21 @@ class WrappedModel extends Model.build(
   )
 
   isInspector: true
-  isWrappedModel: true
+  isModelInspector: true
   constructor: (target, options) -> super({ target }, options)
 
   enumerateAll: -> this.enumerateAll$ ?= new AllKeySet(this.get_('target'))
   pairsAll: -> this.pairsAll$ ?= do =>
     this.enumerateAll().map((key) => new KeyPair({ target: this.get_('target'), key }))
-  @wrap: (m) -> if (m.isWrappedModel is true) then m else (new WrappedModel(m))
+  @inspect: (m) ->
+    if (m.isModelInspector is true) then m
+    else new ModelInspector(m)
 
 
 module.exports = {
-  KeyPair, WrappedModel,
+  KeyPair, ModelInspector,
   registerWith: (library) ->
-    library.register(Map, WrappedModel.wrap)
-    library.register(Model, WrappedModel.wrap)
+    library.register(Map, ModelInspector.inspect)
+    library.register(Model, ModelInspector.inspect)
 }
 

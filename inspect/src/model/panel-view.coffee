@@ -3,7 +3,7 @@
 { InspectorView } = require('../common/inspector')
 { tryValuate } = require('../common/valuate')
 $ = require('../dollar')
-{ KeyPair, WrappedModel } = require('./inspector')
+{ KeyPair, ModelInspector } = require('./inspector')
 { FlatMappedEntry } = require('../list/derived/flatmapped-list')
 { inspect } = require('../inspect')
 { exists } = require('../util')
@@ -112,6 +112,6 @@ module.exports = {
   registerWith: (library) ->
     library.register(Namer, NamerView)
     library.register(KeyPair, KeyPairView)
-    library.register(WrappedModel, ModelPanelView, context: 'panel')
+    library.register(ModelInspector, ModelPanelView, context: 'panel')
 }
 
