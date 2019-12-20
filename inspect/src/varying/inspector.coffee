@@ -30,12 +30,13 @@ reactShim = (f_, immediate) ->
   # instance and push it rootwards.
   initialCompute = (this._refCount is 0) and (this._recompute?)
   if initialCompute
+    shouldSetDone = !wrapper.rxn?
     # TODO: setting caller false to flag initial compute is lame.
     rxn =
       if wrapper.rxn?
         if wrapper.rxn.get_('done') is true then new Reaction(wrapper, false)
         else wrapper.rxn
-      else new Reaction(wrapper, false)
+      else wrapper.rxn = new Reaction(wrapper, false)
     wrapper.reactions.add(rxn)
 
     # push the reaction one step rootwards. we set the rxn pointer rather than adding
@@ -52,7 +53,7 @@ reactShim = (f_, immediate) ->
     handleInner(this, wrapper, rxn)
     wrapper.set('_value', this._value)
     rxn.logChange(wrapper, this._value)
-    rxn.set('done', true)
+    rxn.set('done', true) if shouldSetDone
   observation
 
 # 2 change propagation toward the leaves by way of #set on some root static Varying,
