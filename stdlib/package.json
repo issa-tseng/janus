@@ -15,6 +15,9 @@
   },
   "license": "WTFPL",
   "main": "lib/janus-stdlib",
+  "files": [
+    "lib/**/*"
+  ],
   "scripts": {
     "test": "make test"
   },
