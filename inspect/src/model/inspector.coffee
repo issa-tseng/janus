@@ -51,10 +51,9 @@ oneOf = (xs...) ->
 
 class WrappedModel extends Model.build(
     bind('type', from('target').map((target) -> if target.isModel then 'Model' else 'Map'))
-    # TODO: don't add the dot here.
     bind('subtype', from('target')
       .map((target) -> target.constructor.name)
-      .map((name) -> if name? and (name not in [ 'Model', 'Map', '_Class' ]) then ".#{name}" else ''))
+      .map((name) -> name if (name not in [ 'Model', 'Map', '_Class' ])))
 
     bind('identifier', from('target').get('name')
       .and('target').get('title')

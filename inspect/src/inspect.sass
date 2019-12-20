@@ -91,6 +91,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 // MODEL BASE STYLES
 
+.janus-inspect-model
+  .model-subtype:before
+    content: '.'
+  .model-subtype:empty:before
+    content: none
+
 .janus-inspect-model.janus-inspect-entity
   .model-pairs
     color: #888
