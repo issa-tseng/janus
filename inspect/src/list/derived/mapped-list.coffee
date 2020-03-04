@@ -27,7 +27,11 @@ MappedEntryView = DomView.build($('
   ))
 
   find('.value-parent').render(from('parent.value').map(inspect))
+    .options(from('parent.list').and('index').all.map((__source, index) ->
+      { __source, __ref: [ reference.parent(), reference.get(index) ] }))
   find('.value-child').render(from('child.value').map(inspect))
+    .options(from('child.list').and('index').all.map((__source, index) ->
+      { __source, __ref: reference.get(k) }))
 
   find('.pair-function').on('mouseenter', (event, entry, view) ->
     return unless view.options.app.flyout?
@@ -53,6 +57,7 @@ MappedListView = InspectorView.build(ListPanelVM.ShowsLast, $('
   </div>'), template(
   find('.list-mapper').render(from('target').map((list) -> inspect(list.mapper)))
   find('.list-parent').render(from('target').map((list) -> inspect(list.parent)))
+    .options(from.self().map((__source) -> { __source, __ref: reference.parent() }))
 
   find('.list-list').render(from('target').and.vm('take.actual').asVarying().all.map((list, take) ->
     list.enumerate().take(take).map((index) -> new MappedEntry(list, index)))

@@ -2,6 +2,7 @@
 { InspectorView } = require('../common/inspector')
 $ = require('../dollar')
 { Mutation, DomViewInspector } = require('./inspector')
+{ reference } = require('../common/types')
 { inspect } = require('../inspect')
 { exists } = require('../util')
 
@@ -23,6 +24,9 @@ MutationView = DomView.build($('
     .text(from('param'))
     .classed('has-param', from('param').map(exists))
   find('.mutation-binding').render(from('binding').map(inspect))
+    .options(from.self().and('selector').and('operation').and('param').and('binding')
+      .all.map((view, selector, operation, param) ->
+        { __source: view.closest_(DomViewPanelView), __ref: reference.mutator({ selector, operation, param }) }))
 ))
 
 class DomViewPanelView extends InspectorView.build($('
@@ -44,8 +48,10 @@ class DomViewPanelView extends InspectorView.build($('
       </div>
     </div>'), template(
     find('.domview-subject').render(from('target').map((view) -> inspect(view.subject)))
+      .options(from.self().map((__source) -> { __source, __ref: reference.viewSubject() }))
     find('.domview-vm').classed('hide', from('target').map((view) -> !view.vm?))
     find('.domview-vm-vm').render(from('target').map((view) => inspect(view.vm)))
+      .options(from.self().map((__source) -> { __source, __ref: reference.viewVm() }))
     find('.domview-subtype').text(from('subtype'))
     find('.domview-mutations').render(from('mutations'))
     find('.domview-display').classed('unwired', from('events-unwired'))
@@ -71,6 +77,6 @@ module.exports = {
   DomViewPanelView
   registerWith: (library) ->
     library.register(Mutation, MutationView)
-    library.register(DomViewInspector, DomViewPanelView, context: 'panel')
+    library.register(DomViewInspector, DomViewPanelView, context: 'panel', inspect: true)
 }
 

@@ -159,7 +159,7 @@ class DomViewInspector extends Model.build(
       mutations =
         if mutations?
           for binding, idx in domview._bindings when (mutation = mutations[idx])?
-            mutation.with({ binding: binding.parent })
+            mutation.with({ binding: binding.parent, target: domview })
         else
           for binding, idx in domview._bindings
             mutation = new Mutation({ idx })

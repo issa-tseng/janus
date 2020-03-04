@@ -6,6 +6,8 @@ cache = null
 module.exports = {
   inspect
 
+  types: require('./common/types')
+
   inspector:
     attribute: require('./attribute/inspector')
     case: require('./case/inspector')

@@ -4,6 +4,7 @@
 $ = require('../dollar')
 { tryValuate } = require('../common/valuate')
 { inspect } = require('../inspect')
+{ reference } = require('../common/types')
 { min, max } = Math
 
 
@@ -23,6 +24,8 @@ ListEntryView = DomView.build($('
 
   find('.pair-value')
     .render(from('target').and('key').all.flatMap((t, k) -> t.get(k).map(inspect)))
+      .options(from.self().and('key').all.map((view, k) ->
+        { __source: view.closest_(ListPanelView), __ref: reference.get(k) }))
     .on('dblclick', tryValuate)
 
   find('.pair-clear').on('click', (_, subject) ->

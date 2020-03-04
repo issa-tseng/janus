@@ -7,6 +7,7 @@ $ = require('../dollar')
 { valuate } = require('../common/valuate')
 { WrappedFunction } = require('../function/inspector')
 { WrappedVarying, Reaction } = require('./inspector')
+{ reference } = require('../common/types')
 { inspect } = require('../inspect')
 
 
@@ -46,6 +47,11 @@ VaryingDeltaView = DomView.build($('
   '), template(
 
     find('.value').render(from('value').map(inspect))
+      .options(from.self().and('changed').all.map((view, changed) ->
+        if changed is true then null
+        # TODO: should be NodeView but because we're cheating it's TreeView for now.
+        else { __source: view.closest_(VaryingTreeView), __ref: reference.varyingValue() }
+      ))
     find('.new-value').render(from('new_value').map(inspect))
 
     find('.varying-delta').classed('has-delta', from('changed'))

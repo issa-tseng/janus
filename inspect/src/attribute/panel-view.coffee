@@ -3,6 +3,7 @@
 $ = require('../dollar')
 { AttributeInspector } = require('./inspector')
 { inspect } = require('../inspect')
+{ reference } = require('../common/types')
 
 yn = (bool) -> if bool is true then 'yes' else 'no'
 
@@ -35,7 +36,9 @@ AttributePanelView = InspectorView.build($('
     find('.attribute-type').text(from('type'))
     find('.attribute-key').text(from('key'))
     find('.attribute-parent').render(from('parent').map(inspect))
+      .options(from.self().map((__source) -> { __source, __ref: reference.attrModel() }))
     find('.attribute-value').render(from('value').map(inspect))
+      .options(from.self().map((__source) -> { __source, __ref: reference.attrValue() }))
     find('.attribute-writes-initial').text(from('target').map((t) -> yn(t.writeInitial)))
     find('.attribute-transient').text(from('target').map((t) -> yn(t.transient)))
     find('.attribute-pairs')
@@ -44,6 +47,7 @@ AttributePanelView = InspectorView.build($('
 
     find('.attribute-enum-nullable').text(from('target').map((t) -> yn(t.nullable)))
     find('.attribute-enum-values').render(from('enum-values').map(inspect))
+      .options(from.self().map((__source) -> { __source, __ref: reference.attrEnumValues() }))
 ))
 
 module.exports = {

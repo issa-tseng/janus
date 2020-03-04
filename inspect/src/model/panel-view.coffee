@@ -1,6 +1,7 @@
 { DomView, template, find, from, Model, attribute, bind, validate } = require('janus')
 { valid, error } = require('janus').types.validity
 { InspectorView } = require('../common/inspector')
+{ reference } = require('../common/types')
 { tryValuate } = require('../common/valuate')
 $ = require('../dollar')
 { KeyPair, MappedKeyPair, ModelInspector } = require('./inspector')
@@ -58,10 +59,14 @@ KeyPairView = DomView.build($('
   find('.pair-value')
     .attr('title', from('bound').map((b) -> 'Double-click to edit' unless b is true))
     .render(from('binding').and('value').all.map((b, v) -> inspect(b ? v)))
+      .options(from.self().and('key').all.map((view, k) ->
+        { __source: view.closest_(ModelPanelView), __ref: reference.get(k) }))
     .on('dblclick', tryValuate)
 
   find('.pair-attribute').classed('hide', from('attribute').map((x) -> !x?))
   find('.pair-attribute-entity').render(from('attribute').map(inspect))
+    .options(from.self().and('key').all.map((view, k) ->
+      { __source: view.closest_(ModelPanelView), __ref: reference.attr(k) }))
 
   find('.pair-clear').on('click', (_, subject) ->
     subject.get_('target').unset(subject.get_('key')))
@@ -77,6 +82,8 @@ MappedKeyPairView = DomView.build($('
   </div>'), template(
   KeyPairView.template,
   find('.value-parent').render(from('parent-value').map(inspect))
+    .options(from.self().and('key').all.map((__source, k) ->
+      { __source, __ref: [ reference.parent(), reference.get(k) ] }))
   find('.pair-function').on('mouseenter', (event, pair, view) ->
     return unless view.options.app.flyout?
     wf = new WrappedFunction(pair.get_('mapper'), [ pair.get_('key'), pair.get_('parent-value') ])
@@ -108,6 +115,7 @@ ModelPanelView = InspectorView.build($('
   find('.model-relationship').text(from.subject().map((i) ->
     if i.isTargetDerived is true then 'Mapped' else 'Shadowed'))
   find('.model-parent').render(from('parent').map(inspect))
+    .options(from.self().map((__source) -> { __source, __ref: reference.parent() }))
   find('.model-pairs').render(from.subject().map((mi) -> mi.pairsAll()))
   find('.model-add').on('click', (event, inspector, view) ->
     target = inspector.get_('target')
