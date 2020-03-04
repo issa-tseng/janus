@@ -20,6 +20,8 @@
   ref2 = require('../util/util'), deepGet = ref2.deepGet, deepSet = ref2.deepSet, isFunction = ref2.isFunction, isString = ref2.isString;
 
   Model = (function(superClass) {
+    var mergeSchema;
+
     extend(Model, superClass);
 
     Model.prototype.isModel = true;
@@ -234,17 +236,29 @@
       return new this(data);
     };
 
-    Model.build = function() {
-      var i, len, part, parts, schema;
-      parts = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-      schema = {
-        attributes: Object.assign({}, this.schema.attributes),
-        bindings: Object.assign({}, this.schema.bindings),
-        validations: this.schema.validations.slice()
+    mergeSchema = function(x, y) {
+      return {
+        attributes: Object.assign(x.attributes, y.attributes),
+        bindings: Object.assign(x.bindings, y.bindings),
+        validations: x.validations.concat(y.validations)
       };
+    };
+
+    Model.build = function() {
+      var i, len, part, parts, ref3, schema;
+      parts = 1 <= arguments.length ? slice.call(arguments, 0) : [];
+      schema = mergeSchema({
+        attributes: {},
+        bindings: {},
+        validations: []
+      }, this.schema);
       for (i = 0, len = parts.length; i < len; i++) {
         part = parts[i];
-        part(schema);
+        if ((part != null ? (ref3 = part.prototype) != null ? ref3.isModel : void 0 : void 0) === true) {
+          schema = mergeSchema(schema, part.schema);
+        } else {
+          part(schema);
+        }
       }
       return (function(superClass1) {
         extend(_Class, superClass1);

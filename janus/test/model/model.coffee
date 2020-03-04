@@ -504,6 +504,34 @@ describe 'Model', ->
       m.get_('a').should.equal(2)
       m.get_('x').should.equal(4)
 
+  describe 'model inclusion', ->
+    it 'should accept a Model and use its schema declarations', ->
+      vv = new Varying(types.validity.error())
+      TestModelA = Model.build(
+        bind('a', from('b'))
+        initial('c', 12)
+        validate(from(vv))
+      )
+      TestModelB = Model.build(TestModelA)
+
+      b = new TestModelB({ b: 42 })
+      b.get_('a').should.equal(42)
+      b.get_('c').should.equal(12)
+      b.valid_().should.equal(false)
+
+    it 'should prefer later local definitions over included models', ->
+      TestModelA = Model.build(
+        bind('a', from('b'))
+        bind('c', from('d'))
+      )
+      TestModelB = Model.build(
+        TestModelA
+        bind('c', from('e'))
+      )
+      b = new TestModelB({ b: 4, d: 6, e: 8 })
+      b.get_('a').should.equal(4)
+      b.get_('c').should.equal(8)
+
   describe 'deserialization', ->
     it 'should store the given data into the correct places', ->
       Model.deserialize( a: { b: 1, c: 2 }, d: 3 ).data.should.eql({ a: { b: 1, c: 2 }, d: 3 })

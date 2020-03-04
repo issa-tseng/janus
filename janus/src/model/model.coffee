@@ -143,13 +143,16 @@ class Model extends Map
     new this(data)
 
   # Quick shortcut to define the schema of this model.
+  mergeSchema = (x, y) -> {
+    attributes: Object.assign(x.attributes, y.attributes),
+    bindings: Object.assign(x.bindings, y.bindings),
+    validations: x.validations.concat(y.validations)
+  }
   @build: (parts...) ->
-    schema = {
-      attributes: Object.assign({}, this.schema.attributes),
-      bindings: Object.assign({}, this.schema.bindings),
-      validations: this.schema.validations.slice()
-    }
-    part(schema) for part in parts
+    schema = mergeSchema({ attributes: {}, bindings: {}, validations: [] }, this.schema)
+    for part in parts
+      if part?.prototype?.isModel is true then schema = mergeSchema(schema, part.schema)
+      else part(schema)
 
     class extends this
       @schema: schema

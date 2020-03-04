@@ -16,6 +16,7 @@ module.exports = {
       initial: wrapped
 
   Trait: (parts...) -> (schema) ->
+    # TODO: take Models here.
     part(schema) for part in parts
     return
 }
