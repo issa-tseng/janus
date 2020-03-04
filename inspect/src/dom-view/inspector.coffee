@@ -161,8 +161,8 @@ class DomViewInspector extends Model.build(
           for binding, idx in domview._bindings when (mutation = mutations[idx])?
             mutation.with({ binding: binding.parent })
         else
-          for binding in domview._bindings
-            mutation = new Mutation()
+          for binding, idx in domview._bindings
+            mutation = new Mutation({ idx })
             mutation.set('binding', binding.parent)
             mutation
 
@@ -180,6 +180,20 @@ class DomViewInspector extends Model.build(
   @inspect: (domview) -> new DomViewInspector(domview)
   @cache: new WeakMap()
   @extractors: new Library()
+
+  @indexFor: ({ selector, operation, param }, domview) ->
+    if this.cache.has(domview.constructor)
+      mutators = this.cache.get(domview.constructor)
+    else
+      mutators = deduceMutators(domview)
+      this.cache.set(domview.constructor, mutators)
+
+    for m, idx in mutators
+      if m.get_('selector') isnt selector then continue
+      if m.get_('operation') isnt operation then continue
+      if param? and m.get_('param') isnt param then continue
+      return idx
+    return null
 
 
 module.exports = {
