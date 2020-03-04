@@ -60,6 +60,7 @@ class DomViewPanelView extends InspectorView.build($('
     target = domview.artifact()
     detached = !target[0].parentNode?
     if detached or (target.parent().hasClass('domview-display') and (target.closest('.flyout').length isnt 0))
+      target.detach()
       artifact.find('.domview-display').append(target)
       this.subject.set('events-unwired', true) if detached and domview._wired is true
       domview.wireEvents()
