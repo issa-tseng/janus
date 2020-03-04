@@ -41,6 +41,9 @@ class WrappedFunction extends Model
 
     this.set('known', known[f.toString()])
 
+  shadow: undefined
+  with: undefined
+
   @wrap: (f, args) -> if (f.isWrappedFunction is true) then f else (new WrappedFunction(f, args))
 
 module.exports = {

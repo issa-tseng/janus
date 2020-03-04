@@ -21,6 +21,7 @@ FunctionPanelView = InspectorView.build($('
     find('.janus-inspect-function').classed('has-known', from('known').map(exists))
     find('.function-known').text(from('known'))
     find('.function-args')
+      .classed('given', from('arg.given'))
       .classed('inline', from('arg.pairs').flatMap((as) -> as.length.map((l) -> l < 4)))
       .render(from('arg.pairs').and('arg.given').all.map((as, given) -> as if given))
     find('.function-body').text(from('target').map((f) -> deindent(f.toString() ? '(unavailable)')))
