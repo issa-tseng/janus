@@ -139,8 +139,8 @@ class Map extends Enumerable
 
   # Shadow-copies a model, inserting the data given. Really just syntactic sugar
   # which obviates variable assignment in some cases.
-  with: (data) ->
-    result = this.shadow()
+  with: (data, klass) ->
+    result = this.shadow(klass)
     result.set(data)
     result
 

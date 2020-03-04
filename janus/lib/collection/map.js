@@ -168,9 +168,9 @@
       }));
     };
 
-    Map.prototype["with"] = function(data) {
+    Map.prototype["with"] = function(data, klass) {
       var result;
-      result = this.shadow();
+      result = this.shadow(klass);
       result.set(data);
       return result;
     };

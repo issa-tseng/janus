@@ -341,6 +341,17 @@ describe 'Map', ->
         s2.get_('b').should.equal(3)
         s2.get_('c').should.equal(4)
 
+      it 'should optionally take a different class to shadow with', ->
+        class TestMap extends Map
+
+        map = new Map( a: 1, b: 2 )
+        shadow = map.with({ b: 4 }, TestMap)
+
+        shadow._parent.should.equal(map)
+        shadow.should.be.an.instanceof(TestMap)
+        shadow.get_('a').should.equal(1)
+        shadow.get_('b').should.equal(4)
+
   describe 'enumeration', ->
     it 'should return a KeySet of itself when asked for an enumeration', ->
       s = new Map( a: 1, b: 2, c: { d: 3 } )
