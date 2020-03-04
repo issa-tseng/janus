@@ -8,7 +8,7 @@ class ListInspector extends Model.build(
 )
   isInspector: true
 
-  constructor: (list) -> super({ target: list })
+  constructor: (list, options) -> super({ target: list }, options)
   _initialize: ->
     this.set('of.class', this.get_('target').constructor.modelClass)
     this.set('of.name', this.get_('of.class')?.name)

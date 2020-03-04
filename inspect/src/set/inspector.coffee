@@ -6,7 +6,7 @@ class SetInspector extends Model.build(
 )
   isInspector: true
 
-  constructor: (set) -> super({ target: set })
+  constructor: (set, options) -> super({ target: set }, options)
   @inspect: (set) -> new SetInspector(set)
 
 module.exports = {

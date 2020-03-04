@@ -140,7 +140,7 @@ class WrappedVarying extends Model.build(
   isInspector: true
   isWrappedVarying: true
 
-  constructor: (@varying) ->
+  constructor: (@varying, options) ->
     varying = this.varying
     super({
       id: serialId()
@@ -153,7 +153,7 @@ class WrappedVarying extends Model.build(
       applicants: (new List(varying.a) if varying.a?)
 
       owner: varying.__owner
-    })
+    }, options)
 
   _initialize: ->
     # drop some vars to direct/local access for perf.

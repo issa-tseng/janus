@@ -2,7 +2,7 @@
 
 class WrappedCase extends Model
   isInspector: true
-  constructor: (target) -> super({ target, name: target.name })
+  constructor: (target, options) -> super({ target, name: target.name }, options)
   @wrap: (kase) -> new WrappedCase(kase)
 
 module.exports = {

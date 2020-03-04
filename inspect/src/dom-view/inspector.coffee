@@ -135,7 +135,7 @@ class DomViewInspector extends Model.build(
 
   isInspector: true
 
-  constructor: (domview) ->
+  constructor: (domview, options) ->
     # get Mutations that represent the binding operations but aren't yet tied
     # to the actual Varying bindings of this instance.
     mutations =
@@ -175,7 +175,7 @@ class DomViewInspector extends Model.build(
       if mutations[idx - 1].get_('selector') is mutation.get_('selector')
         mutation.set('repeated-selector', true)
 
-    super({ target: domview, mutations: new List(mutations) })
+    super({ target: domview, mutations: new List(mutations) }, options)
 
   @inspect: (domview) -> new DomViewInspector(domview)
   @cache: new WeakMap()
