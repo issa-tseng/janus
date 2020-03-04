@@ -1,7 +1,7 @@
 should = require('should')
 
 { Varying } = require('janus')
-{ sticky, debounce, throttle, filter, zipSequential, fromEvent, fromEvents } = require('../lib/varying')
+{ sticky, debounce, delay, throttle, filter, zipSequential, fromEvent, fromEvents } = require('../lib/varying')
 
 wait = (time, f) -> setTimeout(f, time)
 
@@ -137,6 +137,41 @@ describe 'varying utils', ->
       a.should.be.an.instanceof(Function)
       b = a(new Varying())
       b.should.be.an.instanceof(Varying)
+
+  describe 'delay', ->
+    it 'should return a varying', ->
+      delay(null, new Varying()).should.be.an.instanceof(Varying)
+
+    it 'should delay a new value', (done) ->
+      results = []
+      inner = new Varying(0)
+      outer = delay(5, inner)
+      outer.react((x) -> results.push(x))
+
+      results.should.eql([ 0 ])
+      inner.set(1)
+      results.should.eql([ 0 ])
+
+      setTimeout((->
+        results.should.eql([ 0, 1 ])
+        done()
+      ), 10)
+
+    it 'should set multiple values in order', (done) ->
+      results = []
+      inner = new Varying(0)
+      outer = delay(5, inner)
+      outer.react((x) -> results.push(x))
+
+      results.should.eql([ 0 ])
+      inner.set(1)
+      inner.set(2)
+      results.should.eql([ 0 ])
+
+      setTimeout((->
+        results.should.eql([ 0, 1, 2 ])
+        done()
+      ), 10)
 
   describe 'throttle', ->
     it 'should set value immediately', ->

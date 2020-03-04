@@ -85,6 +85,23 @@
         return result;
       });
     },
+    delay: function(ms, v) {
+      if (v == null) {
+        return (function(v) {
+          return varyingUtils.delay(ms, v);
+        });
+      }
+      return Varying.managed(ManagedObservation["with"](v), function(mo) {
+        var result;
+        result = new Varying(v.get());
+        mo.react(function(value) {
+          return setTimeout((function() {
+            return result.set(value);
+          }), ms);
+        });
+        return result;
+      });
+    },
     throttle: function(delay, v) {
       if (v == null) {
         return (function(v) {

@@ -47,6 +47,15 @@ varyingUtils = {
       result
     )
 
+  delay: (ms, v) ->
+    return ((v) -> varyingUtils.delay(ms, v)) unless v?
+
+    Varying.managed(ManagedObservation.with(v), (mo) ->
+      result = new Varying(v.get())
+      mo.react((value) -> setTimeout((-> result.set(value)), ms))
+      result
+    )
+
   throttle: (delay, v) ->
     return ((v) -> varyingUtils.throttle(delay, v)) unless v?
 
