@@ -39,6 +39,7 @@
       var dom;
       dom = this.dom();
       this._bindings = this.preboundTemplate(dom, this.pointer());
+      this.emit('bound');
       return dom;
     };
 
@@ -49,7 +50,8 @@
     };
 
     DomView.prototype._attach = function(dom) {
-      return this._bindings = this.preboundTemplate(dom, this.pointer(), false);
+      this._bindings = this.preboundTemplate(dom, this.pointer(), false);
+      this.emit('bound');
     };
 
     DomView.prototype.wireEvents = function() {
@@ -91,24 +93,31 @@
     DomView.prototype._wireEvents = function() {};
 
     DomView.prototype.subviews = function() {
-      if (this._bindings == null) {
-        return new List();
-      }
       return (this.subviews$ != null ? this.subviews$ : this.subviews$ = Base.managed((function(_this) {
         return function() {
-          var binding;
-          return (new List((function() {
-            var i, len, ref, results;
-            ref = this._bindings;
-            results = [];
-            for (i = 0, len = ref.length; i < len; i++) {
-              binding = ref[i];
-              if (binding.view != null) {
-                results.push(binding.view);
+          var populate, subviews;
+          subviews = new List();
+          populate = function() {
+            var binding;
+            return subviews.add((function() {
+              var i, len, ref, results;
+              ref = this._bindings;
+              results = [];
+              for (i = 0, len = ref.length; i < len; i++) {
+                binding = ref[i];
+                if (binding.view != null) {
+                  results.push(binding.view);
+                }
               }
-            }
-            return results;
-          }).call(_this))).flatMap(identity).filter(function(x) {
+              return results;
+            }).call(_this));
+          };
+          if (_this._bindings != null) {
+            populate();
+          } else {
+            _this.on('bound', populate);
+          }
+          return subviews.flatMap(identity).filter(function(x) {
             return x != null;
           });
         };

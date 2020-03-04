@@ -379,6 +379,24 @@ describe 'DomView', ->
         v.set('test3')
         result.length_.should.equal(0)
 
+      it 'should give rendered subviews once the view has rendered', ->
+        v = new Varying('test')
+        viewer = -> new TestInner({})
+        TestOuter = DomView.build($('<div><div class="child"/></div>'), template(
+          find('.child').render(mockfrom(v))
+        ))
+        TestInner = DomView.build($('<div class="inner"/>'), template())
+        app = { view: (-> viewer()) }
+
+        view = new TestOuter({}, { app })
+        result = view.subviews()
+        result.length_.should.equal(0)
+
+        view.artifact()
+        result.length_.should.equal(1)
+        first = result.get_(0)
+        first.should.be.an.instanceof(TestInner)
+
   describe 'client event wiring', ->
     it 'should call _wireEvents', ->
       called = false

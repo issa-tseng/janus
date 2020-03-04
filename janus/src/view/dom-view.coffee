@@ -12,6 +12,7 @@ class DomView extends View
   _render: ->
     dom = this.dom()
     this._bindings = this.preboundTemplate(dom, this.pointer())
+    this.emit('bound')
     dom
 
   attach: (dom) ->
@@ -21,6 +22,8 @@ class DomView extends View
 
   _attach: (dom) ->
     this._bindings = this.preboundTemplate(dom, this.pointer(), false)
+    this.emit('bound')
+    return
 
   wireEvents: ->
     return if this._wired is true
@@ -44,11 +47,12 @@ class DomView extends View
 
   # actually implement the subviews methods:
   subviews: ->
-    return new List() unless this._bindings?
     (this.subviews$ ?= Base.managed(=>
-      (new List(binding.view for binding in this._bindings when binding.view?))
-        .flatMap(identity) # we don't really have List[Varying[T]] -> List[T] yet.
-        .filter((x) -> x?)
+      subviews = new List()
+      populate = => subviews.add(binding.view for binding in this._bindings when binding.view?)
+      if this._bindings? then populate()
+      else this.on('bound', populate)
+      subviews.flatMap(identity).filter((x) -> x?) # TODO: List[Varying[T]] -> List[T]
     ))()
   subviews_: ->
     return [] unless this._bindings?
