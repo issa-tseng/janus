@@ -87,6 +87,8 @@ class Sequence extends Mappable
   apply: (f) -> folds.apply(this, f)
   scanl: (memo, f) -> folds.scanl(this, memo, f)
   foldl: (memo, f) -> folds.foldl(this, memo, f)
+  flatScanl: (memo, f) -> folds.flatScanl(this, memo, f)
+  flatFoldl: (memo, f) -> folds.flatFoldl(this, memo, f)
 
 
 module.exports = { Enumerable, Mappable, Sequence }

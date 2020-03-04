@@ -175,6 +175,14 @@
       return folds.foldl(this, memo, f);
     };
 
+    Sequence.prototype.flatScanl = function(memo, f) {
+      return folds.flatScanl(this, memo, f);
+    };
+
+    Sequence.prototype.flatFoldl = function(memo, f) {
+      return folds.flatFoldl(this, memo, f);
+    };
+
     return Sequence;
 
   })(Mappable);
