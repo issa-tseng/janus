@@ -1,7 +1,7 @@
 {
   "name": "janus-inspect",
   "description": "inspection and debugging tools for janus primitives",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "author": "Issa Tseng <maintainer@heyissa.com>",
   "homepage": "http://janusjs.org",
   "repository": {
