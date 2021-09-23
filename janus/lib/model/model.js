@@ -88,12 +88,13 @@
     };
 
     Model.prototype._bind = function() {
-      var binding, key, ref3;
+      var binding, key, pointer, ref3;
       this._bindings = {};
+      pointer = this.pointer();
       ref3 = this.constructor.schema.bindings;
       for (key in ref3) {
         binding = ref3[key];
-        this._bindings[key] = this.reactTo(binding.all.point(this.pointer()), this.set(key));
+        this._bindings[key] = this.reactTo(binding.all.point(pointer), this.set(key));
       }
     };
 

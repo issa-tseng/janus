@@ -71,8 +71,9 @@ class Model extends Map
   # Actually set up our bindings.
   _bind: ->
     this._bindings = {}
+    pointer = this.pointer()
     for key, binding of this.constructor.schema.bindings
-      this._bindings[key] = this.reactTo(binding.all.point(this.pointer()), this.set(key))
+      this._bindings[key] = this.reactTo(binding.all.point(pointer), this.set(key))
     return
 
   pointer: -> this.pointer$ ?= match(
