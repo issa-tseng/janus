@@ -154,11 +154,19 @@
         return result;
       });
     },
-    zipSequential: function(v) {
+    zipSequential: function(v, wait) {
+      if (wait == null) {
+        wait = true;
+      }
+      if (v === true || v === false) {
+        return (function(w) {
+          return varyingUtils.zipSequential(w, v);
+        });
+      }
       return Varying.managed(ManagedObservation["with"](v), function(mo) {
         var last, result;
         result = new Varying([]);
-        last = nothing;
+        last = (wait === true ? nothing : null);
         mo.react(function(value) {
           if (last !== nothing) {
             result.set([last, value]);

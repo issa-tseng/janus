@@ -93,10 +93,12 @@ varyingUtils = {
       result
     )
 
-  zipSequential: (v) ->
+  zipSequential: (v, wait = true) ->
+    return ((w) -> varyingUtils.zipSequential(w, v)) if v is true or v is false
+
     Varying.managed(ManagedObservation.with(v), (mo) ->
       result = new Varying([]) # no initial value.
-      last = nothing
+      last = (if wait is true then nothing else null)
       mo.react((value) ->
         result.set([ last, value ]) unless last is nothing
         last = value
