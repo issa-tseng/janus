@@ -169,10 +169,9 @@
     };
 
     Map.prototype["with"] = function(data, klass) {
-      var result;
-      result = this.shadow(klass);
-      result.set(data);
-      return result;
+      return new (klass != null ? klass : this.constructor)(data, Object.assign({}, this.options, {
+        parent: this
+      }));
     };
 
     Map.prototype.original = function() {

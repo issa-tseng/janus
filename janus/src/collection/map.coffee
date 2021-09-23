@@ -139,10 +139,7 @@ class Map extends Enumerable
 
   # Shadow-copies a model, inserting the data given. Really just syntactic sugar
   # which obviates variable assignment in some cases.
-  with: (data, klass) ->
-    result = this.shadow(klass)
-    result.set(data)
-    result
+  with: (data, klass) -> new (klass ? this.constructor)(data, Object.assign({}, this.options, { parent: this }))
 
   # Returns the original (non-shadow) instance of a model. Can be self.
   original: -> this._parent?.original() ? this
