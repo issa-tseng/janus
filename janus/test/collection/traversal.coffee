@@ -388,14 +388,6 @@ describe 'traversal', ->
         o = (new Map( a: new TestMap( b: 2, c: 3 ), d: 4 )).serialize()
         o.should.eql({ a: 'test', d: 4 })
 
-      it 'should not try to use custom-defined serialize if it is inherited', ->
-        class TestMapA extends Map
-          serialize: -> 'test'
-        class TestMapB extends TestMapA
-
-        o = (new Map( a: new TestMapB( b: 2, c: 3 ), d: 4 )).serialize()
-        o.should.eql({ a: { b: 2, c: 3 }, d: 4 })
-
     describe 'diff', ->
       it 'should consider unlike objects eternally different', ->
         (new List()).diff(new Map()).get().should.equal(true)

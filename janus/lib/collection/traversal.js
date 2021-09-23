@@ -121,11 +121,10 @@
   Traversal["default"] = {
     serialize: {
       map: function(k, v, _, attribute) {
-        var ref3;
         if (attribute != null) {
           return value(attribute.serialize());
         } else if (v != null) {
-          if ((ref3 = v.constructor) != null ? ref3.prototype.hasOwnProperty('serialize') : void 0) {
+          if (typeof v.serialize === 'function') {
             return value(v.serialize());
           } else if (v.isEnumerable === true) {
             return recurse(v);
