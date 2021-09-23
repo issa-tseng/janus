@@ -15,11 +15,11 @@ inf = -> inf
 describe 'DomView', ->
   describe 'template dom handling', ->
     it 'renders based on the provided dom fragment method', ->
-      TestView = DomView.build($('<div class="test"/>'), inf)
+      TestView = DomView.build($('<div class="test"></div>'), inf)
       (new TestView()).artifact().is('.test').should.equal(true)
 
     it 'finds the appropriate spots in the dom', ->
-      TestView = DomView.build($('<div><div class="title"/><div class="body"/></div>'),
+      TestView = DomView.build($('<div><div class="title"></div><div class="body"></div></div>'),
         template(
           find('.title').text(mockfrom('mytitle'))
           find('.body').text(mockfrom('mybody'))
@@ -62,7 +62,7 @@ describe 'DomView', ->
       TestOuter = DomView.build($(html), template(
         find('.child').render(mockfrom(new Model()))
       ))
-      TestInner = DomView.build($('<div class="title"/>'), template(
+      TestInner = DomView.build($('<div class="title"></div>'), template(
         find('.title').text(mockfrom(v))
       ))
       app = { view: (-> new TestInner({})) }
@@ -83,7 +83,7 @@ describe 'DomView', ->
           find('.child').render(mockfrom(new Model()))
         ))
         _wireEvents: -> wired.push('outer')
-      class TestInner extends DomView.build($('<div class="title"/>'), template(
+      class TestInner extends DomView.build($('<div class="title"></div>'), template(
           find('.title').text(mockfrom(v))
         ))
         _wireEvents: -> wired.push('inner')
@@ -100,7 +100,7 @@ describe 'DomView', ->
   describe 'template pointing', ->
     it 'applies a point function correctly', ->
       called = false
-      TestView = class extends DomView.build($('<div/>'),
+      TestView = class extends DomView.build($('<div></div>'),
         template(
           find('.title').text(from(->))
         ))
@@ -113,7 +113,7 @@ describe 'DomView', ->
       passed = null
       v = new Varying('test')
       subject = {}
-      TestView = DomView.build($('<div/>'), template(
+      TestView = DomView.build($('<div></div>'), template(
         find('div').text(from((x) -> passed = x; v))
       ))
 
@@ -128,7 +128,7 @@ describe 'DomView', ->
       attr = null
       v = new Varying('test')
       subject = { get: (x) -> attr = x; v }
-      TestView = DomView.build($('<div/>'), template(
+      TestView = DomView.build($('<div></div>'), template(
         find('div').text(from('someattr'))
       ))
 
@@ -142,7 +142,7 @@ describe 'DomView', ->
     it 'points dynamic other inputs correctly', ->
       v = new Varying('test')
       subject = { get: (x) -> attr = x; v }
-      TestView = DomView.build($('<div/>'), template(
+      TestView = DomView.build($('<div></div>'), template(
         find('div').text(from(42))
       ))
 
@@ -152,7 +152,7 @@ describe 'DomView', ->
       attr = null
       v = new Varying('test')
       subject = { get: (x) -> attr = x; v }
-      TestView = DomView.build($('<div/>'), template(
+      TestView = DomView.build($('<div></div>'), template(
         find('div').text(from.get('someattr'))
       ))
 
@@ -166,7 +166,7 @@ describe 'DomView', ->
     it 'does not try to resolve literal subjects', ->
       attr = null
       rendered = []
-      TestView = DomView.build($('<div/>'), template(
+      TestView = DomView.build($('<div></div>'), template(
         find('div').text(from('whatever'))
       ))
 
@@ -176,7 +176,7 @@ describe 'DomView', ->
     it 'should get the subject given no parameter', ->
       attr = null
       rendered = []
-      TestView = DomView.build($('<div/>'), template(
+      TestView = DomView.build($('<div></div>'), template(
         find('div').text(from.subject())
       ))
 
@@ -186,7 +186,7 @@ describe 'DomView', ->
     it 'should get from the subject given a parameter', ->
       attr = null
       rendered = []
-      TestView = DomView.build($('<div/>'), template(
+      TestView = DomView.build($('<div></div>'), template(
         find('div').text(from.subject('x'))
       ))
 
@@ -196,7 +196,7 @@ describe 'DomView', ->
     it 'points attribute inputs correctly', ->
       attr = null
       subject = { attribute: (x) -> attr = x; 'test' }
-      TestView = DomView.build($('<div/>'), template(
+      TestView = DomView.build($('<div></div>'), template(
         find('div').text(from.attribute('test_attr'))
       ))
 
@@ -210,7 +210,7 @@ describe 'DomView', ->
         toString: -> 'view model instance'
       attr = null
       rendered = []
-      TestView = DomView.build(ViewModel, $('<div/>'), template(
+      TestView = DomView.build(ViewModel, $('<div></div>'), template(
         find('div').text(from.vm())
       ))
 
@@ -223,7 +223,7 @@ describe 'DomView', ->
 
       attr = null
       rendered = []
-      TestView = DomView.build(ViewModel, $('<div/>'), template(
+      TestView = DomView.build(ViewModel, $('<div></div>'), template(
         find('div').text(from.vm('test'))
       ))
 
@@ -234,7 +234,7 @@ describe 'DomView', ->
       passed = null
       v = new Varying('test')
       subject = {}
-      TestView = DomView.build($('<div/>'), template(
+      TestView = DomView.build($('<div></div>'), template(
         find('div').text(from.varying((x) -> passed = x; v))
       ))
 
@@ -248,7 +248,7 @@ describe 'DomView', ->
     it 'points varying static inputs correctly', ->
       v = new Varying('test')
       subject = {}
-      TestView = DomView.build($('<div/>'), template(
+      TestView = DomView.build($('<div></div>'), template(
         find('div').text(from.varying(v))
       ))
 
@@ -260,7 +260,7 @@ describe 'DomView', ->
 
     it 'points app correctly', ->
       app = { toString: (-> 'test app'), on: (->) }
-      TestView = DomView.build($('<div/>'), template(
+      TestView = DomView.build($('<div></div>'), template(
         find('div').text(from.app().map((x) -> x.toString()))
       ))
 
@@ -270,7 +270,7 @@ describe 'DomView', ->
     it 'points app with a key reference correctly', ->
       rendered = watchedWith = null
       app = { toString: (-> 'test app'), on: (->), get: (key) -> watchedWith = key; new Varying('watched!') }
-      TestView = DomView.build($('<div/>'), template(
+      TestView = DomView.build($('<div></div>'), template(
         find('div').text(from.app('testkey').map((x) -> x.toString()))
       ))
 
@@ -281,7 +281,7 @@ describe 'DomView', ->
     it 'points self functions correctly', ->
       pointed = null
       v = new Varying('test')
-      TestView = DomView.build($('<div/>'), template(
+      TestView = DomView.build($('<div></div>'), template(
         find('div').text(from.self((x) -> pointed = x; v))
       ))
 
@@ -296,7 +296,7 @@ describe 'DomView', ->
     it 'points static self correctly', ->
       pointed = null
       v = new Varying('test')
-      TestView = DomView.build($('<div/>'), template(
+      TestView = DomView.build($('<div></div>'), template(
         find('div').text(from.self().flatMap((x) -> pointed = x; v))
       ))
 
@@ -311,20 +311,20 @@ describe 'DomView', ->
   describe 'subview enumeration', ->
     describe 'subviews_', ->
       it 'should return empty array if the view has not yet rendered', ->
-        TestOuter = DomView.build($('<div><div class="child"/></div>'), template(
+        TestOuter = DomView.build($('<div><div class="child"></div></div>'), template(
           find('.child').render(mockfrom(new Model()))
         ))
-        TestInner = DomView.build($('<div class="inner"/>'), template())
+        TestInner = DomView.build($('<div class="inner"></div>'), template())
         app = { view: (-> new TestInner({})) }
 
         view = new TestOuter({}, { app })
         view.subviews_().length.should.equal(0)
 
       it 'should return views that have been rendered', ->
-        TestOuter = DomView.build($('<div><div class="child"/></div>'), template(
+        TestOuter = DomView.build($('<div><div class="child"></div></div>'), template(
           find('.child').render(mockfrom(new Model()))
         ))
-        TestInner = DomView.build($('<div class="inner"/>'), template())
+        TestInner = DomView.build($('<div class="inner"></div>'), template())
         app = { view: (-> new TestInner({})) }
 
         view = new TestOuter({}, { app })
@@ -333,7 +333,7 @@ describe 'DomView', ->
         view.subviews_()[0].should.be.an.instanceof(TestInner)
 
       it 'should not include views that did not actually render', ->
-        TestOuter = DomView.build($('<div><div class="child"/></div>'), template(
+        TestOuter = DomView.build($('<div><div class="child"></div></div>'), template(
           find('.child').render(mockfrom(new Model()))
         ))
         app = { view: (->) }
@@ -344,10 +344,10 @@ describe 'DomView', ->
 
     describe 'subviews', ->
       it 'should return empty list if the view has not yet rendered', ->
-        TestOuter = DomView.build($('<div><div class="child"/></div>'), template(
+        TestOuter = DomView.build($('<div><div class="child"></div></div>'), template(
           find('.child').render(mockfrom(new Model()))
         ))
-        TestInner = DomView.build($('<div class="inner"/>'), template())
+        TestInner = DomView.build($('<div class="inner"></div>'), template())
         app = { view: (-> new TestInner({})) }
 
         view = new TestOuter({}, { app })
@@ -356,10 +356,10 @@ describe 'DomView', ->
       it 'should return and maintain a list of subviews', ->
         v = new Varying('test')
         viewer = -> new TestInner({})
-        TestOuter = DomView.build($('<div><div class="child"/></div>'), template(
+        TestOuter = DomView.build($('<div><div class="child"></div></div>'), template(
           find('.child').render(mockfrom(v))
         ))
-        TestInner = DomView.build($('<div class="inner"/>'), template())
+        TestInner = DomView.build($('<div class="inner"></div>'), template())
         app = { view: (-> viewer()) }
 
         view = new TestOuter({}, { app })
@@ -382,10 +382,10 @@ describe 'DomView', ->
       it 'should give rendered subviews once the view has rendered', ->
         v = new Varying('test')
         viewer = -> new TestInner({})
-        TestOuter = DomView.build($('<div><div class="child"/></div>'), template(
+        TestOuter = DomView.build($('<div><div class="child"></div></div>'), template(
           find('.child').render(mockfrom(v))
         ))
-        TestInner = DomView.build($('<div class="inner"/>'), template())
+        TestInner = DomView.build($('<div class="inner"></div>'), template())
         app = { view: (-> viewer()) }
 
         view = new TestOuter({}, { app })
@@ -400,7 +400,7 @@ describe 'DomView', ->
   describe 'client event wiring', ->
     it 'should call _wireEvents', ->
       called = false
-      TestView = class extends DomView.build($('<div/>'), inf)
+      TestView = class extends DomView.build($('<div></div>'), inf)
         _wireEvents: -> called = true
 
       (new TestView()).wireEvents()
@@ -408,7 +408,7 @@ describe 'DomView', ->
 
     it 'only wires events once', ->
       count = 0
-      TestView = class extends DomView.build($('<div/>'), inf)
+      TestView = class extends DomView.build($('<div></div>'), inf)
         _wireEvents: -> count += 1
 
       view = new TestView({})
@@ -417,7 +417,7 @@ describe 'DomView', ->
       count.should.equal(1)
 
     it 'adds a reference to self on the top-level dom node', ->
-      TestView = DomView.build($('<div/>'), inf)
+      TestView = DomView.build($('<div></div>'), inf)
 
       view = new TestView()
       view.wireEvents()
@@ -425,12 +425,12 @@ describe 'DomView', ->
 
     it 'also wires subview events', ->
       wired = []
-      ParentView = class extends DomView.build($('<div><div class="a"/><div class="b"/></div>'), template(
+      ParentView = class extends DomView.build($('<div><div class="a"></div><div class="b"></div></div>'), template(
           find('.a').render(from(true))
           find('.b').render(from(true))
         ))
         _wireEvents: -> wired.push(this)
-      ChildView = class extends DomView.build($('<div/>'), inf)
+      ChildView = class extends DomView.build($('<div></div>'), inf)
         _wireEvents: -> wired.push(this)
       app = { view: -> new ChildView() }
 
@@ -445,11 +445,11 @@ describe 'DomView', ->
     it 'wires subview events as new subviews are rendered', ->
       wired = []
       v = new Varying(0)
-      ParentView = class extends DomView.build($('<div/>'), template(
+      ParentView = class extends DomView.build($('<div></div>'), template(
           find('div').render(from(v))
         ))
         _wireEvents: -> wired.push(this)
-      ChildView = class extends DomView.build($('<div/>'), inf)
+      ChildView = class extends DomView.build($('<div></div>'), inf)
         _wireEvents: -> wired.push(this)
       app = { view: -> new ChildView() }
 
@@ -463,7 +463,7 @@ describe 'DomView', ->
 
     it 'runs template .on declarations', ->
       called = []
-      TestView = DomView.build($('<div/>'), template(
+      TestView = DomView.build($('<div></div>'), template(
         find('div')
           .on('click', (event) -> called.push(event.type))
           .on('mouseover', (event) -> called.push(event.type))))
@@ -478,7 +478,7 @@ describe 'DomView', ->
 
     it 'stops template .on declarations on destroy', ->
       called = []
-      TestView = DomView.build($('<div/>'), template(
+      TestView = DomView.build($('<div></div>'), template(
         find('div')
           .on('click', (event) -> called.push(event.type))
           .on('mouseover', (event) -> called.push(event.type))))
@@ -497,14 +497,14 @@ describe 'DomView', ->
 
   describe 'lifecycle', ->
     it 'will never produce an artifact if destroyed prior', ->
-      TestView = DomView.build($('<div/>'), inf)
+      TestView = DomView.build($('<div></div>'), inf)
       view = new TestView()
       view.destroy()
       should.not.exist(view.artifact().html)
 
     it 'triggers a `destroying` event on the dom fragment root', ->
       evented = false
-      TestView = DomView.build($('<div/>'), inf)
+      TestView = DomView.build($('<div></div>'), inf)
       view = new TestView()
       view.artifact().on('destroying', -> evented = true)
 
@@ -513,10 +513,10 @@ describe 'DomView', ->
       evented.should.equal(true)
 
     it 'removes itself from the dom when destroyed', ->
-      TestView = DomView.build($('<div/>'), inf)
+      TestView = DomView.build($('<div></div>'), inf)
       view = new TestView()
 
-      parent = $('<div/>')
+      parent = $('<div></div>')
       parent.append(view.artifact())
       parent.children().length.should.equal(1)
 
@@ -525,7 +525,7 @@ describe 'DomView', ->
 
     it 'stops all related bindings when destroyed', ->
       v = new Varying('test')
-      TestView = DomView.build($('<div/>'), template(
+      TestView = DomView.build($('<div></div>'), template(
         find('div').text(from(v))
       ))
 
@@ -545,12 +545,12 @@ describe 'DomView', ->
     # destroying a view destroys all children at that moment.
     it 'destroys children when destroyed', ->
       destroyed = []
-      ParentView = class extends DomView.build($('<div><div class="a"/><div class="b"/></div>'), template(
+      ParentView = class extends DomView.build($('<div><div class="a"></div><div class="b"></div></div>'), template(
           find('.a').render(from(true))
           find('.b').render(from(true))
         ))
         destroy: -> destroyed.push(this); super()
-      ChildView = class extends DomView.build($('<div/>'), inf)
+      ChildView = class extends DomView.build($('<div></div>'), inf)
         destroy: -> destroyed.push(this); super()
       app = { view: -> new ChildView() }
 
@@ -563,11 +563,11 @@ describe 'DomView', ->
 
     # i don't really know how to test this without reaching into internals:
     it 'stops trying to wire new subview events when destroyed', ->
-      ParentView = DomView.build($('<div><div class="a"/><div class="b"/></div>'), template(
+      ParentView = DomView.build($('<div><div class="a"></div><div class="b"></div></div>'), template(
         find('.a').render(from(true))
         find('.b').render(from(true))
       ))
-      ChildView = DomView.build($('<div/>'), inf)
+      ChildView = DomView.build($('<div></div>'), inf)
       app = { view: -> new ChildView() }
 
       view = new ParentView({}, { app })
@@ -587,7 +587,7 @@ describe 'DomView', ->
 
       WithViewModel = DomView.build(
         MyViewModel,
-        $('<div/>'),
+        $('<div></div>'),
         find('div').text(from.self((view) -> view.viewModel.id))
       )
 

@@ -15,13 +15,13 @@ node_modules:
 build: $(LIB)
 
 test: build node_modules
-	node node_modules/mocha/bin/mocha --compilers coffee:coffee-script/register --recursive
+	node node_modules/mocha/bin/mocha --require coffeescript/register --recursive test/**/*.coffee
 
 test-debug: build node_modules
-	node --debug-brk --inspect node_modules/mocha/bin/mocha --compilers coffee:coffee-script/register --recursive
+	node --debug-brk --inspect node_modules/mocha/bin/mocha --require coffeescript/register --recursive test/**/*.coffee
 
 test-coverage: build node_modules
-	node node_modules/.bin/nyc --reporter=lcov node_modules/.bin/_mocha --compilers coffee:coffee-script/register --recursive test
+	node node_modules/.bin/nyc --reporter=lcov node_modules/.bin/_mocha --require coffeescript/register --recursive test
 
 clean:
 	rm -rf lib

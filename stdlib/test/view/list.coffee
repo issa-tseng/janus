@@ -10,9 +10,9 @@ $ = require('../../lib/view/dollar')
 # and omits it if i put it at the end. weird. so all the assertions work off this.
 class TestModel extends Model
 TestModelView = DomView.build($('
-    <div class="model-name"/>
+    <div class="model-name"></div>
     textnode
-    <div class="model-length"/>
+    <div class="model-length"></div>
   '), template(
     find('.model-name').text(from('name'))
     find('.model-length').text(from.subject().flatMap((m) -> m.length))
