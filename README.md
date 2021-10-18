@@ -9,6 +9,18 @@ Built around functional ideals and concepts like declarative and reactive progra
 
 [![Build Status](https://img.shields.io/travis/issa-tseng/janus.svg)](http://travis-ci.org/issa-tseng/janus) [![NPM version](https://img.shields.io/npm/v/janus.svg)](https://www.npmjs.com/package/janus)
 
+> **Hello Strange Loop viewers!**
+>
+> You might be wondering arriving here: what state is this project in? Should I use it? _What_ should I feel okay using it for? What help does the project need?
+>
+> Janus is young but the core is stable. I feel very confident about the basic functionality and use it often without much issue. That said, there are bugs and it does have its performance limitations, as discussed in the talk. If you don't mind reporting (and possibly helping with) the odd bug here and there, and you do some basic benchmarking against your needs, I think Janus is feasible for production development. It has certainly shipped in commercial/production products before, and those deployments have remained pretty resilient.
+>
+> If you are doing any UI prototyping or playing with things on your own, _absolutely give Janus a try_.
+>
+> Last, what help is Janus looking for? First and foremost, I think the above. Bang on it and let's smooth over some of the rough edges and bugs that get exposed through broader use. Next, ideas you have for making it more conducive to certain functional workflows, or for improving the performance, or anything else are very very welcome! I had a good idea going into Janus how I wanted it to _feel_ in use, and how familiar I wanted the syntax to look to web developers working today. What I never had and still don't today are deep experience with DOM performance quirks, and deep knowledge of functional and FRP methods. Janus could really use your experiences!
+>
+> _(PS: The Apollo site I mention is [here](http://apollo13realtime.org).)_
+
 Basic Usage
 -----------
 
